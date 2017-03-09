@@ -1,0 +1,4 @@
+{% load i18n %}
+{% blocktrans %}
+Hello {{ author_name }}, {{ by_user_name }} has rejected your changes in {{ page_url }}.
+{% endblocktrans %}

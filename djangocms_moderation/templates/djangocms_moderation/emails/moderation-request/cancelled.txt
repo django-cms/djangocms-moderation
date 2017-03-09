@@ -1,0 +1,4 @@
+{% load i18n %}
+{% blocktrans %}
+Hello {{ author_name }}, {{ by_user_name }} has cancelled your request for moderation on {{ page_url }}.
+{% endblocktrans %}
