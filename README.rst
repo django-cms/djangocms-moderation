@@ -1,0 +1,28 @@
+*********************
+django CMS Moderation
+*********************
+
+============
+Installation
+============
+
+Requirements
+============
+
+django CMS Moderation requires that you have a django CMS 3.4.3 (or higher) project already running and set up.
+
+
+To install
+==========
+
+Run::
+
+    pip install git+git://github.com/divio/djangocms-moderation@develop#egg=djangocms-moderation
+
+Add ``djangocms_moderation`` to your project's ``INSTALLED_APPS``.
+
+Run::
+
+    python manage.py migrate djangocms_moderation
+
+to perform the application's database migrations.
