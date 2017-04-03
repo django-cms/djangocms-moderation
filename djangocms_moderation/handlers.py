@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from django.dispatch import receiver
 
 from cms.operations import PUBLISH_PAGE_TRANSLATION

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.six.moves.urllib.parse import urljoin

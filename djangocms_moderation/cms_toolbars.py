@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.utils.functional import cached_property
 from django.utils.translation import override as force_language, ugettext_lazy as _
 

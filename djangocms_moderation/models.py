@@ -1,9 +1,12 @@
+from __future__ import unicode_literals
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db import transaction
+from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -15,6 +18,7 @@ from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
 
 
+@python_2_unicode_compatible
 class Role(models.Model):
     name = models.CharField(verbose_name=_('name'), max_length=120)
     user = models.ForeignKey(
@@ -34,7 +38,7 @@ class Role(models.Model):
         verbose_name = _('Role')
         verbose_name_plural = _('Roles')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def clean(self):
@@ -53,6 +57,7 @@ class Role(models.Model):
         return self.group.user_set.all()
 
 
+@python_2_unicode_compatible
 class Workflow(models.Model):
     name = models.CharField(
         verbose_name=_('name'),
@@ -68,7 +73,7 @@ class Workflow(models.Model):
         verbose_name = _('Workflow')
         verbose_name_plural = _('Workflows')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def clean(self):
@@ -131,6 +136,7 @@ class Workflow(models.Model):
         return request
 
 
+@python_2_unicode_compatible
 class WorkflowStep(models.Model):
     role = models.ForeignKey(
         to=Role,
@@ -154,7 +160,7 @@ class WorkflowStep(models.Model):
         verbose_name = _('Step')
         verbose_name_plural = _('Steps')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.role.name
 
     def get_next(self, cache=True, **kwargs):
@@ -177,6 +183,7 @@ class WorkflowStep(models.Model):
         return self.get_next(cache=False, is_required=True)
 
 
+@python_2_unicode_compatible
 class PageModeration(PageExtension):
     ACCESS_CHOICES = (
         (constants.ACCESS_PAGE, _('Current page')),
@@ -199,7 +206,7 @@ class PageModeration(PageExtension):
 
     objects = PageModerationManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.extended_object.get_page_title()
 
     @cached_property
@@ -210,6 +217,7 @@ class PageModeration(PageExtension):
         self.workflow_id = oldinstance.workflow_id
 
 
+@python_2_unicode_compatible
 class PageModerationRequest(models.Model):
 
     page = models.ForeignKey(
@@ -239,7 +247,7 @@ class PageModerationRequest(models.Model):
         verbose_name = _('Request')
         verbose_name_plural = _('Requests')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.page.get_page_title(self.language)
 
     @cached_property
@@ -318,6 +326,7 @@ class PageModerationRequest(models.Model):
         return False
 
 
+@python_2_unicode_compatible
 class PageModerationRequestAction(models.Model):
 
     STATUSES = (
@@ -381,7 +390,7 @@ class PageModerationRequestAction(models.Model):
         verbose_name = _('Action')
         verbose_name_plural = _('Actions')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.get_action_display()
 
     def get_by_user_name(self):
