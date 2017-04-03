@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             name='PageModerationRequest',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('language', models.CharField(max_length=5, verbose_name='language', choices=[(b'en', 'English'), (b'de', 'Deutsch'), (b'it', 'Italiano')])),
+                ('language', models.CharField(max_length=5, verbose_name='language', choices=[('en', 'English'), ('de', 'Deutsch'), ('it', 'Italiano')])),
                 ('is_active', models.BooleanField(default=False, db_index=True)),
                 ('date_sent', models.DateTimeField(auto_now_add=True, verbose_name='date sent')),
                 ('page', models.ForeignKey(verbose_name='page', to='cms.Page')),
@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
             name='PageModerationRequestAction',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('action', models.CharField(max_length=30, verbose_name='status', choices=[(b'start', 'Started'), (b'rejected', 'Rejected'), (b'approved', 'Approved'), (b'cancelled', 'Cancelled'), (b'finished', 'Finished')])),
+                ('action', models.CharField(max_length=30, verbose_name='status', choices=[('start', 'Started'), ('rejected', 'Rejected'), ('approved', 'Approved'), ('cancelled', 'Cancelled'), ('finished', 'Finished')])),
                 ('message', models.TextField(verbose_name='message', blank=True)),
                 ('date_taken', models.DateTimeField(auto_now_add=True, verbose_name='date taken')),
                 ('by_user', models.ForeignKey(related_name='+', verbose_name='by user', to=settings.AUTH_USER_MODEL)),
