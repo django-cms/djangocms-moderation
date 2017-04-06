@@ -8,7 +8,7 @@ from cms.api import get_page_draft
 from cms.cms_toolbars import PageToolbar, PlaceholderToolbar, PAGE_MENU_IDENTIFIER
 from cms.toolbar_pool import toolbar_pool
 from cms.toolbar_base import CMSToolbar
-from cms.toolbar.items import Button, ButtonList, ModalButton
+from cms.toolbar.items import Button, ModalButton, Dropdown, DropdownToggleButton
 from cms.utils.urlutils import admin_reverse
 
 from .helpers import get_page_moderation_workflow
@@ -18,9 +18,6 @@ from .models import PageModeration
 def _get_admin_url(name, language, args):
     with force_language(language):
         return admin_reverse(name, args=args)
-
-class DropdownButtonList(ButtonList):
-    template = 'djangocms_moderation/toolbar/dropdown_button_list.html'
 
 
 class ExtendedPageToolbar(PageToolbar):
@@ -60,11 +57,14 @@ class ExtendedPageToolbar(PageToolbar):
         return get_page_moderation_workflow(self.page)
 
     def _add_buttons_list(self, *buttons):
-        container = DropdownButtonList(side=self.toolbar.RIGHT)
+        container = Dropdown(side=self.toolbar.RIGHT)
+        container.add_primary_button(
+            DropdownToggleButton(name=_('Moderation'))
+        )
         container.buttons.extend(buttons)
         self.toolbar.add_item(container)
 
-    def add_publish_button(self, classes=('cms-btn-action', 'cms-btn-publish')):
+    def add_publish_button(self, classes=('cms-btn-action', 'cms-btn-publish', 'cms-btn-publish-active',)):
         page = self.page
 
         if not page or not self.toolbar.edit_mode or not self.has_publish_permission():
@@ -94,7 +94,7 @@ class ExtendedPageToolbar(PageToolbar):
                     Button(
                         name=publish_title,
                         url=publish_url,
-                        extra_classes=('cms-publish-page', 'js-prevent-actions-publish')
+                        extra_classes=('cms-publish-page', 'cms-btn-publish', 'cms-btn-publish-active',)
                     ),
                 )
             else:
