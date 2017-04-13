@@ -1,10 +1,41 @@
 from __future__ import unicode_literals
 
 from django import forms
+from django.forms.forms import NON_FIELD_ERRORS
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext, ugettext_lazy as _
 
+from adminsortable2.admin import CustomInlineFormSet
+
 from .constants import ACTION_CANCELLED, ACTION_REJECTED
+
+
+class WorkflowStepInlineFormSet(CustomInlineFormSet):
+
+    def validate_unique(self):
+        super(WorkflowStepInlineFormSet, self).validate_unique()
+        # The following fixes a bug in Django where it doesn't validate unique constraint
+        # when the parent model in inline relationship has not been saved
+        errors = []
+        unique_check = ('role', 'workflow')
+        selected_roles = []
+        forms_to_delete = self.deleted_forms
+        valid_forms = [form for form in self.forms if form.is_valid() and form not in forms_to_delete]
+
+        for form in valid_forms:
+            selected_role = form.cleaned_data['role']
+
+            if selected_role.pk in selected_roles:
+                # poke error messages into the right places and mark
+                # the form as invalid
+                errors.append(self.get_unique_error_message(unique_check))
+                form._errors[NON_FIELD_ERRORS] = self.error_class([self.get_form_error()])
+                # remove the data from the cleaned_data dict since it was invalid
+                for field in unique_check:
+                    if field in form.cleaned_data:
+                        del form.cleaned_data[field]
+            else:
+                selected_roles.append(selected_role.pk)
 
 
 class ModerationRequestForm(forms.Form):

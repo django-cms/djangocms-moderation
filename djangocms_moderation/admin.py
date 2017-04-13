@@ -15,6 +15,7 @@ from adminsortable2.admin import SortableInlineAdminMixin
 
 from . import views
 from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED
+from .forms import WorkflowStepInlineFormSet
 from .helpers import get_page_moderation_workflow
 from .models import (
     PageModeration,
@@ -85,7 +86,13 @@ class RoleAdmin(admin.ModelAdmin):
 
 
 class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
+    formset = WorkflowStepInlineFormSet
     model = WorkflowStep
+
+    def get_extra(self, request, obj=None, **kwargs):
+        if obj and obj.pk:
+            return 0
+        return 1
 
 
 class WorkflowAdmin(admin.ModelAdmin):
