@@ -23,7 +23,10 @@ class WorkflowStepInlineFormSet(CustomInlineFormSet):
         valid_forms = [form for form in self.forms if form.is_valid() and form not in forms_to_delete]
 
         for form in valid_forms:
-            selected_role = form.cleaned_data['role']
+            selected_role = form.cleaned_data.get('role')
+
+            if not selected_role:
+                continue
 
             if selected_role.pk in selected_roles:
                 # poke error messages into the right places and mark
