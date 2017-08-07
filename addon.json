@@ -1,0 +1,4 @@
+{
+    "package-name": "djangocms-moderation",
+    "installed-apps": ['djangocms_moderation', 'adminsortable2']
+}
