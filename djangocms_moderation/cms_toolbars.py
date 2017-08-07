@@ -73,10 +73,10 @@ class ExtendedPageToolbar(PageToolbar):
     def add_publish_button(self, classes=('cms-btn-action', 'cms-btn-publish', 'cms-btn-publish-active',)):
         page = self.page
 
-        if not page or not self.toolbar.edit_mode or not self.has_publish_permission():
-            return super(ExtendedPageToolbar, self).add_publish_button(classes)
-
-        if not self.moderation_workflow:
+        if not self.user_can_publish() or not self.moderation_workflow:
+            # Page has no pending changes
+            # OR user has no permission to publish
+            # OR a moderation workflow has not been defined yet
             return super(ExtendedPageToolbar, self).add_publish_button(classes)
 
         moderation_request = self.moderation_request
@@ -111,7 +111,7 @@ class ExtendedPageToolbar(PageToolbar):
                 )
             container.buttons.append(self.get_cancel_moderation_button())
             self.toolbar.add_item(container)
-        elif self.has_dirty_objects():
+        else:
             new_request_url = _get_admin_url(
                 name='cms_moderation_new_request',
                 language=self.current_lang,
@@ -124,13 +124,15 @@ class ExtendedPageToolbar(PageToolbar):
             )
 
     def get_publish_button(self, classes=None):
+        if not self.moderation_workflow:
+            return super(ExtendedPageToolbar, self).get_publish_button(classes)
+
         button = super(ExtendedPageToolbar, self).get_publish_button(['cms-btn-publish'])
         container = Dropdown(side=self.toolbar.RIGHT)
         container.add_primary_button(
             DropdownToggleButton(name=_('Moderation'))
         )
         container.buttons.extend(button.buttons)
-        container.buttons.append(self.get_cancel_moderation_button())
         return container
 
 
@@ -201,11 +203,5 @@ class PageModerationToolbar(CMSToolbar):
 
 
 toolbar_pool.toolbars['cms.cms_toolbars.PageToolbar'] = ExtendedPageToolbar
-
-
-try:
-    toolbar_pool.unregister(PlaceholderToolbar)
-finally:
-    toolbar_pool.toolbars['cms.cms_toolbars.PlaceholderToolbar'] = ExtendedPlaceholderToolbar
-
+toolbar_pool.toolbars['cms.cms_toolbars.PlaceholderToolbar'] = ExtendedPlaceholderToolbar
 toolbar_pool.register(PageModerationToolbar)

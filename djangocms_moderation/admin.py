@@ -158,7 +158,7 @@ class ExtendedPageAdmin(PageAdmin):
             message = ugettext('This page is currently undergoing moderation '
                                'and can\'t be published until all parties have approved it.')
         else:
-            message = ugettext('You need to submit this page to moderation before publishing.')
+            message = ugettext('You need to submit this page for moderation before publishing.')
 
         messages.warning(request, message)
         path = page.get_absolute_url(language, fallback=True)
