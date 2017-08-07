@@ -21,7 +21,7 @@ class ModerationRequestView(FormView):
     page_title = None
     success_message = None
     template_name = 'djangocms_moderation/request_form.html'
-    success_template_name = 'admin/cms/page/plugin/confirm_form.html'
+    success_template_name = 'djangocms_moderation/request_finalized.html'
 
     def dispatch(self, request, *args, **kwargs):
         user = request.user
