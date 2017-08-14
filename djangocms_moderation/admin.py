@@ -7,7 +7,6 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-from cms.admin.pageadmin import PageAdmin
 from cms.extensions import PageExtensionAdmin
 from cms.models import Page
 
@@ -25,6 +24,11 @@ from .models import (
     Workflow,
     WorkflowStep,
 )
+
+try:
+    PageAdmin = admin.site._registry[Page].__class__
+except KeyError:
+    from cms.admin.pageadmin import PageAdmin
 
 
 class PageModerationAdmin(PageExtensionAdmin):
@@ -165,11 +169,7 @@ class ExtendedPageAdmin(PageAdmin):
         return HttpResponseRedirect(path)
 
 
-try:
-    admin.site.unregister(Page)
-finally:
-    admin.site.register(Page, ExtendedPageAdmin)
-
+admin.site._registry[Page] = ExtendedPageAdmin(Page, admin.site)
 admin.site.register(PageModeration, PageModerationAdmin)
 admin.site.register(PageModerationRequest, PageModerationRequestAdmin)
 admin.site.register(Role, RoleAdmin)

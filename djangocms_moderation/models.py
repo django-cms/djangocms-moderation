@@ -223,6 +223,10 @@ class PageModerationRequest(models.Model):
     page = models.ForeignKey(
         to='cms.Page',
         verbose_name=_('page'),
+        limit_choices_to={
+            'is_page_type': False,
+            'publisher_is_draft': True,
+        },
     )
     language = models.CharField(
         verbose_name=_('language'),

@@ -5,14 +5,15 @@ from django.utils.functional import cached_property
 from django.utils.translation import override as force_language, ugettext_lazy as _
 
 from cms.api import get_page_draft
-from cms.cms_toolbars import PlaceholderToolbar, PAGE_MENU_IDENTIFIER
 from cms.toolbar_pool import toolbar_pool
 from cms.toolbar_base import CMSToolbar
 from cms.toolbar.items import ModalButton, Dropdown, DropdownToggleButton
+from cms.utils.page_permissions import user_can_change_page
 from cms.utils.urlutils import admin_reverse
 
 from .helpers import get_page_moderation_workflow
 from .models import PageModeration
+from .monkeypatches import set_current_language
 
 
 try:
@@ -28,25 +29,9 @@ def _get_admin_url(name, language, args):
 
 class ExtendedPageToolbar(PageToolbar):
 
-    def add_page_menu(self):
-        # Page menu is disabled if user is in page under apphooked page
-        disabled = self.in_apphook() and not self.in_apphook_root()
-
-        if not disabled:
-            # Otherwise disable the menu if there's an active moderation
-            # request.
-            disabled = bool(self.moderation_request)
-
-        self.toolbar.get_or_create_menu(
-            PAGE_MENU_IDENTIFIER,
-            _('Page'),
-            position=1,
-            disabled=disabled
-        )
-
-        if not disabled:
-            # The menu is enabled so populate it with the default entries
-            super(ExtendedPageToolbar, self).add_page_menu()
+    def __init__(self, *args, **kwargs):
+        super(ExtendedPageToolbar, self).__init__(*args, **kwargs)
+        set_current_language(self.current_lang)
 
     @cached_property
     def moderation_request(self):
@@ -136,42 +121,13 @@ class ExtendedPageToolbar(PageToolbar):
         return container
 
 
-class ExtendedPlaceholderToolbar(PlaceholderToolbar):
-
-    def add_structure_mode(self):
-        if self.has_moderation_request:
-            return
-        return super(ExtendedPlaceholderToolbar, self).add_structure_mode()
-
-    def init_from_request(self):
-        super(ExtendedPlaceholderToolbar, self).init_from_request()
-
-        if self.has_moderation_request:
-            # There's an active moderation request.
-            # Disable editing for all placeholders on this page.
-            self.toolbar.content_renderer._placeholders_are_editable = False
-
-    @cached_property
-    def has_moderation_request(self):
-        page = self.page
-
-        if not page:
-            return False
-
-        workflow = get_page_moderation_workflow(page)
-
-        if not workflow:
-            return False
-        return workflow.has_active_request(page, self.current_lang)
-
-
 class PageModerationToolbar(CMSToolbar):
 
     def populate(self):
         # always use draft if we have a page
         page = get_page_draft(self.request.current_page)
 
-        if not page:
+        if not page or not user_can_change_page(self.request.user, page):
             return
 
         page_menu = self.toolbar.get_menu('page')
@@ -198,10 +154,9 @@ class PageModerationToolbar(CMSToolbar):
 
         if not extension:
             url += '?extended_object=%s' % page.pk
-        not_edit_mode = not self.toolbar.edit_mode
+        not_edit_mode = not self.toolbar.edit_mode_active
         page_menu.add_modal_item(_('Moderation'), url=url, disabled=not_edit_mode)
 
 
 toolbar_pool.toolbars['cms.cms_toolbars.PageToolbar'] = ExtendedPageToolbar
-toolbar_pool.toolbars['cms.cms_toolbars.PlaceholderToolbar'] = ExtendedPlaceholderToolbar
 toolbar_pool.register(PageModerationToolbar)

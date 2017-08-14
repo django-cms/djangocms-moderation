@@ -53,7 +53,7 @@ def _send_email(request, action, recipients, subject, template):
 
 def notify_request_author(request, action):
     if action.action not in email_subjects:
-        #TODO: FINISH THIS
+        # TODO: FINISH THIS
         return 0
 
     author = request.get_first_action().by_user

@@ -29,6 +29,7 @@ class ModerationRequestView(FormView):
         self.page = get_object_or_404(
             Page,
             pk=args[0],
+            is_page_type=False,
             publisher_is_draft=True,
             title_set__language=self.language,
         )

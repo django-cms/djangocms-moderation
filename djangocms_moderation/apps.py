@@ -9,4 +9,5 @@ class ModerationConfig(AppConfig):
     verbose_name = _('django CMS Moderation')
 
     def ready(self):
+        import djangocms_moderation.monkeypatches  # noqa
         import djangocms_moderation.handlers #noqa
