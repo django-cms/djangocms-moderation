@@ -8,7 +8,7 @@ from cms.api import get_page_draft
 from cms.toolbar_pool import toolbar_pool
 from cms.toolbar_base import CMSToolbar
 from cms.toolbar.items import ModalButton, Dropdown, DropdownToggleButton
-from cms.utils.page_permissions import user_can_change_page
+from cms.utils import page_permissions
 from cms.utils.urlutils import admin_reverse
 
 from .helpers import get_page_moderation_workflow
@@ -118,6 +118,7 @@ class ExtendedPageToolbar(PageToolbar):
             DropdownToggleButton(name=_('Moderation'))
         )
         container.buttons.extend(button.buttons)
+        container.buttons.append(self.get_cancel_moderation_button())
         return container
 
 
@@ -127,7 +128,12 @@ class PageModerationToolbar(CMSToolbar):
         # always use draft if we have a page
         page = get_page_draft(self.request.current_page)
 
-        if not page or not user_can_change_page(self.request.user, page):
+        if page:
+            can_change = page_permissions.user_can_change_page(self.request.user, page)
+        else:
+            can_change = False
+
+        if not can_change:
             return
 
         page_menu = self.toolbar.get_menu('page')

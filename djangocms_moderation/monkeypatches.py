@@ -4,7 +4,9 @@ from threading import local
 from django.utils.decorators import available_attrs
 from django.utils.translation import get_language
 
-from cms.utils import page_permissions
+from cms.utils import get_current_site, page_permissions
+from cms.utils.conf import get_cms_setting
+from cms.utils.permissions import cached_func
 
 from .helpers import get_page_moderation_workflow
 
@@ -20,12 +22,33 @@ def get_request_language():
     return getattr(_thread_locals, 'request_language', get_language())
 
 
-def get_node_queryset(func):
-    @wraps(func, assigned=available_attrs(func))
-    def wrapper(*args, **kwargs):
-        queryset = func(*args, **kwargs)
-        return queryset.exclude(node_overrides__hidden=True)
-    return wrapper
+@cached_func
+@page_permissions.auth_permission_required('change_page', manual=True)
+@page_permissions.auth_permission_required('publish_page', manual=True)
+def user_can_publish_page(user, page, site=None):
+    site = site or get_current_site()
+
+    if not not page.site_is_secondary(site):
+        return False
+
+    if user.is_superuser:
+        has_perm = True
+    elif get_cms_setting('PERMISSION'):
+        can_change = page_permissions.has_generic_permission(
+            page=page,
+            user=user,
+            action='change_page',
+            site=site,
+        )
+        has_perm = can_change and page_permissions.has_generic_permission(
+            page=page,
+            user=user,
+            action='publish_page',
+            site=site,
+        )
+    else:
+        has_perm = True
+    return has_perm
 
 
 def user_can_change_page(func):
@@ -45,3 +68,4 @@ def user_can_change_page(func):
 
 
 page_permissions.user_can_change_page = user_can_change_page(page_permissions.user_can_change_page)
+page_permissions.user_can_publish_page = user_can_publish_page
