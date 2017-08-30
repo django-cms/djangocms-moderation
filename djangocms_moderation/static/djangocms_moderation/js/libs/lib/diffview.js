@@ -1029,7 +1029,7 @@ Written by Austin Cheney on 1 Mar 2017
                                 rowItem = a;
                                 if (foldstart > -1) {
                                     if (data[0][foldstart + 1] === foldcount - 1) {
-                                        data[0][foldstart] = "<li class=\"" + data[0][foldstart].slice(
+                                        data[0][foldstart] = "<li class=\"" + code[0] + ' ' + data[0][foldstart].slice(
                                             data[0][foldstart].indexOf(
                                                 "line xxx\">- "
                                             ) + 12
@@ -1043,12 +1043,12 @@ Written by Austin Cheney on 1 Mar 2017
                                 }
                                 if (change !== "replace") {
                                     if (baseEnd - baseStart > 1 || newEnd - newStart > 1) {
-                                        data[0].push("<li class=\"fold\" title=\"folds from line " + (
+                                        data[0].push("<li class=\"fold " + code[0] + "\" title=\"folds from line " + (
                                             foldcount + rcount
                                         ) + " to line xxx\">- ");
                                         foldstart = data[0].length - 1;
                                     } else {
-                                        data[0].push("<li>");
+                                        data[0].push("<li class=\"" + code[0] + "\">");
                                     }
                                     if (ntest === true || change === "insert") {
                                         data[0].push("&#10;");
@@ -1060,7 +1060,7 @@ Written by Austin Cheney on 1 Mar 2017
                                     rcount = rcount + 1;
                                 }
                             } else if (change !== "replace") {
-                                data[0].push("<li>");
+                                data[0].push("<li class=\"" + code[0] + "\">");
                                 if (ntest === true || change === "insert") {
                                     data[0].push("&#10;");
                                 } else {
@@ -1071,7 +1071,7 @@ Written by Austin Cheney on 1 Mar 2017
                                 rcount = rcount + 1;
                             }
                             if (ntest === true || change === "insert") {
-                                data[2].push("<li>");
+                                data[2].push("<li class=\"" + code[0] + "\">");
                                 data[2].push(newStart + 1);
                                 data[2].push("&#10;</li>");
                                 if (options.diffspaceignore === true && newTextArray[newStart].replace(/\s+/g, "") === "") {
@@ -1083,7 +1083,7 @@ Written by Austin Cheney on 1 Mar 2017
                                 data[3].push(newTextArray[newStart]);
                                 data[3].push("&#10;</li>");
                             } else if (btest === true || change === "delete") {
-                                data[2].push("<li class=\"empty\">&#10;</li>");
+                                data[2].push("<li class=\"empty " + code[0] + "\">&#10;</li>");
                                 if (options.diffspaceignore === true && baseTextArray[baseStart].replace(/\s+/g, "") === "") {
                                     data[3].push("<li class=\"equal\">");
                                     diffline = diffline - 1;
@@ -1105,14 +1105,18 @@ Written by Austin Cheney on 1 Mar 2017
                                     }
                                 }
                                 if (baseStart < baseEnd) {
-                                    data[0].push("<li>" + (
-                                        baseStart + 1
-                                    ) + "</li>");
-                                    data[2].push("<li class=\"empty\">&#10;</li>");
                                     if (options.diffspaceignore === true && baseTextArray[baseStart].replace(/\s+/g, "") === "") {
+                                        data[0].push("<li class=\"" + code[0] + "\">" + (
+                                            baseStart + 1
+                                        ) + "</li>");
+                                        data[2].push("<li class=\"empty " + code[0] + "\">&#10;</li>");
                                         data[3].push("<li class=\"equal\">");
                                         diffline = diffline - 1;
                                     } else {
+                                        data[0].push("<li class=\"delete " + code[0] + "\">" + (
+                                            baseStart + 1
+                                        ) + "</li>");
+                                        data[2].push("<li class=\"empty delete " + code[0] + "\">&#10;</li>");
                                         data[3].push("<li class=\"delete\">");
                                     }
                                     if (newStart < newEnd) {
@@ -1123,14 +1127,14 @@ Written by Austin Cheney on 1 Mar 2017
                                     data[3].push("&#10;</li>");
                                 }
                                 if (newStart < newEnd) {
-                                    data[0].push("<li class=\"empty\">&#10;</li>");
-                                    data[2].push("<li>");
-                                    data[2].push(newStart + 1);
-                                    data[2].push("</li>");
                                     if (options.diffspaceignore === true && newTextArray[newStart].replace(/\s+/g, "") === "") {
+                                        data[0].push("<li class=\"empty equal " + code[0] + "\">&#10;</li>");
+                                        data[2].push("<li class=\"equal " + code[0] + "\">");
                                         data[3].push("<li class=\"equal\">");
                                         diffline = diffline - 1;
                                     } else {
+                                        data[0].push("<li class=\"empty insert " + code[0] + "\">&#10;</li>");
+                                        data[2].push("<li class=\"insert " + code[0] + "\">");
                                         data[3].push("<li class=\"insert\">");
                                     }
                                     if (baseStart < baseEnd) {
@@ -1141,10 +1145,10 @@ Written by Austin Cheney on 1 Mar 2017
                                     data[3].push("&#10;</li>");
                                 }
                             } else if (baseStart < baseEnd || newStart < newEnd) {
-                                data[2].push("<li>");
+                                data[2].push("<li class=\"" + code[0] + "\">");
                                 data[2].push(newStart + 1);
                                 data[2].push("</li>");
-                                data[3].push("<li class=\"");
+                                data[3].push("<li class=\"" + code[0] + ' ');
                                 data[3].push(change);
                                 data[3].push("\">");
                                 data[3].push(baseTextArray[baseStart]);
@@ -1183,18 +1187,18 @@ Written by Austin Cheney on 1 Mar 2017
                                         if (options.context < 0 && rowItem < a && (opcodes[a][2] - opcodes[a][1] > 1 || opcodes[a][4] - opcodes[a][3] > 1)) {
                                             rowItem = a;
                                             data[0].push(
-                                                "<li class=\"fold\" title=\"folds from line " + foldcount +
+                                                "<li class=\"fold " + code[0] + "\" title=\"folds from line " + foldcount +
                                                 " to line xxx\">- " + (
                                                     baseStart + 1
                                                 ) + "</li>"
                                             );
                                             foldstart = data[0].length - 1;
                                         } else {
-                                            data[0].push("<li>" + (
+                                            data[0].push("<li class=\"" + code[0] + "\">" + (
                                                 baseStart + 1
                                             ) + "</li>");
                                         }
-                                        data[1].push("<li class=\"");
+                                        data[1].push("<li class=\"" + code[0]);
                                         if (newStart >= newEnd) {
                                             if (options.diffspaceignore === true && baseTextArray[baseStart].replace(/\s+/g, "") === "") {
                                                 data[1].push("equal");
@@ -1207,7 +1211,7 @@ Written by Austin Cheney on 1 Mar 2017
                                         } else {
                                             data[1].push(change);
                                         }
-                                        data[1].push("\">");
+                                        data[1].push(" " + code[0] + "\">");
                                         data[1].push(charcompOutput[0]);
                                         data[1].push("&#10;</li>");
                                     } else if (ctest === true) {
@@ -1217,17 +1221,17 @@ Written by Austin Cheney on 1 Mar 2017
                                                 data[0][foldstart] = data[0][foldstart].replace("xxx", (foldcount - 1));
                                             }
                                             data[0].push(
-                                                "<li class=\"fold\" title=\"folds from line " + foldcount + " to line xxx\">- &" +
+                                                "<li class=\"fold " + code[0] + "\" title=\"folds from line " + foldcount + " to line xxx\">- &" +
                                                 "#10;</li>"
                                             );
                                             foldstart = data[0].length - 1;
                                         } else {
-                                            data[0].push("<li class=\"empty\">&#10;</li>");
+                                            data[0].push("<li class=\"empty " + code[0] + "\">&#10;</li>");
                                         }
-                                        data[1].push("<li class=\"empty\"></li>");
+                                        data[1].push("<li class=\"empty " + code[0] + "\"></li>");
                                     }
                                     if (newStart < newEnd) {
-                                        data[2].push("<li>" + (
+                                        data[2].push("<li class=\"" + code[0] + "\">" + (
                                             newStart + 1
                                         ) + "</li>");
                                         data[3].push("<li class=\"");
@@ -1243,12 +1247,12 @@ Written by Austin Cheney on 1 Mar 2017
                                         } else {
                                             data[3].push(change);
                                         }
-                                        data[3].push("\">");
+                                        data[3].push(" " + code[0] + "\">");
                                         data[3].push(charcompOutput[1]);
                                         data[3].push("&#10;</li>");
                                     } else if (ctest === true) {
-                                        data[2].push("<li class=\"empty\">&#10;</li>");
-                                        data[3].push("<li class=\"empty\"></li>");
+                                        data[2].push("<li class=\"empty " + code[0] + "\">&#10;</li>");
+                                        data[3].push("<li class=\"empty " + code[0] + "\"></li>");
                                     }
                                 } else {
                                     repeat = false;
@@ -1267,22 +1271,22 @@ Written by Austin Cheney on 1 Mar 2017
                                     if (options.context < 0 && rowItem < a && opcodes[a][2] - opcodes[a][1] > 1) {
                                         rowItem = a;
                                         data[0].push(
-                                            "<li class=\"fold\" title=\"folds from line " + foldcount +
+                                            "<li class=\"fold " + code[0] + "\" title=\"folds from line " + foldcount +
                                             " to line xxx\">- " + (
                                                 baseStart + 1
                                             ) + "</li>"
                                         );
                                         foldstart = data[0].length - 1;
                                     } else {
-                                        data[0].push("<li>" + (
+                                        data[0].push("<li class=\"" + code[0] + "\">" + (
                                             baseStart + 1
                                         ) + "</li>");
                                     }
-                                    data[1].push("<li class=\"delete\">");
+                                    data[1].push("<li class=\"delete " + code[0] + "\">");
                                     data[1].push(baseTextArray[baseStart]);
                                     data[1].push("&#10;</li>");
-                                    data[2].push("<li class=\"empty\">&#10;</li>");
-                                    data[3].push("<li class=\"empty\"></li>");
+                                    data[2].push("<li class=\"empty delete " + code[0] + "\">&#10;</li>");
+                                    data[3].push("<li class=\"empty " + code[0] + "\"></li>");
                                 }
                                 btest     = false;
                                 baseStart = baseStart + 1;
@@ -1294,15 +1298,15 @@ Written by Austin Cheney on 1 Mar 2017
                                     if (options.context < 0 && rowItem < a && opcodes[a][4] - opcodes[a][3] > 1) {
                                         rowItem = a;
                                         data[0].push(
-                                            "<li class=\"fold\" title=\"folds from line " + foldcount + " to line xxx\">-</" +
+                                            "<li class=\"fold " + code[0] + "\" title=\"folds from line " + foldcount + " to line xxx\">-</" +
                                             "li>"
                                         );
                                         foldstart = data[0].length - 1;
                                     } else {
-                                        data[0].push("<li class=\"empty\">&#10;</li>");
+                                        data[0].push("<li class=\"empty " + code[0] + "\">&#10;</li>");
                                     }
-                                    data[1].push("<li class=\"empty\"></li>");
-                                    data[2].push("<li>" + (
+                                    data[1].push("<li class=\"empty " + code[0] + "\"></li>");
+                                    data[2].push("<li class=\"" + code[0] + "\">" + (
                                         newStart + 1
                                     ) + "</li>");
                                     data[3].push("<li class=\"insert\">");

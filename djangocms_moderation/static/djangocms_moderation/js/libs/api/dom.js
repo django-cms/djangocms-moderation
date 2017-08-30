@@ -46,6 +46,7 @@
             }
         }
     };
+
     //alter tool on page load in reflection to saved state
     var load = function dom__event_recycle_execOutput_diffList() {
         var difflist = document.getElementsByTagName("ol");
@@ -56,7 +57,7 @@
             len   = cells.length,
             a     = 0;
         for (a = 0; a < len; a = a + 1) {
-            if (cells[a].getAttribute("class") === "fold") {
+            if (cells[a].getAttribute("class").match(/fold/)) {
                 cells[a].onclick = event.difffold;
             }
         }

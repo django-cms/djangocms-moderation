@@ -74,7 +74,7 @@ const loadMarkup = () => {
 const showVisual = () => {
     loadMarkup().then(([current, published]) => {
         // TODO change to cms-diff
-        const result = diff(published, current, 'diff');
+        const result = diff(published, current, 'cms-diff');
         const frame = getOrAddFrame();
 
         showControls();
