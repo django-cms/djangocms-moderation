@@ -70,10 +70,6 @@ ins.cms-diff img {
     border-left: 1px solid #ddd !important;
 
 }
-/* .cms-moderation-control-close a:hover { */
-/*     background-color: #f2f2f2; */
-/*     border-color: #d0d0d0; */
-/* } */
 
 .cms-moderation-controls .cms-btn + .cms-btn {
     border-top-left-radius: 0;
