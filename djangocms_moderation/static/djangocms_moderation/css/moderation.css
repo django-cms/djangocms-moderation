@@ -46,10 +46,34 @@ ins.cms-diff img {
 
 .cms-moderation-controls {
     position: fixed;
-    z-index: 1;
-    top: 46px;
-    right: 20px;
+    top: 0;
+    z-index: 99999999999999;
+    display: flex;
+    flex-direction: row;
+    right: 0;
 }
+
+.cms-moderation-control-close {
+    height: 46px;
+    width: 46px;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    margin-left: 15px !important;
+}
+
+.cms-moderation-control-close a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border-left: 1px solid #ddd !important;
+
+}
+/* .cms-moderation-control-close a:hover { */
+/*     background-color: #f2f2f2; */
+/*     border-color: #d0d0d0; */
+/* } */
 
 .cms-moderation-controls .cms-btn + .cms-btn {
     border-top-left-radius: 0;
