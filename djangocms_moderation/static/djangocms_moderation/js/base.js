@@ -45,13 +45,26 @@ const getOrAddFrame = () => {
 
 
 let p;
-const showControls = () => $('.cms-moderation-controls').show();
-const hideControls = () => $('.cms-moderation-controls').hide();
+let structureBoardToggle;
+
+const showControls = () => {
+    $('.cms-moderation-controls').show();
+    $('.cms-toolbar-right, .cms-toolbar-item-navigation').hide();
+    structureBoardToggle = CMS.API.StructureBoard._toggleStructureBoard.bind(CMS.API.StructureBoard);
+    CMS.API.StructureBoard._toggleStructureBoard = $.noop;
+};
+const hideControls = () => {
+    $('.cms-moderation-controls').hide();
+    $('.cms-toolbar-right, .cms-toolbar-item-navigation').show();
+    CMS.API.StructureBoard._toggleStructureBoard = structureBoardToggle;
+};
 
 const preventScrolling = () => $('html').addClass('cms-moderation-overflow');
 const allowScrolling = () => $('html').removeClass('cms-moderation-overflow');
 
-const closeFrame = () => {
+const closeFrame = (e) => {
+    e.preventDefault();
+    CMS.API.StructureBoard._toggleStructureBoard = structureBoardToggle;
     hideControls();
     allowScrolling();
     $('.js-cms-moderation-control').removeClass('cms-btn-active');
@@ -72,8 +85,8 @@ const loadMarkup = () => {
 };
 
 const showVisual = () => {
+    CMS.API.StructureBoard.hide();
     loadMarkup().then(([current, published]) => {
-        // TODO change to cms-diff
         const result = diff(published, current, 'cms-diff');
         const frame = getOrAddFrame();
 
@@ -121,7 +134,7 @@ const addControls = () => {
     $('#cms-top').append(`
         <div class="cms-moderation-controls" style="display: none">
             <div class="cms-tooblar-item cms-toolbar-item-buttons">
-                <div class="cms-moderation-history cms-btn-group">
+                <div class="cms-btn-group">
                     <a href="#"
                         class="cms-btn cms-btn-active js-cms-moderation-control js-cms-moderation-control-visual">
                         Visual
@@ -129,10 +142,12 @@ const addControls = () => {
                     <a href="#" class="cms-btn js-cms-moderation-control js-cms-moderation-control-source">
                         Source
                     </a>
-                    <a href="#" class="cms-btn js-cms-moderation-close">
-                        <span class="cms-icon cms-icon-close"></span>
-                    </a>
                 </div>
+            </div>
+            <div class="cms-moderation-control-close">
+                <a href="#" class="js-cms-moderation-close">
+                    <span class="cms-icon cms-icon-close"></span>
+                </a>
             </div>
         </div>
     `);
