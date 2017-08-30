@@ -1,0 +1,65 @@
+ins.diff {
+    background: #cdffd8 !important;
+    outline:1px solid green !important;
+}
+del.diff {
+    background: #ffdce0 !important;
+    outline: 1px solid red !important;
+}
+[data-diff-node="ins"] {
+    background: #cdffd8 !important;
+    outline:1px solid green !important;
+}
+[data-diff-node="ins"] ins.diff {
+    outline: none !important;
+}
+[data-diff-node="del"] {
+    background: #ffdce0 !important;
+    outline: 1px solid red !important;
+}
+[data-diff-node="del"] del.diff {
+    outline: none !important;
+}
+del.diff img {
+    outline: 5px solid red;
+    outline-offset: -5px;
+    opacity: 0.6;
+}
+ins.diff img {
+    outline: 5px solid green;
+    outline-offset: -5px;
+    opacity: 0.6;
+}
+
+.cms-moderation-diff-frame {
+    position: fixed;
+    top: 46px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+.cms-moderation-controls {
+    position: fixed;
+    z-index: 1;
+    top: 46px;
+    right: 20px;
+}
+
+.cms-moderation-controls .cms-btn + .cms-btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: -1px;
+}
+.cms-moderation-controls .cms-btn .cms-icon:before {
+    position: relative;
+    top: 3px;
+}
+.cms-moderation-controls .cms-btn:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
