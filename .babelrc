@@ -4,5 +4,5 @@
             "modules": false
         }]
     ],
-    "plugins": ["transform-runtime"]
+    "plugins": ["transform-runtime", "syntax-dynamic-import"]
 }
