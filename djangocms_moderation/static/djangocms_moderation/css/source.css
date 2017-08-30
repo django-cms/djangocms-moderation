@@ -1,0 +1,101 @@
+.diff {
+    font-size: 11px;
+}
+
+.diff .replace em,
+.diff .delete em,
+.diff .insert em{border-style:solid;border-width:0.1em}
+
+.diff{border-style:solid;border-width:0.1em;display:inline-block;margin:0 1em 1em 0;position:relative}
+.diff,
+.diff li
+.diff h3,
+.diff h4 {font-family:'Courier New',Courier,'Lucida Console',monospace}
+.diff li,
+.diff h3,
+.diff h4 {border-style:none none solid none;border-width:0 0 0.1em 0;box-shadow:none;display:block;font-size:1.2em;margin:0 0 0 -.1em;padding:0.2em 2em;text-align:left}
+.diff .skip{border-style:none none solid;border-width:0 0 0.1em}
+.diff .diff-left{border-style:none;display:table-cell}
+.diff .diff-right{border-style:none none none solid;border-width:0 0 0 0.1em;display:table-cell;margin-left:-.1em;min-width:16.5em;right:0;top:0}
+.diff-right .data{width:100%}
+.diff .data li {min-width:16.5em;padding:0.3em}
+.diff li,
+.diff p,
+.diff h3 {font-size:1.2em}
+.diff li em {font-style:normal;font-weight:bold;margin:-0.5em -0.09em}
+.diff p.author{border-style:solid;border-width:0.2em 0.1em 0.1em;margin:0;overflow:hidden;padding:0.4em;text-align:right}
+.difflabel{display:block;height:0}
+.count{border-style:solid;border-width:0 0.1em 0 0;font-weight:normal;padding:0;text-align:right}
+.count li{padding:0.3em 0.3em;text-align:right}
+.count li.fold{cursor:pointer;font-weight:bold;padding-left:0.2em}
+.data{text-align:left;white-space:pre}
+.diff li{border-style:none none solid;border-width:0 0 0.1em;display:block;height:1em;line-height:1.2;list-style-type:none;margin:0;white-space:pre}
+.diff ol{display:table-cell;margin:0;padding:0}
+.diff,
+.diff li{font-family:"Courier New",Courier,"Lucida Console",monospace}
+.diff h3 {border-top-style:solid;border-top-width:0.1em;margin:0}
+
+
+.diff td,
+.report td,
+.data li,
+.diff-right,
+.diff,
+.diff h3,
+.diff h4,
+.author {background:#eee;border-color:#999}
+.diff h3{background:#ddd;border-color:#999}
+.count li,
+.diff-right,
+.data li{border-color:#ccc}
+tbody th{border-color:#999}
+td.nested{background:#d8d8d8}
+th.nested{background:#eee}
+.count li.fold{color:#900}
+.count{background:#eed;border-color:#999}
+h2 button{background:#f8f8f8;box-shadow:0.1em 0.1em 0.25em #ddd}
+li h4{color:#00f}
+code{background:#eee;border-color:#eee;color:#009}
+.data .equal { background: white }
+.diff .data .delete{background:#ffd8d8}
+.diff .data .delete em{background:#fff8f8;border-color:#c44;color:#900}
+.diff .data .insert{background:#d8ffd8}
+.diff .data .insert em{background:#f8fff8;border-color:#090;color:#363}
+.diff .data .replace{background:#fec}
+.diff .data .replace em{background:#ffe;border-color:#a86;color:#852}
+.diff .data .empty{background:#ddd}
+.diff .data em.s0{color:#000}
+.diff .data em.s1{color:#f66}
+.diff .data em.s2{color:#12f}
+.diff .data em.s3{color:#090}
+.diff .data em.s4{color:#d6d}
+.diff .data em.s5{color:#7cc}
+.diff .data em.s6{color:#c85}
+.diff .data em.s7{color:#737}
+.diff .data em.s8{color:#6d0}
+.diff .data em.s9{color:#dd0}
+.diff .data em.s10{color:#893}
+.diff .data em.s11{color:#b97}
+.diff .data em.s12{color:#bbb}
+.diff .data em.s13{color:#cc3}
+.diff .data em.s14{color:#333}
+.diff .data em.s15{color:#9d9}
+.diff .data em.s16{color:#880}
+.diff .data .l0{background:#fff}
+.diff .data .l1{background:#fed}
+.diff .data .l2{background:#def}
+.diff .data .l3{background:#efe}
+.diff .data .l4{background:#fef}
+.diff .data .l5{background:#eef}
+.diff .data .l6{background:#fff8cc}
+.diff .data .l7{background:#ede}
+.diff .data .l8{background:#efc}
+.diff .data .l9{background:#ffd}
+.diff .data .l10{background:#edc}
+.diff .data .l11{background:#fdb}
+.diff .data .l12{background:#f8f8f8}
+.diff .data .l13{background:#ffb}
+.diff .data .l14{background:#eec}
+.diff .data .l15{background:#cfc}
+.diff .data .l16{background:#eea}
+.diff .data .c0{background:inherit}

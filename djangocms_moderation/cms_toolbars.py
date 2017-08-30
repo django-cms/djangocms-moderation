@@ -8,7 +8,7 @@ from cms.api import get_page_draft
 from cms.cms_toolbars import PlaceholderToolbar, PAGE_MENU_IDENTIFIER
 from cms.toolbar_pool import toolbar_pool
 from cms.toolbar_base import CMSToolbar
-from cms.toolbar.items import ModalButton, Dropdown, DropdownToggleButton
+from cms.toolbar.items import Button, ModalButton, Dropdown, DropdownToggleButton
 from cms.utils.urlutils import admin_reverse
 
 from .helpers import get_page_moderation_workflow
@@ -27,6 +27,12 @@ def _get_admin_url(name, language, args):
 
 
 class ExtendedPageToolbar(PageToolbar):
+    class Media:
+        js = ('djangocms_moderation/js/dist/bundle.moderation.min.js',)
+        css = {
+            'all': ('djangocms_moderation/css/moderation.css',)
+        }
+
 
     def add_page_menu(self):
         # Page menu is disabled if user is in page under apphooked page
@@ -88,6 +94,10 @@ class ExtendedPageToolbar(PageToolbar):
             container = Dropdown(side=self.toolbar.RIGHT)
             container.add_primary_button(
                 DropdownToggleButton(name=_('Moderation'))
+            )
+
+            container.buttons.append(
+                Button(name=_('View differences'), url='#', extra_classes=('js-cms-moderation-view-diff',))
             )
 
             if moderation_request.user_can_take_action(user):
