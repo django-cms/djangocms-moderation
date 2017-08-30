@@ -2,53 +2,32 @@ import diff from 'htmldiff';
 import $ from 'jquery';
 import srcDoc from 'srcdoc-polyfill';
 
-global.prettydiff = {
-    pd: {},
+// eslint-disable-next-line
+__webpack_public_path__ = require('./get-dist-path')('bundle.moderation');
+
+const closeDropdown = el => {
+    el.closest('.cms-dropdown-open').find('.cms-dropdown-toggle').trigger('pointerup');
 };
 
-var prettydiff = require('./prettydiff').default;
-
-/**
- * closeDropdown
- *
- * @public
- * @param {jQuery} el
- */
-function closeDropdown(el) {
-    el.closest('.cms-dropdown-open').find('.cms-dropdown-toggle').trigger('pointerup');
-}
-
-/**
- * getCurrentMarkup
- *
- * @public
- * @returns {String} html
- */
-function getCurrentMarkup() {
+const getCurrentMarkup = () => {
     return $.ajax({
         url: window.location.href,
     }).then(markup => {
         var newDoc = new DOMParser().parseFromString(markup, 'text/html');
 
+        // TODO don't remove all scripts, only cms/addon specific - will be obsolete when
+        // we implement the logic of showing "draft as if it would be published"
         $(newDoc).find('#cms-top, [data-cms], template.cms-plugin, .cms-placeholder').remove();
-
-        // TODO don't remove all scripts, only cms/addon specific
         $(newDoc).find('script').remove();
         return newDoc.documentElement.outerHTML;
     });
-}
+};
 
-/**
- * getPublishedMarkup
- *
- * @public
- * @returns {String} html
- */
-function getPublishedMarkup() {
+const getPublishedMarkup = () => {
     return $.ajax({
         url: window.location.pathname + '?toolbar_off',
     }).then(markup => markup);
-}
+};
 
 const getOrAddFrame = () => {
     let frame = $('.js-cms-moderation-diff-frame');
@@ -68,8 +47,9 @@ const getOrAddFrame = () => {
 let p;
 const showControls = () => $('.cms-moderation-controls').show();
 const hideControls = () => $('.cms-moderation-controls').hide();
-const preventScrolling = () => $('html').addClass('cms-overflow'); // TODO this should be context dependent
-const allowScrolling = () => $('html').removeClass('cms-overflow');
+
+const preventScrolling = () => $('html').addClass('cms-moderation-overflow');
+const allowScrolling = () => $('html').removeClass('cms-moderation-overflow');
 
 const closeFrame = () => {
     hideControls();
@@ -93,6 +73,7 @@ const loadMarkup = () => {
 
 const showVisual = () => {
     loadMarkup().then(([current, published]) => {
+        // TODO change to cms-diff
         const result = diff(published, current, 'diff');
         const frame = getOrAddFrame();
 
@@ -103,9 +84,15 @@ const showVisual = () => {
 };
 
 const showSource = () => {
-    loadMarkup().then(([current, published]) => {
+    Promise.all([
+        import(
+            /* webpackChunkName: "prettydiff" */
+            'prettydiff'
+        ),
+        loadMarkup(),
+    ]).then(([prettydiff, [current, published]]) => {
         const frame = getOrAddFrame();
-        const markup = prettydiff.prettydiff({
+        const markup = prettydiff.default.prettydiff({
             source: published,
             diff: current,
             diffview: 'inline',
@@ -117,10 +104,13 @@ const showSource = () => {
 
         var newDoc = new DOMParser().parseFromString(markup, 'text/html');
 
-        // TODO fix paths
         $(newDoc).find('head').append(`
-            <link rel="stylesheet" href="/static/djangocms_moderation/css/source.css" type="text/css">
-            <script src="/static/djangocms_moderation/js/libs/api/dom.js"></script>
+            <style>
+                ${prettydiff.default.styles}
+            </style>
+            <script>
+                ${prettydiff.default.rawAPI}
+            </script>
         `);
 
         srcDoc.set(frame, newDoc.documentElement.outerHTML);
@@ -158,9 +148,12 @@ const addControls = () => {
 
         $('.js-cms-moderation-control').removeClass('cms-btn-active');
         button.addClass('cms-btn-active');
+
         showVisual();
     });
+
     $('.js-cms-moderation-control-source').on('click', e => {
+        e.preventDefault();
         const button = $(e.currentTarget);
 
         if (button.is('.cms-btn-active')) {
@@ -169,20 +162,17 @@ const addControls = () => {
 
         $('.js-cms-moderation-control').removeClass('cms-btn-active');
         button.addClass('cms-btn-active');
-        e.preventDefault();
+
         showSource();
+    });
+
+    $('.js-cms-moderation-view-diff').on('click', e => {
+        e.preventDefault();
+        closeDropdown($(e.target));
+        showVisual();
     });
 };
 
 $(function() {
     addControls();
-    $('.js-cms-moderation-view-diff').on('click', e => {
-        e.preventDefault();
-
-        closeDropdown($(e.target));
-
-        CMS.API.Toolbar.showLoader();
-
-        showVisual();
-    });
 });

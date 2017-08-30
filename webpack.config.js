@@ -35,6 +35,7 @@ module.exports = function(opts) {
         resolve: {
             alias: {
                 htmldiff: PROJECT_PATH.js + '/libs/htmldiff.js',
+                prettydiff: PROJECT_PATH.js + '/prettydiff.js',
             },
         },
         module: {
@@ -53,7 +54,7 @@ module.exports = function(opts) {
                     exclude: /(node_modules|libs|addons\/jquery.*)/,
                 },
                 {
-                    test: /.html$/,
+                    test: /(.html$|.css$|api\/dom)/,
                     use: [
                         {
                             loader: 'raw-loader',

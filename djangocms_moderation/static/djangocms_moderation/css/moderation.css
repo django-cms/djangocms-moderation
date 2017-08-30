@@ -63,3 +63,7 @@ ins.diff img {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
 }
+
+.cms-moderation-overflow {
+    overflow: hidden !important;
+}

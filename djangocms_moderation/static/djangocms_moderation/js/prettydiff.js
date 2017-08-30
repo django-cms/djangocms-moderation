@@ -1,4 +1,11 @@
+import rawAPI from './libs/api/dom';
+import styles from '../css/source.css';
+
 /* eslint-disable no-unused-vars */
+global.prettydiff = {
+    pd: {},
+};
+
 const csspretty = require('./libs/lib/csspretty.js');
 const csvpretty = require('./libs/lib/csvpretty.js');
 const diffview = require('./libs/lib/diffview.js');
@@ -19,5 +26,7 @@ global.prettydiff.language = language;
 global.prettydiff.markuppretty = markuppretty;
 global.prettydiff.safeSort = safeSort;
 global.prettydiff.prettydiff = prettydiff;
+global.prettydiff.rawAPI = rawAPI;
+global.prettydiff.styles = styles;
 
 export default global.prettydiff;
