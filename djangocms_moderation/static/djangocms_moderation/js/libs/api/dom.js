@@ -59,8 +59,13 @@
         for (a = 0; a < len; a = a + 1) {
             if (cells[a].getAttribute("class").match(/fold/)) {
                 cells[a].onclick = event.difffold;
+                if (cells[a].getAttribute("class").match(/equal/)) {
+                    cells[a].onclick();
+                }
             }
         }
+
+
     }
     window.onload = load;
 }());
