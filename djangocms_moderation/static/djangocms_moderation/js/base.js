@@ -9,23 +9,23 @@ const closeDropdown = el => {
     el.closest('.cms-dropdown-open').find('.cms-dropdown-toggle').trigger('pointerup');
 };
 
+const resetEditMode = () => {
+    return $.ajax({
+        url: window.location.pathname + '?edit&structure'
+    });
+};
+
 const getCurrentMarkup = () => {
     return $.ajax({
-        url: window.location.href,
+        url: window.location.pathname + '?toolbar_off', // TODO respect other params
     }).then(markup => {
-        var newDoc = new DOMParser().parseFromString(markup, 'text/html');
-
-        // TODO don't remove all scripts, only cms/addon specific - will be obsolete when
-        // we implement the logic of showing "draft as if it would be published"
-        $(newDoc).find('#cms-top, [data-cms], template.cms-plugin, .cms-placeholder').remove();
-        $(newDoc).find('script').remove();
-        return newDoc.documentElement.outerHTML;
+        return markup;
     });
 };
 
 const getPublishedMarkup = () => {
     return $.ajax({
-        url: window.location.pathname + '?toolbar_off',
+        url: window.location.pathname + '?toolbar_off&preview', // TODO respect other params
     }).then(markup => markup);
 };
 
@@ -62,7 +62,7 @@ const hideControls = () => {
 const preventScrolling = () => $('html').addClass('cms-moderation-overflow');
 const allowScrolling = () => $('html').removeClass('cms-moderation-overflow');
 
-const closeFrame = (e) => {
+const closeFrame = e => {
     e.preventDefault();
     CMS.API.StructureBoard._toggleStructureBoard = structureBoardToggle;
     hideControls();
@@ -90,9 +90,15 @@ const showVisual = () => {
         const result = diff(published, current, 'cms-diff');
         const frame = getOrAddFrame();
 
+        var newDoc = new DOMParser().parseFromString(result, 'text/html');
+
+        $(newDoc).find('body').append(`<style>${require('../css/moderation.css')}</style>`);
+
         showControls();
         preventScrolling();
-        srcDoc.set(frame, result);
+        srcDoc.set(frame, newDoc.documentElement.outerHTML);
+
+        resetEditMode();
     });
 };
 
