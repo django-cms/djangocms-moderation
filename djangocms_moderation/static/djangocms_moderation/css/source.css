@@ -1,197 +1,84 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
-  padding: 8px;
-  margin: 0;
-}
-.diff {
-  font-size: 10px;
-  margin-left: -8px;
-  margin-right: -8px;
-  border: 1px solid #aaa;
-  border-right: none;
-  border-left: none;
-  display: inline-block;
-  position: relative;
-}
-p {
-  font-family: "Helvetica Neue", Helvetica, sans-serif;
-}
-
-.diff .replace em, .diff .delete em, .diff .insert em {
-  border-style: solid;
-  border-width: 0.1em;
-}
-
-.diff, .diff li
-.diff h3, .diff h4 {
-  font-family: "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    Courier,
-    monospace;
-}
-.diff li, .diff h3, .diff h4 {
-  border-style: none none solid none;
-  border-width: 0 0 0.1em 0;
-  box-shadow: none;
-  display: block;
-  font-size: 1.2em;
-  margin: 0 0 0 -.1em;
-  padding: 0.2em 2em;
-  text-align: left;
-}
-.diff .skip {
-  border-style: none none solid;
-  border-width: 0 0 0.1em;
-}
-.diff .diff-left {
-  border-style: none;
-  display: table-cell;
-}
-.diff .diff-right {
-  border-style: none none none solid;
-  border-width: 0 0 0 0.1em;
-  display: table-cell;
-  margin-left: -.1em;
-  min-width: 16.5em;
-  right: 0;
-  top: 0;
-}
-.diff-right .data {
-  width: 100%;
-}
-.diff .data li {
-  min-width: 16.5em;
-  padding: 0.4em;
-  color: #24292e;
-}
-.diff li, .diff p, .diff h3 {
-  font-size: 1.2em;
-}
-.diff li em {
-  font-style: normal;
-  font-weight: bold;
-  margin: -0.5em -0.09em;
-}
-.diff p.author {
-  margin: 0;
-  overflow: hidden;
-  padding: 0.4em;
-  text-align: right;
-}
-.difflabel {
-  display: block;
-  height: 0;
-}
-.count {
-  border-style: solid;
-  border-width: 0 0.1em 0 0;
-  font-weight: normal;
-  padding: 0;
-  text-align: right;
-}
-.count li {
-  padding: 0.4em 0.4em;
-  text-align: right;
-  color: rgba(27, 31, 35, 0.3);
-}
-.count li.fold {
-  cursor: pointer;
-  font-weight: bold;
-  padding-left: 0.2em;
-}
-.data {
-  text-align: left;
-  white-space: pre;
-}
-.diff li {
-  border-style: none none solid;
-  border-width: 0 0 0.1em;
-  display: block;
-  height: 1em;
-  line-height: 1.2;
-  list-style-type: none;
-  margin: 0;
-  white-space: pre;
-}
-.diff ol {
-  display: table-cell;
-  margin: 0;
-  padding: 0;
-  border-right: none;
-}
-.diff, .diff li {
-  font-family: "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    Courier,
-    monospace;
-}
-.diff h3 {
-  border-top-style: solid;
-  border-top-width: 0.1em;
+  padding: 0px;
   margin: 0;
 }
 
-.data li, .diff-right, .diff, .diff h3, .diff h4, .author {
-  background: #eee;
-  border-color: #999;
+.texttitle {
+    text-align: left;
+    padding-top: 20px;
+    padding-bottom: 10px;
 }
-.diff h3 {
-  background: #ddd;
-  border-color: #999;
+table {
+    width: 100%;
+    font-size: 12px;
+    line-height: 20px;
+    color: #032f62;
+    border-collapse: collapse;
+    border: 0;
+    font-family: "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        Menlo,
+        Courier,
+        monospace;
 }
-.diff h3 {
-  display: none;
+th {
+    min-width: 50px;
+    white-space: nowrap;
 }
-.diff-right, .data li {
-  border-color: transparent;
+th,
+td {
+    vertical-align: top;
+    padding: 0 10px;
 }
-.count li {
-  border-color: transparent;
+th:not(.texttitle) {
+    text-align: right;
+    color: rgba(27, 31, 35, 0.3);
+    font-weight: normal;
 }
-.count li.fold {
-  color: #900;
+td + th {
+    border-left: 1px solid #f6f8fa;
 }
-.count {
-  background: white;
-  border-color: transparent;
+td {
+    word-break: break-all;
+    white-space: pre-wrap;
 }
-.data .equal {
-  background: white;
+td.replace,
+td.delete {
+    background: #ffeef0;
 }
-.diff .data .delete {
-  background: #ffeef0;
-}
-.diff .data .delete em {
-  background: #fff8f8;
-  border-color: #c44;
-  color: #900;
-}
-.diff .data .insert {
-  background: #e6ffed;
-}
-.diff .data .insert em {
-  background: #f8fff8;
-  border-color: #090;
-  color: #363;
-}
-.diff .data .replace {
-  background: #fec;
-}
-.diff .data .replace em {
-  background: #ffe;
-  border-color: #a86;
-  color: #852;
-}
-.diff .data .empty {
-  background: #ddd;
+td.replace ~ td.replace,
+td.insert {
+    background: #e6ffed;
 }
 
-.diff .count .delete {
-  background-color: #ffdce0;
+th.replace,
+th.delete {
+    background-color: #ffdce0;
 }
-.diff .count .insert {
-  background-color: #cdffd8;
+th.replace ~ th.replace,
+th.insert {
+    background-color: #cdffd8;
+}
+.empty {
+    background: #fafbfc;
+}
+
+.fold {
+    cursor: pointer;
+}
+.folded td, .folded th {
+    /* background-color: #f1f8ff; */
+    background-color: #f7f7f7;
+}
+.folded td {
+    color: rgba(0,0,0,0.3);
+}
+.folded th.fold {
+    /* background-color: #dbedff; */
+    background-color: #ededed;
 }

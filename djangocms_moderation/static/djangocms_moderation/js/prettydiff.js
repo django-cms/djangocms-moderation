@@ -1,32 +1,36 @@
-import rawAPI from './libs/api/dom';
+// import rawAPI from './libs/api/dom';
 import styles from '../css/source.css';
+import diffview from './libs/diffview';
+import difflib from './libs/difflib';
+import js from './libs/api/dom';
 
-/* eslint-disable no-unused-vars */
-global.prettydiff = {
-    pd: {},
+/**
+ * Returns markup of a diff view
+ *
+ * @public
+ * @param {String} before
+ * @param {String} after
+ * @returns {String}
+ */
+function diff(before, after) {
+    const beforeLines = difflib.stringAsLines(before);
+    const afterLines = difflib.stringAsLines(after);
+    const sm = new difflib.SequenceMatcher(beforeLines, afterLines);
+    const opcodes = sm.get_opcodes();
+
+    return diffview.buildView({
+        baseTextLines: beforeLines,
+        newTextLines: afterLines,
+        opcodes: opcodes,
+        baseTextName: 'Published',
+        newTextName: 'Current',
+        contextSize: null,
+        viewType: 0
+    }).outerHTML;
+}
+
+export default {
+    diff,
+    styles,
+    js
 };
-
-const csspretty = require('./libs/lib/csspretty.js');
-const csvpretty = require('./libs/lib/csvpretty.js');
-const diffview = require('./libs/lib/diffview.js');
-const finalFile = require('./libs/lib/finalFile.js');
-const jspretty = require('./libs/lib/jspretty.js');
-const language = require('./libs/lib/language.js');
-const markuppretty = require('./libs/lib/markuppretty.js');
-const options = require('./libs/lib/options.js');
-const safeSort = require('./libs/lib/safeSort.js');
-const prettydiff = require('./libs/prettydiff.js');
-
-global.prettydiff.csspretty = csspretty;
-global.prettydiff.csvpretty = csvpretty;
-global.prettydiff.diffview = diffview;
-global.prettydiff.finalFile = finalFile;
-global.prettydiff.jspretty = jspretty;
-global.prettydiff.language = language;
-global.prettydiff.markuppretty = markuppretty;
-global.prettydiff.safeSort = safeSort;
-global.prettydiff.prettydiff = prettydiff;
-global.prettydiff.rawAPI = rawAPI;
-global.prettydiff.styles = styles;
-
-export default global.prettydiff;
