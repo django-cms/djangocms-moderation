@@ -60,9 +60,19 @@ th.replace,
 th.delete {
     background-color: #ffdce0;
 }
+del.diff {
+    text-decoration: none;
+    background-color: #fdb8c0;
+    border-radius: 2px;
+}
 th.replace ~ th.replace,
 th.insert {
     background-color: #cdffd8;
+}
+ins.diff {
+    text-decoration: none;
+    background-color: #acf2bd;
+    border-radius: 2px;
 }
 .empty {
     background: #fafbfc;

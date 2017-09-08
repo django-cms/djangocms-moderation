@@ -28,7 +28,10 @@ authors and should not be interpreted as representing official policies, either 
 or implied, of Chas Emerick.
 */
 /* eslint-disable valid-jsdoc, no-else-return, require-jsdoc, eqeqeq, complexity, no-eq-null, max-params,
- no-negated-condition, block-scoped-var, no-extra-parens, max-depth, no-continue, no-redeclare, no-magic-numbers */
+   no-negated-condition, block-scoped-var, no-extra-parens, max-depth, no-continue, no-redeclare, no-magic-numbers,
+   no-lonely-if */
+var difflib = require('./difflib');
+var escapeHTML = require('escape-html');
 var diffview = {
     /**
      * Builds and returns a visual diff view.  The single parameter, `params', should contain
@@ -87,6 +90,14 @@ var diffview = {
             return e;
         }
 
+        function cteltm(name, clazz, text) {
+            var e = document.createElement(name);
+
+            e.className = clazz;
+            e.innerHTML += text;
+            return e;
+        }
+
         var tdata = document.createElement('thead');
         var node = document.createElement('tr');
 
@@ -124,6 +135,19 @@ var diffview = {
                     row.appendChild(ctelt('th', change, (tidx + 1).toString()));
                     row.appendChild(ctelt('td', change, textLines[tidx].replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')));
                 }
+
+                return tidx + 1;
+            } else {
+                row.appendChild(celt('th', 'empty'));
+                row.appendChild(celt('td', 'empty'));
+                return tidx;
+            }
+        }
+
+        function addCellsMarkup(row, tidx, tend, line, change) {
+            if (tidx < tend) {
+                row.appendChild(cteltm('th', change, (tidx + 1).toString()));
+                row.appendChild(cteltm('td', change, line.replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')));
 
                 return tidx + 1;
             } else {
@@ -204,8 +228,79 @@ var diffview = {
                         addCellsInline(node, b++, n++, baseTextLines, change);
                     }
                 } else {
-                    b = addCells(node, b, be, baseTextLines, change, i);
-                    n = addCells(node, n, ne, newTextLines, change);
+                    if (change === 'replace') {
+                        var line = new difflib.SequenceMatcher(baseTextLines[b], newTextLines[n]);
+
+                        if ((be - b === ne - n) && (line.ratio() > 0.6)) {
+                            var lineOpcodes = line.get_opcodes();
+                            var nnode = '';
+                            var bnode = '';
+
+                            for (var k = 0; k < lineOpcodes.length; k++) {
+                                var wcode = lineOpcodes[k];
+                                var wchange = wcode[0];
+                                var wb = wcode[1];
+                                var wbe = wcode[2];
+                                var wn = wcode[3];
+                                var wne = wcode[4];
+                                var wcnt = Math.max(wbe - wb, wne - wn);
+                                var bw = baseTextLines[b].split('');
+                                var nw = newTextLines[n].split('');
+
+                                for (var m = 0; m < wcnt; m++) {
+                                    if (wchange == 'insert') {
+                                        if (nnode.match(/<\/ins>$/)) {
+                                            nnode = nnode.slice(0, -6);
+                                        } else {
+                                            nnode += '<ins class="diff">';
+                                        }
+                                        nnode += escapeHTML(nw[wn++] || '');
+                                        nnode += '</ins>';
+                                    } else if (wchange == 'replace') {
+                                        if (wb < wbe) {
+                                            if (bnode.match(/<\/del>$/)) {
+                                                bnode = bnode.slice(0, -6);
+                                            } else {
+                                                bnode += '<del class="diff">';
+                                            }
+                                            bnode += escapeHTML(bw[wb++] || '');
+                                            bnode += '</del>';
+                                        }
+                                        if (wn < wne) {
+                                            if (nnode.match(/<\/ins>$/)) {
+                                                nnode = nnode.slice(0, -6);
+                                            } else {
+                                                nnode += '<ins class="diff">';
+                                            }
+                                            nnode += escapeHTML(nw[wn++] || '');
+                                            nnode += '</ins>';
+                                        }
+                                    } else if (wchange == 'delete') {
+                                        if (bnode.match(/<\/del>$/)) {
+                                            bnode = bnode.slice(0, -6);
+                                        } else {
+                                            bnode += '<del class="diff">';
+                                        }
+                                        bnode += escapeHTML(bw[wn++] || '');
+                                        bnode += '</del>';
+                                    } else {
+                                        // equal
+                                        bnode += escapeHTML(bw[wb] || '');
+                                        nnode += escapeHTML(bw[wb++] || '');
+                                    }
+                                }
+                            }
+
+                            b = addCellsMarkup(node, b, be, bnode, change, i);
+                            n = addCellsMarkup(node, n, ne, nnode, change);
+                        } else {
+                            b = addCells(node, b, be, baseTextLines, change, i);
+                            n = addCells(node, n, ne, newTextLines, change);
+                        }
+                    } else {
+                        b = addCells(node, b, be, baseTextLines, change, i);
+                        n = addCells(node, n, ne, newTextLines, change);
+                    }
                 }
             }
 
