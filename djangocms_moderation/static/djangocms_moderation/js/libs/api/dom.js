@@ -1,71 +1,105 @@
 (function dom__init() {
-    "use strict";
+    'use strict';
 
-    //namespace to test for web browser features for progressive enhancement
-    //namespace for event handlers
-    var event            = {
-        //allows visual folding of consecutive equal lines in a diff report
-        difffold     : function dom__event_difffold() {
-            var a         = 0,
-                b         = 0,
-                self      = this,
-                title     = self
-                    .getAttribute("title")
-                    .split("line "),
-                min       = Number(title[1].substr(0, title[1].indexOf(" "))),
-                max       = Number(title[2]),
-                inner     = self.innerHTML,
-                lists     = [],
-                parent    = self.parentNode.parentNode,
-                listnodes = (parent.getAttribute("class") === "diff")
-                    ? parent.getElementsByTagName("ol")
-                    : parent
-                        .parentNode
-                        .getElementsByTagName("ol"),
-                listLen   = listnodes.length;
-            for (a = 0; a < listLen; a = a + 1) {
-                lists.push(listnodes[a].getElementsByTagName("li"));
-            }
-            max = (max >= lists[0].length)
-                ? lists[0].length
-                : max;
-            if (inner.charAt(0) === "-") {
-                self.innerHTML = "+" + inner.substr(1);
-                for (a = min; a < max; a = a + 1) {
-                    for (b = 0; b < listLen; b = b + 1) {
-                        lists[b][a].style.display = "none";
+    var MIN_ROWS_TO_HIDE = 5;
+    var nextUntil = function nextUntil(element, predicate) {
+        var next = [];
+        var el = element;
+
+        while (el.nextSibling && !predicate(el.nextSibling)) {
+            el = el.nextSibling;
+            next.push(el);
+        }
+
+        return next;
+    };
+
+    // namespace to test for web browser features for progressive enhancement
+    // namespace for event handlers
+    var event = {
+        // allows visual folding of consecutive equal lines in a diff report
+        difffold: function dom__event_difffold() {
+            var row = this.parentNode;
+            var rows;
+
+            if (row.classList.contains('folded')) {
+                row.classList.remove('folded');
+                this.textContent = this.textContent.replace('+', '-');
+
+                rows = nextUntil(row, function(r) {
+                    if (r.style.display === 'none') {
+                        return false;
                     }
-                }
+                    return true;
+                });
+
+                rows.forEach(function(r) {
+                    r.style.display = 'table-row';
+                });
             } else {
-                self.innerHTML = "-" + inner.substr(1);
-                for (a = min; a < max; a = a + 1) {
-                    for (b = 0; b < listLen; b = b + 1) {
-                        lists[b][a].style.display = "block";
+                row.classList.add('folded');
+                this.textContent = this.textContent.replace('-', '+');
+
+                rows = nextUntil(row, function(r) {
+                    var ths = r.getElementsByTagName('th');
+
+                    if (ths && ths.length) {
+                        var cls = ths[0].className;
+
+                        if (cls && !cls.match('equal')) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                });
+
+                rows.forEach(function(r) {
+                    r.style.display = 'none';
+                });
+            }
+        }
+    };
+
+    // alter tool on page load in reflection to saved state
+    var load = function () {
+        var difflist = document.getElementsByTagName('table');
+
+        if (!difflist.length) {
+            return;
+        }
+        var cells = difflist[0].getElementsByTagName('th');
+        var len = cells.length;
+        var a = 0;
+
+        for (a = 0; a < len; a += 1) {
+            if (cells[a].getAttribute('class') && cells[a].getAttribute('class').match(/fold/)) {
+                cells[a].onclick = event.difffold;
+                if (cells[a].getAttribute('class').match(/equal/)) {
+                    var rows = nextUntil(cells[a].parentNode, function(r) {
+                        var ths = r.getElementsByTagName('th');
+
+                        if (ths && ths.length) {
+                            var cls = ths[0].className;
+
+                            if (cls && !cls.match('equal')) {
+                                return true;
+                            }
+                        }
+
+                        return false;
+                    });
+
+                    if (rows.length > MIN_ROWS_TO_HIDE) {
+                        cells[a].onclick();
+                    } else {
+                        cells[a].classList.remove('fold');
+                        cells[a].textContent = cells[a].textContent.replace('- ', '');
                     }
                 }
             }
         }
     };
 
-    //alter tool on page load in reflection to saved state
-    var load = function dom__event_recycle_execOutput_diffList() {
-        var difflist = document.getElementsByTagName("ol");
-        if (!difflist.length) {
-            return;
-        }
-        var cells = difflist[0].getElementsByTagName("li"),
-            len   = cells.length,
-            a     = 0;
-        for (a = 0; a < len; a = a + 1) {
-            if (cells[a].getAttribute("class").match(/fold/)) {
-                cells[a].onclick = event.difffold;
-                if (cells[a].getAttribute("class").match(/equal/)) {
-                    cells[a].onclick();
-                }
-            }
-        }
-
-
-    }
     window.onload = load;
-}());
+})();

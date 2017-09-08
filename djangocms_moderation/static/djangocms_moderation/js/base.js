@@ -111,25 +111,20 @@ const showSource = () => {
         loadMarkup(),
     ]).then(([prettydiff, [current, published]]) => {
         const frame = getOrAddFrame();
-        const markup = prettydiff.default.prettydiff({
-            source: published,
-            diff: current,
-            diffview: 'inline',
-            sourcelabel: 'Published',
-            difflabel: 'Current',
-            html: true,
-            wrap: 80,
-        });
+        const markup = prettydiff.default.diff(
+            published,
+            current
+        );
 
         var newDoc = new DOMParser().parseFromString(markup, 'text/html');
 
         $(newDoc).find('head').append(`
+            <script>
+                ${prettydiff.default.js}
+            </script>
             <style>
                 ${prettydiff.default.styles}
             </style>
-            <script>
-                ${prettydiff.default.rawAPI}
-            </script>
         `);
 
         srcDoc.set(frame, newDoc.documentElement.outerHTML);
