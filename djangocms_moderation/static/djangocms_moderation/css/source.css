@@ -1,4 +1,13 @@
 * {
+@media (max-width: 440px) {
+    .cms-moderation-controls {
+        left: 0;
+    }
+    .cms-moderation-controls .cms-toolbar-item-buttons {
+        margin-left: 15px !important;
+    }
+}
+
     box-sizing: border-box;
 }
 
@@ -14,6 +23,7 @@ body {
 }
 table {
     width: 100%;
+    min-width: 480px;
     font-size: 12px;
     line-height: 20px;
     color: #032f62;
@@ -27,7 +37,7 @@ table {
         monospace;
 }
 th {
-    min-width: 50px;
+    min-width: 60px;
     white-space: nowrap;
 }
 th,
@@ -46,6 +56,7 @@ td + th {
 td {
     word-break: break-all;
     white-space: pre-wrap;
+    width: 50%;
 }
 td.replace,
 td.delete {

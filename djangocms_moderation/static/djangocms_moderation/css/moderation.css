@@ -50,16 +50,20 @@ ins.cms-diff img {
     z-index: 99999999999999;
     display: flex;
     flex-direction: row;
-    right: 0;
+    right: 130px;
+    left: 130px;
+    justify-content: space-between;
 }
 
 .cms-moderation-control-close {
-    height: 46px;
-    width: 46px;
+    height: 46px !important;
+    width: 46px !important;
     display: flex;
     align-items: stretch;
     justify-content: stretch;
-    margin-left: 15px !important;
+    position: fixed;
+    top: 0 !important;
+    right: 0 !important;
 }
 
 .cms-moderation-control-close a {
@@ -71,6 +75,30 @@ ins.cms-diff img {
 
 }
 
+.cms-moderation-controls .cms-toolbar-item-buttons {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+@media (max-width: 440px) {
+    .cms-moderation-controls {
+        left: 0;
+    }
+    .cms-moderation-controls .cms-toolbar-item-buttons {
+        margin-left: 15px !important;
+    }
+}
+
+.cms-moderation-controls .cms-btn-group {
+    display: flex;
+    flex-direction: row;
+}
+.cms-moderation-controls .cms-btn {
+    flex-shrink: 0 !important;
+    box-sizing: content-box !important;
+    width: 100px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}
 .cms-moderation-controls .cms-btn + .cms-btn {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
