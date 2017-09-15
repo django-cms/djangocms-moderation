@@ -18,9 +18,7 @@ const resetEditMode = () => {
 const getCurrentMarkup = () => {
     return $.ajax({
         url: window.location.pathname + '?toolbar_off', // TODO respect other params
-    }).then(markup => {
-        return markup;
-    });
+    }).then(markup => markup);
 };
 
 const getPublishedMarkup = () => {
@@ -76,7 +74,13 @@ const closeFrame = e => {
 const loadMarkup = () => {
     if (!p) {
         CMS.API.Toolbar.showLoader();
-        p = Promise.all([getCurrentMarkup(), getPublishedMarkup()]).then(r => {
+        // have to do them in order because the `preview` flag triggers a state,
+        // so to avoid race condition we query current markup first
+        p = getCurrentMarkup().then(current => {
+            return getPublishedMarkup().then(published => {
+                return [current, published];
+            });
+        }).then(r => {
             CMS.API.Toolbar.hideLoader();
             return r;
         });
@@ -129,6 +133,12 @@ const showSource = () => {
 
         srcDoc.set(frame, newDoc.documentElement.outerHTML);
     });
+};
+
+const cancelIfLoadedInsideAnIframe = () => {
+    if (window.parent && window.parent !== window) {
+        window.top.location.href = window.location.href;
+    }
 };
 
 const addControls = () => {
@@ -191,4 +201,5 @@ const addControls = () => {
 
 $(function() {
     addControls();
+    cancelIfLoadedInsideAnIframe();
 });

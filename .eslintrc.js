@@ -205,7 +205,7 @@ module.exports = {
         "space-in-parens": [2, "never"],
         "space-infix-ops": 2,
         "space-unary-ops": 2,
-        "spaced-comment": 2,
+        "spaced-comment": ["error", "always", { "exceptions": ["!"] }],
         "wrap-regex": 2,
 
         // ES6
