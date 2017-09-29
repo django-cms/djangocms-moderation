@@ -1,6 +1,9 @@
 import diff from 'htmldiff';
 import $ from 'jquery';
 import srcDoc from 'srcdoc-polyfill';
+import memoize from 'lodash.memoize';
+
+const memoizedDiff = memoize(diff);
 
 // eslint-disable-next-line
 __webpack_public_path__ = require('./get-dist-path')('bundle.moderation');
@@ -91,7 +94,7 @@ const loadMarkup = () => {
 const showVisual = () => {
     CMS.API.StructureBoard.hide();
     loadMarkup().then(([current, published]) => {
-        const result = diff(published, current, 'cms-diff');
+        const result = memoizedDiff(published, current, 'cms-diff');
         const frame = getOrAddFrame();
 
         var newDoc = new DOMParser().parseFromString(result, 'text/html');
