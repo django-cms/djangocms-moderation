@@ -54,10 +54,29 @@ module.exports = function(opts) {
                     exclude: /(node_modules|libs|addons\/jquery.*)/,
                 },
                 {
-                    test: /(.html$|.css$|api\/dom)/,
+                    test: /(.html$|api\/dom)/,
                     use: [
                         {
                             loader: 'raw-loader',
+                        },
+                    ],
+                },
+                {
+                    test: /(.css$)/,
+                    use: [
+                        {
+                            loader: 'raw-loader',
+                        },
+                        {
+                            loader: 'postcss-loader',
+                            options: {
+                                plugins: () => [
+                                    require('autoprefixer')({
+                                        browsers: ['last 2 versions', '> 1%'],
+                                    }),
+                                    require('cssnano')(),
+                                ],
+                            },
                         },
                     ],
                 },

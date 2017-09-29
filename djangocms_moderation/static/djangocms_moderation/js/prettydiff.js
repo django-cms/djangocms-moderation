@@ -3,6 +3,9 @@ import styles from '../css/source.css';
 import diffview from './libs/diffview';
 import difflib from './libs/difflib';
 import js from './libs/api/dom';
+import memoize from 'lodash.memoize';
+
+const buildView = memoize(diffview.buildView);
 
 /**
  * Returns markup of a diff view
@@ -18,7 +21,7 @@ function diff(before, after) {
     const sm = new difflib.SequenceMatcher(beforeLines, afterLines);
     const opcodes = sm.get_opcodes();
 
-    return diffview.buildView({
+    return buildView({
         baseTextLines: beforeLines,
         newTextLines: afterLines,
         opcodes: opcodes,
