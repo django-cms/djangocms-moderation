@@ -112,12 +112,12 @@
                 if (i === 0) {
                     rows = dropRight(rows, NUMBER_OF_CONTEXT_ROWS);
                 } else if (i === foldableCells.length - 1) {
-                    rows = drop(rows, NUMBER_OF_CONTEXT_ROWS);
+                    rows = drop(rows, NUMBER_OF_CONTEXT_ROWS - 1);
                 } else {
-                    rows = drop(dropRight(rows, NUMBER_OF_CONTEXT_ROWS), NUMBER_OF_CONTEXT_ROWS);
+                    rows = drop(dropRight(rows, NUMBER_OF_CONTEXT_ROWS), NUMBER_OF_CONTEXT_ROWS - 1);
                 }
 
-                if (currentRow === rows[0]) {
+                if (currentRow.nextSibling === rows[0]) {
                     currentRow.classList.add('foldable');
                 } else if (rows.length) {
                     cell.classList.remove('fold');
