@@ -119,7 +119,7 @@
 
                 if (currentRow === rows[0]) {
                     currentRow.classList.add('foldable');
-                } else {
+                } else if (rows.length) {
                     cell.classList.remove('fold');
                     cell.textContent = cell.textContent.replace('- ', '');
                     cell = rows[0].children[0]; // eslint-disable-line no-param-reassign
@@ -128,7 +128,6 @@
                 }
 
                 cell.onclick = event.difffold;
-
 
                 rows.forEach(function(row) {
                     row.classList.add('foldable');
