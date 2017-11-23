@@ -63,6 +63,7 @@ td.delete {
     background: #ffeef0;
 }
 td.replace ~ td.replace,
+.empty + .empty + .replace + .replace,
 td.insert {
     background: #e6ffed;
 }
@@ -76,6 +77,7 @@ del.diff {
     background-color: #fdb8c0;
     border-radius: 2px;
 }
+.empty + .empty + .replace,
 th.replace ~ th.replace,
 th.insert {
     background-color: #cdffd8;
