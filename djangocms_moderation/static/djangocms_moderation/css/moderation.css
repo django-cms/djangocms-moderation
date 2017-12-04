@@ -1,0 +1,118 @@
+ins.cms-diff {
+    background: #cdffd8 !important;
+    outline:1px solid green !important;
+}
+del.cms-diff {
+    background: #ffdce0 !important;
+    outline: 1px solid red !important;
+}
+[data-diff-node="ins"] {
+    background: #cdffd8 !important;
+    outline:1px solid green !important;
+}
+[data-diff-node="ins"] ins.cms-diff {
+    outline: none !important;
+}
+[data-diff-node="del"] {
+    background: #ffdce0 !important;
+    outline: 1px solid red !important;
+}
+[data-diff-node="del"] del.cms-diff {
+    outline: none !important;
+}
+del.cms-diff img {
+    outline: 5px solid red;
+    outline-offset: -5px;
+    opacity: 0.6;
+}
+ins.cms-diff img {
+    outline: 5px solid green;
+    outline-offset: -5px;
+    opacity: 0.6;
+}
+
+.cms-moderation-diff-frame {
+    position: fixed;
+    top: 46px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    border: none;
+    width: 100%;
+    height: 100%;
+    height: calc(100vh - 46px);
+}
+
+.cms-moderation-controls {
+    position: fixed;
+    top: 0;
+    z-index: 99999999999999;
+    display: flex;
+    flex-direction: row;
+    right: 130px;
+    left: 130px;
+    justify-content: space-between;
+}
+
+.cms-moderation-control-close {
+    height: 46px !important;
+    width: 46px !important;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    position: fixed;
+    top: 0 !important;
+    right: 0 !important;
+}
+
+.cms-moderation-control-close a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border-left: 1px solid #ddd !important;
+
+}
+
+.cms-moderation-controls .cms-toolbar-item-buttons {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+@media (max-width: 440px) {
+    .cms-moderation-controls {
+        left: 0;
+    }
+    .cms-moderation-controls .cms-toolbar-item-buttons {
+        margin-left: 15px !important;
+    }
+}
+
+.cms-moderation-controls .cms-btn-group {
+    display: flex;
+    flex-direction: row;
+}
+.cms-moderation-controls .cms-btn {
+    flex-shrink: 0 !important;
+    box-sizing: content-box !important;
+    width: 100px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}
+.cms-moderation-controls .cms-btn + .cms-btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: -1px;
+}
+.cms-moderation-controls .cms-btn .cms-icon:before {
+    position: relative;
+    top: 3px;
+}
+.cms-moderation-controls .cms-btn:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.cms-moderation-overflow {
+    overflow: hidden !important;
+}
