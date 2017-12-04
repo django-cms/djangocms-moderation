@@ -51,7 +51,7 @@ module.exports = function(opts) {
                             },
                         },
                     ],
-                    exclude: /(node_modules|libs|addons\/jquery.*)/,
+                    exclude: /(node_modules|libs|tidy|addons\/jquery.*)/,
                 },
                 {
                     test: /(.html$|api\/dom)/,
