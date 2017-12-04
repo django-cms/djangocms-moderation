@@ -88,7 +88,7 @@
         }
         var cells = difflist[0].getElementsByTagName('th');
 
-        var foldableCells = Array.from(cells).filter(function(cell) {
+        var foldableCells = Array.prototype.slice.call(cells).filter(function(cell) {
             return cell.classList.contains('fold');
         });
 
