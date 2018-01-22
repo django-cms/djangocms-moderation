@@ -23,17 +23,17 @@ class PageModerationManager(Manager):
         paths = node.get_ancestor_paths()
         # Ancestors
         query = (
-            Q(extended_object__nodes__path__in=paths)
+            Q(extended_object__node__path__in=paths)
             & (Q(grant_on=ACCESS_DESCENDANTS) | Q(grant_on=ACCESS_PAGE_AND_DESCENDANTS))
         )
 
-        if node.parent_id:
+        if page.parent_page:
             # Direct parent
             query |= (
-                Q(extended_object__pk=node.parent.page_id)
+                Q(extended_object__pk=page.parent_page.pk)
                 & (Q(grant_on=ACCESS_CHILDREN) | Q(grant_on=ACCESS_PAGE_AND_CHILDREN))
             )
 
         query |= Q(extended_object=page) & (Q(grant_on=ACCESS_PAGE_AND_DESCENDANTS) | Q(grant_on=ACCESS_PAGE_AND_CHILDREN) |
                                  Q(grant_on=ACCESS_PAGE))
-        return self.filter(query).order_by('-extended_object__nodes__depth').first()
+        return self.filter(query).order_by('-extended_object__node__depth').first()
