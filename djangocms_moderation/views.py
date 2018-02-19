@@ -84,7 +84,7 @@ class ModerationRequestView(FormView):
             'opts': opts,
             'root_path': reverse('admin:index'),
             'app_label': opts.app_label,
-            'adminform': kwargs['form'],
+            'adminform': context['form'],
             'is_popup': True,
         })
         return context
