@@ -173,6 +173,7 @@ class WorkflowStep(models.Model):
             self._next_step = self._get_next_or_previous_by_FIELD(
                 field=field,
                 is_next=True,
+                workflow=self.workflow,
                 **kwargs
             )
         except WorkflowStep.DoesNotExist:
