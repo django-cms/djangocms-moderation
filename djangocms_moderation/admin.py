@@ -4,7 +4,6 @@ from django.contrib import admin
 from django.contrib import messages
 from django.conf.urls import url
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.extensions import PageExtensionAdmin
@@ -15,7 +14,7 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from . import views
 from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED
 from .forms import WorkflowStepInlineFormSet
-from .helpers import get_page_moderation_workflow
+from .helpers import get_current_moderation_request, get_page
 from .models import (
     PageModeration,
     PageModerationRequest,
@@ -114,7 +113,7 @@ class ExtendedPageAdmin(PageAdmin):
 
         url_patterns = [
             _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/new/$',
+                r'^([0-9]+)/([a-z\-]+)/moderation/new/([0-9]+)/$',
                 views.new_moderation_request,
                 'new_request',
             ),
@@ -136,23 +135,18 @@ class ExtendedPageAdmin(PageAdmin):
                 'approve_request',
                 action=ACTION_APPROVED,
             ),
+            _url(
+                r'^([0-9]+)/([a-z\-]+)/moderation/select-new-moderation/$',
+                views.select_new_moderation_request,
+                'select_new_moderation',
+            ),
         ]
         return url_patterns + super(ExtendedPageAdmin, self).get_urls()
 
     def publish_page(self, request, page_id, language):
-        page = get_object_or_404(
-            Page,
-            pk=page_id,
-            publisher_is_draft=True,
-            title_set__language=language,
-        )
+        page = get_page(page_id, language)
 
-        workflow = get_page_moderation_workflow(page)
-
-        if not workflow:
-            return super(ExtendedPageAdmin, self).publish_page(request, page_id, language)
-
-        active_request = workflow.get_active_request(page, language)
+        active_request = get_current_moderation_request(page, language)
 
         if active_request and active_request.is_approved:
             # The moderation request has been approved.
