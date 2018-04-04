@@ -17,6 +17,9 @@ from . import constants
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
 
+import time
+import datetime
+
 
 @python_2_unicode_compatible
 class Role(models.Model):
@@ -67,6 +70,15 @@ class Workflow(models.Model):
     is_default = models.BooleanField(
         verbose_name=_('is default'),
         default=False,
+    )
+    is_reference_number_required = models.BooleanField(
+        verbose_name=_('reference number'),
+        default=False
+    )
+    reference_number_prefix = models.CharField(
+        max_length=3, #@todo: should we hard-limit this to 3 characters? The alternative is to make max-length a dynamic CMS field.
+        null=True,
+        verbose_name=_('reference number prefix')
     )
 
     class Meta:
@@ -120,12 +132,20 @@ class Workflow(models.Model):
 
     @transaction.atomic
     def submit_new_request(self, by_user, page, language, message='', to_user=None):
+
+        if self.reference_number_prefix:
+            reference_number = self.reference_number_prefix + str(time.mktime(datetime.datetime.now().timetuple()))
+        else:
+            reference_number = str(time.mktime(datetime.datetime.now().timetuple()))
+
         request = self.requests.create(
             page=page,
             language=language,
             is_active=True,
             workflow=self,
+            reference_number = reference_number
         )
+
         new_action = request.actions.create(
             by_user=by_user,
             to_user=to_user,
@@ -153,6 +173,8 @@ class WorkflowStep(models.Model):
         related_name='steps',
     )
     order = models.PositiveIntegerField()
+
+
 
     class Meta:
         ordering = ('order',)
@@ -245,6 +267,10 @@ class PageModerationRequest(models.Model):
     date_sent = models.DateTimeField(
         verbose_name=_('date sent'),
         auto_now_add=True,
+    )
+    reference_number = models.CharField(
+        max_length=10,
+        null=True
     )
 
     class Meta:
