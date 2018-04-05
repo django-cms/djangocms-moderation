@@ -30,4 +30,5 @@ setup(
     author_email='info@divio.ch',
     url='http://github.com/divio/djangocms-moderation',
     license='BSD',
+    test_suite='tests.settings.run',
 )

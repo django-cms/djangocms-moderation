@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
@@ -156,15 +156,13 @@ class SelectModerationView(FormView):
         return kwargs
 
     def form_valid(self, form):
-        self.selected_workflow = form.data['workflow']
-        return super(SelectModerationView, self).form_valid(form)
-
-    def get_success_url(self):
-        return get_admin_url(
+        selected_workflow = form.data['workflow']
+        redirect_url = get_admin_url(
             name='cms_moderation_new_request',
             language=self.current_lang,
-            args=(self.page_id, self.current_lang, self.selected_workflow)
+            args=(self.page_id, self.current_lang, selected_workflow)
         )
+        return HttpResponseRedirect(redirect_url)
 
 
 select_new_moderation_request = SelectModerationView.as_view()
