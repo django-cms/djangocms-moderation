@@ -270,7 +270,7 @@ class PageModerationRequest(models.Model):
         auto_now_add=True,
     )
     reference_number = models.CharField(
-        max_length=10,
+        max_length=14,
         null=True
     )
 
