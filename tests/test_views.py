@@ -10,7 +10,7 @@ from .utils import BaseViewTestCase, get_admin_url
 
 class ModerationRequestViewTest(BaseViewTestCase):
 
-    def _assert_render(self, response, page, action, form_cls, title):
+    def _assert_render(self, response, page, action, active_request, form_cls, title):
         view = response.context_data['view']
         form = response.context_data['adminform']
         self.assertEqual(response.status_code, 200)
@@ -19,6 +19,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
         self.assertEqual(view.page, page)
         self.assertEqual(view.action, action)
         self.assertEqual(view.workflow, self.wf1)
+        self.assertEqual(view.active_request, active_request)
         self.assertEqual(response.context_data['title'], title)
         self.assertIsInstance(form, form_cls)
 
@@ -32,6 +33,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
             response=response,
             page=self.pg2,
             action=constants.ACTION_STARTED,
+            active_request=None,
             form_cls=ModerationRequestForm,
             title=_('Submit for moderation')
         )
@@ -46,6 +48,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
             response=response,
             page=self.pg1,
             action=constants.ACTION_CANCELLED,
+            active_request=self.moderation_request1,
             form_cls=UpdateModerationRequestForm,
             title=_('Cancel request')
         )
@@ -60,6 +63,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
             response=response,
             page=self.pg1,
             action=constants.ACTION_REJECTED,
+            active_request=self.moderation_request1,
             form_cls=UpdateModerationRequestForm,
             title=_('Reject changes')
         )
@@ -74,6 +78,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
             response=response,
             page=self.pg1,
             action=constants.ACTION_APPROVED,
+            active_request=self.moderation_request1,
             form_cls=UpdateModerationRequestForm,
             title=_('Approve changes')
         )
