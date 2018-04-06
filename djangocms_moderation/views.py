@@ -59,13 +59,10 @@ class ModerationRequestView(FormView):
             # All except for the new request endpoint require an active moderation request
             return HttpResponseBadRequest('Page does not have an active moderation request.')
         else:
-            # If action is ACTION_STARTED, get workflow id from cms_moderation_new_request args
-            try:
-                # args[2] = selected workflow passed with cms_moderation_new_request
-                self.workflow = get_workflow_by_id(args[2])
-            except IndexError:
-                # Workflow ID has not been passed in the new moderation request, raise error
-                return HttpResponseBadRequest('A new moderation request should pass the selected workflow.')
+            # ACTION_STARTED => Get workflow id from cms_moderation_new_request args
+            self.workflow = get_workflow_by_id(args[2])
+            if self.workflow is None:
+                return HttpResponseBadRequest('New moderation request should pass a valid workflow.')
 
         return super(ModerationRequestView, self).dispatch(request, *args, **kwargs)
 
@@ -107,18 +104,18 @@ new_moderation_request = ModerationRequestView.as_view(
     success_message=_('The page has been sent for moderation.'),
 )
 
-reject_moderation_request = ModerationRequestView.as_view(
-    action=constants.ACTION_REJECTED,
-    page_title=_('Reject changes'),
-    form_class=UpdateModerationRequestForm,
-    success_message=_('The moderation request has been rejected.'),
-)
-
 cancel_moderation_request = ModerationRequestView.as_view(
     action=constants.ACTION_CANCELLED,
     page_title=_('Cancel request'),
     form_class=UpdateModerationRequestForm,
     success_message=_('The moderation request has been cancelled.'),
+)
+
+reject_moderation_request = ModerationRequestView.as_view(
+    action=constants.ACTION_REJECTED,
+    page_title=_('Reject changes'),
+    form_class=UpdateModerationRequestForm,
+    success_message=_('The moderation request has been rejected.'),
 )
 
 approve_moderation_request = ModerationRequestView.as_view(
@@ -156,11 +153,11 @@ class SelectModerationView(FormView):
         return kwargs
 
     def form_valid(self, form):
-        selected_workflow = form.data['workflow']
+        selected_workflow = form.cleaned_data['workflow']
         redirect_url = get_admin_url(
             name='cms_moderation_new_request',
             language=self.current_lang,
-            args=(self.page_id, self.current_lang, selected_workflow)
+            args=(self.page_id, self.current_lang, selected_workflow.pk)
         )
         return HttpResponseRedirect(redirect_url)
 

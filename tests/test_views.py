@@ -1,15 +1,159 @@
 from django.test import TestCase, override_settings
+from django.utils.translation import ugettext_lazy as _
 
 from djangocms_moderation.views import *
-from djangocms_moderation.forms import SelectModerationForm
+from djangocms_moderation.forms import *
+from djangocms_moderation import constants
 
-from .utils import BaseDataTestCase, get_admin_url
+from .utils import BaseViewTestCase, get_admin_url
 
 
-class SelectModerationViewTest(BaseDataTestCase):
+class ModerationRequestViewTest(BaseViewTestCase):
+
+    def _assert_render(self, response, page, action, form_cls, title):
+        view = response.context_data['view']
+        form = response.context_data['adminform']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name[0], 'djangocms_moderation/request_form.html')
+        self.assertEqual(view.language, 'en')
+        self.assertEqual(view.page, page)
+        self.assertEqual(view.action, action)
+        self.assertEqual(view.workflow, self.wf1)
+        self.assertEqual(response.context_data['title'], title)
+        self.assertIsInstance(form, form_cls)
+
+    def test_new_request_view_with_form(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_new_request',
+            language='en',
+            args=(self.pg2.pk, 'en', self.wf1.pk)
+        ))
+        self._assert_render(
+            response=response,
+            page=self.pg2,
+            action=constants.ACTION_STARTED,
+            form_cls=ModerationRequestForm,
+            title=_('Submit for moderation')
+        )
+
+    def test_cancel_request_view_with_form(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_cancel_request',
+            language='en',
+            args=(self.pg1.pk, 'en')
+        ))
+        self._assert_render(
+            response=response,
+            page=self.pg1,
+            action=constants.ACTION_CANCELLED,
+            form_cls=UpdateModerationRequestForm,
+            title=_('Cancel request')
+        )
+
+    def test_reject_request_view_with_form(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_reject_request',
+            language='en',
+            args=(self.pg1.pk, 'en')
+        ))
+        self._assert_render(
+            response=response,
+            page=self.pg1,
+            action=constants.ACTION_REJECTED,
+            form_cls=UpdateModerationRequestForm,
+            title=_('Reject changes')
+        )
+
+    def test_approve_request_view_with_form(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_approve_request',
+            language='en',
+            args=(self.pg1.pk, 'en')
+        ))
+        self._assert_render(
+            response=response,
+            page=self.pg1,
+            action=constants.ACTION_APPROVED,
+            form_cls=UpdateModerationRequestForm,
+            title=_('Approve changes')
+        )
+
+    def test_get_form_kwargs(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_new_request',
+            language='en',
+            args=(self.pg2.pk, 'en', self.wf1.pk)
+        ))
+        view = response.context_data['view']
+        kwargs = view.get_form_kwargs()
+        self.assertEqual(kwargs.get('action'), view.action)
+        self.assertEqual(kwargs.get('language'), view.language)
+        self.assertEqual(kwargs.get('page'), view.page)
+        self.assertEqual(kwargs.get('user'), view.request.user)
+        self.assertEqual(kwargs.get('workflow'), view.workflow)
+        self.assertEqual(kwargs.get('active_request'), view.active_request)
+
+    def test_form_valid(self):
+        response = self.client.post(get_admin_url(
+            name='cms_moderation_new_request',
+            language='en',
+            args=(self.pg2.pk, 'en', self.wf1.pk)
+        ), {'moderator': '', 'message': 'Some review message'})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'reloadBrowser') # check html part
+
+    def test_throws_error_moderation_already_exists(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_new_request',
+            language='en',
+            args=(self.pg1.pk, 'en', self.wf1.pk) # pg1 => active request
+        ))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b'Page already has an active moderation request.')
+
+    def test_throws_error_invalid_workflow_passed(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_new_request',
+            language='en',
+            args=(self.pg2.pk, 'en', '3') # pg2 => no active requests, 3 => workflow does not exist
+        ))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b'New moderation request should pass a valid workflow.')
+
+    def test_throws_no_active_moderation_request(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_cancel_request',
+            language='en',
+            args=(self.pg2.pk, 'en') # pg2 => no active requests
+        ))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b'Page does not have an active moderation request.')
+
+    def test_throws_error_already_approved(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_approve_request',
+            language='en',
+            args=(self.pg3.pk, 'en') # pg3 => active request with all approved steps
+        ))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content, b'Moderation request has already been approved.')
+
+    def test_throws_error_forbidden_user(self):
+        from django.contrib.auth.models import User
+        user = User.objects.create_user(username='test1', email='test1@test.com', password='test1', is_staff=True)
+        self.client.force_login(user)
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_approve_request',
+            language='en',
+            args=(self.pg1.pk, 'en') # pg1 => active request
+        ))
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.content, b'User is not allowed to update request.')
+
+
+class SelectModerationViewTest(BaseViewTestCase):
 
     def test_renders_view_with_form(self):
-        self.client.force_login(self.user)
         response = self.client.get(get_admin_url(
             name='cms_moderation_select_new_moderation',
             language='en',
@@ -23,12 +167,17 @@ class SelectModerationViewTest(BaseDataTestCase):
         self.assertEqual(view.current_lang, 'en')
         self.assertIsInstance(form, SelectModerationForm)
 
-        # test form kwargs
+    def test_get_form_kwargs(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_select_new_moderation',
+            language='en',
+            args=(self.pg1.pk, 'en')
+        ))
+        view = response.context_data['view']
         kwargs = view.get_form_kwargs()
         self.assertEqual(kwargs.get('page'), self.pg1)
 
     def test_form_valid(self):
-        self.client.force_login(self.user)
         response = self.client.post(get_admin_url(
             name='cms_moderation_select_new_moderation',
             language='en',

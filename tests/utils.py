@@ -9,7 +9,7 @@ from djangocms_moderation.models import *
 from djangocms_moderation import constants
 
 
-class BaseDataTestCase(TestCase):
+class BaseTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
@@ -20,6 +20,7 @@ class BaseDataTestCase(TestCase):
         # create pages
         cls.pg1 = create_page(title='Page 1', template='page.html', language='en')
         cls.pg2 = create_page(title='Page 2', template='page.html', language='en')
+        cls.pg3 = create_page(title='Page 3', template='page.html', language='en')
 
         # create roles
         cls.user = User.objects.create_user(username='test', email='test@test.com', password='test', is_staff=True, is_superuser=True)
@@ -41,6 +42,17 @@ class BaseDataTestCase(TestCase):
 
         PageModerationRequest.objects.create(page=cls.pg1, language='en', workflow=cls.wf1, is_active=False)
         PageModerationRequest.objects.create(page=cls.pg2, language='en', workflow=cls.wf2, is_active=False)
+
+        cls.moderation_request2 = PageModerationRequest.objects.create(page=cls.pg3, language='en', workflow=cls.wf2, is_active=True)
+        cls.moderation_request2.actions.create(by_user=cls.user, to_user=cls.user, action=constants.ACTION_STARTED)
+        cls.moderation_request2.actions.create(by_user=cls.user, to_user=cls.user, action=constants.ACTION_APPROVED, step_approved=WorkflowStep.objects.get(workflow=cls.wf2, order=1))
+        cls.moderation_request2.actions.create(by_user=cls.user, to_user=cls.user, action=constants.ACTION_APPROVED, step_approved=WorkflowStep.objects.get(workflow=cls.wf2, order=2))
+
+
+class BaseViewTestCase(BaseTestCase):
+
+    def setUp(self):
+        self.client.force_login(self.user)
 
 
 def get_admin_url(name, language, args):

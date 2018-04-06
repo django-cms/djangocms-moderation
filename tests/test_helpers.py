@@ -3,10 +3,10 @@ from django.test import TestCase, override_settings
 from djangocms_moderation.helpers import *
 from djangocms_moderation.models import Workflow
 
-from .utils import BaseDataTestCase
+from .utils import BaseTestCase
 
 
-class GetWorkflowByIdTest(BaseDataTestCase):
+class GetWorkflowByIdTest(BaseTestCase):
 
     def test_existing_workflow(self):
         workflow = Workflow.objects.get(pk=1)
@@ -18,7 +18,7 @@ class GetWorkflowByIdTest(BaseDataTestCase):
         self.assertEqual(get_workflow_by_id(3), None)
 
 
-class GetCurrentModerationRequestTest(BaseDataTestCase):
+class GetCurrentModerationRequestTest(BaseTestCase):
 
     def test_existing_moderation_request(self):
         active_request = get_current_moderation_request(self.pg1, 'en')
@@ -29,7 +29,7 @@ class GetCurrentModerationRequestTest(BaseDataTestCase):
         self.assertEqual(active_request, None)
 
 
-class GetPageTest(BaseDataTestCase):
+class GetPageTest(BaseTestCase):
 
     def test_returns_page(self):
         self.assertEqual(get_page(self.pg1.pk, 'en'), self.pg1)

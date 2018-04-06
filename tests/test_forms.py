@@ -3,10 +3,10 @@ from django.test import TestCase, override_settings
 from djangocms_moderation.forms import *
 from djangocms_moderation.models import Workflow
 
-from .utils import BaseDataTestCase
+from .utils import BaseTestCase
 
 
-class SelectModerationFormTest(BaseDataTestCase):
+class SelectModerationFormTest(BaseTestCase):
 
     def test_form_init(self):
         form = SelectModerationForm(page=self.pg1)
