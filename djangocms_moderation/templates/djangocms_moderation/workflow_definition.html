@@ -7,23 +7,23 @@
         (function($) {
             'use strict';
             $(document).ready(function() {
-                let refRequiredEl = $('#id_is_reference_number_required')
-                let refPrefixWrap = $('.field-reference_number_prefix')
+                var refRequiredEl = $('#id_is_reference_number_required');
+                var refPrefixWrap = $('.field-reference_number_prefix');
 
                 var toggle = function() {
                     if (refRequiredEl.is(':checked')) {
-                        refPrefixWrap.show()
+                        refPrefixWrap.show();
                     } else {
-                        $('#id_reference_number_prefix').val('')
-                        refPrefixWrap.hide()
+                        $('#id_reference_number_prefix').val('');
+                        refPrefixWrap.hide();
                     }
-                }
+                };
 
-                toggle()
+                toggle();
 
                 refRequiredEl.click(function(ev){
-                  toggle()
-                })
+                  toggle();
+                });
 
             });
         })(django.jQuery);
