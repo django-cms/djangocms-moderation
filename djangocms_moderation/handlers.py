@@ -6,7 +6,7 @@ from cms.operations import PUBLISH_PAGE_TRANSLATION
 from cms.signals import post_obj_operation
 
 from .constants import ACTION_FINISHED
-from .helpers import get_page_moderation_workflow
+from .helpers import get_current_moderation_request
 
 
 @receiver(post_obj_operation)
@@ -22,13 +22,7 @@ def close_moderation_request(sender, **kwargs):
     page = kwargs['obj']
     translation = kwargs['translation']
 
-    workflow = get_page_moderation_workflow(page)
-
-    if not workflow:
-        return
-
-    active_request = workflow.get_active_request(page, translation.language)
-
+    active_request = get_current_moderation_request(page, translation.language)
     if not active_request:
         return
 

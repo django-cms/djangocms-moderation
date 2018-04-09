@@ -2,16 +2,25 @@ from __future__ import unicode_literals
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseForbidden, HttpResponseBadRequest
-from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect
+from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
 from cms.models import Page
 
 from . import constants
-from .forms import ModerationRequestForm, UpdateModerationRequestForm
-from .helpers import get_page_moderation_workflow
+from .forms import (
+    ModerationRequestForm,
+    UpdateModerationRequestForm,
+    SelectModerationForm
+)
+from .helpers import (
+    get_admin_url,
+    get_current_moderation_request,
+    get_workflow_by_id,
+    get_page
+)
 from .models import PageModerationRequest
 
 
@@ -26,22 +35,14 @@ class ModerationRequestView(FormView):
     def dispatch(self, request, *args, **kwargs):
         user = request.user
         self.language = args[1]
-        self.page = get_object_or_404(
-            Page,
-            pk=args[0],
-            is_page_type=False,
-            publisher_is_draft=True,
-            title_set__language=self.language,
-        )
-        self.workflow = get_page_moderation_workflow(self.page)
+        self.page = get_page(args[0], self.language)
+        self.workflow = None
 
-        if not self.workflow:
-            # All endpoints require a moderation workflow for the requested page.
-            return HttpResponseBadRequest('No moderation workflow exists for page.')
-
-        self.active_request = self.workflow.get_active_request(self.page, self.language)
+        self.active_request = get_current_moderation_request(self.page, self.language)
 
         if self.active_request:
+            self.workflow = self.active_request.workflow
+
             needs_ongoing = self.action in (constants.ACTION_APPROVED, constants.ACTION_REJECTED)
 
             if self.action == constants.ACTION_STARTED:
@@ -57,6 +58,12 @@ class ModerationRequestView(FormView):
         elif self.action != constants.ACTION_STARTED:
             # All except for the new request endpoint require an active moderation request
             return HttpResponseBadRequest('Page does not have an active moderation request.')
+        else:
+            # ACTION_STARTED => Get workflow id from cms_moderation_new_request args
+            self.workflow = get_workflow_by_id(args[2])
+            if self.workflow is None:
+                return HttpResponseBadRequest('New moderation request should pass a valid workflow.')
+
         return super(ModerationRequestView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -97,18 +104,18 @@ new_moderation_request = ModerationRequestView.as_view(
     success_message=_('The page has been sent for moderation.'),
 )
 
-reject_moderation_request = ModerationRequestView.as_view(
-    action=constants.ACTION_REJECTED,
-    page_title=_('Reject changes'),
-    form_class=UpdateModerationRequestForm,
-    success_message=_('The moderation request has been rejected.'),
-)
-
 cancel_moderation_request = ModerationRequestView.as_view(
     action=constants.ACTION_CANCELLED,
     page_title=_('Cancel request'),
     form_class=UpdateModerationRequestForm,
     success_message=_('The moderation request has been cancelled.'),
+)
+
+reject_moderation_request = ModerationRequestView.as_view(
+    action=constants.ACTION_REJECTED,
+    page_title=_('Reject changes'),
+    form_class=UpdateModerationRequestForm,
+    success_message=_('The moderation request has been rejected.'),
 )
 
 approve_moderation_request = ModerationRequestView.as_view(
@@ -117,3 +124,42 @@ approve_moderation_request = ModerationRequestView.as_view(
     form_class=UpdateModerationRequestForm,
     success_message=_('The changes have been approved.'),
 )
+
+
+class SelectModerationView(FormView):
+
+    form_class = SelectModerationForm
+    template_name = 'djangocms_moderation/select_workflow_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.page_id = args[0]
+        self.current_lang = args[1]
+
+        return super(SelectModerationView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(SelectModerationView, self).get_context_data(**kwargs)
+        context.update({
+            'has_change_permission': True,
+            'root_path': reverse('admin:index'),
+            'adminform': context['form'],
+            'is_popup': True,
+        })
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super(SelectModerationView, self).get_form_kwargs()
+        kwargs['page'] = get_page(self.page_id, self.current_lang)
+        return kwargs
+
+    def form_valid(self, form):
+        selected_workflow = form.cleaned_data['workflow']
+        redirect_url = get_admin_url(
+            name='cms_moderation_new_request',
+            language=self.current_lang,
+            args=(self.page_id, self.current_lang, selected_workflow.pk)
+        )
+        return HttpResponseRedirect(redirect_url)
+
+
+select_new_moderation_request = SelectModerationView.as_view()

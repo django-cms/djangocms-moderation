@@ -6,7 +6,7 @@ from django.utils.translation import get_language
 
 from cms.utils import get_current_site, page_permissions
 
-from .helpers import get_page_moderation_workflow
+from .helpers import get_current_moderation_request
 
 # thread local support
 _thread_locals = local()
@@ -28,9 +28,8 @@ def user_can_change_page(func):
         if not can_change:
             return can_change
 
-        workflow = get_page_moderation_workflow(page)
-
-        if workflow and workflow.has_active_request(page, get_request_language()):
+        active_request = get_current_moderation_request(page, get_request_language())
+        if active_request:
             return False
         return can_change
     return wrapper
