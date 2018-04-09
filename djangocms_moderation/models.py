@@ -271,7 +271,7 @@ class PageModerationRequest(models.Model):
     )
     reference_number = models.CharField(
         max_length=14,
-        null=True
+        unique=True
     )
 
     class Meta:
