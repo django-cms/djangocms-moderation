@@ -133,17 +133,11 @@ class Workflow(models.Model):
     @transaction.atomic
     def submit_new_request(self, by_user, page, language, message='', to_user=None):
 
-        if self.reference_number_prefix:
-            reference_number = self.reference_number_prefix + str(time.mktime(datetime.datetime.now().timetuple()))
-        else:
-            reference_number = str(time.mktime(datetime.datetime.now().timetuple()))
-
         request = self.requests.create(
             page=page,
             language=language,
             is_active=True,
-            workflow=self,
-            reference_number = reference_number
+            workflow=self
         )
 
         new_action = request.actions.create(
@@ -356,6 +350,16 @@ class PageModerationRequest(models.Model):
                 return True
         return False
 
+    def getTimeStamp(self):
+        return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+
+    def save(self, **kwargs):
+        if self.workflow.reference_number_prefix:
+            self.reference_number = self.workflow.reference_number_prefix + str(self.getTimeStamp())
+        else:
+            self.reference_number = str(self.getTimeStamp())
+
+        super(PageModerationRequest, self).save(**kwargs)
 
 @python_2_unicode_compatible
 class PageModerationRequestAction(models.Model):
