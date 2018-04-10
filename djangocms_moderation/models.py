@@ -264,7 +264,7 @@ class PageModerationRequest(models.Model):
         auto_now_add=True,
     )
     reference_number = models.CharField(
-        max_length=14,
+        max_length=20,
         unique=True
     )
 
@@ -350,10 +350,12 @@ class PageModerationRequest(models.Model):
                 return True
         return False
 
-    def getTimeStamp(self):
-        return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+    @staticmethod
+    def getTimeStamp():
+        return str(round(time.time(),5)).ljust(16,'0')
 
     def save(self, **kwargs):
+
         if not self.reference_number:
             if self.workflow.reference_number_prefix:
                 self.reference_number = self.workflow.reference_number_prefix + str(self.getTimeStamp())
