@@ -9,7 +9,51 @@ from cms.api import create_page
 from djangocms_moderation.models import *
 from djangocms_moderation import constants
 from djangocms_moderation.emails import notify_requested_moderator
+import re
 
+class WorkflowTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        # create workflows
+        cls.wf1 = Workflow.objects.create(pk=1, name='Workflow 1', is_default=True, is_reference_number_required=True, reference_number_prefix="")
+        cls.wf2 = Workflow.objects.create(pk=2, name='Workflow 2', is_default=False, is_reference_number_required=True, reference_number_prefix="TST")
+        # create pages
+        cls.pg1 = create_page(title='Page 1', template='page.html', language='en')
+        cls.pg2 = create_page(title='Page 2', template='page.html', language='en')
+        # create roles
+        cls.user = User.objects.create_user(username='test', email='test@test.com', password='test', is_staff=True, is_superuser=True)
+        cls.role1 = Role.objects.create(name='Role 1', user=cls.user)
+        cls.role2 = Role.objects.create(name='Role 2', user=cls.user)
+        cls.role3 = Role.objects.create(name='Role 3', user=cls.user)
+        # create workflow steps for workflow
+        WorkflowStep.objects.create(role=cls.role1, is_required=True, workflow=cls.wf1, order=1)
+        WorkflowStep.objects.create(role=cls.role2, is_required=True, workflow=cls.wf1, order=2)
+        WorkflowStep.objects.create(role=cls.role3, is_required=True, workflow=cls.wf1, order=3)
+
+        WorkflowStep.objects.create(role=cls.role1, is_required=True, workflow=cls.wf2, order=1)
+        WorkflowStep.objects.create(role=cls.role3, is_required=True, workflow=cls.wf2, order=2)
+
+    def test_submit_new_request(self):
+        # test that when a workflow submits a new request, the ModerationRequest gets a reference number generated correctly
+        print(len(PageModerationRequest.objects.all()))
+        request = self.wf1.submit_new_request(
+            by_user=self.user,
+            page=self.pg1,
+            language='en'
+        )
+        self.assertTrue(len(PageModerationRequest.objects.all()) == 1)
+        search = re.search(r'[0-9.]',PageModerationRequest.objects.all()[0].reference_number)
+        self.assertEqual(search.start(), 0)
+
+        # check for reference number prefix
+        request = self.wf2.submit_new_request(
+            by_user=self.user,
+            page=self.pg2,
+            language='en'
+        )
+        search = re.search(r'[0-9.]',PageModerationRequest.objects.all()[1].reference_number)
+        self.assertEqual(search.start(), 3)
 
 class RoleTest(TestCase):
 

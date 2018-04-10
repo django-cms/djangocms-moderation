@@ -37,13 +37,12 @@ class BaseTestCase(TestCase):
         WorkflowStep.objects.create(role=cls.role3, is_required=True, workflow=cls.wf2, order=2)
 
         # create page moderation request and action
-        cls.moderation_request1 = PageModerationRequest.objects.create(page=cls.pg1, language='en', workflow=cls.wf1, is_active=True, reference_number="00000000000001")
+        cls.moderation_request1 = PageModerationRequest.objects.create(page=cls.pg1, language='en', workflow=cls.wf1, is_active=True, reference_number=PageModerationRequest.getTimeStamp())
         cls.moderation_request1.actions.create(by_user=cls.user, to_user=cls.user, action=constants.ACTION_STARTED)
+        PageModerationRequest.objects.create(page=cls.pg1, language='en', workflow=cls.wf1, is_active=False, reference_number=PageModerationRequest.getTimeStamp())
+        PageModerationRequest.objects.create(page=cls.pg2, language='en', workflow=cls.wf2, is_active=False, reference_number=PageModerationRequest.getTimeStamp())
 
-        PageModerationRequest.objects.create(page=cls.pg1, language='en', workflow=cls.wf1, is_active=False, reference_number="00000000000002")
-        PageModerationRequest.objects.create(page=cls.pg2, language='en', workflow=cls.wf2, is_active=False, reference_number="00000000000003")
-
-        cls.moderation_request2 = PageModerationRequest.objects.create(page=cls.pg3, language='en', workflow=cls.wf2, is_active=True, reference_number="00000000000004")
+        cls.moderation_request2 = PageModerationRequest.objects.create(page=cls.pg3, language='en', workflow=cls.wf2, is_active=True, reference_number=PageModerationRequest.getTimeStamp())
         cls.moderation_request2.actions.create(by_user=cls.user, to_user=cls.user, action=constants.ACTION_STARTED)
         cls.moderation_request2.actions.create(by_user=cls.user, to_user=cls.user, action=constants.ACTION_APPROVED, step_approved=WorkflowStep.objects.get(workflow=cls.wf2, order=1))
         cls.moderation_request2.actions.create(by_user=cls.user, to_user=cls.user, action=constants.ACTION_APPROVED, step_approved=WorkflowStep.objects.get(workflow=cls.wf2, order=2))
