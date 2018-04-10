@@ -354,10 +354,11 @@ class PageModerationRequest(models.Model):
         return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 
     def save(self, **kwargs):
-        if self.workflow.reference_number_prefix:
-            self.reference_number = self.workflow.reference_number_prefix + str(self.getTimeStamp())
-        else:
-            self.reference_number = str(self.getTimeStamp())
+        if not self.reference_number:
+            if self.workflow.reference_number_prefix:
+                self.reference_number = self.workflow.reference_number_prefix + str(self.getTimeStamp())
+            else:
+                self.reference_number = str(self.getTimeStamp())
 
         super(PageModerationRequest, self).save(**kwargs)
 
