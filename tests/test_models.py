@@ -36,7 +36,6 @@ class WorkflowTest(TestCase):
 
     def test_submit_new_request(self):
         # test that when a workflow submits a new request, the ModerationRequest gets a reference number generated correctly
-        print(len(PageModerationRequest.objects.all()))
         request = self.wf1.submit_new_request(
             by_user=self.user,
             page=self.pg1,
