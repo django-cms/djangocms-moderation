@@ -67,7 +67,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
         self.assertIsInstance(form, ModerationRequestForm)
         field_moderator = form.fields['moderator']
         self.assertEqual(field_moderator.empty_label, 'Any Role 2')
-        self.assertQuerysetEqual(field_moderator.queryset, User.objects.none())
+        self.assertQuerysetEqual(field_moderator.queryset, User.objects.filter(pk__in=[self.user2.pk]), transform=lambda x: x, ordered=False)
 
     def test_form_init_cancelled_action(self):
         form = UpdateModerationRequestForm(
