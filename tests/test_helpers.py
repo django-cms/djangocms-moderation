@@ -15,7 +15,7 @@ class GetWorkflowByIdTest(BaseTestCase):
         self.assertEqual(get_workflow_by_id(2), workflow)
 
     def test_non_existing_workflow(self):
-        self.assertEqual(get_workflow_by_id(3), None)
+        self.assertIsNone(get_workflow_by_id(10))
 
 
 class GetCurrentModerationRequestTest(BaseTestCase):
@@ -26,7 +26,7 @@ class GetCurrentModerationRequestTest(BaseTestCase):
 
     def test_no_moderation_request(self):
         active_request = get_current_moderation_request(self.pg2, 'en')
-        self.assertEqual(active_request, None)
+        self.assertIsNone(active_request)
 
 
 class GetPageTest(BaseTestCase):

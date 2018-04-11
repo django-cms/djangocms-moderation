@@ -120,7 +120,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
         response = self.client.get(get_admin_url(
             name='cms_moderation_new_request',
             language='en',
-            args=(self.pg2.pk, 'en', '3') # pg2 => no active requests, 3 => workflow does not exist
+            args=(self.pg2.pk, 'en', '10') # pg2 => no active requests, 10 => workflow does not exist
         ))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content, b'New moderation request should pass a valid workflow.')

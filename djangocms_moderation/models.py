@@ -404,6 +404,8 @@ class PageModerationRequestAction(models.Model):
 
     def get_to_user_name(self):
         user = self.to_user
+        if not user:
+            return None
         return user.get_full_name() or getattr(user, user.USERNAME_FIELD)
 
     def save(self, **kwargs):
