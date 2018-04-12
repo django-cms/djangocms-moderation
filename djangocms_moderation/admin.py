@@ -99,10 +99,9 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    change_form_template = 'djangocms_moderation/workflow_definition.html'
     inlines = [WorkflowStepInline]
-    list_display = ['name', 'is_default', 'is_reference_number_required', 'reference_number_prefix']
-    fields = ['name', 'is_default', 'is_reference_number_required', 'reference_number_prefix']
+    list_display = ['name', 'is_default', 'reference_number_prefix']
+    fields = ['name', 'is_default', 'reference_number_prefix']
 
 
 class ExtendedPageAdmin(PageAdmin):

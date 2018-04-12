@@ -71,10 +71,6 @@ class Workflow(models.Model):
         verbose_name=_('is default'),
         default=False,
     )
-    is_reference_number_required = models.BooleanField(
-        verbose_name=_('reference number'),
-        default=False
-    )
     reference_number_prefix = models.CharField(
         max_length=3, #@todo: should we hard-limit this to 3 characters? The alternative is to make max-length a dynamic CMS field.
         null=True,

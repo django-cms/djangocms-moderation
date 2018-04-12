@@ -42,13 +42,13 @@ class RoleTest(BaseTestCase):
 class WorkflowTest(BaseTestCase):
 
     def test_non_unique_reference_number_prefix_validation_error(self):
-        workflow = Workflow.objects.create(name='New Workflow 1', is_default=False, is_reference_number_required=True, reference_number_prefix='')
+        workflow = Workflow.objects.create(name='New Workflow 1', is_default=False, reference_number_prefix='')
         workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 2', is_default=False, is_reference_number_required=False, reference_number_prefix='')
+        workflow = Workflow.objects.create(name='New Workflow 2', is_default=False, reference_number_prefix='')
         workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 3', is_default=False, is_reference_number_required=True, reference_number_prefix='NW3')
+        workflow = Workflow.objects.create(name='New Workflow 3', is_default=False, reference_number_prefix='NW3')
         workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 4', is_default=False, is_reference_number_required=True, reference_number_prefix='NW3')
+        workflow = Workflow.objects.create(name='New Workflow 4', is_default=False, reference_number_prefix='NW3')
         self.assertRaisesMessage(ValidationError, 'The reference number prefix entered is already in use by another workflows.', workflow.clean)
 
     def test_multiple_defaults_validation_error(self):
