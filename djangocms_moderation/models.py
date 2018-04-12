@@ -78,6 +78,7 @@ class Workflow(models.Model):
     reference_number_prefix = models.CharField(
         max_length=3, #@todo: should we hard-limit this to 3 characters? The alternative is to make max-length a dynamic CMS field.
         null=True,
+        blank=True,
         verbose_name=_('reference number prefix')
     )
 
@@ -89,6 +90,10 @@ class Workflow(models.Model):
         return self.name
 
     def clean(self):
+        if self.is_reference_number_required:
+            if not self.reference_number_prefix:
+                message = ugettext('Reference number prefix has been selected and thus cannot be empty.')
+                raise ValidationError(message)
         if self.reference_number_prefix:
             workflows = Workflow.objects.filter(reference_number_prefix=self.reference_number_prefix)
             if self.pk:
