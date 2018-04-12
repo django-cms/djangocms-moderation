@@ -61,3 +61,10 @@ def get_page(page_id, language):
         publisher_is_draft=True,
         title_set__language=language,
     )
+
+
+def can_page_be_moderated(page):
+    page_moderation_extension = getattr(page, 'pagemoderation', None)
+    if page_moderation_extension and page_moderation_extension.disable_moderation:
+        return False
+    return True

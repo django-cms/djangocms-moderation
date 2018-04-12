@@ -1,3 +1,4 @@
+import re
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
@@ -5,50 +6,13 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 
 from cms.api import create_page
+
 from djangocms_moderation.models import *
 from djangocms_moderation import constants
 from djangocms_moderation.emails import notify_requested_moderator
+
 from .utils import BaseTestCase
-import re
 
-class PageModerationRequestTest(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        # create workflows
-        cls.wf1 = Workflow.objects.create(pk=1, name='Workflow 1', is_default=True, is_reference_number_required=True, reference_number_prefix="")
-        cls.wf2 = Workflow.objects.create(pk=2, name='Workflow 2', is_default=False, is_reference_number_required=True, reference_number_prefix="TST")
-        # create pages
-        cls.pg1 = create_page(title='Page 1', template='page.html', language='en')
-        # create roles
-        cls.user = User.objects.create_user(username='test', email='test@test.com', password='test', is_staff=True, is_superuser=True)
-        cls.role1 = Role.objects.create(name='Role 1', user=cls.user)
-        # create workflow steps for workflow
-        WorkflowStep.objects.create(role=cls.role1, is_required=True, workflow=cls.wf1, order=1)
-        WorkflowStep.objects.create(role=cls.role1, is_required=True, workflow=cls.wf2, order=1)
-
-    def test_reference_number_with_prefix(self):
-        # check for reference number prefix
-        request = PageModerationRequest.objects.create(
-            page=self.pg1,
-            language='en',
-            is_active=True,
-            workflow=self.wf2
-        )
-        search = re.search(r'[0-9.]',PageModerationRequest.objects.all()[0].reference_number)
-        self.assertEqual(search.start(), 3)
-
-    def test_reference_number_without_prefix(self):
-        # test that when a workflow submits a new request, the ModerationRequest gets a reference number generated correctly
-        request = PageModerationRequest.objects.create(
-            page=self.pg1,
-            language='en',
-            is_active=True,
-            workflow=self.wf1
-        )
-        self.assertTrue(len(PageModerationRequest.objects.all()) == 1)
-        search = re.search(r'[0-9.]',PageModerationRequest.objects.all()[0].reference_number)
-        self.assertEqual(search.start(), 0)
 
 class RoleTest(BaseTestCase):
 
@@ -78,13 +42,13 @@ class RoleTest(BaseTestCase):
 class WorkflowTest(BaseTestCase):
 
     def test_non_unique_reference_number_prefix_validation_error(self):
-        workflow = Workflow.objects.create(name='New Workflow 1', is_default=False, reference_number_prefix="")
+        workflow = Workflow.objects.create(name='New Workflow 1', is_default=False, reference_number_prefix='')
         workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 2', is_default=False, reference_number_prefix="")
+        workflow = Workflow.objects.create(name='New Workflow 2', is_default=False, reference_number_prefix='')
         workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 3', is_default=False, reference_number_prefix="TST")
+        workflow = Workflow.objects.create(name='New Workflow 3', is_default=False, reference_number_prefix='NW3')
         workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 4', is_default=False, reference_number_prefix="TST")
+        workflow = Workflow.objects.create(name='New Workflow 4', is_default=False, reference_number_prefix='NW3')
         self.assertRaisesMessage(ValidationError, 'The reference number prefix entered is already in use by another workflows.', workflow.clean)
 
     def test_multiple_defaults_validation_error(self):
@@ -188,6 +152,28 @@ class PageModerationRequestTest(BaseTestCase):
         )
         self.assertFalse(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
+
+    @patch('djangocms_moderation.models.PageModerationRequest.getTimeStamp', return_value=1234567890.123123)
+    def test_reference_number_with_prefix(self, mock_get_timestamp):
+        request = PageModerationRequest.objects.create(
+            page=self.pg1,
+            language='en',
+            is_active=True,
+            workflow=self.wf2
+        )
+        mock_get_timestamp.assert_called_once()
+        self.assertEqual(request.reference_number, '{}{}'.format(self.wf2.reference_number_prefix, mock_get_timestamp()))
+
+    @patch('djangocms_moderation.models.PageModerationRequest.getTimeStamp', return_value=2345678901.123123)
+    def test_reference_number_without_prefix(self, mock_get_timestamp):
+        request = PageModerationRequest.objects.create(
+            page=self.pg1,
+            language='en',
+            is_active=True,
+            workflow=self.wf1
+        )
+        mock_get_timestamp.assert_called_once()
+        self.assertEqual(request.reference_number, '{}'.format(mock_get_timestamp()))
 
 
 class PageModerationRequestActionTest(BaseTestCase):

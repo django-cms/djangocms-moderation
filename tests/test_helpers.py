@@ -1,7 +1,7 @@
 from django.test import TestCase, override_settings
 
 from djangocms_moderation.helpers import *
-from djangocms_moderation.models import Workflow
+from djangocms_moderation.models import Workflow, PageModeration
 
 from .utils import BaseTestCase
 
@@ -33,3 +33,20 @@ class GetPageTest(BaseTestCase):
 
     def test_returns_page(self):
         self.assertEqual(get_page(self.pg1.pk, 'en'), self.pg1)
+
+
+class CanPageBeModerated(BaseTestCase):
+
+    def test_returns_true_if_not_disabled_moderation(self):
+        PageModeration.objects.create(
+            extended_object=self.pg1,
+            disable_moderation=False
+        )
+        self.assertTrue(can_page_be_moderated(self.pg1))
+
+    def test_returns_false_if_disabled_moderation(self):
+        PageModeration.objects.create(
+            extended_object=self.pg1,
+            disable_moderation=True
+        )
+        self.assertFalse(can_page_be_moderated(self.pg1))

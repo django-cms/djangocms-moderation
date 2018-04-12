@@ -14,7 +14,7 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from . import views
 from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED
 from .forms import WorkflowStepInlineFormSet
-from .helpers import get_current_moderation_request, get_page
+from .helpers import get_current_moderation_request, get_page, can_page_be_moderated
 from .models import (
     PageModeration,
     PageModerationRequest,
@@ -31,8 +31,8 @@ except KeyError:
 
 
 class PageModerationAdmin(PageExtensionAdmin):
-    list_display = ['workflow', 'grant_on']
-    fields = ['workflow', 'grant_on']
+    list_display = ['workflow', 'grant_on', 'disable_moderation']
+    fields = ['workflow', 'grant_on', 'disable_moderation']
 
 
 class PageModerationRequestActionInline(admin.TabularInline):
@@ -56,9 +56,9 @@ class PageModerationRequestActionInline(admin.TabularInline):
 
 class PageModerationRequestAdmin(admin.ModelAdmin):
     inlines = [PageModerationRequestActionInline]
-    list_display = ['page', 'language', 'workflow', 'show_status', 'date_sent']
+    list_display = ['reference_number', 'page', 'language', 'workflow', 'show_status', 'date_sent']
     list_filter = ['language', 'workflow']
-    fields = ['workflow', 'page', 'language', 'is_active', 'show_status']
+    fields = ['reference_number', 'workflow', 'page', 'language', 'is_active', 'show_status']
     readonly_fields = fields
 
     def has_add_permission(self, request):
@@ -146,6 +146,9 @@ class ExtendedPageAdmin(PageAdmin):
 
     def publish_page(self, request, page_id, language):
         page = get_page(page_id, language)
+
+        if not can_page_be_moderated(page):
+            return super(ExtendedPageAdmin, self).publish_page(request, page_id, language)
 
         active_request = get_current_moderation_request(page, language)
 

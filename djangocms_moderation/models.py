@@ -89,7 +89,6 @@ class Workflow(models.Model):
         return self.name
 
     def clean(self):
-
         if self.reference_number_prefix:
             workflows = Workflow.objects.filter(reference_number_prefix=self.reference_number_prefix)
             if self.pk:
@@ -137,14 +136,12 @@ class Workflow(models.Model):
 
     @transaction.atomic
     def submit_new_request(self, by_user, page, language, message='', to_user=None):
-
         request = self.requests.create(
             page=page,
             language=language,
             is_active=True,
             workflow=self
         )
-
         new_action = request.actions.create(
             by_user=by_user,
             to_user=to_user,
@@ -172,8 +169,6 @@ class WorkflowStep(models.Model):
         related_name='steps',
     )
     order = models.PositiveIntegerField()
-
-
 
     class Meta:
         ordering = ('order',)
@@ -219,11 +214,20 @@ class PageModeration(PageExtension):
         to=Workflow,
         verbose_name=_('workflow'),
         related_name='+',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL
     )
     grant_on = models.IntegerField(
         verbose_name=_('grant on'),
         choices=ACCESS_CHOICES,
         default=constants.ACCESS_PAGE_AND_DESCENDANTS,
+        blank=True,
+        null=True
+    )
+    disable_moderation = models.BooleanField(
+        verbose_name=_('disable moderation for page'),
+        default=False,
     )
 
     objects = PageModerationManager()
@@ -238,10 +242,14 @@ class PageModeration(PageExtension):
     def copy_relations(self, oldinstance, language):
         self.workflow_id = oldinstance.workflow_id
 
+    def save(self, **kwargs):
+        if not self.grant_on:
+            self.grant_on = constants.ACCESS_PAGE_AND_DESCENDANTS
+        super(PageModeration, self).save(**kwargs)
+
 
 @python_2_unicode_compatible
 class PageModerationRequest(models.Model):
-
     page = models.ForeignKey(
         to='cms.Page',
         verbose_name=_('page'),
@@ -357,10 +365,9 @@ class PageModerationRequest(models.Model):
 
     @staticmethod
     def getTimeStamp():
-        return str(round(time.time(),5)).ljust(16,'0')
+        return str(round(time.time(), 5)).ljust(16, '0')
 
     def save(self, **kwargs):
-
         if not self.reference_number:
             if self.workflow.reference_number_prefix:
                 self.reference_number = self.workflow.reference_number_prefix + str(self.getTimeStamp())
@@ -369,9 +376,9 @@ class PageModerationRequest(models.Model):
 
         super(PageModerationRequest, self).save(**kwargs)
 
+
 @python_2_unicode_compatible
 class PageModerationRequestAction(models.Model):
-
     STATUSES = (
         (constants.ACTION_STARTED, _('Started')),
         (constants.ACTION_REJECTED, _('Rejected')),
