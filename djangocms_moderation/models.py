@@ -89,17 +89,22 @@ class Workflow(models.Model):
         return self.name
 
     def clean(self):
-        if not self.is_default:
-            return
 
-        workflows = Workflow.objects.filter(is_default=True)
+        if self.reference_number_prefix:
+            workflows = Workflow.objects.filter(reference_number_prefix=self.reference_number_prefix)
+            if self.pk:
+                workflows = workflows.exclude(pk=self.pk)
+            if workflows.exists():
+                message = ugettext('The reference number prefix entered is already in use by another workflows.')
+                raise ValidationError(message)
 
-        if self.pk:
-            workflows = workflows.exclude(pk=self.pk)
-
-        if workflows.exists():
-            message = ugettext('Can\'t have two default workflows, only one is allowed.')
-            raise ValidationError(message)
+        if self.is_default:
+            workflows = Workflow.objects.filter(is_default=True)
+            if self.pk:
+                workflows = workflows.exclude(pk=self.pk)
+            if workflows.exists():
+                message = ugettext('Can\'t have two default workflows, only one is allowed.')
+                raise ValidationError(message)
 
     @cached_property
     def first_step(self):

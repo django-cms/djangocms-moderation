@@ -77,10 +77,20 @@ class RoleTest(BaseTestCase):
 
 class WorkflowTest(BaseTestCase):
 
-    def test_multiple_defaults_validation_error(self):
-        workflow = Workflow.objects.create(name='New Workflow 1', is_default=False)
+    def test_non_unique_reference_number_prefix_validation_error(self):
+        workflow = Workflow.objects.create(name='New Workflow 1', is_default=False, reference_number_prefix="")
         workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 2', is_default=True) # self.wf1 is default
+        workflow = Workflow.objects.create(name='New Workflow 2', is_default=False, reference_number_prefix="")
+        workflow.clean()
+        workflow = Workflow.objects.create(name='New Workflow 3', is_default=False, reference_number_prefix="TST")
+        workflow.clean()
+        workflow = Workflow.objects.create(name='New Workflow 4', is_default=False, reference_number_prefix="TST")
+        self.assertRaisesMessage(ValidationError, 'The reference number prefix entered is already in use by another workflows.', workflow.clean)
+
+    def test_multiple_defaults_validation_error(self):
+        workflow = Workflow.objects.create(name='New Workflow 3', is_default=False)
+        workflow.clean()
+        workflow = Workflow.objects.create(name='New Workflow 4', is_default=True) # self.wf1 is default
         self.assertRaisesMessage(ValidationError, 'Can\'t have two default workflows, only one is allowed.', workflow.clean)
 
     def test_first_step(self):
