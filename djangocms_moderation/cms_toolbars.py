@@ -11,9 +11,10 @@ from cms.toolbar.items import Button, ModalButton, Dropdown, DropdownToggleButto
 from cms.utils import page_permissions
 from cms.utils.urlutils import admin_reverse
 
-from .helpers import get_current_moderation_request, get_admin_url, can_page_be_moderated
+from .helpers import get_current_moderation_request, can_page_be_moderated
 from .models import PageModeration
 from .monkeypatches import set_current_language
+from .utils import get_admin_url
 
 
 try:

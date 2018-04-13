@@ -29,10 +29,10 @@ class GetCurrentModerationRequestTest(BaseTestCase):
         self.assertIsNone(active_request)
 
 
-class GetPageTest(BaseTestCase):
+class GetPageOr404Test(BaseTestCase):
 
     def test_returns_page(self):
-        self.assertEqual(get_page(self.pg1.pk, 'en'), self.pg1)
+        self.assertEqual(get_page_or_404(self.pg1.pk, 'en'), self.pg1)
 
 
 class CanPageBeModerated(BaseTestCase):

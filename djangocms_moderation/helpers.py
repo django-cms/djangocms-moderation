@@ -1,8 +1,6 @@
 from django.shortcuts import get_object_or_404
-from django.utils.translation import override as force_language
 
 from cms.models import Page
-from cms.utils.urlutils import admin_reverse
 
 from .models import PageModeration, Workflow, PageModerationRequest
 
@@ -37,23 +35,18 @@ def get_workflow_by_id(pk):
         return None
 
 
-def get_admin_url(name, language, args):
-    with force_language(language):
-        return admin_reverse(name, args=args)
-
-
 def get_current_moderation_request(page, language):
     try:
         return PageModerationRequest.objects.get(
             page=page,
             language=language,
-            is_active=True
+            is_active=True,
         )
     except PageModerationRequest.DoesNotExist:
         return None
 
 
-def get_page(page_id, language):
+def get_page_or_404(page_id, language):
     return get_object_or_404(
         Page,
         pk=page_id,

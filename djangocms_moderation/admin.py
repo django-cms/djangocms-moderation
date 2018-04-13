@@ -14,7 +14,7 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from . import views
 from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED
 from .forms import WorkflowStepInlineFormSet
-from .helpers import get_current_moderation_request, get_page, can_page_be_moderated
+from .helpers import get_current_moderation_request, get_page_or_404, can_page_be_moderated
 from .models import (
     PageModeration,
     PageModerationRequest,
@@ -144,7 +144,7 @@ class ExtendedPageAdmin(PageAdmin):
         return url_patterns + super(ExtendedPageAdmin, self).get_urls()
 
     def publish_page(self, request, page_id, language):
-        page = get_page(page_id, language)
+        page = get_page_or_404(page_id, language)
 
         if not can_page_be_moderated(page):
             return super(ExtendedPageAdmin, self).publish_page(request, page_id, language)

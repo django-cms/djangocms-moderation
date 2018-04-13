@@ -16,12 +16,12 @@ from .forms import (
     SelectModerationForm
 )
 from .helpers import (
-    get_admin_url,
     get_current_moderation_request,
     get_workflow_by_id,
-    get_page
+    get_page_or_404
 )
 from .models import PageModerationRequest
+from .utils import get_admin_url
 
 
 class ModerationRequestView(FormView):
@@ -35,7 +35,7 @@ class ModerationRequestView(FormView):
     def dispatch(self, request, *args, **kwargs):
         user = request.user
         self.language = args[1]
-        self.page = get_page(args[0], self.language)
+        self.page = get_page_or_404(args[0], self.language)
         self.workflow = None
 
         self.active_request = get_current_moderation_request(self.page, self.language)
@@ -149,7 +149,7 @@ class SelectModerationView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(SelectModerationView, self).get_form_kwargs()
-        kwargs['page'] = get_page(self.page_id, self.current_lang)
+        kwargs['page'] = get_page_or_404(self.page_id, self.current_lang)
         return kwargs
 
     def form_valid(self, form):
