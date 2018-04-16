@@ -2,7 +2,8 @@ from django.shortcuts import get_object_or_404
 
 from cms.models import Page
 
-from .models import PageModeration, Workflow, PageModerationRequest
+from .models import PageModeration, PageModerationRequest, Workflow
+from .utils import get_moderation_workflow_selectable_settings
 
 
 def get_default_workflow():
@@ -35,7 +36,7 @@ def get_workflow_by_id(pk):
         return None
 
 
-def get_current_moderation_request(page, language):
+def get_active_moderation_request(page, language):
     try:
         return PageModerationRequest.objects.get(
             page=page,
@@ -56,8 +57,18 @@ def get_page_or_404(page_id, language):
     )
 
 
-def can_page_be_moderated(page):
-    page_moderation_extension = getattr(page, 'pagemoderation', None)
-    if page_moderation_extension and page_moderation_extension.disable_moderation:
-        return False
-    return True
+def is_moderation_enabled(page):
+    page_moderation_extension = get_page_moderation_settings(page)
+
+    if not page_moderation_extension:
+        is_enabled = True # By default moderation is required
+    else:
+        is_enabled = page_moderation_extension.enabled
+
+    if get_moderation_workflow_selectable_settings():
+        return is_enabled
+    else:
+        if get_page_moderation_workflow(page) and is_enabled:
+            return True
+        else:
+            return False

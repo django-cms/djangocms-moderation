@@ -185,8 +185,6 @@ class PageModerationRequestActionTest(BaseTestCase):
     def test_get_to_user_name(self):
         action = self.moderation_request3.actions.last()
         self.assertEqual(action.get_to_user_name(), self.user2.username)
-        action = self.moderation_request1.actions.last()
-        self.assertIsNone(action.get_to_user_name())
 
     def test_save_when_to_user_passed(self):
         new_action = self.moderation_request1.actions.create(by_user=self.user, to_user=self.user2, action=constants.ACTION_APPROVED, step_approved=self.wf1st1)

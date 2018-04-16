@@ -213,18 +213,16 @@ class PageModeration(PageExtension):
         related_name='+',
         blank=True,
         null=True,
-        on_delete=models.SET_NULL
+        on_delete=models.PROTECT,
     )
     grant_on = models.IntegerField(
         verbose_name=_('grant on'),
         choices=ACCESS_CHOICES,
         default=constants.ACCESS_PAGE_AND_DESCENDANTS,
-        blank=True,
-        null=True
     )
-    disable_moderation = models.BooleanField(
-        verbose_name=_('disable moderation for page'),
-        default=False,
+    enabled = models.BooleanField(
+        verbose_name=_('enable moderation for page'),
+        default=True,
     )
 
     objects = PageModerationManager()
@@ -238,11 +236,6 @@ class PageModeration(PageExtension):
 
     def copy_relations(self, oldinstance, language):
         self.workflow_id = oldinstance.workflow_id
-
-    def save(self, **kwargs):
-        if not self.grant_on:
-            self.grant_on = constants.ACCESS_PAGE_AND_DESCENDANTS
-        super(PageModeration, self).save(**kwargs)
 
 
 @python_2_unicode_compatible
@@ -446,8 +439,6 @@ class PageModerationRequestAction(models.Model):
 
     def get_to_user_name(self):
         user = self.to_user
-        if not user:
-            return None
         return user.get_full_name() or getattr(user, user.USERNAME_FIELD)
 
     def save(self, **kwargs):

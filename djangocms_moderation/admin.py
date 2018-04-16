@@ -14,7 +14,7 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from . import views
 from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED
 from .forms import WorkflowStepInlineFormSet
-from .helpers import get_current_moderation_request, get_page_or_404, can_page_be_moderated
+from .helpers import get_active_moderation_request, get_page_or_404, is_moderation_enabled
 from .models import (
     PageModeration,
     PageModerationRequest,
@@ -31,8 +31,8 @@ except KeyError:
 
 
 class PageModerationAdmin(PageExtensionAdmin):
-    list_display = ['workflow', 'grant_on', 'disable_moderation']
-    fields = ['workflow', 'grant_on', 'disable_moderation']
+    list_display = ['workflow', 'grant_on', 'enabled']
+    fields = ['workflow', 'grant_on', 'enabled']
 
 
 class PageModerationRequestActionInline(admin.TabularInline):
@@ -113,7 +113,7 @@ class ExtendedPageAdmin(PageAdmin):
 
         url_patterns = [
             _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/new/([0-9]+)/$',
+                r'^([0-9]+)/([a-z\-]+)/moderation/new/$',
                 views.new_moderation_request,
                 'new_request',
             ),
@@ -146,10 +146,10 @@ class ExtendedPageAdmin(PageAdmin):
     def publish_page(self, request, page_id, language):
         page = get_page_or_404(page_id, language)
 
-        if not can_page_be_moderated(page):
+        if not is_moderation_enabled(page):
             return super(ExtendedPageAdmin, self).publish_page(request, page_id, language)
 
-        active_request = get_current_moderation_request(page, language)
+        active_request = get_active_moderation_request(page, language)
 
         if active_request and active_request.is_approved:
             # The moderation request has been approved.

@@ -23,3 +23,9 @@ def get_absolute_url(location, site=None):
 def get_admin_url(name, language, args):
     with force_language(language):
         return admin_reverse(name, args=args)
+
+
+def get_moderation_workflow_selectable_settings():
+    if hasattr(settings, 'CMS_MODERATION_WORKFLOW_SELECTABLE'):
+        return settings.CMS_MODERATION_WORKFLOW_SELECTABLE
+    return False

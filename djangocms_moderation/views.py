@@ -1,24 +1,31 @@
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import (
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseRedirect
+)
 from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
 from cms.models import Page
+from cms.utils.urlutils import add_url_parameters
 
 from . import constants
 from .forms import (
     ModerationRequestForm,
-    UpdateModerationRequestForm,
-    SelectModerationForm
+    SelectModerationForm,
+    UpdateModerationRequestForm
 )
 from .helpers import (
-    get_current_moderation_request,
-    get_workflow_by_id,
-    get_page_or_404
+    get_active_moderation_request,
+    get_page_or_404,
+    get_page_moderation_workflow,
+    get_workflow_by_id
 )
 from .models import PageModerationRequest
 from .utils import get_admin_url
@@ -37,8 +44,7 @@ class ModerationRequestView(FormView):
         self.language = args[1]
         self.page = get_page_or_404(args[0], self.language)
         self.workflow = None
-
-        self.active_request = get_current_moderation_request(self.page, self.language)
+        self.active_request = get_active_moderation_request(self.page, self.language)
 
         if self.active_request:
             self.workflow = self.active_request.workflow
@@ -59,10 +65,13 @@ class ModerationRequestView(FormView):
             # All except for the new request endpoint require an active moderation request
             return HttpResponseBadRequest('Page does not have an active moderation request.')
         else:
-            # ACTION_STARTED => Get workflow id from cms_moderation_new_request args
-            self.workflow = get_workflow_by_id(args[2])
-            if self.workflow is None:
-                return HttpResponseBadRequest('New moderation request should pass a valid workflow.')
+            if request.GET.get('workflow'):
+                self.workflow = get_workflow_by_id(request.GET.get('workflow'))
+            else:
+                self.workflow = get_page_moderation_workflow(self.page)
+
+        if not self.workflow:
+            return HttpResponseBadRequest('No moderation workflow exists for page.')
 
         return super(ModerationRequestView, self).dispatch(request, *args, **kwargs)
 
@@ -134,7 +143,6 @@ class SelectModerationView(FormView):
     def dispatch(self, request, *args, **kwargs):
         self.page_id = args[0]
         self.current_lang = args[1]
-
         return super(SelectModerationView, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -154,10 +162,13 @@ class SelectModerationView(FormView):
 
     def form_valid(self, form):
         selected_workflow = form.cleaned_data['workflow']
-        redirect_url = get_admin_url(
-            name='cms_moderation_new_request',
-            language=self.current_lang,
-            args=(self.page_id, self.current_lang, selected_workflow.pk)
+        redirect_url = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_new_request',
+                language=self.current_lang,
+                args=(self.page_id, self.current_lang),
+            ),
+            workflow=selected_workflow.pk
         )
         return HttpResponseRedirect(redirect_url)
 

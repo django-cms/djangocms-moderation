@@ -11,10 +11,10 @@ from cms.toolbar.items import Button, ModalButton, Dropdown, DropdownToggleButto
 from cms.utils import page_permissions
 from cms.utils.urlutils import admin_reverse
 
-from .helpers import get_current_moderation_request, can_page_be_moderated
+from .helpers import get_active_moderation_request, is_moderation_enabled
 from .models import PageModeration
 from .monkeypatches import set_current_language
-from .utils import get_admin_url
+from .utils import get_admin_url, get_moderation_workflow_selectable_settings
 
 
 try:
@@ -37,7 +37,9 @@ class ExtendedPageToolbar(PageToolbar):
 
     @cached_property
     def moderation_request(self):
-        return get_current_moderation_request(self.page, self.current_lang)
+        if not self.page:
+            return None
+        return get_active_moderation_request(self.page, self.current_lang)
 
     @cached_property
     def moderation_workflow(self):
@@ -48,8 +50,10 @@ class ExtendedPageToolbar(PageToolbar):
         return None
 
     @cached_property
-    def can_be_moderated(self):
-        return can_page_be_moderated(self.page)
+    def is_moderation_enabled(self):
+        if not self.page:
+            return False
+        return is_moderation_enabled(self.page)
 
     def get_cancel_moderation_button(self):
         cancel_request_url = get_admin_url(
@@ -62,7 +66,7 @@ class ExtendedPageToolbar(PageToolbar):
     def add_publish_button(self, classes=('cms-btn-action', 'cms-btn-publish', 'cms-btn-publish-active',)):
         page = self.page
 
-        if not self.user_can_publish() or not self.can_be_moderated:
+        if not self.user_can_publish() or not self.is_moderation_enabled:
             # Page has no pending changes
             # OR user has no permission to publish
             # OR page has disabled moderation
@@ -105,11 +109,17 @@ class ExtendedPageToolbar(PageToolbar):
             container.buttons.append(self.get_cancel_moderation_button())
             self.toolbar.add_item(container)
         else:
+            if get_moderation_workflow_selectable_settings():
+                view_name = 'cms_moderation_select_new_moderation'
+            else:
+                view_name = 'cms_moderation_new_request'
+
             new_request_url = get_admin_url(
-                name='cms_moderation_select_new_moderation',
+                name=view_name,
                 language=self.current_lang,
                 args=(page.pk, self.current_lang),
             )
+
             self.toolbar.add_modal_button(
                 _('Submit for moderation'),
                 url=new_request_url,
@@ -117,7 +127,7 @@ class ExtendedPageToolbar(PageToolbar):
             )
 
     def get_publish_button(self, classes=None):
-        if not self.can_be_moderated:
+        if not self.is_moderation_enabled:
             return super(ExtendedPageToolbar, self).get_publish_button(classes)
 
         button = super(ExtendedPageToolbar, self).get_publish_button(['cms-btn-publish'])
