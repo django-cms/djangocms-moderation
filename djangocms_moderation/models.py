@@ -16,9 +16,7 @@ from cms.extensions.extension_pool import extension_pool
 from . import constants
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
-
-import time
-import datetime
+import importlib
 
 
 @python_2_unicode_compatible
@@ -71,12 +69,19 @@ class Workflow(models.Model):
         verbose_name=_('is default'),
         default=False,
     )
-    reference_number_prefix = models.CharField(
-        max_length=3, #@todo: should we hard-limit this to 3 characters? The alternative is to make max-length a dynamic CMS field.
-        null=True,
-        blank=True,
-        verbose_name=_('reference number prefix')
+
+    reference_number_backend = models.CharField(
+        choices=settings.REFERENCE_NUMBER_BACKENDS,
+        max_length=255,
+        default="Default",
     )
+
+    # reference_number_prefix = models.CharField(
+    #     max_length=3, #@todo: should we hard-limit this to 3 characters? The alternative is to make max-length a dynamic CMS field.
+    #     null=True,
+    #     blank=True,
+    #     verbose_name=_('reference number prefix')
+    # )
 
     class Meta:
         verbose_name = _('Workflow')
@@ -86,14 +91,6 @@ class Workflow(models.Model):
         return self.name
 
     def clean(self):
-        if self.reference_number_prefix:
-            workflows = Workflow.objects.filter(reference_number_prefix=self.reference_number_prefix)
-            if self.pk:
-                workflows = workflows.exclude(pk=self.pk)
-            if workflows.exists():
-                message = ugettext('The reference number prefix entered is already in use by another workflows.')
-                raise ValidationError(message)
-
         if self.is_default:
             workflows = Workflow.objects.filter(is_default=True)
             if self.pk:
@@ -267,7 +264,7 @@ class PageModerationRequest(models.Model):
         auto_now_add=True,
     )
     reference_number = models.CharField(
-        max_length=20,
+        max_length=32,
         unique=True
     )
 
@@ -353,16 +350,13 @@ class PageModerationRequest(models.Model):
                 return True
         return False
 
-    @staticmethod
-    def getTimeStamp():
-        return str(round(time.time(), 5)).ljust(16, '0')
-
     def save(self, **kwargs):
         if not self.reference_number:
-            if self.workflow.reference_number_prefix:
-                self.reference_number = self.workflow.reference_number_prefix + str(self.getTimeStamp())
-            else:
-                self.reference_number = str(self.getTimeStamp())
+            function_string = self.workflow.reference_number_backend
+            mod_name, func_name = function_string.rsplit('.',1)
+            mod = importlib.import_module(mod_name)
+            func = getattr(mod, func_name)
+            result = func(self)
 
         super(PageModerationRequest, self).save(**kwargs)
 
