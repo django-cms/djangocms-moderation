@@ -353,10 +353,10 @@ class PageModerationRequest(models.Model):
     def save(self, **kwargs):
         if not self.reference_number:
             function_string = self.workflow.reference_number_backend
-            mod_name, func_name = function_string.rsplit('.',1)
+            mod_name, func_name = function_string.rsplit('.', 1)
             mod = importlib.import_module(mod_name)
             func = getattr(mod, func_name)
-            result = func(self)
+            result = func(moderation_request=self)
             self.reference_number = result
 
         super(PageModerationRequest, self).save(**kwargs)
