@@ -14,9 +14,9 @@ class BaseTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         # create workflows
-        cls.wf1 = Workflow.objects.create(pk=1, name='Workflow 1', is_default=True, reference_number_prefix='')
-        cls.wf2 = Workflow.objects.create(pk=2, name='Workflow 2', reference_number_prefix='WF2')
-        cls.wf3 = Workflow.objects.create(pk=3, name='Workflow 3', reference_number_prefix='WF3')
+        cls.wf1 = Workflow.objects.create(pk=1, name='Workflow 1', is_default=True)
+        cls.wf2 = Workflow.objects.create(pk=2, name='Workflow 2')
+        cls.wf3 = Workflow.objects.create(pk=3, name='Workflow 3')
 
         # create pages
         cls.pg1 = create_page(title='Page 1', template='page.html', language='en')

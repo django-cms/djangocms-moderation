@@ -357,6 +357,7 @@ class PageModerationRequest(models.Model):
             mod = importlib.import_module(mod_name)
             func = getattr(mod, func_name)
             result = func(self)
+            self.reference_number = result
 
         super(PageModerationRequest, self).save(**kwargs)
 

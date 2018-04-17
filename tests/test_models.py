@@ -13,7 +13,6 @@ from djangocms_moderation.emails import notify_requested_moderator
 
 from .utils import BaseTestCase
 
-
 class RoleTest(BaseTestCase):
 
     def test_user_and_group_validation_error(self):
@@ -40,16 +39,6 @@ class RoleTest(BaseTestCase):
 
 
 class WorkflowTest(BaseTestCase):
-
-    def test_non_unique_reference_number_prefix_validation_error(self):
-        workflow = Workflow.objects.create(name='New Workflow 1', is_default=False, reference_number_prefix='')
-        workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 2', is_default=False, reference_number_prefix='')
-        workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 3', is_default=False, reference_number_prefix='NW3')
-        workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 4', is_default=False, reference_number_prefix='NW3')
-        self.assertRaisesMessage(ValidationError, 'The reference number prefix entered is already in use by another workflows.', workflow.clean)
 
     def test_multiple_defaults_validation_error(self):
         workflow = Workflow.objects.create(name='New Workflow 3', is_default=False)
@@ -153,27 +142,16 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertFalse(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
 
-    @patch('djangocms_moderation.models.PageModerationRequest.getTimeStamp', return_value=1234567890.123123)
-    def test_reference_number_with_prefix(self, mock_get_timestamp):
-        request = PageModerationRequest.objects.create(
-            page=self.pg1,
-            language='en',
-            is_active=True,
-            workflow=self.wf2
-        )
-        mock_get_timestamp.assert_called_once()
-        self.assertEqual(request.reference_number, '{}{}'.format(self.wf2.reference_number_prefix, mock_get_timestamp()))
-
-    @patch('djangocms_moderation.models.PageModerationRequest.getTimeStamp', return_value=2345678901.123123)
-    def test_reference_number_without_prefix(self, mock_get_timestamp):
+    @patch('djangocms_moderation.backends.default_workflow_reference_number_backend', return_value="8E339524-BA8f-4c32-aBab-75b7cf05b51c")
+    def test_reference_number(self, mock_default_workflow_reference_number_backend):
         request = PageModerationRequest.objects.create(
             page=self.pg1,
             language='en',
             is_active=True,
             workflow=self.wf1
         )
-        mock_get_timestamp.assert_called_once()
-        self.assertEqual(request.reference_number, '{}'.format(mock_get_timestamp()))
+        mock_default_workflow_reference_number_backend.assert_called_once()
+        self.assertEqual(request.reference_number, mock_default_workflow_reference_number_backend())
 
 
 class PageModerationRequestActionTest(BaseTestCase):
