@@ -22,7 +22,7 @@ def get_page_moderation_settings(page):
 def get_page_moderation_workflow(page):
     moderation = get_page_moderation_settings(page)
 
-    if moderation:
+    if moderation and moderation.workflow:
         workflow = moderation.workflow
     else:
         workflow = get_default_workflow()

@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-import importlib
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -14,17 +13,16 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.extensions import PageExtension
 from cms.extensions.extension_pool import extension_pool
 
-from . import constants
+from . import backends, constants, utils
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
-from . import utils
-from . import backends
+
 
 if hasattr(settings, 'CMS_MODERATION_REFERENCE_NUMBER_BACKENDS'):
     REFERENCE_NUMBER_BACKENDS = settings.CMS_MODERATION_REFERENCE_NUMBER_BACKENDS
 else:
     REFERENCE_NUMBER_BACKENDS = (
-        (constants.DEFAULT_REFERENCE_NUMBER_BACKEND, 'Default'),
+        (constants.DEFAULT_REFERENCE_NUMBER_BACKEND, _('Default')),
     )
 
 
@@ -264,11 +262,9 @@ class PageModerationRequest(models.Model):
         verbose_name=_('date sent'),
         auto_now_add=True,
     )
-
     reference_number = models.CharField(
         max_length=32,
         unique=True,
-        default=backends.default_workflow_reference_number_backend,
     )
 
     class Meta:
@@ -354,8 +350,11 @@ class PageModerationRequest(models.Model):
         return False
 
     def save(self, **kwargs):
-        if not self.reference_number:
-            self.reference_number = utils.call_method_from_string(self.workflow.reference_number_backend, calling_object=self)
+        if not self.pk:
+            self.reference_number = utils.call_method_from_string(
+                self.workflow.reference_number_backend,
+                calling_object=self,
+            )
 
         super(PageModerationRequest, self).save(**kwargs)
 
