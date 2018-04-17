@@ -69,19 +69,11 @@ class Workflow(models.Model):
         verbose_name=_('is default'),
         default=False,
     )
-
     reference_number_backend = models.CharField(
         choices=settings.REFERENCE_NUMBER_BACKENDS,
         max_length=255,
         default="Default",
     )
-
-    # reference_number_prefix = models.CharField(
-    #     max_length=3, #@todo: should we hard-limit this to 3 characters? The alternative is to make max-length a dynamic CMS field.
-    #     null=True,
-    #     blank=True,
-    #     verbose_name=_('reference number prefix')
-    # )
 
     class Meta:
         verbose_name = _('Workflow')
