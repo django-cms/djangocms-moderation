@@ -17,7 +17,8 @@ from cms.extensions.extension_pool import extension_pool
 from . import constants
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
-
+from . import utils
+from . import backends
 
 if hasattr(settings, 'CMS_MODERATION_REFERENCE_NUMBER_BACKENDS'):
     REFERENCE_NUMBER_BACKENDS = settings.CMS_MODERATION_REFERENCE_NUMBER_BACKENDS
@@ -80,7 +81,7 @@ class Workflow(models.Model):
     reference_number_backend = models.CharField(
         choices=REFERENCE_NUMBER_BACKENDS,
         max_length=255,
-        default=constants.DEFAULT_REFERENCE_NUMBER_BACKEND,
+        default=backends.default_workflow_reference_number_backend,
     )
 
     class Meta:
@@ -263,9 +264,11 @@ class PageModerationRequest(models.Model):
         verbose_name=_('date sent'),
         auto_now_add=True,
     )
+
     reference_number = models.CharField(
         max_length=32,
-        unique=True
+        unique=True,
+        default=utils.call_method_from_string(constants.DEFAULT_REFERENCE_NUMBER_BACKEND)
     )
 
     class Meta:
@@ -352,12 +355,7 @@ class PageModerationRequest(models.Model):
 
     def save(self, **kwargs):
         if not self.reference_number:
-            function_string = self.workflow.reference_number_backend
-            mod_name, func_name = function_string.rsplit('.', 1)
-            mod = importlib.import_module(mod_name)
-            func = getattr(mod, func_name)
-            result = func(moderation_request=self)
-            self.reference_number = result
+            self.reference_number = utils.call_method_from_string(self.workflow.reference_number_backend, calling_object=self)
 
         super(PageModerationRequest, self).save(**kwargs)
 
