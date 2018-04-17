@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import importlib
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -16,7 +17,14 @@ from cms.extensions.extension_pool import extension_pool
 from . import constants
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
-import importlib
+
+
+if hasattr(settings, 'CMS_MODERATION_REFERENCE_NUMBER_BACKENDS'):
+    REFERENCE_NUMBER_BACKENDS = settings.CMS_MODERATION_REFERENCE_NUMBER_BACKENDS
+else:
+    REFERENCE_NUMBER_BACKENDS = (
+        (constants.DEFAULT_REFERENCE_NUMBER_BACKEND, 'Default'),
+    )
 
 
 @python_2_unicode_compatible
@@ -69,18 +77,10 @@ class Workflow(models.Model):
         verbose_name=_('is default'),
         default=False,
     )
-
-    if hasattr(settings, "CMS_MODERATION_REFERENCE_NUMBER_BACKENDS"):
-        choices = settings.CMS_MODERATION_REFERENCE_NUMBER_BACKENDS
-    else:
-        choices = (
-            ('djangocms_moderation.backends.default_workflow_reference_number_backend', 'Default'),
-        )
-
     reference_number_backend = models.CharField(
-        choices=choices,
+        choices=REFERENCE_NUMBER_BACKENDS,
         max_length=255,
-        default="djangocms_moderation.backends.default_workflow_reference_number_backend",
+        default=constants.DEFAULT_REFERENCE_NUMBER_BACKEND,
     )
 
     class Meta:

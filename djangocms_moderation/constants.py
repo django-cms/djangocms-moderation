@@ -30,3 +30,5 @@ ACTION_REJECTED = 'rejected'
 ACTION_APPROVED = 'approved'
 ACTION_CANCELLED = 'cancelled'
 ACTION_FINISHED = 'finished'
+
+DEFAULT_REFERENCE_NUMBER_BACKEND = 'djangocms_moderation.backends.default_workflow_reference_number_backend'

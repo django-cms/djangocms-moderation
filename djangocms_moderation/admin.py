@@ -56,9 +56,9 @@ class PageModerationRequestActionInline(admin.TabularInline):
 
 class PageModerationRequestAdmin(admin.ModelAdmin):
     inlines = [PageModerationRequestActionInline]
-    list_display = [ 'page', 'language', 'workflow', 'show_status', 'date_sent']
+    list_display = ['reference_number', 'page', 'language', 'workflow', 'show_status', 'date_sent']
     list_filter = ['language', 'workflow']
-    fields = [ 'workflow', 'page', 'language', 'is_active', 'show_status']
+    fields = ['reference_number', 'workflow', 'page', 'language', 'is_active', 'show_status']
     readonly_fields = fields
 
     def has_add_permission(self, request):
@@ -101,7 +101,7 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
 class WorkflowAdmin(admin.ModelAdmin):
     inlines = [WorkflowStepInline]
     list_display = ['name', 'is_default']
-    fields = ['name', 'is_default', 'reference_number_backend' ]
+    fields = ['name', 'is_default', 'reference_number_backend']
 
 
 class ExtendedPageAdmin(PageAdmin):
