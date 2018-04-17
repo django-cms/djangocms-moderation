@@ -81,7 +81,7 @@ class Workflow(models.Model):
     reference_number_backend = models.CharField(
         choices=REFERENCE_NUMBER_BACKENDS,
         max_length=255,
-        default=backends.default_workflow_reference_number_backend,
+        default=constants.DEFAULT_REFERENCE_NUMBER_BACKEND,
     )
 
     class Meta:
@@ -268,7 +268,7 @@ class PageModerationRequest(models.Model):
     reference_number = models.CharField(
         max_length=32,
         unique=True,
-        default=utils.call_method_from_string(constants.DEFAULT_REFERENCE_NUMBER_BACKEND)
+        default=backends.default_workflow_reference_number_backend,
     )
 
     class Meta:
