@@ -69,10 +69,18 @@ class Workflow(models.Model):
         verbose_name=_('is default'),
         default=False,
     )
+
+    if hasattr(settings, "CMS_MODERATION_REFERENCE_NUMBER_BACKENDS"):
+        choices = settings.CMS_MODERATION_REFERENCE_NUMBER_BACKENDS
+    else:
+        choices = (
+            ('djangocms_moderation.backends.default_workflow_reference_number_backend', 'Default'),
+        )
+
     reference_number_backend = models.CharField(
-        choices=settings.REFERENCE_NUMBER_BACKENDS,
+        choices=choices,
         max_length=255,
-        default="Default",
+        default="djangocms_moderation.backends.default_workflow_reference_number_backend",
     )
 
     class Meta:
