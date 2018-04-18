@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from cms.models import Page
 
 from .models import PageModeration, PageModerationRequest, Workflow
+from .utils import get_moderation_workflow_selectable_settings
 
 
 def get_default_workflow():
@@ -64,7 +65,13 @@ def is_moderation_enabled(page):
     else:
         is_enabled = page_moderation_extension.enabled
 
-    if get_page_moderation_workflow(page) and is_enabled:
-        return True
+    if get_moderation_workflow_selectable_settings():
+        if Workflow.objects.exists() and is_enabled:
+            return True
+        else:
+            return False
     else:
-        return False
+        if get_page_moderation_workflow(page) and is_enabled:
+            return True
+        else:
+            return False
