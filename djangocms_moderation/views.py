@@ -23,8 +23,8 @@ from .forms import (
 )
 from .helpers import (
     get_active_moderation_request,
-    get_page_or_404,
     get_page_moderation_workflow,
+    get_page_or_404,
     get_workflow_by_id
 )
 from .models import PageModerationRequest

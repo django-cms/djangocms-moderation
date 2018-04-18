@@ -13,7 +13,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.extensions import PageExtension
 from cms.extensions.extension_pool import extension_pool
 
-from . import backends, constants, utils
+from . import constants, utils
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
 
