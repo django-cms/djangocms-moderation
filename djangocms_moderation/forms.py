@@ -124,7 +124,7 @@ class SelectModerationForm(forms.Form):
     workflow = forms.ModelChoiceField(
         label=_('workflow to trigger'),
         queryset=Workflow.objects.all(),
-        required=True
+        required=True,
     )
 
     def __init__(self, *args, **kwargs):

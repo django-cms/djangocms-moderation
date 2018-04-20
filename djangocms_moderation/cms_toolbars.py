@@ -107,6 +107,7 @@ class ExtendedPageToolbar(PageToolbar):
                 container.buttons.append(
                     ModalButton(name=_('Reject changes'), url=reject_request_url)
                 )
+
             container.buttons.append(self.get_cancel_moderation_button())
             self.toolbar.add_item(container)
         else:

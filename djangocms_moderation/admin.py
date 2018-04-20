@@ -24,6 +24,7 @@ from .models import (
     WorkflowStep,
 )
 
+
 try:
     PageAdmin = admin.site._registry[Page].__class__
 except KeyError:

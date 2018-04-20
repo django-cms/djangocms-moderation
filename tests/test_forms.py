@@ -20,7 +20,7 @@ class ModerationRequestFormTest(BaseTestCase):
             page=self.pg2,
             user=self.user,
             workflow=self.wf1,
-            active_request=None
+            active_request=None,
         )
         self.assertIn('moderator', form.fields)
         field_moderator = form.fields['moderator']
@@ -39,7 +39,7 @@ class ModerationRequestFormTest(BaseTestCase):
             page=self.pg2,
             user=self.user,
             workflow=self.wf1,
-            active_request=None
+            active_request=None,
         )
         form.workflow.submit_new_request = MagicMock()
         self.assertTrue(form.is_valid())
@@ -49,7 +49,7 @@ class ModerationRequestFormTest(BaseTestCase):
             by_user=self.user,
             to_user=None,
             language='en',
-            message='Some message'
+            message='Some message',
         )
 
 
@@ -62,7 +62,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             page=self.pg1,
             user=self.user,
             workflow=self.wf1,
-            active_request=self.moderation_request1
+            active_request=self.moderation_request1,
         )
         self.assertIsInstance(form, ModerationRequestForm)
         field_moderator = form.fields['moderator']
@@ -76,7 +76,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             page=self.pg1,
             user=self.user,
             workflow=self.wf1,
-            active_request=self.moderation_request1
+            active_request=self.moderation_request1,
         )
         field_moderator = form.fields['moderator']
         self.assertQuerysetEqual(field_moderator.queryset, User.objects.none())
@@ -89,7 +89,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             page=self.pg1,
             user=self.user,
             workflow=self.wf1,
-            active_request=self.moderation_request1
+            active_request=self.moderation_request1,
         )
         field_moderator = form.fields['moderator']
         self.assertQuerysetEqual(field_moderator.queryset, User.objects.none())
@@ -107,7 +107,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             page=self.pg1,
             user=self.user,
             workflow=self.wf1,
-            active_request=self.moderation_request1
+            active_request=self.moderation_request1,
         )
         form.active_request.update_status = MagicMock()
         self.assertTrue(form.is_valid())
@@ -116,14 +116,14 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             action=constants.ACTION_APPROVED,
             by_user=self.user,
             to_user=None,
-            message='Approved message'
+            message='Approved message',
         )
 
 
 class SelectModerationFormTest(BaseTestCase):
 
     def test_form_init(self):
-        form = SelectModerationForm(page=self.pg1)
+        form = SelectModerationForm(page=self.pg1,)
         self.assertIn('workflow', form.fields)
         field_workflow = form.fields['workflow']
         self.assertQuerysetEqual(field_workflow.queryset, Workflow.objects.all(), transform=lambda x: x, ordered=False)
