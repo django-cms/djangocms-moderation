@@ -11,10 +11,11 @@ from cms.toolbar.items import Button, ModalButton, Dropdown, DropdownToggleButto
 from cms.utils import page_permissions
 from cms.utils.urlutils import admin_reverse
 
+from . import conf
 from .helpers import get_active_moderation_request, is_moderation_enabled
 from .models import PageModeration
 from .monkeypatches import set_current_language
-from .utils import get_admin_url, get_moderation_workflow_selectable_settings
+from .utils import get_admin_url
 
 
 try:
@@ -109,7 +110,7 @@ class ExtendedPageToolbar(PageToolbar):
             container.buttons.append(self.get_cancel_moderation_button())
             self.toolbar.add_item(container)
         else:
-            if get_moderation_workflow_selectable_settings():
+            if conf.ENABLE_WORKFLOW_OVERRIDE:
                 view_name = 'cms_moderation_select_new_moderation'
             else:
                 view_name = 'cms_moderation_new_request'
@@ -119,9 +120,8 @@ class ExtendedPageToolbar(PageToolbar):
                 language=self.current_lang,
                 args=(page.pk, self.current_lang),
             )
-
             self.toolbar.add_modal_button(
-                _('Submit for moderation'),
+                name=_('Submit for moderation'),
                 url=new_request_url,
                 side=self.toolbar.RIGHT,
             )

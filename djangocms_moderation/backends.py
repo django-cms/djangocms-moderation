@@ -1,5 +1,5 @@
 import uuid
 
 
-def default_workflow_reference_number_backend(**kwargs):
+def uuid4_backend(**kwargs):
     return uuid.uuid4()

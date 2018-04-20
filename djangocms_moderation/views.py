@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.http import (
     HttpResponseBadRequest,
     HttpResponseForbidden,
-    HttpResponseRedirect
+    HttpResponseRedirect,
 )
 from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
@@ -19,13 +19,13 @@ from . import constants
 from .forms import (
     ModerationRequestForm,
     SelectModerationForm,
-    UpdateModerationRequestForm
+    UpdateModerationRequestForm,
 )
 from .helpers import (
     get_active_moderation_request,
     get_page_moderation_workflow,
     get_page_or_404,
-    get_workflow_by_id
+    get_workflow_or_none,
 )
 from .models import PageModerationRequest
 from .utils import get_admin_url
@@ -66,13 +66,12 @@ class ModerationRequestView(FormView):
             return HttpResponseBadRequest('Page does not have an active moderation request.')
         else:
             if request.GET.get('workflow'):
-                self.workflow = get_workflow_by_id(request.GET.get('workflow'))
+                self.workflow = get_workflow_or_none(request.GET.get('workflow'))
             else:
                 self.workflow = get_page_moderation_workflow(self.page)
 
         if not self.workflow:
             return HttpResponseBadRequest('No moderation workflow exists for page.')
-
         return super(ModerationRequestView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):

@@ -129,7 +129,5 @@ class SelectModerationForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         page = kwargs.pop('page')
-
         super(SelectModerationForm, self).__init__(*args, **kwargs)
-
         self.fields['workflow'].initial = get_page_moderation_workflow(page)

@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             name='PageModerationRequest',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('language', models.CharField(max_length=5, verbose_name='language', choices=[('en', 'English'), ('de', 'Deutsch'), ('it', 'Italiano')])),
+                ('language', models.CharField(max_length=5, verbose_name='language', choices=settings.LANGUAGES)),
                 ('is_active', models.BooleanField(default=False, db_index=True)),
                 ('date_sent', models.DateTimeField(auto_now_add=True, verbose_name='date sent')),
                 ('page', models.ForeignKey(verbose_name='page', to='cms.Page')),

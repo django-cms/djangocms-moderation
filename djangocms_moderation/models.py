@@ -13,17 +13,10 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.extensions import PageExtension
 from cms.extensions.extension_pool import extension_pool
 
-from . import constants, utils
+from . import conf, constants
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
-
-
-if hasattr(settings, 'CMS_MODERATION_REFERENCE_NUMBER_BACKENDS'):
-    REFERENCE_NUMBER_BACKENDS = settings.CMS_MODERATION_REFERENCE_NUMBER_BACKENDS
-else:
-    REFERENCE_NUMBER_BACKENDS = (
-        (constants.DEFAULT_REFERENCE_NUMBER_BACKEND, _('Default')),
-    )
+from .utils import generate_reference_number
 
 
 @python_2_unicode_compatible
@@ -77,9 +70,9 @@ class Workflow(models.Model):
         default=False,
     )
     reference_number_backend = models.CharField(
-        choices=REFERENCE_NUMBER_BACKENDS,
+        choices=conf.REFERENCE_NUMBER_BACKENDS,
         max_length=255,
-        default=constants.DEFAULT_REFERENCE_NUMBER_BACKEND,
+        default=conf.DEFAULT_REFERENCE_NUMBER_BACKEND,
     )
 
     class Meta:
@@ -133,7 +126,7 @@ class Workflow(models.Model):
             page=page,
             language=language,
             is_active=True,
-            workflow=self
+            workflow=self,
         )
         new_action = request.actions.create(
             by_user=by_user,
@@ -207,9 +200,6 @@ class PageModeration(PageExtension):
         to=Workflow,
         verbose_name=_('workflow'),
         related_name='+',
-        blank=True,
-        null=True,
-        on_delete=models.PROTECT,
     )
     grant_on = models.IntegerField(
         verbose_name=_('grant on'),
@@ -264,6 +254,7 @@ class PageModerationRequest(models.Model):
     )
     reference_number = models.CharField(
         max_length=32,
+        null=True,
         unique=True,
     )
 
@@ -351,7 +342,7 @@ class PageModerationRequest(models.Model):
 
     def save(self, **kwargs):
         if not self.pk:
-            self.reference_number = utils.call_method_from_string(
+            self.reference_number = generate_reference_number(
                 self.workflow.reference_number_backend,
                 calling_object=self,
             )

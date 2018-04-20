@@ -136,7 +136,7 @@ class ExtendedPageAdmin(PageAdmin):
                 action=ACTION_APPROVED,
             ),
             _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/select-new-moderation/$',
+                r'^([0-9]+)/([a-z\-]+)/moderation/select-workflow/$',
                 views.select_new_moderation_request,
                 'select_new_moderation',
             ),

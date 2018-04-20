@@ -1,8 +1,10 @@
 from __future__ import unicode_literals
 import importlib
+from functools import lru_cache
 
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.utils.module_loading import import_string
 from django.utils.six.moves.urllib.parse import urljoin
 from django.utils.translation import override as force_language
 
@@ -26,15 +28,11 @@ def get_admin_url(name, language, args):
         return admin_reverse(name, args=args)
 
 
-def get_moderation_workflow_selectable_settings():
-    if hasattr(settings, 'CMS_MODERATION_WORKFLOW_SELECTABLE'):
-        return settings.CMS_MODERATION_WORKFLOW_SELECTABLE
-    return False
+@lru_cache(maxsize=None)
+def load_backend(path):
+    return import_string(path)
 
 
-def call_method_from_string(function_string, **kwargs):
-    mod_name, func_name = function_string.rsplit('.', 1)
-    mod = importlib.import_module(mod_name)
-    func = getattr(mod, func_name)
-    result = func(**kwargs)
-    return result
+def generate_reference_number(path, **kwargs):
+    backend = load_backend(path)
+    return backend(**kwargs)
