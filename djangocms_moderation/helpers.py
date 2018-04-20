@@ -67,5 +67,4 @@ def is_moderation_enabled(page):
 
     if conf.ENABLE_WORKFLOW_OVERRIDE:
         return is_enabled and Workflow.objects.exists()
-
-    return is_enabled and get_page_moderation_workflow(page)
+    return is_enabled and True if get_page_moderation_workflow(page) else False

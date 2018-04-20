@@ -39,28 +39,37 @@ class GetPageOr404Test(BaseTestCase):
 
 class IsModerationEnabledTest(BaseTestCase):
 
-    @override_settings(CMS_MODERATION_WORKFLOW_SELECTABLE=True)
-    def test_returns_true_with_selectable_workflow_with_no_moderation_object(self):
+    @override_settings(CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE=True)
+    def test_returns_true_with_override_no_moderation_object(self):
         self.assertTrue(is_moderation_enabled(self.pg1))
 
-    @override_settings(CMS_MODERATION_WORKFLOW_SELECTABLE=True)
-    def test_returns_true_with_selectable_workflow_with_moderation_object_enabled(self):
+    @override_settings(CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE=True)
+    def test_returns_true_with_override_moderation_object_enabled(self):
         PageModeration.objects.create(extended_object=self.pg1, enabled=True, workflow=self.wf1,)
         self.assertTrue(is_moderation_enabled(self.pg1))
 
-    @override_settings(CMS_MODERATION_WORKFLOW_SELECTABLE=True)
-    def test_returns_false_with_selectable_workflow_with_moderation_object_disabled(self):
+    @override_settings(CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE=True)
+    def test_returns_false_with_override_moderation_object_disabled(self):
         PageModeration.objects.create(extended_object=self.pg1, enabled=False, workflow=self.wf1,)
         self.assertFalse(is_moderation_enabled(self.pg1))
 
-    def test_returns_true_default_settings_with_workflow(self):
+    @override_settings(CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE=True)
+    def test_returns_false_with_override_no_workflows(self):
+        Workflow.objects.all().delete()
+        self.assertFalse(is_moderation_enabled(self.pg1))
+
+    def test_returns_true_default_settings_has_default_workflow(self):
         self.assertTrue(is_moderation_enabled(self.pg1))
 
-    def test_returns_true_default_settings_with_workflow_and_disabled(self):
+    def test_returns_true_default_settings_moderation_object_enabled(self):
+        PageModeration.objects.create(extended_object=self.pg1, enabled=True, workflow=self.wf1,)
+        self.assertTrue(is_moderation_enabled(self.pg1))
+
+    def test_returns_false_default_settings_moderation_object_disabled(self):
         PageModeration.objects.create(extended_object=self.pg1, enabled=False, workflow=self.wf1,)
         self.assertFalse(is_moderation_enabled(self.pg1))
 
     @patch('djangocms_moderation.helpers.get_page_moderation_workflow', return_value=None)
-    def test_returns_false_default_settings_with_no_workflow(self, mock_gpmw):
+    def test_returns_false_default_settings_no_workflow(self, mock_gpmw):
         self.assertFalse(is_moderation_enabled(self.pg1))
 

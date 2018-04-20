@@ -64,11 +64,10 @@ class ModerationRequestView(FormView):
         elif self.action != constants.ACTION_STARTED:
             # All except for the new request endpoint require an active moderation request
             return HttpResponseBadRequest('Page does not have an active moderation request.')
+        elif request.GET.get('workflow'):
+            self.workflow = get_workflow_or_none(request.GET.get('workflow'))
         else:
-            if request.GET.get('workflow'):
-                self.workflow = get_workflow_or_none(request.GET.get('workflow'))
-            else:
-                self.workflow = get_page_moderation_workflow(self.page)
+            self.workflow = get_page_moderation_workflow(self.page)
 
         if not self.workflow:
             return HttpResponseBadRequest('No moderation workflow exists for page.')

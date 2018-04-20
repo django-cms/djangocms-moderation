@@ -83,13 +83,17 @@ class Workflow(models.Model):
         return self.name
 
     def clean(self):
-        if self.is_default:
-            workflows = Workflow.objects.filter(is_default=True)
-            if self.pk:
-                workflows = workflows.exclude(pk=self.pk)
-            if workflows.exists():
-                message = ugettext('Can\'t have two default workflows, only one is allowed.')
-                raise ValidationError(message)
+        if not self.is_default:
+            return
+
+        workflows = Workflow.objects.filter(is_default=True)
+
+        if self.pk:
+            workflows = workflows.exclude(pk=self.pk)
+
+        if workflows.exists():
+            message = ugettext('Can\'t have two default workflows, only one is allowed.')
+            raise ValidationError(message)
 
     @cached_property
     def first_step(self):
