@@ -7,9 +7,9 @@ from django.test import TestCase, override_settings
 
 from cms.api import create_page
 
-from djangocms_moderation.models import *
 from djangocms_moderation import constants
 from djangocms_moderation.emails import notify_requested_moderator
+from djangocms_moderation.models import *
 
 from .utils import BaseTestCase
 

@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-import importlib
 from functools import lru_cache
 
 from django.conf import settings

@@ -1,8 +1,8 @@
 from django.conf import settings
-from django.utils.translation import override as force_language, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 
-DEFAULT_REFERENCE_NUMBER_BACKEND = 'djangocms_moderation.backends.uuid4_backend'
+DEFAULT_REFERENCE_NUMBER_BACKEND = getattr(settings, 'CMS_MODERATION_DEFAULT_REFERENCE_NUMBER_BACKEND', 'djangocms_moderation.backends.uuid4_backend')
 
 CORE_REFERENCE_NUMBER_BACKENDS = (
     (DEFAULT_REFERENCE_NUMBER_BACKEND, _('Default')),

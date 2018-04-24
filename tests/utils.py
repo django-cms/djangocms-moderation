@@ -68,8 +68,3 @@ class BaseViewTestCase(BaseTestCase):
 
     def setUp(self):
         self.client.force_login(self.user)
-
-
-def get_admin_url(name, language, args):
-    with force_language(language):
-        return admin_reverse(name, args=args)

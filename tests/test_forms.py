@@ -4,9 +4,9 @@ from django import forms
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 
+from djangocms_moderation import constants
 from djangocms_moderation.forms import *
 from djangocms_moderation.models import Workflow
-from djangocms_moderation import constants
 
 from .utils import BaseTestCase
 

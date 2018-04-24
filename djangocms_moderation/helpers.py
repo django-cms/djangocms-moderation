@@ -22,7 +22,7 @@ def get_page_moderation_settings(page):
 def get_page_moderation_workflow(page):
     moderation = get_page_moderation_settings(page)
 
-    if moderation and moderation.workflow:
+    if moderation:
         workflow = moderation.workflow
     else:
         workflow = get_default_workflow()
@@ -67,4 +67,4 @@ def is_moderation_enabled(page):
 
     if conf.ENABLE_WORKFLOW_OVERRIDE:
         return is_enabled and Workflow.objects.exists()
-    return is_enabled and True if get_page_moderation_workflow(page) else False
+    return is_enabled and bool(get_page_moderation_workflow(page))

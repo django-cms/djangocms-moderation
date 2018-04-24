@@ -13,7 +13,8 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.extensions import PageExtension
 from cms.extensions.extension_pool import extension_pool
 
-from . import conf, constants
+from . import conf
+from . import constants
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
 from .utils import generate_reference_number
@@ -345,10 +346,10 @@ class PageModerationRequest(models.Model):
         return False
 
     def save(self, **kwargs):
-        if not self.pk:
+        if not self.reference_number:
             self.reference_number = generate_reference_number(
                 self.workflow.reference_number_backend,
-                calling_object=self,
+                moderation_request=self,
             )
 
         super(PageModerationRequest, self).save(**kwargs)
