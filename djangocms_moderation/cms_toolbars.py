@@ -64,6 +64,14 @@ class ExtendedPageToolbar(PageToolbar):
         )
         return ModalButton(name=_('Cancel request'), url=cancel_request_url)
 
+    def user_can_publish(self):
+        moderation_request = self.moderation_request
+        user = self.request.user
+
+        if moderation_request and moderation_request.user_can_take_action(user):
+            return True
+        return super(ExtendedPageToolbar, self).user_can_publish()
+
     def add_publish_button(self, classes=('cms-btn-action', 'cms-btn-publish', 'cms-btn-publish-active',)):
         page = self.page
 
