@@ -31,7 +31,7 @@ def _send_email(request, action, recipients, subject, template):
 
     context = {
         'page': page,
-        'page_url': get_absolute_url(page_url, site=page.site),
+        'page_url': get_absolute_url(page_url, site=page.node.site),
         'author_name': author_name,
         'by_user_name': action.get_by_user_name(),
         'moderator_name': moderator_name,
