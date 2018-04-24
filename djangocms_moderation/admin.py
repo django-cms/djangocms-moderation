@@ -4,7 +4,6 @@ from django.contrib import admin
 from django.contrib import messages
 from django.conf.urls import url
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.extensions import PageExtensionAdmin
@@ -15,7 +14,7 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from . import views
 from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED
 from .forms import WorkflowStepInlineFormSet
-from .helpers import get_page_moderation_workflow
+from .helpers import get_active_moderation_request, get_page_or_404, is_moderation_enabled
 from .models import (
     PageModeration,
     PageModerationRequest,
@@ -25,6 +24,7 @@ from .models import (
     WorkflowStep,
 )
 
+
 try:
     PageAdmin = admin.site._registry[Page].__class__
 except KeyError:
@@ -32,8 +32,8 @@ except KeyError:
 
 
 class PageModerationAdmin(PageExtensionAdmin):
-    list_display = ['workflow', 'grant_on']
-    fields = ['workflow', 'grant_on']
+    list_display = ['workflow', 'grant_on', 'enabled']
+    fields = ['workflow', 'grant_on', 'enabled']
 
 
 class PageModerationRequestActionInline(admin.TabularInline):
@@ -57,9 +57,9 @@ class PageModerationRequestActionInline(admin.TabularInline):
 
 class PageModerationRequestAdmin(admin.ModelAdmin):
     inlines = [PageModerationRequestActionInline]
-    list_display = ['page', 'language', 'workflow', 'show_status', 'date_sent']
+    list_display = ['reference_number', 'page', 'language', 'workflow', 'show_status', 'date_sent']
     list_filter = ['language', 'workflow']
-    fields = ['workflow', 'page', 'language', 'is_active', 'show_status']
+    fields = ['reference_number', 'workflow', 'page', 'language', 'is_active', 'show_status']
     readonly_fields = fields
 
     def has_add_permission(self, request):
@@ -102,7 +102,7 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
 class WorkflowAdmin(admin.ModelAdmin):
     inlines = [WorkflowStepInline]
     list_display = ['name', 'is_default']
-    fields = ['name', 'is_default']
+    fields = ['name', 'is_default', 'reference_number_backend']
 
 
 class ExtendedPageAdmin(PageAdmin):
@@ -136,23 +136,21 @@ class ExtendedPageAdmin(PageAdmin):
                 'approve_request',
                 action=ACTION_APPROVED,
             ),
+            _url(
+                r'^([0-9]+)/([a-z\-]+)/moderation/select-workflow/$',
+                views.select_new_moderation_request,
+                'select_new_moderation',
+            ),
         ]
         return url_patterns + super(ExtendedPageAdmin, self).get_urls()
 
     def publish_page(self, request, page_id, language):
-        page = get_object_or_404(
-            Page,
-            pk=page_id,
-            publisher_is_draft=True,
-            title_set__language=language,
-        )
+        page = get_page_or_404(page_id, language)
 
-        workflow = get_page_moderation_workflow(page)
-
-        if not workflow:
+        if not is_moderation_enabled(page):
             return super(ExtendedPageAdmin, self).publish_page(request, page_id, language)
 
-        active_request = workflow.get_active_request(page, language)
+        active_request = get_active_moderation_request(page, language)
 
         if active_request and active_request.is_approved:
             # The moderation request has been approved.

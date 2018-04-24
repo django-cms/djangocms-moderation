@@ -13,9 +13,11 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.extensions import PageExtension
 from cms.extensions.extension_pool import extension_pool
 
+from . import conf
 from . import constants
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
+from .utils import generate_reference_number
 
 
 @python_2_unicode_compatible
@@ -67,6 +69,11 @@ class Workflow(models.Model):
     is_default = models.BooleanField(
         verbose_name=_('is default'),
         default=False,
+    )
+    reference_number_backend = models.CharField(
+        choices=conf.REFERENCE_NUMBER_BACKENDS,
+        max_length=255,
+        default=conf.DEFAULT_REFERENCE_NUMBER_BACKEND,
     )
 
     class Meta:
@@ -173,6 +180,7 @@ class WorkflowStep(models.Model):
             self._next_step = self._get_next_or_previous_by_FIELD(
                 field=field,
                 is_next=True,
+                workflow=self.workflow,
                 **kwargs
             )
         except WorkflowStep.DoesNotExist:
@@ -203,6 +211,10 @@ class PageModeration(PageExtension):
         choices=ACCESS_CHOICES,
         default=constants.ACCESS_PAGE_AND_DESCENDANTS,
     )
+    enabled = models.BooleanField(
+        verbose_name=_('enable moderation for page'),
+        default=True,
+    )
 
     objects = PageModerationManager()
 
@@ -219,7 +231,6 @@ class PageModeration(PageExtension):
 
 @python_2_unicode_compatible
 class PageModerationRequest(models.Model):
-
     page = models.ForeignKey(
         to='cms.Page',
         verbose_name=_('page'),
@@ -245,6 +256,11 @@ class PageModerationRequest(models.Model):
     date_sent = models.DateTimeField(
         verbose_name=_('date sent'),
         auto_now_add=True,
+    )
+    reference_number = models.CharField(
+        max_length=32,
+        null=True,
+        unique=True,
     )
 
     class Meta:
@@ -329,10 +345,18 @@ class PageModerationRequest(models.Model):
                 return True
         return False
 
+    def save(self, **kwargs):
+        if not self.reference_number:
+            self.reference_number = generate_reference_number(
+                self.workflow.reference_number_backend,
+                moderation_request=self,
+            )
+
+        super(PageModerationRequest, self).save(**kwargs)
+
 
 @python_2_unicode_compatible
 class PageModerationRequestAction(models.Model):
-
     STATUSES = (
         (constants.ACTION_STARTED, _('Started')),
         (constants.ACTION_REJECTED, _('Rejected')),

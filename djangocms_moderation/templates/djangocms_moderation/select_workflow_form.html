@@ -8,7 +8,7 @@
         </p>
         {{ adminform.non_field_errors }}
     {% endif %}
-    <form action="{{ request.get_full_path }}" method="post">
+    <form action="{{ request.path }}" method="post">
         {% csrf_token %}
         <div>
             <fieldset class="module aligned">
@@ -24,7 +24,7 @@
             </fieldset>
         </div>
         <div class="submit-row">
-            <input type="submit" value="{% trans "Submit" %}" class="default" name="_save">
+            <input type="submit" value="{% trans "Next" %}" class="default" name="_save">
         </div>
     </form>
 {% endblock %}
