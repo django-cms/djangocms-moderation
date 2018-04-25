@@ -19,10 +19,10 @@ class BaseTestCase(TestCase):
         cls.wf3 = Workflow.objects.create(pk=3, name='Workflow 3',)
 
         # create pages
-        cls.pg1 = create_page(title='Page 1', template='page.html', language='en',)
-        cls.pg2 = create_page(title='Page 2', template='page.html', language='en',)
-        cls.pg3 = create_page(title='Page 3', template='page.html', language='en',)
-        cls.pg4 = create_page(title='Page 4', template='page.html', language='en',)
+        cls.pg1 = create_page(title='Page 1', template='page.html', language='en', published=True,)
+        cls.pg2 = create_page(title='Page 2', template='page.html', language='en', published=True,)
+        cls.pg3 = create_page(title='Page 3', template='page.html', language='en', published=True,)
+        cls.pg4 = create_page(title='Page 4', template='page.html', language='en', published=True,)
 
         # create users, groups and roles
         cls.user = User.objects.create_superuser(username='test', email='test@test.com', password='test',)
