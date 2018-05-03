@@ -244,7 +244,7 @@ class ModerationActionFormSubmitView(FormView):
         self.form_plugin = ModerationForm.objects.filter(placeholder__page=role.approval_form).first()
 
         if not self.form_plugin:
-            return HttpResponseBadRequest('There is not form built in the attached form page.')
+            return HttpResponseBadRequest('There is no form built in the attached form page.')
 
         if request.method == 'POST' and self.form_plugin:
             form_plugin_instance = self.form_plugin.get_plugin_instance()[1]

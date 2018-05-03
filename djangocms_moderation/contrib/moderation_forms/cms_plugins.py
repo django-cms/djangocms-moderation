@@ -22,7 +22,7 @@ class ModerationFormPlugin(FormPlugin):
     def get_child_classes(cls, slot, page, instance=None):
         child_classes = FormPlugin.get_child_classes(slot, page, instance)
         if 'SubmitButton' in child_classes:
-            # we don't need the SubmitButton, this plugin is more of a form builder
+            # We don't need the SubmitButton, this plugin is more of a form builder
             child_classes.remove('SubmitButton')
         return child_classes
 
