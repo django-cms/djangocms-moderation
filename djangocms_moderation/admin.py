@@ -1,20 +1,28 @@
 from __future__ import unicode_literals
 
+from django.core.urlresolvers import reverse
 from django.contrib import admin
 from django.contrib import messages
 from django.conf.urls import url
 from django.http import HttpResponseRedirect
+from django.utils.html import mark_safe
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.extensions import PageExtensionAdmin
 from cms.models import Page
 
 from adminsortable2.admin import SortableInlineAdminMixin
+from aldryn_forms.models import FormSubmission
 
 from . import views
 from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED
 from .forms import WorkflowStepInlineFormSet
-from .helpers import get_active_moderation_request, get_page_or_404, is_moderation_enabled
+from .helpers import (
+    get_action_form_for_step,
+    get_active_moderation_request,
+    get_page_or_404,
+    is_moderation_enabled,
+)
 from .models import (
     PageModeration,
     PageModerationRequest,
@@ -23,6 +31,7 @@ from .models import (
     Workflow,
     WorkflowStep,
 )
+from .utils import get_action_form_submission_url
 
 
 try:
@@ -38,7 +47,7 @@ class PageModerationAdmin(PageExtensionAdmin):
 
 class PageModerationRequestActionInline(admin.TabularInline):
     model = PageModerationRequestAction
-    fields = ['show_user', 'message', 'date_taken']
+    fields = ['show_user', 'message', 'date_taken', 'action_form']
     readonly_fields = fields
     verbose_name = _('Action')
     verbose_name_plural = _('Actions')
@@ -53,6 +62,20 @@ class PageModerationRequestActionInline(admin.TabularInline):
         _name = obj.get_by_user_name()
         return ugettext('By {user}').format(user=_name)
     show_user.short_description = _('Status')
+
+    def action_form(self, obj):
+        instance = get_action_form_for_step(obj.request, step=obj.step_approved)
+
+        if not instance:
+            return ''
+
+        opts = FormSubmission._meta
+        url = get_action_form_submission_url(instance.action_form.pk)
+        action_form_name = instance.action_form.name
+        user_name = ugettext('Submitted by {}'.format(instance.get_by_user_name()))
+        field_content = '<a href="{}" target="__blank">{}</a> - {}'.format(url, action_form_name, user_name)
+        return mark_safe(field_content)
+    action_form.short_description = _('Action Form')
 
 
 class PageModerationRequestAdmin(admin.ModelAdmin):
@@ -85,8 +108,8 @@ class PageModerationRequestAdmin(admin.ModelAdmin):
 
 
 class RoleAdmin(admin.ModelAdmin):
-    list_display = ['name', 'user', 'group']
-    fields = ['name', 'user', 'group']
+    list_display = ['name', 'user', 'group', 'approval_form']
+    fields = ['name', 'user', 'group', 'approval_form']
 
 
 class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -140,6 +163,11 @@ class ExtendedPageAdmin(PageAdmin):
                 r'^([0-9]+)/([a-z\-]+)/moderation/select-workflow/$',
                 views.select_new_moderation_request,
                 'select_new_moderation',
+            ),
+            _url(
+                r'^([0-9]+)/([a-z\-]+)/moderation/submit-action-form/$',
+                views.moderation_action_form_submit_view,
+                'submit_action_form',
             ),
         ]
         return url_patterns + super(ExtendedPageAdmin, self).get_urls()

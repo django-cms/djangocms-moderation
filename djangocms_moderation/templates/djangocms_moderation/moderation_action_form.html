@@ -1,5 +1,5 @@
 {% extends "admin/change_form.html" %}
-{% load i18n admin_urls %}
+{% load i18n %}
 
 {% block content %}
     {% if errors %}
@@ -12,6 +12,9 @@
         {% csrf_token %}
         <div>
             <fieldset class="module aligned">
+                <div class="form-row">
+                    <b>{% trans "Complete the below form to proceed with Approval" %}</b>
+                </div>
                 {% for field in adminform.visible_fields %}
                     <div class="form-row">
                         <div{% if field.errors %} class="errors"{% endif %}>
@@ -21,16 +24,6 @@
                         </div>
                     </div>
                 {% endfor %}
-                {% if action_forms %}
-                    <div class="form-row">
-                        <div><b>{% trans "Completed Actions Forms"|title %}</b></div>
-                        {% for a_form in action_forms %}
-                            <div>
-                                {{ a_form.step.role.name|title }}: <a href="{% url action_form_opts|admin_urlname:'change' a_form.action_form.id %}" target="__blank">{{ a_form.action_form.name }}</a>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
             </fieldset>
         </div>
         <div class="submit-row">

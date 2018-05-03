@@ -22,7 +22,10 @@ from .utils import generate_reference_number
 
 @python_2_unicode_compatible
 class Role(models.Model):
-    name = models.CharField(verbose_name=_('name'), max_length=120)
+    name = models.CharField(
+        verbose_name=_('name'),
+        max_length=120,
+    )
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         verbose_name=_('user'),
@@ -34,6 +37,19 @@ class Role(models.Model):
         verbose_name=_('group'),
         blank=True,
         null=True,
+    )
+    approval_form = models.ForeignKey(
+        to='cms.Page',
+        verbose_name=_('approval form'),
+        related_name='+',
+        limit_choices_to={
+            'is_page_type': False,
+            'publisher_is_draft': False,
+            'application_urls': 'FormsApp',
+        },
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
     )
 
     class Meta:
@@ -441,6 +457,37 @@ class PageModerationRequestAction(models.Model):
         if next_step:
             self.to_role_id = next_step.role_id
         super(PageModerationRequestAction, self).save(**kwargs)
+
+
+class PageModerationRequestActionFormSubmission(models.Model):
+    request = models.ForeignKey(
+        to=PageModerationRequest,
+        verbose_name=_('request'),
+        related_name='form_submission_actions',
+    )
+    for_step = models.ForeignKey(
+        to=WorkflowStep,
+        verbose_name=_('for step'),
+        related_name='+',
+    )
+    action_form = models.ForeignKey(
+        to='aldryn_forms.FormSubmission',
+        verbose_name=_('action form'),
+        related_name='+',
+    )
+    by_user = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        verbose_name=_('by user'),
+        related_name='+',
+    )
+
+    class Meta:
+        verbose_name = _('Action Form Submission')
+        verbose_name_plural = _('Action Form Submissions')
+    
+    def get_by_user_name(self):
+        user = self.by_user
+        return user.get_full_name() or getattr(user, user.USERNAME_FIELD)
 
 
 extension_pool.register(PageModeration)

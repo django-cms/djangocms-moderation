@@ -2,8 +2,15 @@ from django.shortcuts import get_object_or_404
 
 from cms.models import Page
 
+from aldryn_forms.models import FormSubmission
+
 from . import conf
-from .models import PageModeration, PageModerationRequest, Workflow
+from .models import (
+    PageModeration,
+    PageModerationRequest,
+    PageModerationRequestActionFormSubmission,
+    Workflow,
+)
 
 
 def get_default_workflow():
@@ -68,3 +75,37 @@ def is_moderation_enabled(page):
     if conf.ENABLE_WORKFLOW_OVERRIDE:
         return is_enabled and Workflow.objects.exists()
     return is_enabled and bool(get_page_moderation_workflow(page))
+
+
+def get_form_submission_or_none(pk):
+    try:
+        return FormSubmission.objects.get(pk=pk)
+    except FormSubmission.DoesNotExist:
+        return None
+
+
+def get_action_form_for_step(active_request, step=None, user=None):
+    try:
+        if not step and not user:
+            return None
+
+        if step:
+            current_step = step
+        else:
+            current_step = active_request.user_get_step(user)
+
+        return PageModerationRequestActionFormSubmission.objects.get(
+            request=active_request,
+            for_step=current_step,
+        )
+    except PageModerationRequestActionFormSubmission.DoesNotExist:
+        return None
+
+
+def get_action_forms_for_request(active_request):
+    try:
+        return PageModerationRequestActionFormSubmission.objects.filter(
+            request=active_request,
+        )
+    except PageModerationRequestActionFormSubmission.DoesNotExist:
+        return None
