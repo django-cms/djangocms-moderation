@@ -33,10 +33,10 @@ class BaseToolbarTest(BaseViewTestCase):
         request.current_page = page
         request.user = user
         engine = import_module(settings.SESSION_ENGINE)
-        request.session = engine.SessionStore('session_key')
-        mid = ToolbarMiddleware()
+        request.session = self.client.session
+        mid = ToolbarMiddleware().process_request(request)
         mid.process_request(request)
-        self.toolbar = CMSToolbar(request)
+        self.toolbar = request.toolbar
         self.toolbar.populate()
         self.toolbar.post_template_populate()
         self.toolbar_left_items = self.toolbar.get_left_items()
@@ -47,7 +47,7 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
 
     def test_show_publish_button_if_moderation_disabled_for_page(self):
         self.wf1.is_default = False
-        self.wf1.save() # making all workflows not default, therefore by implementation moderation is disabled
+        self.wf1.save() # making all workflows not default, therefore by design moderation is disabled
         new_page = create_page(title='New Page', template='page.html', language='en', published=True,)
         self.setup_toolbar(new_page, self.user)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])

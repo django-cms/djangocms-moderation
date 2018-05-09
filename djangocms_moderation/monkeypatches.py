@@ -47,7 +47,7 @@ def user_can_view_page_draft(func):
         active_request = get_active_moderation_request(page, get_request_language())
 
         # check if user is part of the active request, if yes, return True
-        if active_request and active_request.user_part_of_moderation(user):
+        if active_request and active_request.user_can_moderate(user):
             return True
 
         return can_view_page_draft

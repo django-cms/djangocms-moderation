@@ -345,8 +345,8 @@ class PageModerationRequest(models.Model):
                 return True
         return False
 
-    def user_part_of_moderation(self, user):
-        for step in self.workflow.steps.all():
+    def user_can_moderate(self, user):
+        for step in self.workflow.steps.select_related('role__group'):
             if step.role.user_is_assigned(user):
                 return True
         return False
