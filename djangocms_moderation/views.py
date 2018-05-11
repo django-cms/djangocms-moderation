@@ -8,7 +8,7 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseRedirect,
 )
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
@@ -16,10 +16,9 @@ from cms.models import Page
 from cms.page_rendering import render_page
 from cms.utils.urlutils import add_url_parameters
 
-from aldryn_forms.forms import FormSubmissionBaseForm
-from aldryn_forms.models import FormSubmission
 from djangocms_moderation.contrib.moderation_forms.models import ModerationForm
 
+from . import conf
 from . import constants
 from .forms import (
     ModerationRequestForm,
@@ -27,16 +26,15 @@ from .forms import (
     UpdateModerationRequestForm,
 )
 from .helpers import (
-    get_action_form_for_step,
-    get_action_forms_for_request,
     get_active_moderation_request,
-    get_form_submission_or_none,
+    get_form_submission_for_step,
+    get_form_submissions_for_request,
     get_page_moderation_workflow,
     get_page_or_404,
     get_workflow_or_none,
 )
-from .models import PageModerationRequest, PageModerationRequestActionFormSubmission
-from .utils import get_action_form_submission_url, get_admin_url
+from .models import ConfirmationFormSubmission, ConfirmationView, PageModerationRequest
+from .utils import get_admin_url
 
 
 class ModerationRequestView(FormView):
@@ -70,34 +68,31 @@ class ModerationRequestView(FormView):
             elif needs_ongoing and not self.active_request.user_can_take_action(user):
                 # User can't approve or reject a request where he's not part of the workflow
                 return HttpResponseForbidden('User is not allowed to update request.')
-            
+
             next_step = self.active_request.user_get_step(self.request.user)
-            approval_form = next_step.role.approval_form if next_step and next_step.role else None
+            confirmation_view_instance = next_step.role.confirmation_view if next_step and next_step.role else None
+            confirmation_is_valid = True
 
-            if approval_form:
-                submitted_action_form = get_action_form_for_step(self.active_request, user=user)
-                reject_status = (constants.ACTION_REJECTED, constants.ACTION_CANCELLED)
+            if confirmation_view_instance:
+                confirmation_is_valid = confirmation_view_instance.is_valid(
+                    active_request=self.active_request,
+                    for_step=next_step,
+                    action=self.action,
+                    is_reviewed=request.GET.get('reviewed'),
+                )
 
-                if self.action == constants.ACTION_APPROVED and not submitted_action_form:
-                    # There is an approval form attached and there is no existing submission for that form
-                    # Redirect to the attached approval form
-                    redirect_url = get_admin_url(
-                        name='cms_moderation_submit_action_form',
+            if not confirmation_is_valid:
+                redirect_url = add_url_parameters(
+                    get_admin_url(
+                        name='cms_moderation_confirmation_view',
                         language=self.language,
-                        args=(self.page_id, self.language),
-                    )
-                    return HttpResponseRedirect(redirect_url)
-                elif self.action in reject_status and submitted_action_form:
-                    # Should not allow to reject/cancel when an approval form is already submitted
-                    action_form_url = get_action_form_submission_url(submitted_action_form.action_form.pk)
-                    return HttpResponseBadRequest(
-                        'Approved action form has already been submitted. \
-                        Delete the form submission to reject/cancel the current moderation request. \
-                        <a href="{}" target="__blank">{}</a>'.format(
-                            action_form_url,
-                            submitted_action_form.action_form.name
-                        )
-                    )
+                        args=(confirmation_view_instance.pk,),
+                    ),
+                    content_view=True,
+                    page=self.page_id,
+                    language=self.language,
+                )
+                return HttpResponseRedirect(redirect_url)
         elif self.action != constants.ACTION_STARTED:
             # All except for the new request endpoint require an active moderation request
             return HttpResponseBadRequest('Page does not have an active moderation request.')
@@ -128,15 +123,12 @@ class ModerationRequestView(FormView):
 
     def get_context_data(self, **kwargs):
         opts = PageModerationRequest._meta
-        action_form_opts = FormSubmission._meta
-        action_forms = list()
+        form_submission_opts = ConfirmationFormSubmission._meta
+        form_submissions = list()
 
         if self.active_request:
-            for instance in get_action_forms_for_request(self.active_request):
-                action_forms.append({
-                    'step': instance.for_step,
-                    'action_form': instance.action_form,
-                })
+            for instance in get_form_submissions_for_request(self.active_request):
+                form_submissions.append(instance)
 
         context = super(ModerationRequestView, self).get_context_data(**kwargs)
         context.update({
@@ -147,8 +139,8 @@ class ModerationRequestView(FormView):
             'app_label': opts.app_label,
             'adminform': context['form'],
             'is_popup': True,
-            'action_forms': action_forms,
-            'action_form_opts': action_form_opts,
+            'form_submissions': form_submissions,
+            'form_submission_opts': form_submission_opts,
         })
         return context
 
@@ -223,71 +215,42 @@ class SelectModerationView(FormView):
 select_new_moderation_request = SelectModerationView.as_view()
 
 
-class ModerationActionFormSubmitView(FormView):
+def moderation_confirmation_view(request, *args, **kwargs):
+    content_view = bool(request.GET.get('content_view'))
+    page = request.GET.get('page')
+    language = request.GET.get('language')
+    confirmation_view_instance = get_object_or_404(ConfirmationView, pk=args[0])
 
-    template_name = 'djangocms_moderation/moderation_action_form.html'
-    form_class = FormSubmissionBaseForm
+    # Get the correct base template depending on content/build view
+    if content_view:
+        base_template = 'djangocms_moderation/base_confirmation.html'
+    else:
+        base_template = 'djangocms_moderation/base_confirmation_build.html'
 
-    def dispatch(self, request, *args, **kwargs):
-        self.request = request
-        self.page_id = args[0]
-        self.current_lang = args[1]
-        self.page = get_page_or_404(self.page_id, self.current_lang)
-        self.active_request = get_active_moderation_request(self.page, self.current_lang)
-        next_step = self.active_request.user_get_step(self.request.user)
-        role = next_step.role
-
-        if not role or not role.approval_form:
-            return HttpResponseBadRequest('There is no form attached with this role.')
-
-        # Get the first form plugin instance in the page
-        self.form_plugin = ModerationForm.objects.filter(placeholder__page=role.approval_form).first()
-
-        if not self.form_plugin:
-            return HttpResponseBadRequest('There is no form built in the attached form page.')
-
-        if request.method == 'POST' and self.form_plugin:
-            form_plugin_instance = self.form_plugin.get_plugin_instance()[1]
-            form = form_plugin_instance.process_form(self.form_plugin, request)
-
-            if form.is_valid():
-                return self.form_valid(form)
-        return super(ModerationActionFormSubmitView, self).dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super(ModerationActionFormSubmitView, self).get_context_data(**kwargs)
-        form_plugin_class_instance = self.form_plugin.get_plugin_class_instance()
-        form_context = form_plugin_class_instance.render({'request': self.request}, self.form_plugin, None)
-        context.update({
-            'has_change_permission': True,
-            'root_path': reverse('admin:index'),
-            'adminform': form_context['form'],
-            'is_popup': True,
-        })
-        return context
-
-    def get_form_kwargs(self):
-        kwargs = super(ModerationActionFormSubmitView, self).get_form_kwargs()
-        kwargs['request'] = self.request
-        kwargs['form_plugin'] = self.form_plugin
-        return kwargs
-
-    def form_valid(self, plugin_form):
-        # Save action form submission
-        action_form_submission = PageModerationRequestActionFormSubmission(
-            request=self.active_request,
-            for_step=self.active_request.user_get_step(self.request.user),
-            action_form=plugin_form.instance,
-            by_user=self.request.user,
+    context = {
+        'opts': ConfirmationView._meta,
+        'app_label': ConfirmationView._meta.app_label, 
+        'change': True,
+        'add': False,
+        'is_popup': True,
+        'save_as': False,
+        'has_delete_permission': False,
+        'has_add_permission': False,
+        'has_change_permission': True,
+        'instance': confirmation_view_instance,
+        'is_form_type': confirmation_view_instance.content_type == constants.CONTENT_TYPE_FORM,
+        'content_view': content_view,
+        'CONFIRMATION_BASE_TEMPLATE': base_template,
+    }
+    
+    if request.method == 'POST' and page and language:
+        context['submitted'] = True
+        context['redirect_url'] = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_approve_request',
+                language=language,
+                args=(page, language),
+            ),
+            reviewed=True,
         )
-        action_form_submission.save()
-
-        redirect_url = get_admin_url(
-            name='cms_moderation_approve_request',
-            language=self.current_lang,
-            args=(self.page_id, self.current_lang),
-        )
-        return HttpResponseRedirect(redirect_url)
-
-
-moderation_action_form_submit_view = ModerationActionFormSubmitView.as_view()
+    return render(request, confirmation_view_instance.template, context)

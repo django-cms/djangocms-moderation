@@ -1,23 +1,78 @@
 from __future__ import unicode_literals
+import json
 
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
-from django.db import models
-from django.db import transaction
+from django.db import models, transaction
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.extensions import PageExtension
 from cms.extensions.extension_pool import extension_pool
+from cms.models.fields import PlaceholderField
 
 from . import conf
 from . import constants
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
 from .utils import generate_reference_number
+
+
+@python_2_unicode_compatible
+class ConfirmationView(models.Model):
+    CONTENT_TYPES = (
+        (constants.CONTENT_TYPE_PLAIN_CONTENT, _('Plain Content')),
+        (constants.CONTENT_TYPE_FORM, _('Form')),
+    )
+
+    name = models.CharField(
+        verbose_name=_('name'),
+        max_length=50,
+    )
+    content = PlaceholderField('confirmation_content')
+    content_type = models.CharField(
+        verbose_name=_('Content Type'),
+        choices=CONTENT_TYPES,
+        default=constants.CONTENT_TYPE_FORM,
+        max_length=50,
+    )
+    template = models.CharField(
+        verbose_name=_('Template'),
+        choices=conf.CONFIRMATION_VIEW_TEMPLATES,
+        default=conf.DEFAULT_CONFIRMATION_VIEW_TEMPLATE,
+        max_length=100,
+    )
+
+    class Meta:
+        verbose_name = _('Confirmation View')
+        verbose_name_plural = _('Confirmation Views')
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('admin:cms_moderation_confirmation_view', args=(self.pk,))
+
+    def is_valid(self, active_request, for_step, action, is_reviewed=False):
+        from .helpers import get_form_submission_for_step
+
+        if action != constants.ACTION_APPROVED:
+            # We are not handling any actions other than APPROVED
+            return True
+
+        submitted_form = get_form_submission_for_step(active_request, for_step)
+
+        if self.content_type == constants.CONTENT_TYPE_FORM and not submitted_form:
+            # No form submission for the attached confirmation form
+            return False
+        elif self.content_type != constants.CONTENT_TYPE_FORM and not is_reviewed:
+            # Any other confirmation content type but not yet reviewed
+            return False
+        return True
 
 
 @python_2_unicode_compatible
@@ -38,15 +93,10 @@ class Role(models.Model):
         blank=True,
         null=True,
     )
-    approval_form = models.ForeignKey(
-        to='cms.Page',
-        verbose_name=_('approval form'),
+    confirmation_view = models.ForeignKey(
+        to=ConfirmationView,
+        verbose_name=_('confirmation view'),
         related_name='+',
-        limit_choices_to={
-            'is_page_type': False,
-            'publisher_is_draft': False,
-            'application_urls': 'FormsApp',
-        },
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
@@ -243,6 +293,9 @@ class PageModeration(PageExtension):
 
     def copy_relations(self, oldinstance, language):
         self.workflow_id = oldinstance.workflow_id
+
+
+extension_pool.register(PageModeration)
 
 
 @python_2_unicode_compatible
@@ -459,20 +512,15 @@ class PageModerationRequestAction(models.Model):
         super(PageModerationRequestAction, self).save(**kwargs)
 
 
-class PageModerationRequestActionFormSubmission(models.Model):
+class ConfirmationFormSubmission(models.Model):
     request = models.ForeignKey(
         to=PageModerationRequest,
         verbose_name=_('request'),
-        related_name='form_submission_actions',
+        related_name='form_submissions',
     )
     for_step = models.ForeignKey(
         to=WorkflowStep,
         verbose_name=_('for step'),
-        related_name='+',
-    )
-    action_form = models.ForeignKey(
-        to='aldryn_forms.FormSubmission',
-        verbose_name=_('action form'),
         related_name='+',
     )
     by_user = models.ForeignKey(
@@ -480,14 +528,25 @@ class PageModerationRequestActionFormSubmission(models.Model):
         verbose_name=_('by user'),
         related_name='+',
     )
+    data = models.TextField(
+        blank=True,
+        editable=False,
+    )
+    submitted_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return '{} - {}'.format(self.request.reference_number, self.for_step) 
 
     class Meta:
-        verbose_name = _('Action Form Submission')
-        verbose_name_plural = _('Action Form Submissions')
-    
+        verbose_name = _('Confirmation Form Submission')
+        verbose_name_plural = _('Confirmation Form Submissions')
+        unique_together = ('request', 'for_step')
+
     def get_by_user_name(self):
         user = self.by_user
         return user.get_full_name() or getattr(user, user.USERNAME_FIELD)
 
-
-extension_pool.register(PageModeration)
+    def get_form_data(self):
+        return json.loads(self.data)

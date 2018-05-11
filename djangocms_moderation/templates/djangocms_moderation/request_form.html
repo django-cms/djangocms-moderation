@@ -21,12 +21,12 @@
                         </div>
                     </div>
                 {% endfor %}
-                {% if action_forms %}
+                {% if form_submissions %}
                     <div class="form-row">
-                        <div><b>{% trans "Completed Actions Forms"|title %}</b></div>
-                        {% for a_form in action_forms %}
+                        <div><b>{% trans "Completed Forms"|title %}</b></div>
+                        {% for form_sub in form_submissions %}
                             <div>
-                                {{ a_form.step.role.name|title }}: <a href="{% url action_form_opts|admin_urlname:'change' a_form.action_form.id %}" target="__blank">{{ a_form.action_form.name }}</a>
+                                <a href="{% url form_submission_opts|admin_urlname:'change' form_sub.pk %}" target="__blank">{{ form_sub.for_step.role.name|title }}</a>
                             </div>
                         {% endfor %}
                     </div>

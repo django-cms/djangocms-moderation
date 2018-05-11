@@ -8,22 +8,24 @@ from django.http import HttpResponseRedirect
 from django.utils.html import mark_safe
 from django.utils.translation import ugettext, ugettext_lazy as _
 
+from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.extensions import PageExtensionAdmin
 from cms.models import Page
 
 from adminsortable2.admin import SortableInlineAdminMixin
-from aldryn_forms.models import FormSubmission
 
 from . import views
 from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED
 from .forms import WorkflowStepInlineFormSet
 from .helpers import (
-    get_action_form_for_step,
     get_active_moderation_request,
+    get_form_submission_for_step,
     get_page_or_404,
     is_moderation_enabled,
 )
 from .models import (
+    ConfirmationFormSubmission,
+    ConfirmationView,
     PageModeration,
     PageModerationRequest,
     PageModerationRequestAction,
@@ -31,7 +33,6 @@ from .models import (
     Workflow,
     WorkflowStep,
 )
-from .utils import get_action_form_submission_url
 
 
 try:
@@ -47,7 +48,7 @@ class PageModerationAdmin(PageExtensionAdmin):
 
 class PageModerationRequestActionInline(admin.TabularInline):
     model = PageModerationRequestAction
-    fields = ['show_user', 'message', 'date_taken', 'action_form']
+    fields = ['show_user', 'message', 'date_taken', 'form_submission']
     readonly_fields = fields
     verbose_name = _('Action')
     verbose_name_plural = _('Actions')
@@ -63,19 +64,17 @@ class PageModerationRequestActionInline(admin.TabularInline):
         return ugettext('By {user}').format(user=_name)
     show_user.short_description = _('Status')
 
-    def action_form(self, obj):
-        instance = get_action_form_for_step(obj.request, step=obj.step_approved)
+    def form_submission(self, obj):
+        instance = get_form_submission_for_step(obj.request, obj.step_approved)
 
         if not instance:
             return ''
 
-        opts = FormSubmission._meta
-        url = get_action_form_submission_url(instance.action_form.pk)
-        action_form_name = instance.action_form.name
-        user_name = ugettext('Submitted by {}'.format(instance.get_by_user_name()))
-        field_content = '<a href="{}" target="__blank">{}</a> - {}'.format(url, action_form_name, user_name)
+        opts = ConfirmationFormSubmission._meta
+        url = reverse('admin:{}_{}_change'.format(opts.app_label, opts.model_name), instance.pk)
+        field_content = '<a href="{}" target="__blank">{}</a>'.format(url, obj.step_approved.role.name)
         return mark_safe(field_content)
-    action_form.short_description = _('Action Form')
+    form_submission.short_description = _('Form Submission')
 
 
 class PageModerationRequestAdmin(admin.ModelAdmin):
@@ -108,8 +107,8 @@ class PageModerationRequestAdmin(admin.ModelAdmin):
 
 
 class RoleAdmin(admin.ModelAdmin):
-    list_display = ['name', 'user', 'group', 'approval_form']
-    fields = ['name', 'user', 'group', 'approval_form']
+    list_display = ['name', 'user', 'group', 'confirmation_view']
+    fields = ['name', 'user', 'group', 'confirmation_view']
 
 
 class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -164,11 +163,6 @@ class ExtendedPageAdmin(PageAdmin):
                 views.select_new_moderation_request,
                 'select_new_moderation',
             ),
-            _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/submit-action-form/$',
-                views.moderation_action_form_submit_view,
-                'submit_action_form',
-            ),
         ]
         return url_patterns + super(ExtendedPageAdmin, self).get_urls()
 
@@ -195,8 +189,68 @@ class ExtendedPageAdmin(PageAdmin):
         return HttpResponseRedirect(path)
 
 
+class ConfirmationViewAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
+    view_on_site = True
+
+    def get_urls(self):
+        def _url(regex, fn, name, **kwargs):
+            return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
+
+        url_patterns = [
+            _url(r'^moderation-confirmation-view/([0-9]+)/$',
+                views.moderation_confirmation_view,
+                name='cms_moderation_confirmation_view',
+            ),
+        ]
+        return url_patterns + super(ConfirmationViewAdmin, self).get_urls()
+
+
+class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
+    list_display = ['moderation_request', 'for_step', 'submitted_at']
+    fields = ['moderation_request', 'show_user', 'for_step', 'submitted_at', 'form_data']
+    readonly_fields = fields
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+    
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save'] = False
+        extra_context['show_save_and_continue'] = False
+        return super(ConfirmationFormSubmissionAdmin, self).change_view(
+            request, object_id, form_url, extra_context=extra_context,
+        )
+
+    def moderation_request(self, obj):
+        return obj.request.reference_number
+    moderation_request.short_description = _('Request')
+
+    def show_user(self, obj):
+        return obj.get_by_user_name()
+    show_user.short_description = _('By User')
+
+    def form_data(self, obj):
+        data = obj.get_form_data()
+        data_view = ''
+
+        for field in data:
+            data_view += '<p>{}: <b>{}</b><br />{}: <b>{}</b></p>'.format(
+                ugettext('Question'),
+                field['label'],
+                ugettext('Answer'),
+                field['value']
+            )
+        return mark_safe(data_view)
+    form_data.short_description = _('Form Data')
+
+
 admin.site._registry[Page] = ExtendedPageAdmin(Page, admin.site)
 admin.site.register(PageModeration, PageModerationAdmin)
 admin.site.register(PageModerationRequest, PageModerationRequestAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
+admin.site.register(ConfirmationView, ConfirmationViewAdmin)
+admin.site.register(ConfirmationFormSubmission, ConfirmationFormSubmissionAdmin)

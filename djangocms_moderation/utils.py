@@ -10,8 +10,6 @@ from django.utils.translation import override as force_language
 
 from cms.utils.urlutils import admin_reverse
 
-from aldryn_forms.models import FormSubmission
-
 
 def get_absolute_url(location, site=None):
     if not site:
@@ -38,11 +36,3 @@ def load_backend(path):
 def generate_reference_number(path, **kwargs):
     backend = load_backend(path)
     return backend(**kwargs)
-
-
-def get_action_form_submission_url(form_pk):
-    opts = FormSubmission._meta
-    return reverse(
-        'admin:{}_{}_change'.format(opts.app_label, opts.model_name),
-        args=[form_pk]
-    )
