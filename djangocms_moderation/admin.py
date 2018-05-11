@@ -71,7 +71,7 @@ class PageModerationRequestActionInline(admin.TabularInline):
             return ''
 
         opts = ConfirmationFormSubmission._meta
-        url = reverse('admin:{}_{}_change'.format(opts.app_label, opts.model_name), instance.pk)
+        url = reverse('admin:{}_{}_change'.format(opts.app_label, opts.model_name), args=[instance.pk,])
         field_content = '<a href="{}" target="__blank">{}</a>'.format(url, obj.step_approved.role.name)
         return mark_safe(field_content)
     form_submission.short_description = _('Form Submission')
