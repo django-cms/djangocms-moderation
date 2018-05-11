@@ -49,7 +49,6 @@ def user_can_view_page_draft(func):
         # check if user is part of the active request, if yes, return True
         if active_request and active_request.user_can_moderate(user):
             return True
-
         return can_view_page_draft
     return wrapper
 
