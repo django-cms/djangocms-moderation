@@ -13,6 +13,7 @@ from djangocms_moderation.models import *
 
 from .utils import BaseTestCase
 
+
 class RoleTest(BaseTestCase):
 
     def test_user_and_group_validation_error(self):
@@ -32,10 +33,15 @@ class RoleTest(BaseTestCase):
     def test_get_users_queryset(self):
         # with user
         role = Role.objects.create(name='New Role 1', user=self.user,)
-        self.assertQuerysetEqual(role.get_users_queryset(), User.objects.filter(pk=self.user.pk), transform=lambda x: x, ordered=False)
+        self.assertQuerysetEqual(
+            role.get_users_queryset(), User.objects.filter(pk=self.user.pk), transform=lambda x: x, ordered=False)
         # with group
         role = Role.objects.create(name='New Role 2', group=self.group,)
-        self.assertQuerysetEqual(role.get_users_queryset(), User.objects.filter(pk__in=[self.user2.pk, self.user3.pk]), transform=lambda x: x, ordered=False)
+        self.assertQuerysetEqual(
+            role.get_users_queryset(), User.objects.filter(
+                pk__in=[self.user2.pk, self.user3.pk]
+            ), transform=lambda x: x, ordered=False
+        )
 
 
 class WorkflowTest(BaseTestCase):
@@ -43,8 +49,10 @@ class WorkflowTest(BaseTestCase):
     def test_multiple_defaults_validation_error(self):
         workflow = Workflow.objects.create(name='New Workflow 3', is_default=False,)
         workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 4', is_default=True,) # self.wf1 is default
-        self.assertRaisesMessage(ValidationError, 'Can\'t have two default workflows, only one is allowed.', workflow.clean)
+        workflow = Workflow.objects.create(name='New Workflow 4', is_default=True,)  # self.wf1 is default
+        self.assertRaisesMessage(
+            ValidationError, 'Can\'t have two default workflows, only one is allowed.', workflow.clean
+        )
 
     def test_first_step(self):
         self.assertEqual(self.wf1.first_step, self.wf1st1)
@@ -57,7 +65,12 @@ class WorkflowTest(BaseTestCase):
             language='en',
             message='Some message',
         )
-        self.assertQuerysetEqual(request.actions.all(), PageModerationRequestAction.objects.filter(request=request), transform=lambda x: x, ordered=False)
+        self.assertQuerysetEqual(
+            request.actions.all(),
+            PageModerationRequestAction.objects.filter(request=request),
+            transform=lambda x: x,
+            ordered=False,
+        )
         mock_nrm.assert_called_once()
 
 
@@ -98,11 +111,26 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertEqual(self.moderation_request2.get_last_action(), self.moderation_request2.actions.last())
 
     def test_get_pending_steps(self):
-        self.assertQuerysetEqual(self.moderation_request3.get_pending_steps(), WorkflowStep.objects.filter(pk__in=[self.wf3st2.pk]), transform=lambda x: x, ordered=False)
+        self.assertQuerysetEqual(
+            self.moderation_request3.get_pending_steps(),
+            WorkflowStep.objects.filter(pk__in=[self.wf3st2.pk]),
+            transform=lambda x: x,
+            ordered=False,
+        )
 
     def test_get_pending_required_steps(self):
-        self.assertQuerysetEqual(self.moderation_request1.get_pending_required_steps(), WorkflowStep.objects.filter(pk__in=[self.wf1st1.pk, self.wf1st3.pk]), transform=lambda x: x, ordered=False)
-        self.assertQuerysetEqual(self.moderation_request3.get_pending_required_steps(), WorkflowStep.objects.none(), transform=lambda x: x, ordered=False)
+        self.assertQuerysetEqual(
+            self.moderation_request1.get_pending_required_steps(),
+            WorkflowStep.objects.filter(pk__in=[self.wf1st1.pk, self.wf1st3.pk]),
+            transform=lambda x: x,
+            ordered=False,
+        )
+        self.assertQuerysetEqual(
+            self.moderation_request3.get_pending_required_steps(),
+            WorkflowStep.objects.none(),
+            transform=lambda x: x,
+            ordered=False,
+        )
 
     def test_get_next_required(self):
         self.assertEqual(self.moderation_request1.get_next_required(), self.wf1st1)
@@ -131,7 +159,8 @@ class PageModerationRequestTest(BaseTestCase):
         self.wf4 = Workflow.objects.create(pk=4, name='Workflow 4',)
         self.wf4st1 = self.wf4.steps.create(role=self.role4, is_required=True, order=1,)
         self.wf4st2 = self.wf4.steps.create(role=self.role1, is_required=False, order=2,)
-        self.moderation_request4 = PageModerationRequest.objects.create(page=self.pg5, language='en', workflow=self.wf4, is_active=True,)
+        self.moderation_request4 = PageModerationRequest.objects.create(
+            page=self.pg5, language='en', workflow=self.wf4, is_active=True,)
         self.moderation_request4.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
         self.assertTrue(self.moderation_request4.user_can_moderate(self.user))
