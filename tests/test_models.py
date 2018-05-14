@@ -118,11 +118,11 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertFalse(self.moderation_request3.user_can_take_action(self.user))
         self.assertTrue(self.moderation_request3.user_can_take_action(self.user2))
 
-    def test_user_part_of_moderation(self):
+    def test_user_can_moderate(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
-        self.assertFalse(self.moderation_request1.user_part_of_moderation(temp_user))
-        self.assertFalse(self.moderation_request2.user_part_of_moderation(temp_user))
-        self.assertFalse(self.moderation_request3.user_part_of_moderation(temp_user))
+        self.assertFalse(self.moderation_request1.user_can_moderate(temp_user))
+        self.assertFalse(self.moderation_request2.user_can_moderate(temp_user))
+        self.assertFalse(self.moderation_request3.user_can_moderate(temp_user))
 
         # check that it doesn't allow access to users that aren't part of this moderation request
         self.pg5 = create_page(title='Page 5', template='page.html', language='en',)
@@ -134,10 +134,10 @@ class PageModerationRequestTest(BaseTestCase):
         self.moderation_request4 = PageModerationRequest.objects.create(page=self.pg5, language='en', workflow=self.wf4, is_active=True,)
         self.moderation_request4.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
-        self.assertTrue(self.moderation_request4.user_part_of_moderation(self.user))
-        self.assertFalse(self.moderation_request4.user_part_of_moderation(self.user2))
-        self.assertFalse(self.moderation_request4.user_part_of_moderation(self.user3))
-        self.assertTrue(self.moderation_request4.user_part_of_moderation(self.user4))
+        self.assertTrue(self.moderation_request4.user_can_moderate(self.user))
+        self.assertFalse(self.moderation_request4.user_can_moderate(self.user2))
+        self.assertFalse(self.moderation_request4.user_can_moderate(self.user3))
+        self.assertTrue(self.moderation_request4.user_can_moderate(self.user4))
 
     @patch('djangocms_moderation.models.notify_request_author')
     @patch('djangocms_moderation.models.notify_requested_moderator')

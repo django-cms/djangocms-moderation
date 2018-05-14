@@ -22,7 +22,7 @@ from .utils import BaseViewTestCase
 class BaseToolbarTest(BaseViewTestCase):
 
     def setup_toolbar(self, page, user, is_edit_mode=True):
-        page.set_publisher_state('en', state=PUBLISHER_STATE_DIRTY) # make page dirty
+        page.set_publisher_state('en', state=PUBLISHER_STATE_DIRTY)  # make page dirty
 
         if is_edit_mode:
             edit_mode = get_cms_setting('CMS_TOOLBAR_URL__EDIT_ON')
@@ -35,7 +35,6 @@ class BaseToolbarTest(BaseViewTestCase):
         engine = import_module(settings.SESSION_ENGINE)
         request.session = self.client.session
         mid = ToolbarMiddleware().process_request(request)
-        mid.process_request(request)
         self.toolbar = request.toolbar
         self.toolbar.populate()
         self.toolbar.post_template_populate()
@@ -47,7 +46,7 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
 
     def test_show_publish_button_if_moderation_disabled_for_page(self):
         self.wf1.is_default = False
-        self.wf1.save() # making all workflows not default, therefore by design moderation is disabled
+        self.wf1.save()  # making all workflows not default, therefore by design moderation is disabled
         new_page = create_page(title='New Page', template='page.html', language='en', published=True,)
         self.setup_toolbar(new_page, self.user)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
@@ -88,7 +87,9 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         new_page = create_page(title='New Page', template='page.html', language='en', published=True,)
         self.setup_toolbar(new_page, self.user)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
-        submit_for_moderation_button = [button for button in buttons if force_text(button.name) == 'Submit for moderation'][0]
+        submit_for_moderation_button = [
+            button for button in buttons if force_text(button.name) == 'Submit for moderation'
+        ][0]
         url = get_admin_url(
             name='cms_moderation_new_request',
             language='en',
@@ -101,7 +102,9 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         new_page = create_page(title='New Page', template='page.html', language='en', published=True,)
         self.setup_toolbar(new_page, self.user)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
-        submit_for_moderation_button = [button for button in buttons if force_text(button.name) == 'Submit for moderation'][0]
+        submit_for_moderation_button = [
+            button for button in buttons if force_text(button.name) == 'Submit for moderation'
+        ][0]
         url = get_admin_url(
             name='cms_moderation_select_new_moderation',
             language='en',
@@ -110,7 +113,7 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         self.assertEqual(submit_for_moderation_button.url, url)
 
     def test_publish_button_after_moderation_request_approved(self):
-        self.setup_toolbar(self.pg3, self.user) # pg3 => moderation request is approved
+        self.setup_toolbar(self.pg3, self.user)  # pg3 => moderation request is approved
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
         self.assertEqual(len(buttons), 2)
         self.assertEqual(force_text(buttons[0].name), 'Publish page changes')
