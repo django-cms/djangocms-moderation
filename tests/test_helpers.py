@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from django.test import TestCase, override_settings
+from django.test import override_settings
 
 from djangocms_moderation.helpers import *
 from djangocms_moderation.models import Workflow, PageModeration

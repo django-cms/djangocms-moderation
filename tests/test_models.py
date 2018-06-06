@@ -1,17 +1,11 @@
-import re
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
-from django.test import TestCase, override_settings
 
-from cms.api import create_page
-
-from djangocms_moderation import constants
-from djangocms_moderation.emails import notify_requested_moderator
 from djangocms_moderation.models import *
 
 from .utils import BaseTestCase
+
 
 class RoleTest(BaseTestCase):
 
