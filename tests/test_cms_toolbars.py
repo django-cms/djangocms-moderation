@@ -15,6 +15,7 @@ from cms.utils.conf import get_cms_setting
 from djangocms_moderation import constants
 from djangocms_moderation.models import PageModeration
 from djangocms_moderation.utils import get_admin_url
+import cms
 
 from .utils import BaseViewTestCase
 
@@ -114,6 +115,7 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
 
     def test_publish_button_after_moderation_request_approved(self):
         self.setup_toolbar(self.pg3, self.user)  # pg3 => moderation request is approved
+        cms.api.publish_page(page=self.pg3, user=self.user, language="en")
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
         self.assertEqual(len(buttons), 2)
         self.assertEqual(force_text(buttons[0].name), 'Publish page changes')
