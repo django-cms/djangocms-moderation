@@ -37,26 +37,28 @@ We need to install the `djangocms 3.4.3` (or higher) and then add this repositor
 
 7. Add the following email settings to settings.py
 
-```
+::
+
     # This will ensure that emails will be printed to the console instead of real send
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-```
 
+::
+    
 9. Fork `https://github.com/divio/djangocms-moderation`
 
-10. Clone yours `djangocms-moderation` app from github into separate folder,
-    e.g. `~/workspace/djangocms-moderation/`
+10. Clone yours ``djangocms-moderation`` app from github into separate folder,
+    e.g. ``~/workspace/djangocms-moderation/``
 
-11. Go to the main project folder  `cd ~/workspace/testproject` and install the
+11. Go to the main project folder  ``cd ~/workspace/testproject`` and install the
     package from your local folder
 
     `pip install -e ~/workspace/djangocms-moderation/`
 
-12. Add `djangocms_moderation` and `adminsortable2` to the INSTALLED_APPS in settings.py
+12. Add ``djangocms_moderation`` and ``adminsortable2`` to the INSTALLED_APPS in settings.py
 
 13. `python manage.py migrate`
 
-14. Running tests - you can do this straight from your `~/workspace/djangocms-moderation/`
+14. Running tests - you can do this straight from your ``~/workspace/djangocms-moderation/``
 directory by running
 
     You might need to install `pip install djangocms-helper`
