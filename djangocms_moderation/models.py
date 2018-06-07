@@ -345,6 +345,12 @@ class PageModerationRequest(models.Model):
                 return True
         return False
 
+    def user_can_moderate(self, user):
+        for step in self.workflow.steps.select_related('role__group'):
+            if step.role.user_is_assigned(user):
+                return True
+        return False
+
     def save(self, **kwargs):
         if not self.reference_number:
             self.reference_number = generate_reference_number(
