@@ -9,9 +9,27 @@ Requirements
 django CMS Moderation requires that you have a django CMS 3.4.3 (or higher) project already running and set up.
 
 
-============
-Installation
-============
+To install
+==========
+
+Run::
+
+    pip install git+git://github.com/divio/djangocms-moderation@develop#egg=djangocms-moderation
+
+Add the following to your project's ``INSTALLED_APPS``:
+
+  - ``'djangocms_moderation'``
+  - ``'adminsortable2'``
+
+Run::
+
+    python manage.py migrate djangocms_moderation
+
+to perform the application's database migrations.
+
+
+To contribute
+=============
 
 We need to install the `djangocms 3.4.3` (or higher) and then add this repository as a dependency:
 
@@ -43,7 +61,7 @@ We need to install the `djangocms 3.4.3` (or higher) and then add this repositor
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ::
-    
+
 9. Fork `https://github.com/divio/djangocms-moderation`
 
 10. Clone yours ``djangocms-moderation`` app from github into separate folder,
