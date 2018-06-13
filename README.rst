@@ -51,7 +51,7 @@ We need to install the `djangocms 3.4.3` (or higher) and then add this repositor
 
     `djangocms -f -p . testsite`
 
-6. `pip install djangocms_helper`
+6. Install ``pip install djangocms_helper``
 
 7. Add the following email settings to settings.py
 
@@ -79,7 +79,6 @@ We need to install the `djangocms 3.4.3` (or higher) and then add this repositor
 14. Running tests - you can do this straight from your ``~/workspace/djangocms-moderation/``
 directory by running
 
-    You might need to install `pip install djangocms-helper`
     `python setup.py test`
 
 Now you can make changes to your local `~/workspace/djangocms-moderation/`
