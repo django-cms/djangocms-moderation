@@ -5,9 +5,14 @@ from django.utils.functional import cached_property
 from django.utils.translation import override as force_language, ugettext_lazy as _
 
 from cms.api import get_page_draft
-from cms.toolbar_pool import toolbar_pool
 from cms.toolbar_base import CMSToolbar
-from cms.toolbar.items import Button, ModalButton, Dropdown, DropdownToggleButton
+from cms.toolbar_pool import toolbar_pool
+from cms.toolbar.items import (
+    Button,
+    Dropdown,
+    DropdownToggleButton,
+    ModalButton,
+)
 from cms.utils import page_permissions
 from cms.utils.urlutils import admin_reverse
 
@@ -63,6 +68,14 @@ class ExtendedPageToolbar(PageToolbar):
             args=(self.page.pk, self.current_lang),
         )
         return ModalButton(name=_('Cancel request'), url=cancel_request_url)
+
+    def user_can_publish(self):
+        moderation_request = self.moderation_request
+        user = self.request.user
+
+        if moderation_request and moderation_request.user_can_take_action(user):
+            return True
+        return super(ExtendedPageToolbar, self).user_can_publish()
 
     def add_publish_button(self, classes=('cms-btn-action', 'cms-btn-publish', 'cms-btn-publish-active',)):
         page = self.page

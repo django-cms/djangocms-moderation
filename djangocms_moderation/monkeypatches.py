@@ -37,3 +37,20 @@ def user_can_change_page(func):
 
 
 page_permissions.user_can_change_page = user_can_change_page(page_permissions.user_can_change_page)
+
+def user_can_view_page_draft(func):
+    @wraps(func, assigned=available_attrs(func))
+    def wrapper(user, page, site=None):
+        can_view_page_draft = func(user, page, site=site)
+
+        # get active request for page
+        active_request = get_active_moderation_request(page, get_request_language())
+
+        # check if user is part of the active request, if yes, return True
+        if active_request and active_request.user_can_moderate(user):
+            return True
+        return can_view_page_draft
+    return wrapper
+
+page_permissions.user_can_view_page_draft = user_can_view_page_draft(page_permissions.user_can_view_page_draft)
+
