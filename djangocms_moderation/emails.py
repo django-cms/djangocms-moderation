@@ -29,6 +29,9 @@ def _send_email(request, action, recipients, subject, template):
     else:
         moderator_name = ''
 
+    if moderator_name != '':
+        page_url = page_url + '?edit'
+
     context = {
         'page': page,
         'page_url': get_absolute_url(page_url, site=page.node.site),
