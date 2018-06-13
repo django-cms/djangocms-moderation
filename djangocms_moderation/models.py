@@ -23,16 +23,13 @@ from .utils import generate_reference_number
 
 
 @python_2_unicode_compatible
-class ConfirmationView(models.Model):
+class ConfirmationPage(models.Model):
     CONTENT_TYPES = (
-        (constants.CONTENT_TYPE_PLAIN_CONTENT, _('Plain Content')),
+        (constants.CONTENT_TYPE_PLAIN, _('Plain')),
         (constants.CONTENT_TYPE_FORM, _('Form')),
     )
 
-    name = models.CharField(
-        verbose_name=_('name'),
-        max_length=50,
-    )
+    name = models.CharField(verbose_name=_('name'), max_length=50)
     content = PlaceholderField('confirmation_content')
     content_type = models.CharField(
         verbose_name=_('Content Type'),
@@ -42,27 +39,23 @@ class ConfirmationView(models.Model):
     )
     template = models.CharField(
         verbose_name=_('Template'),
-        choices=conf.CONFIRMATION_VIEW_TEMPLATES,
-        default=conf.DEFAULT_CONFIRMATION_VIEW_TEMPLATE,
+        choices=conf.CONFIRMATION_PAGE_TEMPLATES,
+        default=conf.DEFAULT_CONFIRMATION_PAGE_TEMPLATE,
         max_length=100,
     )
 
     class Meta:
-        verbose_name = _('Confirmation View')
-        verbose_name_plural = _('Confirmation Views')
+        verbose_name = _('Confirmation Page')
+        verbose_name_plural = _('Confirmation Pages')
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('admin:cms_moderation_confirmation_view', args=(self.pk,))
+        return reverse('admin:cms_moderation_confirmation_page', args=(self.pk,))
 
-    def is_valid(self, active_request, for_step, action, is_reviewed=False):
+    def is_valid(self, active_request, for_step, is_reviewed=False):
         from .helpers import get_form_submission_for_step
-
-        if action != constants.ACTION_APPROVED:
-            # We are not handling any actions other than APPROVED
-            return True
 
         submitted_form = get_form_submission_for_step(active_request, for_step)
 
@@ -77,10 +70,7 @@ class ConfirmationView(models.Model):
 
 @python_2_unicode_compatible
 class Role(models.Model):
-    name = models.CharField(
-        verbose_name=_('name'),
-        max_length=120,
-    )
+    name = models.CharField(verbose_name=_('name'), max_length=120)
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         verbose_name=_('user'),
@@ -93,13 +83,13 @@ class Role(models.Model):
         blank=True,
         null=True,
     )
-    confirmation_view = models.ForeignKey(
-        to=ConfirmationView,
-        verbose_name=_('confirmation view'),
+    confirmation_page = models.ForeignKey(
+        to=ConfirmationPage,
+        verbose_name=_('confirmation page'),
         related_name='+',
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
     )
 
     class Meta:
@@ -293,9 +283,6 @@ class PageModeration(PageExtension):
 
     def copy_relations(self, oldinstance, language):
         self.workflow_id = oldinstance.workflow_id
-
-
-extension_pool.register(PageModeration)
 
 
 @python_2_unicode_compatible
@@ -532,9 +519,7 @@ class ConfirmationFormSubmission(models.Model):
         blank=True,
         editable=False,
     )
-    submitted_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return '{} - {}'.format(self.request.reference_number, self.for_step) 
@@ -550,3 +535,6 @@ class ConfirmationFormSubmission(models.Model):
 
     def get_form_data(self):
         return json.loads(self.data)
+
+
+extension_pool.register(PageModeration)

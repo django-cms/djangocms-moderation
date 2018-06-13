@@ -30,5 +30,5 @@ ACTION_APPROVED = 'approved'
 ACTION_CANCELLED = 'cancelled'
 ACTION_FINISHED = 'finished'
 
-CONTENT_TYPE_PLAIN_CONTENT = 'plain_content'
+CONTENT_TYPE_PLAIN = 'plain'
 CONTENT_TYPE_FORM = 'form'

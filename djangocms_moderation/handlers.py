@@ -9,7 +9,7 @@ from cms.signals import post_obj_operation
 from .constants import ACTION_FINISHED
 from .helpers import get_active_moderation_request, get_page_or_404
 from .models import ConfirmationFormSubmission
-from .signals import cms_moderation_confirmation_form_submission
+from .signals import confirmation_form_submission
 
 
 @receiver(post_obj_operation)
@@ -36,23 +36,19 @@ def close_moderation_request(sender, **kwargs):
     )
 
 
-@receiver(cms_moderation_confirmation_form_submission)
+@receiver(confirmation_form_submission)
 def moderation_confirmation_form_submission(sender, page_id, language, user, form_data, **kwargs):
-    if not page_id or not language:
-        return
-
     for field_data in form_data:
-        if not field_data.keys() >= {'label', 'value'}:
-            raise ValueError('Each field dict should content label and value keys.')
+        if not set(('label', 'value')).issubset(field_data):
+            raise ValueError('Each field dict should contain label and value keys.')
 
     page = get_page_or_404(page_id, language)
     active_request = get_active_moderation_request(page, language)
     next_step = active_request.user_get_step(user)
 
-    form_submission = ConfirmationFormSubmission(
+    ConfirmationFormSubmission.objects.create(
         request=active_request,
         for_step=next_step,
         by_user=user,
         data=json.dumps(form_data),
     )
-    form_submission.save()

@@ -8,7 +8,6 @@ INSTALL_REQUIREMENTS = [
     'django-cms>=3.4.2',
     'django-sekizai>=0.7',
     'django-admin-sortable2>=0.6.4',
-    'aldryn-forms>=3.0.3',
 ]
 
 

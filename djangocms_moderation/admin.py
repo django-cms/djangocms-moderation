@@ -4,7 +4,7 @@ from django.conf.urls import url
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.utils.html import mark_safe
+from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
@@ -24,7 +24,7 @@ from .helpers import (
 )
 from .models import (
     ConfirmationFormSubmission,
-    ConfirmationView,
+    ConfirmationPage,
     PageModeration,
     PageModerationRequest,
     PageModerationRequestAction,
@@ -71,8 +71,10 @@ class PageModerationRequestActionInline(admin.TabularInline):
 
         opts = ConfirmationFormSubmission._meta
         url = reverse('admin:{}_{}_change'.format(opts.app_label, opts.model_name), args=[instance.pk,])
-        field_content = '<a href="{}" target="__blank">{}</a>'.format(url, obj.step_approved.role.name)
-        return mark_safe(field_content)
+        return format_html('<a href="{}" target="_blank">{}</a>',
+            url,
+            obj.step_approved.role.name
+        )
     form_submission.short_description = _('Form Submission')
 
 
@@ -106,8 +108,8 @@ class PageModerationRequestAdmin(admin.ModelAdmin):
 
 
 class RoleAdmin(admin.ModelAdmin):
-    list_display = ['name', 'user', 'group', 'confirmation_view']
-    fields = ['name', 'user', 'group', 'confirmation_view']
+    list_display = ['name', 'user', 'group', 'confirmation_page']
+    fields = ['name', 'user', 'group', 'confirmation_page']
 
 
 class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -188,7 +190,7 @@ class ExtendedPageAdmin(PageAdmin):
         return HttpResponseRedirect(path)
 
 
-class ConfirmationViewAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
+class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
     view_on_site = True
 
     def get_urls(self):
@@ -196,12 +198,12 @@ class ConfirmationViewAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
             return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
 
         url_patterns = [
-            _url(r'^moderation-confirmation-view/([0-9]+)/$',
-                views.moderation_confirmation_view,
-                name='cms_moderation_confirmation_view',
+            _url(r'^moderation-confirmation-page/([0-9]+)/$',
+                views.moderation_confirmation_page,
+                name='cms_moderation_confirmation_page',
             ),
         ]
-        return url_patterns + super(ConfirmationViewAdmin, self).get_urls()
+        return url_patterns + super(ConfirmationPageAdmin, self).get_urls()
 
 
 class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
@@ -233,16 +235,9 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
 
     def form_data(self, obj):
         data = obj.get_form_data()
-        data_view = ''
-
-        for field in data:
-            data_view += '<p>{}: <b>{}</b><br />{}: <b>{}</b></p>'.format(
-                ugettext('Question'),
-                field['label'],
-                ugettext('Answer'),
-                field['value']
-            )
-        return mark_safe(data_view)
+        return format_html_join('', '<p>{}: <b>{}</b><br />{}: <b>{}</b></p>',
+            ((ugettext('Question'), d['label'], ugettext('Answer'), d['value']) for d in data)
+        )
     form_data.short_description = _('Form Data')
 
 
@@ -251,5 +246,5 @@ admin.site.register(PageModeration, PageModerationAdmin)
 admin.site.register(PageModerationRequest, PageModerationRequestAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
-admin.site.register(ConfirmationView, ConfirmationViewAdmin)
+admin.site.register(ConfirmationPage, ConfirmationPageAdmin)
 admin.site.register(ConfirmationFormSubmission, ConfirmationFormSubmissionAdmin)

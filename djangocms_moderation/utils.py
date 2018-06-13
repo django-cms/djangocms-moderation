@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 from functools import lru_cache
 
-from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.module_loading import import_string

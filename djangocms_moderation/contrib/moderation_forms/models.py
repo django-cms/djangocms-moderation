@@ -1,4 +1,4 @@
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from aldryn_forms.models import FormPlugin
 

@@ -75,20 +75,10 @@ def is_moderation_enabled(page):
     return is_enabled and bool(get_page_moderation_workflow(page))
 
 
-def get_form_submissions(**kwargs):
-    try:
-        return ConfirmationFormSubmission.objects.filter(**kwargs)
-    except ConfirmationFormSubmission.DoesNotExist:
-        return None
-
-
 def get_form_submission_for_step(active_request, current_step):
-    result = get_form_submissions(request=active_request, for_step=current_step,)
-
-    if result:
-        return result.first()
-    return None
+    lookup = ConfirmationFormSubmission.objects.filter(request=active_request, for_step=current_step)
+    return lookup.first()
 
 
 def get_form_submissions_for_request(active_request):
-    return get_form_submissions(request=active_request,)
+    return ConfirmationFormSubmission.objects.filter(request=active_request)
