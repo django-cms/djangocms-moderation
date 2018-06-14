@@ -526,6 +526,11 @@ class ConfirmationFormSubmission(models.Model):
         editable=False,
     )
     submitted_at = models.DateTimeField(auto_now_add=True)
+    confirmation_page = models.ForeignKey(
+        to=ConfirmationPage,
+        verbose_name=_('confirmation page'),
+        related_name='+',
+    )
 
     def __str__(self):
         return '{} - {}'.format(self.request.reference_number, self.for_step) 

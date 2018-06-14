@@ -100,6 +100,8 @@ class ModerationRequestViewTest(BaseViewTestCase):
         )
 
     def test_approve_request_view_with_form(self):
+        self.role1.confirmation_page = None
+        self.role1.save() # to avoid redirecting to confirmation page
         response = self.client.get(get_admin_url(
             name='cms_moderation_approve_request',
             language='en',
@@ -204,11 +206,6 @@ class ModerationRequestViewTest(BaseViewTestCase):
         self.assertEqual(response.content, b'No moderation workflow exists for page.')
 
     def test_redirects_to_confirmation_page_if_invalid_check(self):
-        cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
-        self.role1.confirmation_page = cp
-        self.role1.save()
         response = self.client.get(
             get_admin_url(
                 name='cms_moderation_approve_request',
@@ -217,7 +214,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
             )
         )
         redirect_url = add_url_parameters(
-            cp.get_absolute_url(),
+            self.cp.get_absolute_url(),
             content_view=True,
             page=self.pg1.pk,
             language='en',
@@ -226,16 +223,12 @@ class ModerationRequestViewTest(BaseViewTestCase):
         self.assertEqual(response.url, redirect_url)
 
     def test_does_not_redirect_to_confirmation_page_if_valid_check(self):
-        cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
-        self.role1.confirmation_page = cp
-        self.role1.save()
         cfs = ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
             data='Some data',
+            confirmation_page=self.cp,
         )
         response = self.client.get(
             get_admin_url(
@@ -255,16 +248,12 @@ class ModerationRequestViewTest(BaseViewTestCase):
         )
     
     def test_renders_all_form_submissions(self):
-        cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
-        self.role1.confirmation_page = cp
-        self.role1.save()
         cfs = ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
             data='Some data',
+            confirmation_page=self.cp,
         )
         response = self.client.get(
             get_admin_url(
@@ -322,12 +311,6 @@ class SelectModerationViewTest(BaseViewTestCase):
 
 
 class ModerationConfirmationPageTest(BaseViewTestCase):
-
-    def setUp(self):
-        super(ModerationConfirmationPageTest, self).setUp()
-        self.cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
 
     def test_renders_build_view(self):
         response = self.client.get(self.cp.get_absolute_url())

@@ -51,4 +51,5 @@ def moderation_confirmation_form_submission(sender, page_id, language, user, for
         for_step=next_step,
         by_user=user,
         data=json.dumps(form_data),
+        confirmation_page=next_step.role.confirmation_page,
     )

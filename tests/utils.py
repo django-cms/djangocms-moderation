@@ -3,8 +3,13 @@ from django.test import TestCase
 
 from cms.api import create_page
 
-from djangocms_moderation.models import Workflow, Role, PageModerationRequest
 from djangocms_moderation import constants
+from djangocms_moderation.models import (
+    ConfirmationPage,
+    PageModerationRequest,
+    Role,
+    Workflow,
+)
 
 
 class BaseTestCase(TestCase):
@@ -77,6 +82,13 @@ class BaseTestCase(TestCase):
             action=constants.ACTION_APPROVED,
             step_approved=cls.wf3st1,
         )
+
+        # create confirmation page and attach to role
+        cls.cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+        cls.role1.confirmation_page = cls.cp
+        cls.role1.save()
 
 
 class BaseViewTestCase(BaseTestCase):

@@ -3,7 +3,12 @@ from unittest.mock import patch
 from django.test import TestCase, override_settings
 
 from djangocms_moderation.helpers import *
-from djangocms_moderation.models import Workflow, PageModeration
+from djangocms_moderation.models import (
+    ConfirmationPage,
+    ConfirmationFormSubmission,
+    PageModeration,
+    Workflow,
+)
 
 from .utils import BaseTestCase
 
@@ -82,12 +87,14 @@ class GetFormSubmissionForStep(BaseTestCase):
             for_step=self.wf1st1,
             by_user=self.user,
             data='Some data',
+            confirmation_page=self.cp,
         )
         cfs2 = ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st2,
             by_user=self.user,
             data='Some data',
+            confirmation_page=self.cp,
         )
         result = get_form_submission_for_step(active_request=self.moderation_request1, current_step=self.wf1st1,)
         self.assertEqual(result, cfs1)
@@ -101,12 +108,14 @@ class GetFormSubmissionsForRequest(BaseTestCase):
             for_step=self.wf1st1,
             by_user=self.user,
             data='Some data',
+            confirmation_page=self.cp,
         )
         cfs2 = ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st2,
             by_user=self.user,
             data='Some data',
+            confirmation_page=self.cp,
         )
         results = get_form_submissions_for_request(active_request=self.moderation_request1,)
         self.assertIn(cfs1, results)

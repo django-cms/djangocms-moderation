@@ -244,44 +244,26 @@ class PageModerationRequestActionTest(BaseTestCase):
 class ConfirmationPageTest(BaseTestCase):
 
     def test_get_absolute_url(self):
-        cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
-        url = reverse('admin:cms_moderation_confirmation_page', args=(cp.pk,))
-        self.assertEqual(cp.get_absolute_url(), url)
+        url = reverse('admin:cms_moderation_confirmation_page', args=(self.cp.pk,))
+        self.assertEqual(self.cp.get_absolute_url(), url)
 
     def test_is_valid_returns_false_when_no_form_submission(self):
-        cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
-        self.role1.confirmation_page = cp
-        self.role1.save()
-        result = cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
+        result = self.cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
         self.assertFalse(result)
     
     def test_is_valid_returns_true_when_form_submission_exists(self):
-        cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
         cfs = ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
             data='Some data',
+            confirmation_page=self.cp,
         )
-        self.role1.confirmation_page = cp
-        self.role1.save()
-        result = cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
+        result = self.cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
         self.assertTrue(result)
 
     def test_is_valid_returns_false_when_plain_content_not_reviewed(self):
-        cp = ConfirmationPage.objects.create(
-            name='Plain Content',
-            content_type='plain',
-        )
-        self.role1.confirmation_page = cp
-        self.role1.save()
-        result = cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
+        result = self.cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
         self.assertFalse(result)
 
 
@@ -293,5 +275,6 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
             for_step=self.wf1st1,
             by_user=self.user,
             data='Some data',
+            confirmation_page=self.cp,
         )
         self.assertEqual(cfs.get_by_user_name(), self.user.username)
