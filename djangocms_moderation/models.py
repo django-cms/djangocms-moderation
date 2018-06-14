@@ -420,11 +420,12 @@ class PageModerationRequestAction(models.Model):
         return self.get_action_display()
 
     def get_by_user_name(self):
-        user = self.by_user
-        return user.get_full_name() or getattr(user, user.USERNAME_FIELD)
+        return self._get_user_name(self.by_user)
 
     def get_to_user_name(self):
-        user = self.to_user
+        return self._get_user_name(self.to_user)
+
+    def _get_user_name(self, user):
         return user.get_full_name() or getattr(user, user.USERNAME_FIELD)
 
     def save(self, **kwargs):
