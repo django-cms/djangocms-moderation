@@ -363,18 +363,10 @@ class PageModerationRequest(models.Model):
 
 @python_2_unicode_compatible
 class PageModerationRequestAction(models.Model):
-    STATUSES = (
-        (constants.ACTION_STARTED, _('Started')),
-        (constants.ACTION_REJECTED, _('Rejected')),
-        (constants.ACTION_APPROVED, _('Approved')),
-        (constants.ACTION_CANCELLED, _('Cancelled')),
-        (constants.ACTION_FINISHED, _('Finished')),
-    )
-
     action = models.CharField(
         verbose_name=_('status'),
         max_length=30,
-        choices=STATUSES,
+        choices=constants.ACTION_CHOICES,
     )
     by_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,

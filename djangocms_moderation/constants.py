@@ -30,3 +30,11 @@ ACTION_REJECTED = 'rejected'
 ACTION_APPROVED = 'approved'
 ACTION_CANCELLED = 'cancelled'
 ACTION_FINISHED = 'finished'
+
+ACTION_CHOICES = (
+    (ACTION_STARTED, _('Started')),
+    (ACTION_REJECTED, _('Rejected')),
+    (ACTION_APPROVED, _('Approved')),
+    (ACTION_CANCELLED, _('Cancelled')),
+    (ACTION_FINISHED, _('Finished')),
+)
