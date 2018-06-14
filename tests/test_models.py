@@ -1,9 +1,8 @@
-import re
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.test import TestCase, override_settings
+from django.core.urlresolvers import reverse
 
 from cms.api import create_page
 
@@ -240,3 +239,59 @@ class PageModerationRequestActionTest(BaseTestCase):
             step_approved=self.wf1st1,
         )
         self.assertEqual(new_action.to_role, self.role2)
+
+
+class ConfirmationPageTest(BaseTestCase):
+
+    def test_get_absolute_url(self):
+        cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+        url = reverse('admin:cms_moderation_confirmation_page', args=(cp.pk,))
+        self.assertEqual(cp.get_absolute_url(), url)
+
+    def test_is_valid_returns_false_when_no_form_submission(self):
+        cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+        self.role1.confirmation_page = cp
+        self.role1.save()
+        result = cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
+        self.assertFalse(result)
+    
+    def test_is_valid_returns_true_when_form_submission_exists(self):
+        cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+        cfs = ConfirmationFormSubmission.objects.create(
+            request=self.moderation_request1,
+            for_step=self.wf1st1,
+            by_user=self.user,
+            data='Some data',
+        )
+        self.role1.confirmation_page = cp
+        self.role1.save()
+        result = cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
+        self.assertTrue(result)
+
+    def test_is_valid_returns_false_when_plain_content_not_reviewed(self):
+        cp = ConfirmationPage.objects.create(
+            name='Plain Content',
+            content_type='plain',
+        )
+        self.role1.confirmation_page = cp
+        self.role1.save()
+        result = cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
+        self.assertFalse(result)
+
+
+class ConfirmationFormSubmissionTest(BaseTestCase):
+
+    def test_get_by_user_name(self):
+        cfs = ConfirmationFormSubmission.objects.create(
+            request=self.moderation_request1,
+            for_step=self.wf1st1,
+            by_user=self.user,
+            data='Some data',
+        )
+        self.assertEqual(cfs.get_by_user_name(), self.user.username)

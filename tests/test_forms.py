@@ -2,7 +2,6 @@ from unittest.mock import MagicMock
 
 from django import forms
 from django.contrib.auth.models import User
-from django.test import TestCase, override_settings
 
 from djangocms_moderation import constants
 from djangocms_moderation.forms import *

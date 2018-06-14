@@ -73,3 +73,41 @@ class IsModerationEnabledTest(BaseTestCase):
     def test_returns_false_default_settings_no_workflow(self, mock_gpmw):
         self.assertFalse(is_moderation_enabled(self.pg1))
 
+
+class GetFormSubmissionForStep(BaseTestCase):
+    
+    def test_returns_form_submission_for_step(self):
+        cfs1 = ConfirmationFormSubmission.objects.create(
+            request=self.moderation_request1,
+            for_step=self.wf1st1,
+            by_user=self.user,
+            data='Some data',
+        )
+        cfs2 = ConfirmationFormSubmission.objects.create(
+            request=self.moderation_request1,
+            for_step=self.wf1st2,
+            by_user=self.user,
+            data='Some data',
+        )
+        result = get_form_submission_for_step(active_request=self.moderation_request1, current_step=self.wf1st1,)
+        self.assertEqual(result, cfs1)
+
+
+class GetFormSubmissionsForRequest(BaseTestCase):
+
+    def test_returns_all_form_submissions_for_request(self):
+        cfs1 = ConfirmationFormSubmission.objects.create(
+            request=self.moderation_request1,
+            for_step=self.wf1st1,
+            by_user=self.user,
+            data='Some data',
+        )
+        cfs2 = ConfirmationFormSubmission.objects.create(
+            request=self.moderation_request1,
+            for_step=self.wf1st2,
+            by_user=self.user,
+            data='Some data',
+        )
+        results = get_form_submissions_for_request(active_request=self.moderation_request1,)
+        self.assertIn(cfs1, results)
+        self.assertIn(cfs2, results)
