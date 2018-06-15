@@ -66,13 +66,6 @@ class ModerationRequestForm(forms.Form):
         if 'moderator' in self.fields:
             self.configure_moderator_field()
 
-    def get_moderator(self):
-        # If we are rejecting the request, then the next moderator
-        # is the original content author
-        if self.action == ACTION_REJECTED:
-            return self.active_request.author
-        return self.cleaned_data.get('moderator')
-
     def configure_moderator_field(self):
         next_role = self.workflow.first_step.role
         users = next_role.get_users_queryset().exclude(pk=self.user.pk)
@@ -83,7 +76,7 @@ class ModerationRequestForm(forms.Form):
         self.workflow.submit_new_request(
             page=self.page,
             by_user=self.user,
-            to_user=self.get_moderator(),
+            to_user=self.cleaned_data.get('moderator'),
             language=self.language,
             message=self.cleaned_data['message'],
         )
@@ -125,7 +118,7 @@ class UpdateModerationRequestForm(ModerationRequestForm):
         self.active_request.update_status(
             action=self.action,
             by_user=self.user,
-            to_user=self.get_moderator(),
+            to_user=self.cleaned_data.get('moderator'),
             message=self.cleaned_data['message'],
         )
 
