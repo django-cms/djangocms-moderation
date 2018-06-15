@@ -12,7 +12,7 @@ from cms.models import Page
 from adminsortable2.admin import SortableInlineAdminMixin
 
 from . import views
-from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED
+from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_active_moderation_request, get_page_or_404, is_moderation_enabled
 from .models import (
@@ -119,16 +119,22 @@ class ExtendedPageAdmin(PageAdmin):
                 'new_request',
             ),
             _url(
+                r'^([0-9]+)/([a-z\-]+)/moderation/resubmit/$',
+                views.resubmit_moderation_request,
+                'resubmit_request',
+                action=ACTION_RESUBMITTED,
+            ),
+            _url(
                 r'^([0-9]+)/([a-z\-]+)/moderation/cancel/$',
                 views.cancel_moderation_request,
                 'cancel_request',
-                action=ACTION_CANCELLED
+                action=ACTION_CANCELLED,
             ),
             _url(
                 r'^([0-9]+)/([a-z\-]+)/moderation/reject/$',
                 views.reject_moderation_request,
                 'reject_request',
-                action=ACTION_REJECTED
+                action=ACTION_REJECTED,
             ),
             _url(
                 r'^([0-9]+)/([a-z\-]+)/moderation/approve/$',

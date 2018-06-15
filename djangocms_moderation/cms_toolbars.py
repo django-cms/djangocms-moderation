@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.utils.functional import cached_property
-from django.utils.translation import override as force_language, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from cms.api import get_page_draft
 from cms.toolbar_base import CMSToolbar
@@ -14,8 +14,8 @@ from cms.toolbar.items import (
     ModalButton,
 )
 from cms.utils import page_permissions
-from cms.utils.urlutils import admin_reverse
 
+from djangocms_moderation.constants import ACTION_REJECTED
 from . import conf
 from .helpers import get_active_moderation_request, is_moderation_enabled
 from .models import PageModeration
@@ -35,7 +35,6 @@ class ExtendedPageToolbar(PageToolbar):
         css = {
             'all': ('djangocms_moderation/css/moderation.css',)
         }
-
 
     def __init__(self, *args, **kwargs):
         super(ExtendedPageToolbar, self).__init__(*args, **kwargs)
@@ -78,6 +77,11 @@ class ExtendedPageToolbar(PageToolbar):
         return super(ExtendedPageToolbar, self).user_can_publish()
 
     def add_publish_button(self, classes=('cms-btn-action', 'cms-btn-publish', 'cms-btn-publish-active',)):
+        """
+        Lets work out what button should we display to the user.
+        We need to consider the moderation, e.g. if it is enabled,
+        we need to display moderation buttons instead of publish ones
+        """
         page = self.page
 
         if not self.user_can_publish() or not self.is_moderation_enabled:
@@ -90,7 +94,9 @@ class ExtendedPageToolbar(PageToolbar):
 
         if moderation_request and moderation_request.is_approved:
             return super(ExtendedPageToolbar, self).add_publish_button(classes)
+
         elif moderation_request:
+            # We have an active moderation request ongoing.
             user = self.request.user
             container = Dropdown(side=self.toolbar.RIGHT)
             container.add_primary_button(
@@ -101,7 +107,20 @@ class ExtendedPageToolbar(PageToolbar):
                 Button(name=_('View differences'), url='#', extra_classes=('js-cms-moderation-view-diff',))
             )
 
-            if moderation_request.user_can_take_action(user):
+            if moderation_request.user_can_edit_and_resubmit(user):
+                # This is a content author, able to edit and resubmit the
+                # changes for another moderation cycle
+                resubmit_request_url = get_admin_url(
+                    name='cms_moderation_resubmit_request',
+                    language=self.current_lang,
+                    args=(page.pk, self.current_lang),
+                )
+                container.buttons.append(
+                    ModalButton(name=_('Resubmit changes for moderation'), url=resubmit_request_url)
+                )
+
+            elif moderation_request.user_can_take_action(user):
+                # Now we have a moderator, able to Approve or Reject changes
                 approve_request_url = get_admin_url(
                     name='cms_moderation_approve_request',
                     language=self.current_lang,
@@ -111,7 +130,6 @@ class ExtendedPageToolbar(PageToolbar):
                     ModalButton(name=_('Approve changes'), url=approve_request_url)
                 )
 
-            if moderation_request.user_can_take_action(user):
                 reject_request_url = get_admin_url(
                     name='cms_moderation_reject_request',
                     language=self.current_lang,
@@ -121,6 +139,7 @@ class ExtendedPageToolbar(PageToolbar):
                     ModalButton(name=_('Assign back to the content author'), url=reject_request_url)
                 )
 
+            # Anyone should be able to cancel the moderation request
             container.buttons.append(self.get_cancel_moderation_button())
             self.toolbar.add_item(container)
         else:

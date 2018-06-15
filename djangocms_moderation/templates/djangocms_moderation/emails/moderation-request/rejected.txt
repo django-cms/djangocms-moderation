@@ -1,4 +1,6 @@
 {% load i18n %}
 {% blocktrans %}
 Hello {{ author_name }}, {{ by_user_name }} has rejected your changes in {{ page_url }}.
+
+You can resubmit the necessary changes for another review, or cancel the moderation request.
 {% endblocktrans %}

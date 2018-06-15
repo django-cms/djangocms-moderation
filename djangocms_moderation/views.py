@@ -132,6 +132,13 @@ approve_moderation_request = ModerationRequestView.as_view(
     success_message=_('The changes have been approved.'),
 )
 
+resubmit_moderation_request = ModerationRequestView.as_view(
+    action=constants.ACTION_RESUBMITTED,
+    page_title=_('Resubmit changes'),
+    form_class=UpdateModerationRequestForm,
+    success_message=_('The request has been re-submitted.'),
+)
+
 
 class SelectModerationView(FormView):
 

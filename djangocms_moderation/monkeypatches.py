@@ -4,8 +4,9 @@ from threading import local
 from django.utils.decorators import available_attrs
 from django.utils.translation import get_language
 
-from cms.utils import get_current_site, page_permissions
+from cms.utils import page_permissions
 
+from djangocms_moderation.constants import ACTION_REJECTED
 from .helpers import get_active_moderation_request
 
 # thread local support
@@ -25,18 +26,21 @@ def user_can_change_page(func):
     def wrapper(user, page, site=None):
         can_change = func(user, page, site=site)
 
-        if not can_change:
-            return can_change
+        if can_change:
+            active_request = get_active_moderation_request(page, get_request_language())
 
-        active_request = get_active_moderation_request(page, get_request_language())
+            # If there is an active moderation request, the only user
+            # who can edit the content is the original content author after
+            # his moderation request has been rejected by any of the moderators.
+            # The reason for this that content author should be able to
+            # resubmit the changes for another review as a part of the same
+            # moderation request.
+            if active_request and not active_request.user_can_edit_and_resubmit(user):
+                return False
 
-        if active_request:
-            return False
         return can_change
     return wrapper
 
-
-page_permissions.user_can_change_page = user_can_change_page(page_permissions.user_can_change_page)
 
 def user_can_view_page_draft(func):
     @wraps(func, assigned=available_attrs(func))
@@ -52,5 +56,6 @@ def user_can_view_page_draft(func):
         return can_view_page_draft
     return wrapper
 
-page_permissions.user_can_view_page_draft = user_can_view_page_draft(page_permissions.user_can_view_page_draft)
 
+page_permissions.user_can_change_page = user_can_change_page(page_permissions.user_can_change_page)
+page_permissions.user_can_view_page_draft = user_can_view_page_draft(page_permissions.user_can_view_page_draft)

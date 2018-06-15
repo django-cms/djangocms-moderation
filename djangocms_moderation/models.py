@@ -292,12 +292,18 @@ class PageModerationRequest(models.Model):
     @transaction.atomic
     def update_status(self, action, by_user, message='', to_user=None):
         is_approved = action == constants.ACTION_APPROVED
+        is_rejected = action == constants.ACTION_REJECTED
 
         if is_approved:
             step_approved = self.user_get_step(by_user)
         else:
             step_approved = None
 
+        if is_rejected:
+            # This workflow is now rejected, so it needs to be resubmitted by
+            # the content author, so lets mark all the actions taken
+            # so far as stale ones. They need to be re-taken
+            self.actions.filter(step_approved__isnull=False).update(is_stale=True)
 
         # If request is REJECTED, it still counts as active as rejected means
         # it is submitted back to the content author to make the changes
@@ -328,7 +334,7 @@ class PageModerationRequest(models.Model):
         steps_approved = (
             self
             .actions
-            .filter(step_approved__isnull=False)
+            .filter(step_approved__isnull=False, is_stale=False)
             .values_list('step_approved__pk', flat=True)
         )
         return self.workflow.steps.exclude(pk__in=steps_approved)
@@ -345,7 +351,24 @@ class PageModerationRequest(models.Model):
                 return step
         return None
 
+    def user_can_edit_and_resubmit(self, user):
+        """
+        Lets workout if the user can edit and then resubmit the content for
+        moderation again. This might happen if the moderation request was
+        rejected by the moderator and submitted back to the content author
+        for amends
+        """
+        return all([
+            # Only original content author can edit
+            self.author == user,
+            # And only if the request has been rejected
+            self.get_last_action().action == constants.ACTION_REJECTED,
+        ])
+
     def user_can_take_action(self, user):
+        if self.get_last_action().action == constants.ACTION_REJECTED:
+            return False
+
         pending_steps = self.get_pending_steps().select_related('role')
 
         for step in pending_steps.iterator():
@@ -454,7 +477,7 @@ class PageModerationRequestAction(models.Model):
 
         # If we are rejecting, then we don't need to workout the `to_role`,
         # as only content author will amend and resubmit the changes
-        if self.action != ACTION_REJECTED:
+        if self.action != constants.ACTION_REJECTED:
             if self.to_user:
                 next_step = self.request.user_get_step(self.to_user)
             elif self.action == constants.ACTION_STARTED:
