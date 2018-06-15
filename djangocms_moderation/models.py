@@ -303,12 +303,15 @@ class PageModerationRequest(models.Model):
             # This workflow is now rejected, so it needs to be resubmitted by
             # the content author, so lets mark all the actions taken
             # so far as stale ones. They need to be re-taken
-            self.actions.filter(step_approved__isnull=False).update(is_stale=True)
+            self.actions.all().update(is_stale=True)
 
-        # If request is REJECTED, it still counts as active as rejected means
-        # it is submitted back to the content author to make the changes
+        # If request is Rejected or Resubmitted, it still counts as active
+        # as rejected means it is submitted back to the content author
+        # to make the changes
         self.is_active = action in (
-            constants.ACTION_APPROVED, constants.ACTION_REJECTED, constants.ACTION_RESUBMITTED
+            constants.ACTION_APPROVED,
+            constants.ACTION_REJECTED,
+            constants.ACTION_RESUBMITTED,
         )
         self.save(update_fields=['is_active'])
 
