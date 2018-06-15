@@ -418,6 +418,12 @@ class PageModerationRequestAction(models.Model):
         auto_now_add=True,
     )
 
+    # Action can become "stale" if the moderation request has been rejected
+    # and re-assigned to the content author for their resubmission.
+    # In this scenario, all the actions have to be retaken, so we mark the
+    # existing ones as "stale" (outdated)
+    is_stale = models.BooleanField(default=False)
+
     class Meta:
         ordering = ('date_taken',)
         verbose_name = _('Action')
