@@ -107,6 +107,24 @@ class PageModerationRequestTest(BaseTestCase):
     def test_get_first_action(self):
         self.assertEqual(self.moderation_request2.get_first_action(), self.moderation_request2.actions.first())
 
+    def test_get_author(self):
+        self.assertEqual(
+            self.user,
+            self.moderation_request2.author
+        )
+        del self.moderation_request2.author  # Invalidate cached_property
+
+        # Lets change the first step's by_user, which should become our
+        # new author
+        first_action = self.moderation_request2.get_first_action()
+        first_action.by_user = self.user2
+        first_action.save()
+
+        self.assertEqual(
+            self.user2,
+            self.moderation_request2.author
+        )
+
     def test_get_last_action(self):
         self.assertEqual(self.moderation_request2.get_last_action(), self.moderation_request2.actions.last())
 

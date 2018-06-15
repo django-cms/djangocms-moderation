@@ -56,15 +56,13 @@ def notify_request_author(request, action):
         # TODO: FINISH THIS
         return 0
 
-    author = request.get_first_action().by_user
-
-    if not author.email:
+    if not request.author.email:
         return 0
 
     status = _send_email(
         request=request,
         action=action,
-        recipients=[author.email],
+        recipients=[request.author.email],
         subject=email_subjects[action.action],
         template='{}.txt'.format(action.action),
     )

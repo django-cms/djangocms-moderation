@@ -271,6 +271,13 @@ class PageModerationRequest(models.Model):
         return self.page.get_page_title(self.language)
 
     @cached_property
+    def author(self):
+        """
+        Author of this request is the user who created the first action
+        """
+        return self.get_first_action().by_user
+
+    @cached_property
     def has_pending_step(self):
         return self.get_pending_steps().exists()
 
