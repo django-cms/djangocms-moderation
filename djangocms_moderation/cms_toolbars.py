@@ -118,7 +118,7 @@ class ExtendedPageToolbar(PageToolbar):
                     args=(page.pk, self.current_lang),
                 )
                 container.buttons.append(
-                    ModalButton(name=_('Reject changes'), url=reject_request_url)
+                    ModalButton(name=_('Assign back to the content author'), url=reject_request_url)
                 )
 
             container.buttons.append(self.get_cancel_moderation_button())

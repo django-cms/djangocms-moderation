@@ -298,10 +298,15 @@ class PageModerationRequest(models.Model):
         else:
             step_approved = None
 
-        self.is_active = action == constants.ACTION_APPROVED
+
+        # If request is REJECTED, it still counts as active as rejected means
+        # it is submitted back to the content author to make the changes
+        self.is_active = action in (
+            constants.ACTION_APPROVED, constants.ACTION_REJECTED, constants.ACTION_RESUBMITTED
+        )
         self.save(update_fields=['is_active'])
 
-        new_action =self.actions.create(
+        new_action = self.actions.create(
             by_user=by_user,
             to_user=to_user,
             action=action,
@@ -442,16 +447,24 @@ class PageModerationRequestAction(models.Model):
         return user.get_full_name() or getattr(user, user.USERNAME_FIELD)
 
     def save(self, **kwargs):
-        if self.to_user:
-            next_step = self.request.user_get_step(self.to_user)
-        elif self.action == constants.ACTION_STARTED:
-            next_step = self.request.workflow.first_step
-        else:
-            next_step = self.request.user_get_step(self.by_user)
-            next_step = next_step.get_next() if next_step else None
+        """
+        The point of this is to workout the "to Role",
+        so we know which role will be approving the request next, if any
+        """
 
-        if next_step:
-            self.to_role_id = next_step.role_id
+        # If we are rejecting, then we don't need to workout the `to_role`,
+        # as only content author will amend and resubmit the changes
+        if self.action != ACTION_REJECTED:
+            if self.to_user:
+                next_step = self.request.user_get_step(self.to_user)
+            elif self.action == constants.ACTION_STARTED:
+                next_step = self.request.workflow.first_step
+            else:
+                current_step = self.request.user_get_step(self.by_user)
+                next_step = current_step.get_next() if current_step else None
+
+            if next_step:
+                self.to_role_id = next_step.role_id
         super(PageModerationRequestAction, self).save(**kwargs)
 
 

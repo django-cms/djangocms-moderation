@@ -94,7 +94,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
             active_request=self.moderation_request1,
             workflow=self.wf1,
             form_cls=UpdateModerationRequestForm,
-            title=_('Reject changes')
+            title=_('Assign back to the content author')
         )
 
     def test_approve_request_view_with_form(self):

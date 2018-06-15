@@ -59,7 +59,7 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         self.assertEqual(len(buttons), 4)
         self.assertEqual(force_text(buttons[0].name), 'View differences')
         self.assertEqual(force_text(buttons[1].name), 'Approve changes')
-        self.assertEqual(force_text(buttons[2].name), 'Reject changes')
+        self.assertEqual(force_text(buttons[2].name), 'Assign back to the content author')
         self.assertEqual(force_text(buttons[3].name), 'Cancel request')
 
     def test_show_moderation_dropdown_if_moderation_request(self):
@@ -68,7 +68,7 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         self.assertEqual(len(buttons), 4)
         self.assertEqual(force_text(buttons[0].name), 'View differences')
         self.assertEqual(force_text(buttons[1].name), 'Approve changes')
-        self.assertEqual(force_text(buttons[2].name), 'Reject changes')
+        self.assertEqual(force_text(buttons[2].name), 'Assign back to the content author')
         self.assertEqual(force_text(buttons[3].name), 'Cancel request')
 
     def test_show_moderation_dropdown_with_no_actions_for_non_role_user(self):

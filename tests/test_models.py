@@ -1,14 +1,9 @@
-import re
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
-from django.test import TestCase, override_settings
 
 from cms.api import create_page
 
-from djangocms_moderation import constants
-from djangocms_moderation.emails import notify_requested_moderator
 from djangocms_moderation.models import *
 
 from .utils import BaseTestCase
@@ -105,7 +100,10 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request3.is_approved)
 
     def test_get_first_action(self):
-        self.assertEqual(self.moderation_request2.get_first_action(), self.moderation_request2.actions.first())
+        self.assertEqual(
+            self.moderation_request2.get_first_action(),
+            self.moderation_request2.actions.first()
+        )
 
     def test_get_author(self):
         self.assertEqual(
@@ -126,7 +124,10 @@ class PageModerationRequestTest(BaseTestCase):
         )
 
     def test_get_last_action(self):
-        self.assertEqual(self.moderation_request2.get_last_action(), self.moderation_request2.actions.last())
+        self.assertEqual(
+            self.moderation_request2.get_last_action(),
+            self.moderation_request2.actions.last()
+        )
 
     def test_get_pending_steps(self):
         self.assertQuerysetEqual(
@@ -201,14 +202,17 @@ class PageModerationRequestTest(BaseTestCase):
 
     @patch('djangocms_moderation.models.notify_request_author')
     @patch('djangocms_moderation.models.notify_requested_moderator')
-    def test_update_status_action_rejected(self, mock_nrm, mock_nra):
+    def test_update_status_action_rejected_and_resubmitted(self, mock_nrm, mock_nra):
         self.moderation_request1.update_status(
             action=constants.ACTION_REJECTED,
             by_user=self.user,
             message='Rejected',
         )
-        self.assertFalse(self.moderation_request1.is_active)
+        self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
+
+        mock_nra.assert_called_once()
+        self.assertFalse(mock_nrm.called)
 
     @patch('djangocms_moderation.models.generate_reference_number', return_value='8E339524-BA8f-4c32-aBab-75b7cf05b51c')
     def test_reference_number(self, mock_uuid):
