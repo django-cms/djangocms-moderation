@@ -365,8 +365,15 @@ class PageModerationRequest(models.Model):
             self.get_last_action().action == constants.ACTION_REJECTED,
         ])
 
-    def user_can_take_action(self, user):
+    def user_can_take_moderation_action(self, user):
+        """
+        Can this user approve or reject the moderation request?
+        """
+
         if self.get_last_action().action == constants.ACTION_REJECTED:
+            # If the last action was a rejection, then they can't approve or
+            # reject the current action (content author can now act on the
+            # feedback and resubmit the edits for moderation
             return False
 
         pending_steps = self.get_pending_steps().select_related('role')

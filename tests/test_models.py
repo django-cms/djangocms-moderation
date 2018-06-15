@@ -161,9 +161,9 @@ class PageModerationRequestTest(BaseTestCase):
 
     def test_user_can_take_action(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
-        self.assertFalse(self.moderation_request1.user_can_take_action(temp_user))
-        self.assertFalse(self.moderation_request3.user_can_take_action(self.user))
-        self.assertTrue(self.moderation_request3.user_can_take_action(self.user2))
+        self.assertFalse(self.moderation_request1.user_can_take_moderation_action(temp_user))
+        self.assertFalse(self.moderation_request3.user_can_take_moderation_action(self.user))
+        self.assertTrue(self.moderation_request3.user_can_take_moderation_action(self.user2))
 
     def test_user_can_moderate(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)

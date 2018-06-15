@@ -72,7 +72,7 @@ class ExtendedPageToolbar(PageToolbar):
         moderation_request = self.moderation_request
         user = self.request.user
 
-        if moderation_request and moderation_request.user_can_take_action(user):
+        if moderation_request and moderation_request.user_can_take_moderation_action(user):
             return True
         return super(ExtendedPageToolbar, self).user_can_publish()
 
@@ -119,7 +119,7 @@ class ExtendedPageToolbar(PageToolbar):
                     ModalButton(name=_('Resubmit changes for moderation'), url=resubmit_request_url)
                 )
 
-            elif moderation_request.user_can_take_action(user):
+            elif moderation_request.user_can_take_moderation_action(user):
                 # Now we have a moderator, able to Approve or Reject changes
                 approve_request_url = get_admin_url(
                     name='cms_moderation_approve_request',
