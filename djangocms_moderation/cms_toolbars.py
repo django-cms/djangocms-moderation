@@ -122,6 +122,17 @@ class ExtendedPageToolbar(PageToolbar):
                 )
 
             container.buttons.append(self.get_cancel_moderation_button())
+
+            if moderation_request.user_can_take_action(user):
+                comment_url = get_admin_url(
+                    name='cms_moderation_comments',
+                    language=self.current_lang,
+                    args=(page.pk, self.current_lang),
+                )
+                container.buttons.append(
+                    ModalButton(name=_('View comments'), url=comment_url)
+                )
+
             self.toolbar.add_item(container)
         else:
             if conf.ENABLE_WORKFLOW_OVERRIDE:
@@ -140,6 +151,8 @@ class ExtendedPageToolbar(PageToolbar):
                 side=self.toolbar.RIGHT,
             )
 
+
+
     def get_publish_button(self, classes=None):
         if not self.is_moderation_enabled:
             return super(ExtendedPageToolbar, self).get_publish_button(classes)
@@ -151,12 +164,17 @@ class ExtendedPageToolbar(PageToolbar):
         )
         container.buttons.extend(button.buttons)
         container.buttons.append(self.get_cancel_moderation_button())
+
+
         return container
 
 
 class PageModerationToolbar(CMSToolbar):
 
     def populate(self):
+        """ Adds Moderation link to Page Toolbar Menu
+        """
+
         # always use draft if we have a page
         page = get_page_draft(self.request.current_page)
 
@@ -172,6 +190,7 @@ class PageModerationToolbar(CMSToolbar):
 
         if not page_menu or page_menu.disabled:
             return
+
 
         try:
             extension = PageModeration.objects.get(extended_object_id=page.pk)
@@ -193,8 +212,10 @@ class PageModerationToolbar(CMSToolbar):
         if not extension:
             url += '?extended_object=%s' % page.pk
         not_edit_mode = not self.toolbar.edit_mode_active
+
         page_menu.add_modal_item(_('Moderation'), url=url, disabled=not_edit_mode)
 
 
 toolbar_pool.toolbars['cms.cms_toolbars.PageToolbar'] = ExtendedPageToolbar
 toolbar_pool.register(PageModerationToolbar)
+

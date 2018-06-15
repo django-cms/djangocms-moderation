@@ -243,3 +243,18 @@ class SelectModerationViewTest(BaseViewTestCase):
             'workflow={}'.format(self.wf2.pk)
         )
         self.assertEqual(response.url, form_valid_redirect_url)
+
+
+class ModerationCommentsViewTest(BaseViewTestCase):
+
+
+    def test_comment_list(self):
+        response = self.client.get(
+            get_admin_url(
+                name='cms_moderation_comments',
+                language='en',
+                args=(self.pg3.pk, 'en')
+            )
+        )
+
+        self.assertEqual(len(response.context_data['object_list'].all()), 3)

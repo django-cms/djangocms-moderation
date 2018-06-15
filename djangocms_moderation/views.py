@@ -10,7 +10,7 @@ from django.http import (
 )
 from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import FormView
+from django.views.generic import FormView, ListView
 
 from cms.models import Page
 from cms.utils.urlutils import add_url_parameters
@@ -172,3 +172,32 @@ class SelectModerationView(FormView):
 
 
 select_new_moderation_request = SelectModerationView.as_view()
+
+
+class ModerationCommentsView(ListView):
+
+    template_name = 'djangocms_moderation/comment_list.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        """ Dispatch method:
+             args[0] expects page id
+             args[1] expects language
+        """
+        page = get_page_or_404(args[0], args[1])
+        self.active_request = get_active_moderation_request(page, args[1])
+        return super(ModerationCommentsView, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.active_request.actions.all()
+
+    def get_context_data(self, **kwargs):
+        context = super(ModerationCommentsView, self).get_context_data(**kwargs)
+        context.update({
+            'title': _('View Comments'),
+            'is_popup': True,
+        })
+
+
+        return context
+
+moderation_comments = ModerationCommentsView.as_view()

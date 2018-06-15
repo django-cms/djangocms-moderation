@@ -141,6 +141,11 @@ class ExtendedPageAdmin(PageAdmin):
                 views.select_new_moderation_request,
                 'select_new_moderation',
             ),
+            _url(
+                r'^([0-9]+)/([a-z\-]+)/moderation/comments/$',
+                views.moderation_comments,
+                'comments',
+            ),
         ]
         return url_patterns + super(ExtendedPageAdmin, self).get_urls()
 

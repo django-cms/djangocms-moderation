@@ -1,0 +1,27 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+    <div>
+        <fieldset class="module">       
+            <table width="100%">
+                <thead>
+                    <tr>
+                        <th>Comment</th>
+                        <th>By</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for action in object_list %}
+                        {% if action.message %}
+                            <td>{{ action.message }}</td>
+                            <td>{{ action.by_user }}</td>
+                            <td>{{ action.date_taken }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
+{% endblock %}
