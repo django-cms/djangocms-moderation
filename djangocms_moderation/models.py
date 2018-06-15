@@ -268,7 +268,10 @@ class PageModerationRequest(models.Model):
         verbose_name_plural = _('Requests')
 
     def __str__(self):
-        return self.page.get_page_title(self.language)
+        return "{} {}".format(
+            self.reference_number,
+            self.page.get_page_title(self.language)
+        )
 
     @cached_property
     def author(self):
@@ -413,6 +416,7 @@ class PageModerationRequestAction(models.Model):
         max_length=30,
         choices=constants.ACTION_CHOICES,
     )
+    # User who created this action
     by_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         verbose_name=_('by user'),
@@ -427,6 +431,7 @@ class PageModerationRequestAction(models.Model):
         related_name='+',
         on_delete=models.CASCADE,
     )
+    # Role which is next in the moderation flow
     to_role = models.ForeignKey(
         to=Role,
         verbose_name=_('to role'),
@@ -435,6 +440,8 @@ class PageModerationRequestAction(models.Model):
         related_name='+',
         on_delete=models.CASCADE,
     )
+
+    # This is the step which approved the moderation request
     step_approved = models.ForeignKey(
         to=WorkflowStep,
         verbose_name=_('step approved'),
@@ -468,7 +475,11 @@ class PageModerationRequestAction(models.Model):
         verbose_name_plural = _('Actions')
 
     def __str__(self):
-        return self.get_action_display()
+        return "{} - {} - {}".format(
+            self.date_taken.strftime("%Y-%m-%d %H:%M:%S"),
+            self.request.reference_number,
+            self.get_action_display()
+        )
 
     def get_by_user_name(self):
         return self._get_user_name(self.by_user)
