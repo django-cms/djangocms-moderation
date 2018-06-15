@@ -490,7 +490,7 @@ class PageModerationRequestAction(models.Model):
         if self.action != constants.ACTION_REJECTED:
             if self.to_user:
                 next_step = self.request.user_get_step(self.to_user)
-            elif self.action == constants.ACTION_STARTED:
+            elif self.action in (constants.ACTION_STARTED, constants.ACTION_RESUBMITTED):
                 next_step = self.request.workflow.first_step
             else:
                 current_step = self.request.user_get_step(self.by_user)
