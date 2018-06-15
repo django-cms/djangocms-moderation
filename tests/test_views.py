@@ -1,12 +1,14 @@
 from unittest.mock import patch
 
-from django.test import TestCase, override_settings
 from django.utils.translation import ugettext_lazy as _
 
-from djangocms_moderation import constants
-from djangocms_moderation.forms import *
-from djangocms_moderation.views import *
+from djangocms_moderation.forms import (
+    ModerationRequestForm,
+    UpdateModerationRequestForm,
+    SelectModerationForm,
+)
 from djangocms_moderation.utils import get_admin_url
+from djangocms_moderation import constants
 
 from .utils import BaseViewTestCase
 

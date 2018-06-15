@@ -1,8 +1,13 @@
 from unittest.mock import patch
 
-from django.test import TestCase, override_settings
+from django.test import override_settings
 
-from djangocms_moderation.helpers import *
+from djangocms_moderation.helpers import (
+    get_workflow_or_none,
+    get_active_moderation_request,
+    get_page_or_404,
+    is_moderation_enabled,
+)
 from djangocms_moderation.models import Workflow, PageModeration
 
 from .utils import BaseTestCase

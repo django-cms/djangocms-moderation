@@ -1,10 +1,18 @@
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.forms import ValidationError
 
 from cms.api import create_page
 
-from djangocms_moderation.models import *
+from djangocms_moderation.models import (
+    Role,
+    Workflow,
+    PageModerationRequestAction,
+    WorkflowStep,
+    PageModerationRequest,
+)
+from djangocms_moderation import constants
 
 from .utils import BaseTestCase
 
@@ -214,7 +222,7 @@ class PageModerationRequestTest(BaseTestCase):
         mock_nra.assert_called_once()
         self.assertFalse(mock_nrm.called)
 
-    @patch('djangocms_moderation.models.generate_reference_number', return_value='8E339524-BA8f-4c32-aBab-75b7cf05b51c')
+    @patch('djangocms_moderation.models.generate_reference_number', return_value='abc1234')
     def test_reference_number(self, mock_uuid):
         request = PageModerationRequest.objects.create(
             page=self.pg1,

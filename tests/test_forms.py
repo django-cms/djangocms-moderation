@@ -1,11 +1,15 @@
 from unittest.mock import MagicMock
 
-from django import forms
 from django.contrib.auth.models import User
-from django.test import TestCase, override_settings
+from django.forms import HiddenInput
 
 from djangocms_moderation import constants
-from djangocms_moderation.forms import *
+from djangocms_moderation.forms import (
+    ModerationRequestForm,
+    UpdateModerationRequestForm,
+    SelectModerationForm,
+)
+
 from djangocms_moderation.models import Workflow
 
 from .utils import BaseTestCase
@@ -67,7 +71,10 @@ class UpdateModerationRequestFormTest(BaseTestCase):
         self.assertIsInstance(form, ModerationRequestForm)
         field_moderator = form.fields['moderator']
         self.assertEqual(field_moderator.empty_label, 'Any Role 2')
-        self.assertQuerysetEqual(field_moderator.queryset, User.objects.filter(pk__in=[self.user2.pk]), transform=lambda x: x, ordered=False)
+        self.assertQuerysetEqual(
+            field_moderator.queryset,
+            User.objects.filter(pk__in=[self.user2.pk]), transform=lambda x: x, ordered=False
+        )
 
     def test_form_init_cancelled_action(self):
         form = UpdateModerationRequestForm(
@@ -80,7 +87,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
         )
         field_moderator = form.fields['moderator']
         self.assertQuerysetEqual(field_moderator.queryset, User.objects.none())
-        self.assertIsInstance(field_moderator.widget, forms.HiddenInput)
+        self.assertIsInstance(field_moderator.widget, HiddenInput)
 
     def test_form_init_rejected_action(self):
         form = UpdateModerationRequestForm(
@@ -93,7 +100,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
         )
         field_moderator = form.fields['moderator']
         self.assertQuerysetEqual(field_moderator.queryset, User.objects.none())
-        self.assertIsInstance(field_moderator.widget, forms.HiddenInput)
+        self.assertIsInstance(field_moderator.widget, HiddenInput)
 
     def test_form_save(self):
         data = {
@@ -126,5 +133,8 @@ class SelectModerationFormTest(BaseTestCase):
         form = SelectModerationForm(page=self.pg1,)
         self.assertIn('workflow', form.fields)
         field_workflow = form.fields['workflow']
-        self.assertQuerysetEqual(field_workflow.queryset, Workflow.objects.all(), transform=lambda x: x, ordered=False)
+        self.assertQuerysetEqual(
+            field_workflow.queryset, Workflow.objects.all(),
+            transform=lambda x: x, ordered=False
+        )
         self.assertEqual(field_workflow.initial, self.wf1)
