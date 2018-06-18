@@ -530,6 +530,7 @@ class ConfirmationFormSubmission(models.Model):
         to=ConfirmationPage,
         verbose_name=_('confirmation page'),
         related_name='+',
+        on_delete=models.PROTECT,
     )
 
     def __str__(self):

@@ -1,18 +1,23 @@
-import re
-from unittest.mock import MagicMock, patch
-
-from djangocms_moderation.handlers import *
+from djangocms_moderation.handlers import moderation_confirmation_form_submission
+from djangocms_moderation.models import ConfirmationFormSubmission, ConfirmationPage
 
 from .utils import BaseTestCase
 
 
 class ModerationConfirmationFormSubmissionTest(BaseTestCase):
 
+    def setUp(self):
+        self.cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+        self.role1.confirmation_page = self.cp
+        self.role1.save()
+
     def test_throws_exception_when_form_data_is_invalid(self):
         with self.assertRaises(ValueError) as context:
             moderation_confirmation_form_submission(
-                sender='test',
-                page_id=self.pg1.pk,
+                sender='ModerationFormPlugin',
+                page=self.pg1,
                 language='en',
                 user=self.user,
                 form_data=[{'label': 'Question 1', 'answer': 'Yes'}]
@@ -21,11 +26,11 @@ class ModerationConfirmationFormSubmissionTest(BaseTestCase):
 
     def test_creates_new_form_submission_when_form_data_is_valid(self):
         moderation_confirmation_form_submission(
-            sender='test',
-            page_id=self.pg1.pk,
+            sender='ModerationFormPlugin',
+            page=self.pg1,
             language='en',
             user=self.user,
-            form_data=[{'label': 'Question 1', 'value': 'Yes'}]
+            form_data=[{'label': 'Question 1', 'value': 'Yes'}],
         )
         result = ConfirmationFormSubmission.objects.filter(request=self.moderation_request1)
-        self.assertEqual(len(result), 1)
+        self.assertEqual(result.count(), 1)

@@ -76,9 +76,9 @@ def is_moderation_enabled(page):
 
 
 def get_form_submission_for_step(active_request, current_step):
-    lookup = ConfirmationFormSubmission.objects.filter(request=active_request, for_step=current_step)
+    lookup = (
+        ConfirmationFormSubmission
+        .objects
+        .filter(request=active_request, for_step=current_step)
+    )
     return lookup.first()
-
-
-def get_form_submissions_for_request(active_request):
-    return ConfirmationFormSubmission.objects.filter(request=active_request)

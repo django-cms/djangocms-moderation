@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch
 
 from django.utils.translation import ugettext_lazy as _
@@ -100,8 +101,6 @@ class ModerationRequestViewTest(BaseViewTestCase):
         )
 
     def test_approve_request_view_with_form(self):
-        self.role1.confirmation_page = None
-        self.role1.save() # to avoid redirecting to confirmation page
         response = self.client.get(get_admin_url(
             name='cms_moderation_approve_request',
             language='en',
@@ -206,6 +205,13 @@ class ModerationRequestViewTest(BaseViewTestCase):
         self.assertEqual(response.content, b'No moderation workflow exists for page.')
 
     def test_redirects_to_confirmation_page_if_invalid_check(self):
+        self.moderation_request1.form_submissions.all().delete()
+        self.cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+        self.role1.confirmation_page = self.cp
+        self.role1.save()
+
         response = self.client.get(
             get_admin_url(
                 name='cms_moderation_approve_request',
@@ -223,11 +229,18 @@ class ModerationRequestViewTest(BaseViewTestCase):
         self.assertEqual(response.url, redirect_url)
 
     def test_does_not_redirect_to_confirmation_page_if_valid_check(self):
+        self.moderation_request1.form_submissions.all().delete()
+        self.cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+        self.role1.confirmation_page = self.cp
+        self.role1.save()
+
         cfs = ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
-            data='Some data',
+            data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
             confirmation_page=self.cp,
         )
         response = self.client.get(
@@ -248,11 +261,18 @@ class ModerationRequestViewTest(BaseViewTestCase):
         )
     
     def test_renders_all_form_submissions(self):
+        self.moderation_request1.form_submissions.all().delete()
+        self.cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+        self.role1.confirmation_page = self.cp
+        self.role1.save()
+
         cfs = ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
-            data='Some data',
+            data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
             confirmation_page=self.cp,
         )
         response = self.client.get(
@@ -311,6 +331,12 @@ class SelectModerationViewTest(BaseViewTestCase):
 
 
 class ModerationConfirmationPageTest(BaseViewTestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
 
     def test_renders_build_view(self):
         response = self.client.get(self.cp.get_absolute_url())

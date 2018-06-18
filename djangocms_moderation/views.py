@@ -26,7 +26,6 @@ from .forms import (
 from .helpers import (
     get_active_moderation_request,
     get_form_submission_for_step,
-    get_form_submissions_for_request,
     get_page_moderation_workflow,
     get_page_or_404,
     get_workflow_or_none,
@@ -123,7 +122,7 @@ class ModerationRequestView(FormView):
         form_submission_opts = ConfirmationFormSubmission._meta
 
         if self.active_request:
-            form_submissions = get_form_submissions_for_request(self.active_request)
+            form_submissions = self.active_request.form_submissions.all()
         else:
             form_submissions = []
 
