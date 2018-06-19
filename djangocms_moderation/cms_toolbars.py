@@ -152,7 +152,6 @@ class ExtendedPageToolbar(PageToolbar):
             )
 
 
-
     def get_publish_button(self, classes=None):
         if not self.is_moderation_enabled:
             return super(ExtendedPageToolbar, self).get_publish_button(classes)
@@ -164,7 +163,6 @@ class ExtendedPageToolbar(PageToolbar):
         )
         container.buttons.extend(button.buttons)
         container.buttons.append(self.get_cancel_moderation_button())
-
 
         return container
 
@@ -190,7 +188,6 @@ class PageModerationToolbar(CMSToolbar):
 
         if not page_menu or page_menu.disabled:
             return
-
 
         try:
             extension = PageModeration.objects.get(extended_object_id=page.pk)
