@@ -6,7 +6,6 @@ from django.utils.translation import get_language
 
 from cms.utils import page_permissions
 
-from djangocms_moderation.constants import ACTION_REJECTED
 from .helpers import get_active_moderation_request
 
 # thread local support

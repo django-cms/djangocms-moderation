@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import (
@@ -12,7 +11,6 @@ from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
-from cms.models import Page
 from cms.utils.urlutils import add_url_parameters
 
 from . import constants

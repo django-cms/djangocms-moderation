@@ -12,9 +12,18 @@ from cms.models import Page
 from adminsortable2.admin import SortableInlineAdminMixin
 
 from . import views
-from .constants import ACTION_APPROVED, ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
+from .constants import (
+    ACTION_APPROVED,
+    ACTION_CANCELLED,
+    ACTION_REJECTED,
+    ACTION_RESUBMITTED,
+)
 from .forms import WorkflowStepInlineFormSet
-from .helpers import get_active_moderation_request, get_page_or_404, is_moderation_enabled
+from .helpers import (
+    get_active_moderation_request,
+    get_page_or_404,
+    is_moderation_enabled,
+)
 from .models import (
     PageModeration,
     PageModerationRequest,

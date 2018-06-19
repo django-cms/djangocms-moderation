@@ -15,7 +15,6 @@ from cms.toolbar.items import (
 )
 from cms.utils import page_permissions
 
-from djangocms_moderation.constants import ACTION_REJECTED
 from . import conf
 from .helpers import get_active_moderation_request, is_moderation_enabled
 from .models import PageModeration

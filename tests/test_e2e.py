@@ -4,9 +4,13 @@ from django.contrib.auth.models import User
 
 from cms.api import create_page
 
-
 from djangocms_moderation import constants
-from djangocms_moderation.models import Workflow, Role, PageModerationRequest, PageModerationRequestAction
+from djangocms_moderation.models import (
+    Workflow,
+    Role,
+    PageModerationRequest,
+    PageModerationRequestAction,
+)
 from djangocms_moderation.utils import get_admin_url
 
 
