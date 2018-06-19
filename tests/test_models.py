@@ -253,6 +253,10 @@ class PageModerationRequestActionTest(BaseTestCase):
 class ConfirmationPageTest(BaseTestCase):
 
     def setUp(self):
+        # First delete all the form submissions for the moderation_request1
+        # This will make sure there are no form submissions
+        # attached with the self.moderation_request1
+        self.moderation_request1.form_submissions.all().delete()
         self.cp = ConfirmationPage.objects.create(
             name='Checklist Form',
         )
@@ -264,12 +268,10 @@ class ConfirmationPageTest(BaseTestCase):
         self.assertEqual(self.cp.get_absolute_url(), url)
 
     def test_is_valid_returns_false_when_no_form_submission(self):
-        self.moderation_request1.form_submissions.all().delete()
         result = self.cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
         self.assertFalse(result)
     
     def test_is_valid_returns_true_when_form_submission_exists(self):
-        self.moderation_request1.form_submissions.all().delete()
         cfs = ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
@@ -281,7 +283,6 @@ class ConfirmationPageTest(BaseTestCase):
         self.assertTrue(result)
 
     def test_is_valid_returns_false_when_plain_content_not_reviewed(self):
-        self.moderation_request1.form_submissions.all().delete()
         result = self.cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
         self.assertFalse(result)
 

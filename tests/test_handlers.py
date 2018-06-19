@@ -1,3 +1,4 @@
+from djangocms_moderation.contrib.moderation_forms.cms_plugins import ModerationFormPlugin
 from djangocms_moderation.handlers import moderation_confirmation_form_submission
 from djangocms_moderation.models import ConfirmationFormSubmission, ConfirmationPage
 
@@ -16,7 +17,7 @@ class ModerationConfirmationFormSubmissionTest(BaseTestCase):
     def test_throws_exception_when_form_data_is_invalid(self):
         with self.assertRaises(ValueError) as context:
             moderation_confirmation_form_submission(
-                sender='ModerationFormPlugin',
+                sender=ModerationFormPlugin,
                 page=self.pg1,
                 language='en',
                 user=self.user,
@@ -26,7 +27,7 @@ class ModerationConfirmationFormSubmissionTest(BaseTestCase):
 
     def test_creates_new_form_submission_when_form_data_is_valid(self):
         moderation_confirmation_form_submission(
-            sender='ModerationFormPlugin',
+            sender=ModerationFormPlugin,
             page=self.pg1,
             language='en',
             user=self.user,

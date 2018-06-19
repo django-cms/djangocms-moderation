@@ -204,14 +204,19 @@ class ModerationRequestViewTest(BaseViewTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content, b'No moderation workflow exists for page.')
 
-    def test_redirects_to_confirmation_page_if_invalid_check(self):
-        self.moderation_request1.form_submissions.all().delete()
+    def _create_confirmation_page(self, moderation_request):
+        # First delete all the form submissions for the passed moderation_request
+        # This will make sure there are no form submissions
+        # attached with the passed moderation_request
+        moderation_request.form_submissions.all().delete()
         self.cp = ConfirmationPage.objects.create(
             name='Checklist Form',
         )
         self.role1.confirmation_page = self.cp
         self.role1.save()
 
+    def test_redirects_to_confirmation_page_if_invalid_check(self):
+        self._create_confirmation_page(self.moderation_request1)
         response = self.client.get(
             get_admin_url(
                 name='cms_moderation_approve_request',
@@ -229,13 +234,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
         self.assertEqual(response.url, redirect_url)
 
     def test_does_not_redirect_to_confirmation_page_if_valid_check(self):
-        self.moderation_request1.form_submissions.all().delete()
-        self.cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
-        self.role1.confirmation_page = self.cp
-        self.role1.save()
-
+        self._create_confirmation_page(self.moderation_request1)
         cfs = ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
@@ -261,13 +260,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
         )
     
     def test_renders_all_form_submissions(self):
-        self.moderation_request1.form_submissions.all().delete()
-        self.cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
-        self.role1.confirmation_page = self.cp
-        self.role1.save()
-
+        self._create_confirmation_page(self.moderation_request1)
         cfs = ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,

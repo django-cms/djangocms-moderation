@@ -1,3 +1,4 @@
 djangocms-helper
 tox
 coverage
+aldryn-forms>=3.0.3

@@ -510,16 +510,19 @@ class ConfirmationFormSubmission(models.Model):
         to=PageModerationRequest,
         verbose_name=_('request'),
         related_name='form_submissions',
+        on_delete=models.CASCADE,
     )
     for_step = models.ForeignKey(
         to=WorkflowStep,
         verbose_name=_('for step'),
         related_name='+',
+        on_delete=models.CASCADE,
     )
     by_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         verbose_name=_('by user'),
         related_name='+',
+        on_delete=models.CASCADE,
     )
     data = models.TextField(
         blank=True,
