@@ -3,7 +3,12 @@ from django.shortcuts import get_object_or_404
 from cms.models import Page
 
 from . import conf
-from .models import PageModeration, PageModerationRequest, Workflow
+from .models import (
+    ConfirmationFormSubmission,
+    PageModeration,
+    PageModerationRequest,
+    Workflow,
+)
 
 
 def get_default_workflow():
@@ -68,3 +73,12 @@ def is_moderation_enabled(page):
     if conf.ENABLE_WORKFLOW_OVERRIDE:
         return is_enabled and Workflow.objects.exists()
     return is_enabled and bool(get_page_moderation_workflow(page))
+
+
+def get_form_submission_for_step(active_request, current_step):
+    lookup = (
+        ConfirmationFormSubmission
+        .objects
+        .filter(request=active_request, for_step=current_step)
+    )
+    return lookup.first()

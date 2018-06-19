@@ -1,0 +1,12 @@
+{% load i18n cms_tags %}
+
+{% render_placeholder instance.content %}
+
+{% if content_view and not is_form_type %}
+    <form action="{{ request.get_full_path }}" method="post">
+        {% csrf_token %}
+        <div class="submit-row">
+            <input type="submit" value="{% trans "Next" %}" class="default" name="_save">
+        </div>
+    </form>
+{% endif %}
