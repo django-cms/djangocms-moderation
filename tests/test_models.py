@@ -145,6 +145,20 @@ class PageModerationRequestTest(BaseTestCase):
             ordered=False,
         )
 
+        # Now lets make the Approve action for wf3st1 stale...
+        last_action = self.moderation_request3.get_last_action()
+        last_action.is_stale = True
+        last_action.save()
+
+        # ... so all the steps are now pending as we need to re-moderate the
+        # resubmitted request
+        self.assertQuerysetEqual(
+            self.moderation_request3.get_pending_steps(),
+            WorkflowStep.objects.filter(workflow=self.wf3),
+            transform=lambda x: x,
+            ordered=False,
+        )
+
     def test_get_pending_required_steps(self):
         self.assertQuerysetEqual(
             self.moderation_request1.get_pending_required_steps(),
@@ -159,6 +173,26 @@ class PageModerationRequestTest(BaseTestCase):
             ordered=False,
         )
 
+        # Lets test with stale action
+        self.assertQuerysetEqual(
+            self.moderation_request2.get_pending_required_steps(),
+            WorkflowStep.objects.none(),
+            transform=lambda x: x,
+            ordered=False,
+        )
+
+        # Make the last action stale
+        last_action = self.moderation_request2.get_last_action()
+        last_action.is_stale = True
+        last_action.save()
+
+        self.assertQuerysetEqual(
+            self.moderation_request2.get_pending_required_steps(),
+            WorkflowStep.objects.filter(pk=last_action.step_approved.pk),
+            transform=lambda x: x,
+            ordered=False,
+        )
+
     def test_get_next_required(self):
         self.assertEqual(self.moderation_request1.get_next_required(), self.wf1st1)
         self.assertIsNone(self.moderation_request3.get_next_required())
@@ -167,11 +201,24 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertIsNone(self.moderation_request3.user_get_step(self.user))
         self.assertEqual(self.moderation_request3.user_get_step(self.user2), self.wf3st2)
 
-    def test_user_can_take_action(self):
+    def test_user_can_take_moderation_action(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
         self.assertFalse(self.moderation_request1.user_can_take_moderation_action(temp_user))
         self.assertFalse(self.moderation_request3.user_can_take_moderation_action(self.user))
         self.assertTrue(self.moderation_request3.user_can_take_moderation_action(self.user2))
+
+    def test_user_can_edit_and_resubmit(self):
+        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
+        self.assertFalse(self.moderation_request1.user_can_edit_and_resubmit(temp_user))
+
+        author = self.moderation_request3.author
+        last_action = self.moderation_request3.get_last_action()
+        last_action.action = constants.ACTION_REJECTED
+        last_action.save()
+        # Only author can edit and resubmit
+        self.assertTrue(self.moderation_request3.user_can_edit_and_resubmit(author))
+        self.assertFalse(self.moderation_request3.user_can_edit_and_resubmit(self.user2))
+        self.assertFalse(self.moderation_request3.user_can_edit_and_resubmit(self.user3))
 
     def test_user_can_moderate(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
@@ -204,13 +251,13 @@ class PageModerationRequestTest(BaseTestCase):
             message='Approved',
         )
         self.assertTrue(self.moderation_request1.is_active)
-        self.assertEqual(len(self.moderation_request1.actions.all()), 2)
+        self.assertEqual(len(self.moderation_request1.actions.filter(is_stale=False)), 2)
         mock_nrm.assert_called_once()
         mock_nra.assert_called_once()
 
     @patch('djangocms_moderation.models.notify_request_author')
     @patch('djangocms_moderation.models.notify_requested_moderator')
-    def test_update_status_action_rejected_and_resubmitted(self, mock_nrm, mock_nra):
+    def test_update_status_action_rejected(self, mock_nrm, mock_nra):
         self.moderation_request1.update_status(
             action=constants.ACTION_REJECTED,
             by_user=self.user,
@@ -220,10 +267,52 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
 
         mock_nra.assert_called_once()
+        # No need to notify the moderator, as this is assigned back to the
+        # content author
         self.assertFalse(mock_nrm.called)
 
-    @patch('djangocms_moderation.models.generate_reference_number', return_value='abc1234')
+    @patch('djangocms_moderation.models.notify_request_author')
+    @patch('djangocms_moderation.models.notify_requested_moderator')
+    def test_update_status_action_resubmitted(self, mock_nrm, mock_nra):
+        self.moderation_request1.update_status(
+            action=constants.ACTION_RESUBMITTED,
+            by_user=self.user,
+            message='Resubmitting',
+        )
+        self.assertTrue(self.moderation_request1.is_active)
+        self.assertEqual(len(self.moderation_request1.actions.all()), 2)
+
+        mock_nra.assert_called_once()
+        mock_nrm.assert_called_once()
+
+    def test_rejection_makes_the_previous_actions_stale(self):
+        previous_action_1 = self.moderation_request1.actions.create(
+            by_user=self.user,
+            action=constants.ACTION_APPROVED,
+        )
+        previous_action_2 = self.moderation_request1.actions.create(
+            by_user=self.user2,
+            action=constants.ACTION_RESUBMITTED,
+        )
+
+        self.assertFalse(previous_action_1.is_stale)
+        self.assertFalse(previous_action_2.is_stale)
+
+        self.moderation_request1.update_status(
+            action=constants.ACTION_REJECTED,
+            by_user=self.user,
+            message='Rejecting this',
+        )
+
+        previous_action_1.refresh_from_db()
+        previous_action_2.refresh_from_db()
+        self.assertTrue(previous_action_1.is_stale)
+        self.assertTrue(previous_action_2.is_stale)
+
+    @patch('djangocms_moderation.models.generate_reference_number')
     def test_reference_number(self, mock_uuid):
+        mock_uuid.return_value = 'abc123'
+
         request = PageModerationRequest.objects.create(
             page=self.pg1,
             language='en',
@@ -231,7 +320,7 @@ class PageModerationRequestTest(BaseTestCase):
             workflow=self.wf1,
         )
         mock_uuid.assert_called_once()
-        self.assertEqual(request.reference_number, mock_uuid())
+        self.assertEqual(request.reference_number, 'abc123')
 
 
 class PageModerationRequestActionTest(BaseTestCase):

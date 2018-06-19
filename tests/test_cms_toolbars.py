@@ -11,7 +11,7 @@ from cms.middleware.toolbar import ToolbarMiddleware
 from cms.toolbar.items import ButtonList, Dropdown, ModalItem
 from cms.utils.conf import get_cms_setting
 
-from djangocms_moderation.models import PageModeration
+from djangocms_moderation.models import PageModeration, PageModerationRequest
 from djangocms_moderation.utils import get_admin_url
 
 from .utils import BaseViewTestCase
@@ -58,6 +58,17 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         self.assertEqual(force_text(buttons[1].name), 'Approve changes')
         self.assertEqual(force_text(buttons[2].name), 'Assign back to the content author')
         self.assertEqual(force_text(buttons[3].name), 'Cancel request')
+
+    @patch.object(PageModerationRequest, 'user_can_edit_and_resubmit')
+    def test_show_resubmit_button_if_moderation_request_is_rejected(self, mock_request):
+        mock_request.return_value = True
+        self.setup_toolbar(self.pg1, self.user)
+
+        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
+        self.assertEqual(len(buttons), 3)
+        self.assertEqual(force_text(buttons[0].name), 'View differences')
+        self.assertEqual(force_text(buttons[1].name), 'Resubmit changes for moderation')
+        self.assertEqual(force_text(buttons[2].name), 'Cancel request')
 
     def test_show_moderation_dropdown_if_moderation_request(self):
         self.setup_toolbar(self.pg1, self.user)
