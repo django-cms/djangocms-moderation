@@ -179,10 +179,6 @@ class ModerationCommentsView(ListView):
     template_name = 'djangocms_moderation/comment_list.html'
 
     def dispatch(self, request, page_id, language, *args, **kwargs):
-        """ Dispatch method:
-             args[0] expects page id
-             args[1] expects language
-        """
         page_obj = get_page_or_404(page_id, language)
         self.active_request = get_active_moderation_request(page_obj, language)
         return super(ModerationCommentsView, self).dispatch(request, page_id, language, *args, **kwargs)
