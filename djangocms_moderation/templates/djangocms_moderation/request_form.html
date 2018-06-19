@@ -1,5 +1,5 @@
 {% extends "admin/change_form.html" %}
-{% load i18n %}
+{% load i18n admin_urls %}
 
 {% block content %}
     {% if errors %}
@@ -21,6 +21,16 @@
                         </div>
                     </div>
                 {% endfor %}
+                {% if form_submissions %}
+                    <div class="form-row">
+                        <div><b>{% trans "Completed Forms"|title %}</b></div>
+                        {% for form_sub in form_submissions %}
+                            <div>
+                                <a href="{% url form_submission_opts|admin_urlname:'change' form_sub.pk %}" target="_blank">{{ form_sub.for_step.role.name|title }}</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </fieldset>
         </div>
         <div class="submit-row">

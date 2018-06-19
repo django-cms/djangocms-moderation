@@ -1,9 +1,21 @@
+import json
 from unittest.mock import patch
 
 from django.test import TestCase, override_settings
 
-from djangocms_moderation.helpers import *
-from djangocms_moderation.models import Workflow, PageModeration
+from djangocms_moderation.helpers import (
+    get_active_moderation_request,
+    get_form_submission_for_step,
+    get_page_or_404,
+    get_workflow_or_none,
+    is_moderation_enabled,
+)
+from djangocms_moderation.models import (
+    ConfirmationPage,
+    ConfirmationFormSubmission,
+    PageModeration,
+    Workflow,
+)
 
 from .utils import BaseTestCase
 
@@ -73,3 +85,29 @@ class IsModerationEnabledTest(BaseTestCase):
     def test_returns_false_default_settings_no_workflow(self, mock_gpmw):
         self.assertFalse(is_moderation_enabled(self.pg1))
 
+
+class GetFormSubmissions(BaseTestCase):
+    
+    def test_returns_form_submission_for_step(self):
+        cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+        self.role1.confirmation_page = cp
+        self.role1.save()
+
+        cfs1 = ConfirmationFormSubmission.objects.create(
+            request=self.moderation_request1,
+            for_step=self.wf1st1,
+            by_user=self.user,
+            data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
+            confirmation_page=cp,
+        )
+        cfs2 = ConfirmationFormSubmission.objects.create(
+            request=self.moderation_request1,
+            for_step=self.wf1st2,
+            by_user=self.user,
+            data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
+            confirmation_page=cp,
+        )
+        result = get_form_submission_for_step(active_request=self.moderation_request1, current_step=self.wf1st1,)
+        self.assertEqual(result, cfs1)

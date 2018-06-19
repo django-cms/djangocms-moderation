@@ -2,10 +2,13 @@ from unittest.mock import MagicMock
 
 from django import forms
 from django.contrib.auth.models import User
-from django.test import TestCase, override_settings
 
 from djangocms_moderation import constants
-from djangocms_moderation.forms import *
+from djangocms_moderation.forms import (
+    ModerationRequestForm,
+    SelectModerationForm,
+    UpdateModerationRequestForm,
+)
 from djangocms_moderation.models import Workflow
 
 from .utils import BaseTestCase
