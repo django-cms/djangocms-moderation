@@ -152,9 +152,9 @@ cancel_moderation_request = ModerationRequestView.as_view(
 
 reject_moderation_request = ModerationRequestView.as_view(
     action=constants.ACTION_REJECTED,
-    page_title=_('Assign back to the content author'),
+    page_title=_('Send for rework'),
     form_class=UpdateModerationRequestForm,
-    success_message=_('The moderation request has been assigned back to the content author.'),
+    success_message=_('The moderation request has been sent for rework.'),
 )
 
 approve_moderation_request = ModerationRequestView.as_view(

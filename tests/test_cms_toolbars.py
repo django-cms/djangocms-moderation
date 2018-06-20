@@ -56,7 +56,7 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         self.assertEqual(len(buttons), 4)
         self.assertEqual(force_text(buttons[0].name), 'View differences')
         self.assertEqual(force_text(buttons[1].name), 'Approve changes')
-        self.assertEqual(force_text(buttons[2].name), 'Assign back to the content author')
+        self.assertEqual(force_text(buttons[2].name), 'Send for rework')
         self.assertEqual(force_text(buttons[3].name), 'Cancel request')
 
     @patch.object(PageModerationRequest, 'user_can_edit_and_resubmit')
@@ -76,7 +76,7 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         self.assertEqual(len(buttons), 4)
         self.assertEqual(force_text(buttons[0].name), 'View differences')
         self.assertEqual(force_text(buttons[1].name), 'Approve changes')
-        self.assertEqual(force_text(buttons[2].name), 'Assign back to the content author')
+        self.assertEqual(force_text(buttons[2].name), 'Send for rework')
         self.assertEqual(force_text(buttons[3].name), 'Cancel request')
 
     def test_show_moderation_dropdown_with_no_actions_for_non_role_user(self):

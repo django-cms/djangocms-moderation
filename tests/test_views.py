@@ -100,7 +100,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
             active_request=self.moderation_request1,
             workflow=self.wf1,
             form_cls=UpdateModerationRequestForm,
-            title=_('Assign back to the content author')
+            title=_('Send for rework')
         )
 
     def test_resubmit_request_view_with_form(self):

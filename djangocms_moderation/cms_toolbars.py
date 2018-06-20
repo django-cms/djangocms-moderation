@@ -135,7 +135,7 @@ class ExtendedPageToolbar(PageToolbar):
                     args=(page.pk, self.current_lang),
                 )
                 container.buttons.append(
-                    ModalButton(name=_('Assign back to the content author'), url=reject_request_url)
+                    ModalButton(name=_('Send for rework'), url=reject_request_url)
                 )
 
             # Anyone should be able to cancel the moderation request
