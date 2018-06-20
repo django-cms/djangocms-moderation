@@ -257,7 +257,6 @@ admin.site.register(PageModeration, PageModerationAdmin)
 admin.site.register(PageModerationRequest, PageModerationRequestAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
-admin.site.register(PageModerationRequestAction)
 
 admin.site.register(ConfirmationPage, ConfirmationPageAdmin)
 admin.site.register(ConfirmationFormSubmission, ConfirmationFormSubmissionAdmin)
