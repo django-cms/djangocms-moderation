@@ -1,4 +1,14 @@
 {% load i18n %}
 {% blocktrans %}
 Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for changes in {{ page_url }}.
+
+Comment: <br/>
+{{comment}} <br/>
+
+Job Number:<br/>
+{{ job_number }}<br/>
+
+Admin Url:<br/>
+{{ admin_url }}<br/>
+
 {% endblocktrans %}

@@ -9,6 +9,7 @@ from django.utils.translation import override as force_language, ugettext_lazy a
 from . import constants
 from .utils import get_absolute_url
 
+from django.urls import reverse
 
 email_subjects = {
     constants.ACTION_APPROVED: _('Changes Approved'),
@@ -21,6 +22,8 @@ def _send_email(request, action, recipients, subject, template):
     page = request.page
     page_url = page.get_absolute_url(request.language)
     author_name = request.get_first_action().get_by_user_name()
+    admin_url = None
+    site=page.node.site
 
     if action.to_user_id:
         moderator_name = action.get_to_user_name()
@@ -29,13 +32,21 @@ def _send_email(request, action, recipients, subject, template):
     else:
         moderator_name = ''
 
+    if moderator_name != '':
+        page_url = page_url + '?edit'
+        admin_url =  site.domain + reverse('admin:djangocms_moderation_pagemoderationrequest_change', args=(request.id,))
+
     context = {
         'page': page,
-        'page_url': get_absolute_url(page_url, site=page.node.site),
+        'page_url': get_absolute_url(page_url, site=site),
         'author_name': author_name,
         'by_user_name': action.get_by_user_name(),
         'moderator_name': moderator_name,
+        'job_number': request.reference_number or None,
+        'comment': request.get_last_action().message or None,
+        'admin_url': admin_url or None,
     }
+
     template = 'djangocms_moderation/emails/moderation-request/{}'.format(template)
 
     with force_language(request.language):
