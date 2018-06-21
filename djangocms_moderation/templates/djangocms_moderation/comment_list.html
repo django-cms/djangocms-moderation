@@ -3,22 +3,26 @@
 
 {% block content %}
     <div>
-        <fieldset class="module">       
+        <fieldset class="module">
             <table width="100%">
                 <thead>
                     <tr>
                         <th>Comment</th>
                         <th>By</th>
+                        <th>Action</th>
                         <th>Date</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for action in object_list %}
+                        <tr>
                         {% if action.message %}
                             <td>{{ action.message }}</td>
-                            <td>{{ action.by_user }}</td>
+                            <td>{{ action.get_by_user_name }}</td>
+                            <td>{{ action.get_action_display }}</td>
                             <td>{{ action.date_taken }}</td>
                         {% endif %}
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
