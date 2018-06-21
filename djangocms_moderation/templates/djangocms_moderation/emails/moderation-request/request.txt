@@ -2,13 +2,19 @@
 {% blocktrans %}
 Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for changes in {{ page_url }}.
 
-Comment: <br/>
-{{comment}} <br/>
+{% if comment %}
+    Comment: <br/>
+    {{ comment }} <br/>
+{% endif %}
 
-Job Number:<br/>
-{{ job_number }}<br/>
+{% if job_number %}
+    Job Number:<br/>
+    {{ job_number }}<br/>
+{% endif %}
 
-Admin Url:<br/>
-{{ admin_url }}<br/>
+{% if admin_url %}
+    Admin Url:<br/>
+    {{ admin_url }}<br/>
+{% endif %}
 
 {% endblocktrans %}

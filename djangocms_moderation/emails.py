@@ -8,8 +8,12 @@ from django.utils.translation import override as force_language, ugettext_lazy a
 
 from . import constants
 from .utils import get_absolute_url
+from django.contrib.sites.models import Site
 
-from django.urls import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 email_subjects = {
     constants.ACTION_APPROVED: _('Changes Approved'),
@@ -22,8 +26,6 @@ def _send_email(request, action, recipients, subject, template):
     page = request.page
     page_url = page.get_absolute_url(request.language)
     author_name = request.get_first_action().get_by_user_name()
-    admin_url = None
-    site=page.node.site
 
     if action.to_user_id:
         moderator_name = action.get_to_user_name()
@@ -33,18 +35,21 @@ def _send_email(request, action, recipients, subject, template):
         moderator_name = ''
 
     if moderator_name != '':
+        site = page.node.site
         page_url = page_url + '?edit'
-        admin_url =  site.domain + reverse('admin:djangocms_moderation_pagemoderationrequest_change', args=(request.id,))
+        admin_url = get_absolute_url('', site=site) + reverse('admin:djangocms_moderation_pagemoderationrequest_change', args=(request.id,))
+    else:
+        admin_url = None
 
     context = {
         'page': page,
-        'page_url': get_absolute_url(page_url, site=site),
+        'page_url': get_absolute_url(page_url, site=page.node.site),
         'author_name': author_name,
         'by_user_name': action.get_by_user_name(),
         'moderator_name': moderator_name,
-        'job_number': request.reference_number or None,
-        'comment': request.get_last_action().message or None,
-        'admin_url': admin_url or None,
+        'job_number': request.reference_number,
+        'comment': request.get_last_action().message,
+        'admin_url': admin_url,
     }
 
     template = 'djangocms_moderation/emails/moderation-request/{}'.format(template)
