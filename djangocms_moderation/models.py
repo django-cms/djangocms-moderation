@@ -429,7 +429,8 @@ class PageModerationRequest(models.Model):
 
     def user_can_take_moderation_action(self, user):
         """
-        Can this user approve or reject the moderation request?
+        Can this user approve or reject the moderation request
+        for the current step?
         """
 
         if self.get_last_action().action == constants.ACTION_REJECTED:
@@ -450,6 +451,9 @@ class PageModerationRequest(models.Model):
         return False
 
     def user_can_moderate(self, user):
+        """
+        Is `user` involved in the moderation process at some point?
+        """
         for step in self.workflow.steps.select_related('role__group'):
             if step.role.user_is_assigned(user):
                 return True
@@ -600,7 +604,7 @@ class ConfirmationFormSubmission(models.Model):
     )
 
     def __str__(self):
-        return '{} - {}'.format(self.request.reference_number, self.for_step) 
+        return '{} - {}'.format(self.request.reference_number, self.for_step)
 
     class Meta:
         verbose_name = _('Confirmation Form Submission')
