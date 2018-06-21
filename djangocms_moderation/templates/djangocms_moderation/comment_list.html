@@ -14,12 +14,17 @@
         <tbody>
             {% for action in object_list %}
                 <tr>
-                {% if action.message %}
-                    <td>{{ action.message }}</td>
+                    <td>
+                        {% if action.message %}
+                            {{ action.message }}
+                        {% else %}
+                            <em>{% trans 'no comment provided' %}</em>
+                        {% endif %}
+
+                    </td>
                     <td>{{ action.get_by_user_name }}</td>
                     <td>{{ action.get_action_display }}</td>
                     <td>{{ action.date_taken }}</td>
-                {% endif %}
                 </tr>
             {% endfor %}
         </tbody>
