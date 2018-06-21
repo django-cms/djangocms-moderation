@@ -406,6 +406,7 @@ class PageModerationRequestAction(models.Model):
         on_delete=models.CASCADE,
     )
     message = models.TextField(
+        verbose_name=_('message'),
         blank=True,
     )
     request = models.ForeignKey(

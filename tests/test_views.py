@@ -257,4 +257,4 @@ class ModerationCommentsViewTest(BaseViewTestCase):
             )
         )
 
-        self.assertEqual(len(response.context_data['object_list'].all()), 3)
+        self.assertEqual(response.context_data['object_list'].count(), 3)
