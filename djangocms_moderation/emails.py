@@ -34,12 +34,12 @@ def _send_email(request, action, recipients, subject, template):
     else:
         moderator_name = ''
 
-    if moderator_name != '':
-        site = page.node.site
-        page_url = page_url + '?edit'
-        admin_url = get_absolute_url('', site=site) + reverse('admin:djangocms_moderation_pagemoderationrequest_change', args=(request.id,))
-    else:
-        admin_url = None
+    site = page.node.site
+    page_url = page_url + '?edit'
+    admin_url = get_absolute_url('', site=site) + \
+        reverse('admin:djangocms_moderation_pagemoderationrequest_change',
+                args=(request.id,))
+
 
     context = {
         'page': page,
