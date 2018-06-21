@@ -247,7 +247,6 @@ class SelectModerationViewTest(BaseViewTestCase):
 
 class ModerationCommentsViewTest(BaseViewTestCase):
 
-
     def test_comment_list(self):
         response = self.client.get(
             get_admin_url(
