@@ -38,7 +38,7 @@ class ModerationFlowsTestCase(TestCase):
         cls.step1 = cls.workflow.steps.create(role=cls.role1, is_required=True, order=1)
         cls.step2 = cls.workflow.steps.create(role=cls.role2, is_required=True, order=2)
 
-    def _process_request(self, user, action, message='Test message'):
+    def _process_moderation_request(self, user, action, message='Test message'):
         self.client.force_login(user)
         response = self.client.post(
             get_admin_url(
@@ -50,20 +50,20 @@ class ModerationFlowsTestCase(TestCase):
         )
         return response
 
-    def _approve_request(self, user, message='Test message - approved'):
-        return self._process_request(user, 'approve', message)
+    def _approve_moderation_request(self, user, message='Test message - approved'):
+        return self._process_moderation_request(user, 'approve', message)
 
-    def _reject_request(self, user, message='Test message - rejected'):
-        return self._process_request(user, 'reject', message)
+    def _reject_moderation_request(self, user, message='Test message - rejected'):
+        return self._process_moderation_request(user, 'reject', message)
 
-    def _new_request(self, user, message='Test message - new'):
-        return self._process_request(user, 'new', message)
+    def _new_moderation_request(self, user, message='Test message - new'):
+        return self._process_moderation_request(user, 'new', message)
 
-    def _resubmit_request(self, user, message='Test message - resubmit'):
-        return self._process_request(user, 'resubmit', message)
+    def _resubmit_moderation_request(self, user, message='Test message - resubmit'):
+        return self._process_moderation_request(user, 'resubmit', message)
 
-    def _cancel_request(self, user, message='Test message - cancel'):
-        return self._process_request(user, 'cancel', message)
+    def _cancel_moderation_request(self, user, message='Test message - cancel'):
+        return self._process_moderation_request(user, 'cancel', message)
 
     def test_approve_moderation_workflow(self):
         """
@@ -78,13 +78,13 @@ class ModerationFlowsTestCase(TestCase):
         self.assertFalse(PageModerationRequestAction.objects.all())
 
         # Lets create a new moderation request
-        self._new_request(self.author)
+        self._new_moderation_request(self.author)
 
         moderation_request = PageModerationRequest.objects.get()  # It exists
         action = PageModerationRequestAction.objects.get()
         self.assertEqual(action.action, constants.ACTION_STARTED)
 
-        response = self._approve_request(self.moderator_1)
+        response = self._approve_moderation_request(self.moderator_1)
         self.assertEqual(response.status_code, 200)
 
         second_action = PageModerationRequestAction.objects.last()
@@ -92,11 +92,11 @@ class ModerationFlowsTestCase(TestCase):
         self.assertTrue(second_action.message, 'Test message - approved')
 
         # moderator_1 can't approve the second request, so they will get 403
-        response = self._approve_request(self.moderator_1)
+        response = self._approve_moderation_request(self.moderator_1)
         self.assertEqual(response.status_code, 403)
 
         # moderator_2 can approve, as per workflow setup
-        response = self._approve_request(self.moderator_2, 'message #2')
+        response = self._approve_moderation_request(self.moderator_2, 'message #2')
         self.assertEqual(response.status_code, 200)
 
         moderation_request.refresh_from_db()
@@ -136,7 +136,7 @@ class ModerationFlowsTestCase(TestCase):
         self.assertFalse(PageModerationRequestAction.objects.all())
 
         # Lets create a new moderation request
-        self._new_request(self.author)
+        self._new_moderation_request(self.author)
 
         moderation_request = PageModerationRequest.objects.get()  # It exists
         # make a note of the reference_number as it should not change
@@ -147,11 +147,11 @@ class ModerationFlowsTestCase(TestCase):
         self.assertEqual(action.action, constants.ACTION_STARTED)
 
         # moderator_1 will approve it now
-        response = self._approve_request(self.moderator_1)
+        response = self._approve_moderation_request(self.moderator_1)
         self.assertEqual(response.status_code, 200)
 
         # moderator_2 rejects the changes
-        response = self._reject_request(self.moderator_2, 'Please, less swearing')
+        response = self._reject_moderation_request(self.moderator_2, 'Please, less swearing')
         self.assertEqual(response.status_code, 200)
 
         moderation_request.refresh_from_db()
@@ -166,7 +166,7 @@ class ModerationFlowsTestCase(TestCase):
         self.assertEqual(2, PageModerationRequestAction.objects.filter(is_stale=True).count())
 
         # Now the original author can make amends and resubmit
-        self._resubmit_request(self.author)
+        self._resubmit_moderation_request(self.author)
 
         self.assertEqual(200, response.status_code)
 
@@ -177,11 +177,11 @@ class ModerationFlowsTestCase(TestCase):
         # Check that the reference number is still the same
         self.assertEqual(moderation_request.reference_number, reference_number)
 
-        self._approve_request(self.moderator_1)
-        self._approve_request(self.moderator_2)
+        self._approve_moderation_request(self.moderator_1)
+        self._approve_moderation_request(self.moderator_2)
 
         # Back to the content author to either publish or cancel the request
-        response = self._cancel_request(self.author)
+        response = self._cancel_moderation_request(self.author)
         self.assertEqual(200, response.status_code)
 
         moderation_request.refresh_from_db()
