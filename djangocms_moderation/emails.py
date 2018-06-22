@@ -6,13 +6,16 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_text
 from django.utils.translation import override as force_language, ugettext_lazy as _
 
-from . import constants
-from .utils import get_absolute_url
-
 try:
     from django.urls import reverse
 except ImportError:
     from django.core.urlresolvers import reverse
+
+from cms.utils.conf import get_cms_setting
+
+from . import constants
+from .utils import get_absolute_url
+
 
 email_subjects = {
     constants.ACTION_APPROVED: _('Changes Approved'),
@@ -23,7 +26,8 @@ email_subjects = {
 
 def _send_email(request, action, recipients, subject, template):
     page = request.page
-    page_url = page.get_absolute_url(request.language)
+    edit_on = get_cms_setting('CMS_TOOLBAR_URL__EDIT_ON')
+    page_url = page.get_absolute_url(request.language) + '?' + edit_on
     author_name = request.get_first_action().get_by_user_name()
 
     if action.to_user_id:
@@ -34,10 +38,7 @@ def _send_email(request, action, recipients, subject, template):
         moderator_name = ''
 
     site = page.node.site
-    page_url = page_url + '?edit'
     admin_url = reverse('admin:djangocms_moderation_pagemoderationrequest_change', args=(request.pk, ))
-
-
     context = {
         'page': page,
         'page_url': get_absolute_url(page_url, site),
@@ -48,7 +49,6 @@ def _send_email(request, action, recipients, subject, template):
         'comment': request.get_last_action().message,
         'admin_url': get_absolute_url(admin_url, site),
     }
-
     template = 'djangocms_moderation/emails/moderation-request/{}'.format(template)
 
     with force_language(request.language):
