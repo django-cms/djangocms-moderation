@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from django.utils.translation import ugettext_lazy as _
 
@@ -257,3 +258,22 @@ class ModerationCommentsViewTest(BaseViewTestCase):
         )
 
         self.assertEqual(response.context_data['object_list'].count(), 3)
+
+
+    def test_protected_comment_list(self):
+        new_user = User.objects.create_superuser(
+            username='new_user', email='new_user@test.com', password='test')
+        self.client.force_login(new_user)
+
+            
+        response = self.client.get(
+            get_admin_url(
+                name='cms_moderation_comments',
+                language='en',
+                args=(self.pg3.pk, 'en')
+            )
+        )
+
+        self.assertEqual(getattr(response, 'context_data', None), None)
+        self.assertEqual(response.status_code, 403)
+
