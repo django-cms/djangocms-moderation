@@ -8,7 +8,6 @@ from django.utils.translation import override as force_language, ugettext_lazy a
 
 from . import constants
 from .utils import get_absolute_url
-from django.contrib.sites.models import Site
 
 try:
     from django.urls import reverse
@@ -36,20 +35,18 @@ def _send_email(request, action, recipients, subject, template):
 
     site = page.node.site
     page_url = page_url + '?edit'
-    admin_url = get_absolute_url('', site=site) + \
-        reverse('admin:djangocms_moderation_pagemoderationrequest_change',
-                args=(request.id,))
+    admin_url = reverse('admin:djangocms_moderation_pagemoderationrequest_change', args=(request.pk, ))
 
 
     context = {
         'page': page,
-        'page_url': get_absolute_url(page_url, site=page.node.site),
+        'page_url': get_absolute_url(page_url, site),
         'author_name': author_name,
         'by_user_name': action.get_by_user_name(),
         'moderator_name': moderator_name,
         'job_number': request.reference_number,
         'comment': request.get_last_action().message,
-        'admin_url': admin_url,
+        'admin_url': get_absolute_url(admin_url, site),
     }
 
     template = 'djangocms_moderation/emails/moderation-request/{}'.format(template)
