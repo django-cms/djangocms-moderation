@@ -12,3 +12,19 @@ Admin Url:<br/>
 {{ admin_url }}<br/>
 
 {% endblocktrans %}
+
+
+{% if comment %}
+Comment: <br/>
+{{ comment }} <br/>
+{% endif %}
+
+{% if job_number %}
+Job Number:<br/>
+{{ job_number }}<br/>
+{% endif %}
+
+{% if admin_url %}
+Admin Url:<br/>
+{{ admin_url }}<br/>
+{% endif %}
