@@ -97,9 +97,10 @@ class ExtendedPageToolbar(PageToolbar):
                 DropdownToggleButton(name=_('Moderation'))
             )
 
-            container.buttons.append(
-                Button(name=_('View differences'), url='#', extra_classes=('js-cms-moderation-view-diff',))
-            )
+            if page.publisher_public:
+                container.buttons.append(
+                    Button(name=_('View differences'), url='#', extra_classes=('js-cms-moderation-view-diff',))
+                    )
 
             if moderation_request.user_can_take_action(user):
                 approve_request_url = get_admin_url(
