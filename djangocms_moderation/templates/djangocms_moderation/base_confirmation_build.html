@@ -1,0 +1,23 @@
+{% load i18n cms_tags sekizai_tags %}
+
+<!doctype html>
+<html>
+    <head>
+        {% render_block "css" %}
+        {% block extrahead %}{% endblock %}
+    </head>
+    <body>
+        {% cms_toolbar %}
+
+        <div class="container">
+            {% block pre_content %}{% endblock %}
+
+            {% include "djangocms_moderation/confirmation_page.html" %}
+
+            {% block post_content %}{% endblock %}
+        </div>
+        
+        {% render_block "js" %}
+        {% block extrajs %}{% endblock %}
+    </body>
+</html>

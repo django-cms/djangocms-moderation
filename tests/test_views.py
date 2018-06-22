@@ -1,11 +1,9 @@
+import json
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
-from django.test import TestCase, override_settings
 from django.utils.translation import ugettext_lazy as _
 
-from djangocms_moderation import constants
-from djangocms_moderation.forms import *
 from djangocms_moderation.views import *
 from djangocms_moderation.utils import get_admin_url
 
@@ -202,6 +200,81 @@ class ModerationRequestViewTest(BaseViewTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content, b'No moderation workflow exists for page.')
 
+    def _create_confirmation_page(self, moderation_request):
+        # First delete all the form submissions for the passed moderation_request
+        # This will make sure there are no form submissions
+        # attached with the passed moderation_request
+        moderation_request.form_submissions.all().delete()
+        self.cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+        self.role1.confirmation_page = self.cp
+        self.role1.save()
+
+    def test_redirects_to_confirmation_page_if_invalid_check(self):
+        self._create_confirmation_page(self.moderation_request1)
+        response = self.client.get(
+            get_admin_url(
+                name='cms_moderation_approve_request',
+                language='en',
+                args=(self.pg1.pk, 'en')
+            )
+        )
+        redirect_url = add_url_parameters(
+            self.cp.get_absolute_url(),
+            content_view=True,
+            page=self.pg1.pk,
+            language='en',
+        )
+        self.assertEqual(response.status_code, 302) # redirection
+        self.assertEqual(response.url, redirect_url)
+
+    def test_does_not_redirect_to_confirmation_page_if_valid_check(self):
+        self._create_confirmation_page(self.moderation_request1)
+        cfs = ConfirmationFormSubmission.objects.create(
+            request=self.moderation_request1,
+            for_step=self.wf1st1,
+            by_user=self.user,
+            data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
+            confirmation_page=self.cp,
+        )
+        response = self.client.get(
+            get_admin_url(
+                name='cms_moderation_approve_request',
+                language='en',
+                args=(self.pg1.pk, 'en')
+            )
+        )
+        self._assert_render(
+            response=response,
+            page=self.pg1,
+            action=constants.ACTION_APPROVED,
+            active_request=self.moderation_request1,
+            workflow=self.wf1,
+            form_cls=UpdateModerationRequestForm,
+            title=_('Approve changes')
+        )
+
+    def test_renders_all_form_submissions(self):
+        self._create_confirmation_page(self.moderation_request1)
+        cfs = ConfirmationFormSubmission.objects.create(
+            request=self.moderation_request1,
+            for_step=self.wf1st1,
+            by_user=self.user,
+            data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
+            confirmation_page=self.cp,
+        )
+        response = self.client.get(
+            get_admin_url(
+                name='cms_moderation_approve_request',
+                language='en',
+                args=(self.pg1.pk, 'en')
+            )
+        )
+        form_submissions = response.context_data['form_submissions']
+        results = ConfirmationFormSubmission.objects.filter(request=self.moderation_request1)
+        self.assertQuerysetEqual(form_submissions, results, transform=lambda x: x, ordered=False)
+
 
 class SelectModerationViewTest(BaseViewTestCase):
 
@@ -275,3 +348,54 @@ class ModerationCommentsViewTest(BaseViewTestCase):
         )
 
         self.assertEqual(response.status_code, 403)
+
+
+class ModerationConfirmationPageTest(BaseViewTestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.cp = ConfirmationPage.objects.create(
+            name='Checklist Form',
+        )
+
+    def test_renders_build_view(self):
+        response = self.client.get(self.cp.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.templates[0].name, self.cp.template)
+        self.assertEqual(response.context['CONFIRMATION_BASE_TEMPLATE'], 'djangocms_moderation/base_confirmation_build.html')
+
+    def test_renders_content_view(self):
+        response = self.client.get(
+            add_url_parameters(
+                self.cp.get_absolute_url(),
+                content_view=True,
+                page=self.pg1.pk,
+                language='en',
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.templates[0].name, self.cp.template)
+        self.assertEqual(response.context['CONFIRMATION_BASE_TEMPLATE'], 'djangocms_moderation/base_confirmation.html')
+
+    def test_renders_post_view(self):
+        response = self.client.post(
+            add_url_parameters(
+                self.cp.get_absolute_url(),
+                content_view=True,
+                page=self.pg1.pk,
+                language='en',
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.templates[0].name, self.cp.template)
+        self.assertEqual(response.context['CONFIRMATION_BASE_TEMPLATE'], 'djangocms_moderation/base_confirmation.html')
+        self.assertTrue(response.context['submitted'])
+        redirect_url = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_approve_request',
+                language='en',
+                args=(self.pg1.pk, 'en'),
+            ),
+            reviewed=True,
+        )
+        self.assertEqual(response.context['redirect_url'], redirect_url)

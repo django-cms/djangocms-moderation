@@ -3,8 +3,13 @@ from django.test import TestCase
 
 from cms.api import create_page
 
-from djangocms_moderation.models import Workflow, Role, PageModerationRequest
 from djangocms_moderation import constants
+from djangocms_moderation.models import (
+    ConfirmationPage,
+    PageModerationRequest,
+    Role,
+    Workflow,
+)
 
 
 class BaseTestCase(TestCase):

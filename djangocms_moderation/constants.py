@@ -11,7 +11,6 @@ ACCESS_PAGE_AND_CHILDREN = 3  # just immediate children (1 level)
 ACCESS_DESCENDANTS = 4
 ACCESS_PAGE_AND_DESCENDANTS = 5
 
-
 # binary masks for ACCESS permissions
 MASK_PAGE = 1
 MASK_CHILDREN = 2
@@ -30,3 +29,6 @@ ACTION_REJECTED = 'rejected'
 ACTION_APPROVED = 'approved'
 ACTION_CANCELLED = 'cancelled'
 ACTION_FINISHED = 'finished'
+
+CONTENT_TYPE_PLAIN = 'plain'
+CONTENT_TYPE_FORM = 'form'
