@@ -351,15 +351,13 @@ class PageModerationRequest(models.Model):
                 return True
         return False
 
-    def user_can_view_comments(self, user):
-        """ Check if active user can view PageModerationRequest Comments.
-            Users who can view Comments should be all Users in
-            all Roles attached to PageModerationRequest Workflow 
-            or the PageModerationRequestCreator (first PageModerationRequestAction)
+    def user_can_moderate_or_is_author(self, user):
         """
-        user_is_moderation_creator = (user == self.get_first_action().by_user)
-        return user_is_moderation_creator or self.user_can_moderate(user)
-
+        Checks if the user is part of the moderation workflow at any point
+        or if they are an author of the moderation request
+        """
+        author = user == self.get_first_action().by_user
+        return author or self.user_can_moderate(user)
 
     def save(self, **kwargs):
         if not self.reference_number:

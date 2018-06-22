@@ -257,15 +257,15 @@ class ModerationCommentsViewTest(BaseViewTestCase):
             )
         )
 
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context_data['object_list'].count(), 3)
-
 
     def test_protected_comment_list(self):
         new_user = User.objects.create_superuser(
-            username='new_user', email='new_user@test.com', password='test')
+            username='new_user', email='new_user@test.com', password='test'
+        )
         self.client.force_login(new_user)
 
-            
         response = self.client.get(
             get_admin_url(
                 name='cms_moderation_comments',
@@ -274,6 +274,4 @@ class ModerationCommentsViewTest(BaseViewTestCase):
             )
         )
 
-        self.assertEqual(getattr(response, 'context_data', None), None)
         self.assertEqual(response.status_code, 403)
-

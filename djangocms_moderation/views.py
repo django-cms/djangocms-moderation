@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import (
@@ -12,7 +11,6 @@ from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView, ListView
 
-from cms.models import Page
 from cms.utils.urlutils import add_url_parameters
 
 from . import constants
@@ -181,11 +179,13 @@ class ModerationCommentsView(ListView):
     def dispatch(self, request, page_id, language, *args, **kwargs):
         page_obj = get_page_or_404(page_id, language)
         self.active_request = get_active_moderation_request(page_obj, language)
-        
-        if not self.active_request.user_can_view_comments(request.user):
+
+        if not self.active_request.user_can_moderate_or_is_author(request.user):
             return HttpResponseForbidden('User is not allowed to view comments.')
 
-        return super(ModerationCommentsView, self).dispatch(request, page_id, language, *args, **kwargs)
+        return super(ModerationCommentsView, self).dispatch(
+            request, page_id, language, *args, **kwargs
+        )
 
     def get_queryset(self):
         return self.active_request.actions.all()
@@ -197,5 +197,6 @@ class ModerationCommentsView(ListView):
             'is_popup': True,
         })
         return context
+
 
 moderation_comments = ModerationCommentsView.as_view()
