@@ -97,7 +97,7 @@ class ExtendedPageToolbar(PageToolbar):
                 DropdownToggleButton(name=_('Moderation'))
             )
 
-            if page.publisher_public:
+            if page.is_published(self.current_lang):
                 container.buttons.append(
                     Button(name=_('View differences'), url='#', extra_classes=('js-cms-moderation-view-diff',))
                     )
