@@ -55,27 +55,20 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
     def test_show_moderation_dropdown_if_moderation_request(self):
         self.setup_toolbar(self.pg1, self.user)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
-        self.assertEqual(len(buttons), 4)
+        self.assertEqual(len(buttons), 5)
         self.assertEqual(force_text(buttons[0].name), 'View differences')
         self.assertEqual(force_text(buttons[1].name), 'Approve changes')
         self.assertEqual(force_text(buttons[2].name), 'Reject changes')
         self.assertEqual(force_text(buttons[3].name), 'Cancel request')
-
-    def test_show_moderation_dropdown_if_moderation_request(self):
-        self.setup_toolbar(self.pg1, self.user)
-        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
-        self.assertEqual(len(buttons), 4)
-        self.assertEqual(force_text(buttons[0].name), 'View differences')
-        self.assertEqual(force_text(buttons[1].name), 'Approve changes')
-        self.assertEqual(force_text(buttons[2].name), 'Reject changes')
-        self.assertEqual(force_text(buttons[3].name), 'Cancel request')
+        self.assertEqual(force_text(buttons[4].name), 'View comments')
 
     def test_show_moderation_dropdown_with_no_actions_for_non_role_user(self):
         self.setup_toolbar(self.pg1, self.user3)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
-        self.assertEqual(len(buttons), 2)
+        self.assertEqual(len(buttons), 3)
         self.assertEqual(force_text(buttons[0].name), 'View differences')
         self.assertEqual(force_text(buttons[1].name), 'Cancel request')
+        self.assertEqual(force_text(buttons[2].name), 'View comments')
 
     def test_show_submit_for_moderation_button_if_page_is_dirty(self):
         new_page = create_page(title='New Page', template='page.html', language='en', published=True,)

@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import (
@@ -10,13 +9,10 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import FormView
+from django.views.generic import FormView, ListView
 
-from cms.models import Page
-from cms.page_rendering import render_page
 from cms.utils.urlutils import add_url_parameters
 
-from . import conf
 from . import constants
 from .forms import (
     ModerationRequestForm,
@@ -25,7 +21,6 @@ from .forms import (
 )
 from .helpers import (
     get_active_moderation_request,
-    get_form_submission_for_step,
     get_page_moderation_workflow,
     get_page_or_404,
     get_workflow_or_none,
@@ -211,6 +206,36 @@ class SelectModerationView(FormView):
 select_new_moderation_request = SelectModerationView.as_view()
 
 
+class ModerationCommentsView(ListView):
+
+    template_name = 'djangocms_moderation/comment_list.html'
+
+    def dispatch(self, request, page_id, language, *args, **kwargs):
+        page_obj = get_page_or_404(page_id, language)
+        self.active_request = get_active_moderation_request(page_obj, language)
+
+        if not self.active_request.user_can_view_comments(request.user):
+            return HttpResponseForbidden('User is not allowed to view comments.')
+
+        return super(ModerationCommentsView, self).dispatch(
+            request, page_id, language, *args, **kwargs
+        )
+
+    def get_queryset(self):
+        return self.active_request.actions.all()
+
+    def get_context_data(self, **kwargs):
+        context = super(ModerationCommentsView, self).get_context_data(**kwargs)
+        context.update({
+            'title': _('View Comments'),
+            'is_popup': True,
+        })
+        return context
+
+
+moderation_comments = ModerationCommentsView.as_view()
+
+
 def moderation_confirmation_page(request, confirmation_id):
     confirmation_page_instance = get_object_or_404(ConfirmationPage, pk=confirmation_id)
     content_view = bool(request.GET.get('content_view'))
@@ -225,7 +250,7 @@ def moderation_confirmation_page(request, confirmation_id):
 
     context = {
         'opts': ConfirmationPage._meta,
-        'app_label': ConfirmationPage._meta.app_label, 
+        'app_label': ConfirmationPage._meta.app_label,
         'change': True,
         'add': False,
         'is_popup': True,
@@ -238,7 +263,7 @@ def moderation_confirmation_page(request, confirmation_id):
         'content_view': content_view,
         'CONFIRMATION_BASE_TEMPLATE': base_template,
     }
-    
+
     if request.method == 'POST' and page_id and language:
         context['submitted'] = True
         context['redirect_url'] = add_url_parameters(

@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.utils.functional import cached_property
-from django.utils.translation import override as force_language, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from cms.api import get_page_draft
 from cms.toolbar_base import CMSToolbar
@@ -14,7 +14,6 @@ from cms.toolbar.items import (
     ModalButton,
 )
 from cms.utils import page_permissions
-from cms.utils.urlutils import admin_reverse
 
 from . import conf
 from .helpers import get_active_moderation_request, is_moderation_enabled
@@ -35,7 +34,6 @@ class ExtendedPageToolbar(PageToolbar):
         css = {
             'all': ('djangocms_moderation/css/moderation.css',)
         }
-
 
     def __init__(self, *args, **kwargs):
         super(ExtendedPageToolbar, self).__init__(*args, **kwargs)
@@ -122,6 +120,17 @@ class ExtendedPageToolbar(PageToolbar):
                 )
 
             container.buttons.append(self.get_cancel_moderation_button())
+
+            if moderation_request.user_can_view_comments(user):
+                comment_url = get_admin_url(
+                    name='cms_moderation_comments',
+                    language=self.current_lang,
+                    args=(page.pk, self.current_lang),
+                )
+                container.buttons.append(
+                    ModalButton(name=_('View comments'), url=comment_url)
+                )
+
             self.toolbar.add_item(container)
         else:
             if conf.ENABLE_WORKFLOW_OVERRIDE:
@@ -157,6 +166,8 @@ class ExtendedPageToolbar(PageToolbar):
 class PageModerationToolbar(CMSToolbar):
 
     def populate(self):
+        """ Adds Moderation link to Page Toolbar Menu
+        """
         # always use draft if we have a page
         page = get_page_draft(self.request.current_page)
 
@@ -198,3 +209,4 @@ class PageModerationToolbar(CMSToolbar):
 
 toolbar_pool.toolbars['cms.cms_toolbars.PageToolbar'] = ExtendedPageToolbar
 toolbar_pool.register(PageModerationToolbar)
+

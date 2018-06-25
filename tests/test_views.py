@@ -1,13 +1,9 @@
 import json
 from unittest.mock import patch
 
+from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
-from cms.utils.urlutils import add_url_parameters
-
-from djangocms_moderation import constants
-from djangocms_moderation.forms import *
-from djangocms_moderation.models import ConfirmationPage, ConfirmationFormSubmission
 from djangocms_moderation.views import *
 from djangocms_moderation.utils import get_admin_url
 
@@ -258,7 +254,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
             form_cls=UpdateModerationRequestForm,
             title=_('Approve changes')
         )
-    
+
     def test_renders_all_form_submissions(self):
         self._create_confirmation_page(self.moderation_request1)
         cfs = ConfirmationFormSubmission.objects.create(
@@ -323,6 +319,37 @@ class SelectModerationViewTest(BaseViewTestCase):
         self.assertEqual(response.url, form_valid_redirect_url)
 
 
+class ModerationCommentsViewTest(BaseViewTestCase):
+
+    def test_comment_list(self):
+        response = self.client.get(
+            get_admin_url(
+                name='cms_moderation_comments',
+                language='en',
+                args=(self.pg3.pk, 'en')
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context_data['object_list'].count(), 3)
+
+    def test_comment_list_protected(self):
+        new_user = User.objects.create_superuser(
+            username='new_user', email='new_user@test.com', password='test'
+        )
+        self.client.force_login(new_user)
+
+        response = self.client.get(
+            get_admin_url(
+                name='cms_moderation_comments',
+                language='en',
+                args=(self.pg3.pk, 'en')
+            )
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+
 class ModerationConfirmationPageTest(BaseViewTestCase):
 
     def setUp(self):
@@ -336,7 +363,7 @@ class ModerationConfirmationPageTest(BaseViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.templates[0].name, self.cp.template)
         self.assertEqual(response.context['CONFIRMATION_BASE_TEMPLATE'], 'djangocms_moderation/base_confirmation_build.html')
-    
+
     def test_renders_content_view(self):
         response = self.client.get(
             add_url_parameters(
