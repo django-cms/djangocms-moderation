@@ -13,7 +13,7 @@ from cms.toolbar.toolbar import CMSToolbar
 from cms.utils.conf import get_cms_setting
 
 from djangocms_moderation import constants
-from djangocms_moderation.models import PageModeration
+from djangocms_moderation.models import PageModeration, PageModerationRequest
 from djangocms_moderation.utils import get_admin_url
 
 from .utils import BaseViewTestCase
@@ -52,8 +52,28 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
         self.assertTrue([button for button in buttons if force_text(button.name) == 'Publish page changes'])
 
-    def test_show_moderation_dropdown_if_moderation_request(self):
+    def test_show_moderation_dropdown_if_moderation_request_non_published_page(self):
         self.setup_toolbar(self.pg1, self.user)
+        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
+        self.assertEqual(len(buttons), 4)
+        self.assertEqual(force_text(buttons[0].name), 'Approve changes')
+        self.assertEqual(force_text(buttons[1].name), 'Reject changes')
+        self.assertEqual(force_text(buttons[2].name), 'Cancel request')
+        self.assertEqual(force_text(buttons[3].name), 'View comments')
+
+    def test_show_moderation_dropdown_if_moderation_request_previously_published_page(self):
+        # We don't have any fixture for published page in an active moderation
+        # request, so let's create one for this test.
+        published_page = create_page(
+            title='Page 5', template='page.html', language='en', published=True
+        )
+        moderation_request = PageModerationRequest.objects.create(
+            page=published_page, language='en', workflow=self.wf1, is_active=True
+        )
+        moderation_request.actions.create(
+            by_user=self.user, action=constants.ACTION_STARTED
+        )
+        self.setup_toolbar(published_page, self.user)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
         self.assertEqual(len(buttons), 5)
         self.assertEqual(force_text(buttons[0].name), 'View differences')
@@ -65,10 +85,10 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
     def test_show_moderation_dropdown_with_no_actions_for_non_role_user(self):
         self.setup_toolbar(self.pg1, self.user3)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
-        self.assertEqual(len(buttons), 3)
-        self.assertEqual(force_text(buttons[0].name), 'View differences')
-        self.assertEqual(force_text(buttons[1].name), 'Cancel request')
-        self.assertEqual(force_text(buttons[2].name), 'View comments')
+        self.assertEqual(len(buttons), 2)
+        # `self.pg1` has never been published so we don't show View diff button
+        self.assertEqual(force_text(buttons[0].name), 'Cancel request')
+        self.assertEqual(force_text(buttons[1].name), 'View comments')
 
     def test_show_submit_for_moderation_button_if_page_is_dirty(self):
         new_page = create_page(title='New Page', template='page.html', language='en', published=True,)
