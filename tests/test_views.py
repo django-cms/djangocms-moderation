@@ -333,7 +333,7 @@ class ModerationCommentsViewTest(BaseViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context_data['object_list'].count(), 3)
 
-    def test_protected_comment_list(self):
+    def test_comment_list_protected(self):
         new_user = User.objects.create_superuser(
             username='new_user', email='new_user@test.com', password='test'
         )

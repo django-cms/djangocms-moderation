@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.utils.functional import cached_property
-from django.utils.translation import override as force_language, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from cms.api import get_page_draft
 from cms.toolbar_base import CMSToolbar
@@ -14,7 +14,6 @@ from cms.toolbar.items import (
     ModalButton,
 )
 from cms.utils import page_permissions
-from cms.utils.urlutils import admin_reverse
 
 from . import conf
 from .helpers import get_active_moderation_request, is_moderation_enabled
@@ -35,7 +34,6 @@ class ExtendedPageToolbar(PageToolbar):
         css = {
             'all': ('djangocms_moderation/css/moderation.css',)
         }
-
 
     def __init__(self, *args, **kwargs):
         super(ExtendedPageToolbar, self).__init__(*args, **kwargs)
@@ -151,7 +149,6 @@ class ExtendedPageToolbar(PageToolbar):
                 side=self.toolbar.RIGHT,
             )
 
-
     def get_publish_button(self, classes=None):
         if not self.is_moderation_enabled:
             return super(ExtendedPageToolbar, self).get_publish_button(classes)
@@ -163,7 +160,6 @@ class ExtendedPageToolbar(PageToolbar):
         )
         container.buttons.extend(button.buttons)
         container.buttons.append(self.get_cancel_moderation_button())
-
         return container
 
 
@@ -172,7 +168,6 @@ class PageModerationToolbar(CMSToolbar):
     def populate(self):
         """ Adds Moderation link to Page Toolbar Menu
         """
-
         # always use draft if we have a page
         page = get_page_draft(self.request.current_page)
 
@@ -209,7 +204,6 @@ class PageModerationToolbar(CMSToolbar):
         if not extension:
             url += '?extended_object=%s' % page.pk
         not_edit_mode = not self.toolbar.edit_mode_active
-
         page_menu.add_modal_item(_('Moderation'), url=url, disabled=not_edit_mode)
 
 
