@@ -407,6 +407,12 @@ class PageModerationRequest(models.Model):
                 return True
         return False
 
+    def user_is_author(self, user):
+        return user == self.get_first_action().by_user
+
+    def user_can_view_comments(self, user):
+        return self.user_is_author(user) or self.user_can_moderate(user)
+
     def save(self, **kwargs):
         if not self.reference_number:
             self.reference_number = generate_reference_number(
@@ -537,7 +543,7 @@ class ConfirmationFormSubmission(models.Model):
     )
 
     def __str__(self):
-        return '{} - {}'.format(self.request.reference_number, self.for_step) 
+        return '{} - {}'.format(self.request.reference_number, self.for_step)
 
     class Meta:
         verbose_name = _('Confirmation Form Submission')

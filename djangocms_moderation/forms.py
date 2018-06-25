@@ -50,6 +50,7 @@ class ModerationRequestForm(forms.Form):
         required=False,
     )
     message = forms.CharField(
+        label=_('comment'),
         required=False,
         widget=forms.Textarea(),
     )
