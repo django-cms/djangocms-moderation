@@ -121,7 +121,7 @@ class ExtendedPageToolbar(PageToolbar):
 
             container.buttons.append(self.get_cancel_moderation_button())
 
-            if moderation_request.user_can_moderate_or_is_author(user):
+            if moderation_request.user_can_view_comments(user):
                 comment_url = get_admin_url(
                     name='cms_moderation_comments',
                     language=self.current_lang,

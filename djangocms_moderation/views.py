@@ -214,7 +214,7 @@ class ModerationCommentsView(ListView):
         page_obj = get_page_or_404(page_id, language)
         self.active_request = get_active_moderation_request(page_obj, language)
 
-        if not self.active_request.user_can_moderate_or_is_author(request.user):
+        if not self.active_request.user_can_view_comments(request.user):
             return HttpResponseForbidden('User is not allowed to view comments.')
 
         return super(ModerationCommentsView, self).dispatch(
