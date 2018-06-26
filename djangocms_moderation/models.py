@@ -361,8 +361,8 @@ class PageModerationRequest(models.Model):
         if is_rejected:
             # This workflow is now rejected, so it needs to be resubmitted by
             # the content author, so lets mark all the actions taken
-            # so far as stale ones. They need to be re-taken
-            self.actions.all().update(is_stale=True)
+            # so far as archived. They need to be re-taken
+            self.actions.all().update(is_archived=True)
 
         # If request is Rejected or Resubmitted, it still counts as active
         # as rejected means it is submitted back to the content author
@@ -396,7 +396,7 @@ class PageModerationRequest(models.Model):
         steps_approved = (
             self
             .actions
-            .filter(step_approved__isnull=False, is_stale=False)
+            .filter(step_approved__isnull=False, is_archived=False)
             .values_list('step_approved__pk', flat=True)
         )
         return self.workflow.steps.exclude(pk__in=steps_approved)
@@ -529,11 +529,11 @@ class PageModerationRequestAction(models.Model):
         auto_now_add=True,
     )
 
-    # Action can become "stale" if the moderation request has been rejected
+    # Action can become "archived" if the moderation request has been rejected
     # and re-assigned to the content author for their resubmission.
     # In this scenario, all the actions have to be retaken, so we mark the
-    # existing ones as "stale" (outdated)
-    is_stale = models.BooleanField(default=False)
+    # existing ones as "archived"
+    is_archived = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('date_taken',)

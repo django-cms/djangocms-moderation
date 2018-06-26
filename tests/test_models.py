@@ -151,7 +151,7 @@ class PageModerationRequestTest(BaseTestCase):
 
         # Now lets make the Approve action for wf3st1 stale...
         last_action = self.moderation_request3.get_last_action()
-        last_action.is_stale = True
+        last_action.is_archived = True
         last_action.save()
 
         # ... so all the steps are now pending as we need to re-moderate the
@@ -187,7 +187,7 @@ class PageModerationRequestTest(BaseTestCase):
 
         # Make the last action stale
         last_action = self.moderation_request2.get_last_action()
-        last_action.is_stale = True
+        last_action.is_archived = True
         last_action.save()
 
         self.assertQuerysetEqual(
@@ -267,7 +267,7 @@ class PageModerationRequestTest(BaseTestCase):
             message='Approved',
         )
         self.assertTrue(self.moderation_request1.is_active)
-        self.assertEqual(len(self.moderation_request1.actions.filter(is_stale=False)), 2)
+        self.assertEqual(len(self.moderation_request1.actions.filter(is_archived=False)), 2)
         mock_nrm.assert_called_once()
         mock_nra.assert_called_once()
 
@@ -311,8 +311,8 @@ class PageModerationRequestTest(BaseTestCase):
             action=constants.ACTION_RESUBMITTED,
         )
 
-        self.assertFalse(previous_action_1.is_stale)
-        self.assertFalse(previous_action_2.is_stale)
+        self.assertFalse(previous_action_1.is_archived)
+        self.assertFalse(previous_action_2.is_archived)
 
         self.moderation_request1.update_status(
             action=constants.ACTION_REJECTED,
@@ -322,8 +322,8 @@ class PageModerationRequestTest(BaseTestCase):
 
         previous_action_1.refresh_from_db()
         previous_action_2.refresh_from_db()
-        self.assertTrue(previous_action_1.is_stale)
-        self.assertTrue(previous_action_2.is_stale)
+        self.assertTrue(previous_action_1.is_archived)
+        self.assertTrue(previous_action_2.is_archived)
 
     @patch('djangocms_moderation.models.generate_reference_number')
     def test_reference_number(self, mock_uuid):

@@ -163,7 +163,7 @@ class ModerationFlowsTestCase(TestCase):
         self.assertTrue(third_action.message, 'Please, less swearing')
 
         # Lets check that we now have 2 stale actions. First and second one
-        self.assertEqual(2, PageModerationRequestAction.objects.filter(is_stale=True).count())
+        self.assertEqual(2, PageModerationRequestAction.objects.filter(is_archived=True).count())
 
         # Now the original author can make amends and resubmit
         self._resubmit_moderation_request(self.author)
