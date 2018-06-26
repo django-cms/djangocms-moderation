@@ -74,8 +74,8 @@ class ModerationFlowsTestCase(TestCase):
         4. moderator_2 approves
         5. author publishes the page and workflow is done
         """
-        self.assertFalse(PageModerationRequest.objects.all())
-        self.assertFalse(PageModerationRequestAction.objects.all())
+        self.assertFalse(PageModerationRequest.objects.exists())
+        self.assertFalse(PageModerationRequestAction.objects.exists())
 
         # Lets create a new moderation request
         self._new_moderation_request(self.author)
@@ -132,8 +132,8 @@ class ModerationFlowsTestCase(TestCase):
         We would check for the reference number, which should remain the same
         through the whole moderation cycle
         """
-        self.assertFalse(PageModerationRequest.objects.all())
-        self.assertFalse(PageModerationRequestAction.objects.all())
+        self.assertFalse(PageModerationRequest.objects.exists())
+        self.assertFalse(PageModerationRequestAction.objects.exists())
 
         # Lets create a new moderation request
         self._new_moderation_request(self.author)

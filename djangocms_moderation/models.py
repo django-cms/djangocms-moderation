@@ -535,8 +535,7 @@ class PageModerationRequestAction(models.Model):
         verbose_name_plural = _('Actions')
 
     def __str__(self):
-        return "{} - {} - {}".format(
-            self.date_taken.strftime("%Y-%m-%d %H:%M:%S"),
+        return "{} - {}".format(
             self.request.reference_number,
             self.get_action_display()
         )
@@ -557,18 +556,19 @@ class PageModerationRequestAction(models.Model):
         """
 
         # If we are rejecting, then we don't need to workout the `to_role`,
-        # as only content author will amend and resubmit the changes
-        if self.action != constants.ACTION_REJECTED:
-            if self.to_user:
-                next_step = self.request.user_get_step(self.to_user)
-            elif self.action in (constants.ACTION_STARTED, constants.ACTION_RESUBMITTED):
-                next_step = self.request.workflow.first_step
-            else:
-                current_step = self.request.user_get_step(self.by_user)
-                next_step = current_step.get_next() if current_step else None
+        # as only the content author will amend and resubmit the changes
+        if self.action == constants.ACTION_REJECTED:
+            next_step = None
+        elif self.to_user:
+            next_step = self.request.user_get_step(self.to_user)
+        elif self.action in (constants.ACTION_STARTED, constants.ACTION_RESUBMITTED):
+            next_step = self.request.workflow.first_step
+        else:
+            current_step = self.request.user_get_step(self.by_user)
+            next_step = current_step.get_next() if current_step else None
 
-            if next_step:
-                self.to_role_id = next_step.role_id
+        if next_step:
+            self.to_role_id = next_step.role_id
         super(PageModerationRequestAction, self).save(**kwargs)
 
 

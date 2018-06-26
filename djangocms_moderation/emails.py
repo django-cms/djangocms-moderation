@@ -16,8 +16,6 @@ from cms.utils.conf import get_cms_setting
 from . import constants
 from .utils import get_absolute_url
 
-from django.urls import reverse
-
 email_subjects = {
     constants.ACTION_APPROVED: _('Changes Approved'),
     constants.ACTION_CANCELLED: _('Request for moderation cancelled'),
