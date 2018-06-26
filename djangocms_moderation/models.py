@@ -608,7 +608,7 @@ class ConfirmationFormSubmission(models.Model):
     )
 
     def __str__(self):
-        return '{} - {}'.format(self.request.reference_number, self.for_step)
+        return '{} - {}'.format(self.request_id, self.for_step)
 
     class Meta:
         verbose_name = _('Confirmation Form Submission')
