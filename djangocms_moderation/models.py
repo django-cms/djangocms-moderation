@@ -413,7 +413,7 @@ class PageModerationRequest(models.Model):
                 return step
         return None
 
-    def user_can_edit_and_resubmit(self, user):
+    def user_can_resubmit(self, user):
         """
         Lets workout if the user can edit and then resubmit the content for
         moderation again. This might happen if the moderation request was
@@ -434,9 +434,9 @@ class PageModerationRequest(models.Model):
         """
 
         if self.get_last_action().action == constants.ACTION_REJECTED:
-            # If the last action was a rejection, then they can't approve or
+            # If the last action was a rejection, no one can approve or
             # reject the current action (content author can now act on the
-            # feedback and resubmit the edits for moderation
+            # feedback and resubmit the edits for moderation)
             return False
 
         pending_steps = self.get_pending_steps().select_related('role')

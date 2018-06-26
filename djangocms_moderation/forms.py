@@ -99,10 +99,8 @@ class UpdateModerationRequestForm(ModerationRequestForm):
         if self.action == ACTION_RESUBMITTED:
             next_step = self.active_request.workflow.first_step
         else:
-            try:
-                next_step = self.active_request.user_get_step(self.user).get_next()
-            except AttributeError:
-                next_step = None
+            current_step = self.active_request.user_get_step(self.user)
+            next_step = current_step.get_next() if current_step else None
 
         if next_step:
             next_role = next_step.role

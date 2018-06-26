@@ -34,9 +34,8 @@ def user_can_change_page(func):
             # The reason for this that content author should be able to
             # resubmit the changes for another review as a part of the same
             # moderation request.
-            if active_request and not active_request.user_can_edit_and_resubmit(user):
+            if active_request and not active_request.user_can_resubmit(user):
                 return False
-
         return can_change
     return wrapper
 

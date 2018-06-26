@@ -1,7 +1,5 @@
-from importlib import import_module
 from unittest.mock import patch
 
-from django.conf import settings
 from django.test.client import RequestFactory
 from django.utils.encoding import force_text
 
@@ -31,7 +29,6 @@ class BaseToolbarTest(BaseViewTestCase):
         request = RequestFactory().get('{}?{}'.format(page.get_absolute_url('en'), edit_mode))
         request.current_page = page
         request.user = user
-        import_module(settings.SESSION_ENGINE)
         request.session = self.client.session
         ToolbarMiddleware().process_request(request)
         self.toolbar = request.toolbar
@@ -51,7 +48,7 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
         self.assertTrue([button for button in buttons if force_text(button.name) == 'Publish page changes'])
 
-    @patch.object(PageModerationRequest, 'user_can_edit_and_resubmit')
+    @patch.object(PageModerationRequest, 'user_can_resubmit')
     def test_show_resubmit_button_if_moderation_request_is_rejected(self, mock_request):
         mock_request.return_value = True
         self.setup_toolbar(self.pg1, self.user)

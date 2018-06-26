@@ -107,7 +107,7 @@ class ExtendedPageToolbar(PageToolbar):
                     Button(name=_('View differences'), url='#', extra_classes=('js-cms-moderation-view-diff',))
                 )
 
-            if moderation_request.user_can_edit_and_resubmit(user):
+            if moderation_request.user_can_resubmit(user):
                 # This is a content author, able to edit and resubmit the
                 # changes for another moderation cycle
                 resubmit_request_url = get_admin_url(

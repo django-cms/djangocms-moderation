@@ -211,18 +211,18 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertFalse(self.moderation_request3.user_can_take_moderation_action(self.user))
         self.assertTrue(self.moderation_request3.user_can_take_moderation_action(self.user2))
 
-    def test_user_can_edit_and_resubmit(self):
+    def test_user_can_resubmit(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
-        self.assertFalse(self.moderation_request1.user_can_edit_and_resubmit(temp_user))
+        self.assertFalse(self.moderation_request1.user_can_resubmit(temp_user))
 
         author = self.moderation_request3.author
         last_action = self.moderation_request3.get_last_action()
         last_action.action = constants.ACTION_REJECTED
         last_action.save()
         # Only author can edit and resubmit
-        self.assertTrue(self.moderation_request3.user_can_edit_and_resubmit(author))
-        self.assertFalse(self.moderation_request3.user_can_edit_and_resubmit(self.user2))
-        self.assertFalse(self.moderation_request3.user_can_edit_and_resubmit(self.user3))
+        self.assertTrue(self.moderation_request3.user_can_resubmit(author))
+        self.assertFalse(self.moderation_request3.user_can_resubmit(self.user2))
+        self.assertFalse(self.moderation_request3.user_can_resubmit(self.user3))
 
     def test_user_is_author(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
