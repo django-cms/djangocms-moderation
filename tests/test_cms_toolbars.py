@@ -48,10 +48,8 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
         self.assertTrue([button for button in buttons if force_text(button.name) == 'Publish page changes'])
 
-    @patch.object(PageModerationRequest, 'user_can_resubmit')
-    def test_show_resubmit_button_if_moderation_request_is_rejected(self, mock_request):
-        mock_request.return_value = True
-        self.setup_toolbar(self.pg1, self.user)
+    def test_show_resubmit_button_if_moderation_request_is_rejected(self):
+        self.setup_toolbar(self.pg5, self.user)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
         self.assertEqual(len(buttons), 3)
         self.assertEqual(force_text(buttons[0].name), 'Resubmit changes for moderation')

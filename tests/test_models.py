@@ -111,6 +111,11 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request2.is_approved)
         self.assertTrue(self.moderation_request3.is_approved)
 
+    def test_is_rejected(self):
+        self.assertFalse(self.moderation_request1.is_rejected)
+        self.assertFalse(self.moderation_request2.is_rejected)
+        self.assertTrue(self.moderation_request4.is_rejected)
+
     def test_get_first_action(self):
         self.assertEqual(
             self.moderation_request2.get_first_action(),
@@ -214,15 +219,11 @@ class PageModerationRequestTest(BaseTestCase):
     def test_user_can_resubmit(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
         self.assertFalse(self.moderation_request1.user_can_resubmit(temp_user))
-
-        author = self.moderation_request3.author
-        last_action = self.moderation_request3.get_last_action()
-        last_action.action = constants.ACTION_REJECTED
-        last_action.save()
+        author = self.moderation_request4.author
         # Only author can edit and resubmit
-        self.assertTrue(self.moderation_request3.user_can_resubmit(author))
-        self.assertFalse(self.moderation_request3.user_can_resubmit(self.user2))
-        self.assertFalse(self.moderation_request3.user_can_resubmit(self.user3))
+        self.assertTrue(self.moderation_request4.user_can_resubmit(author))
+        self.assertFalse(self.moderation_request4.user_can_resubmit(self.user2))
+        self.assertFalse(self.moderation_request4.user_can_resubmit(self.user3))
 
     def test_user_is_author(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)

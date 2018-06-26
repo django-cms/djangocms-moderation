@@ -348,6 +348,10 @@ class PageModerationRequest(models.Model):
     def is_approved(self):
         return self.is_active and not self.has_required_pending_steps
 
+    @cached_property
+    def is_rejected(self):
+        return self.get_last_action().action == constants.ACTION_REJECTED
+
     @transaction.atomic
     def update_status(self, action, by_user, message='', to_user=None):
         is_approved = action == constants.ACTION_APPROVED
@@ -420,20 +424,14 @@ class PageModerationRequest(models.Model):
         rejected by the moderator and submitted back to the content author
         for amends
         """
-        return all([
-            # Only original content author can edit
-            self.author == user,
-            # And only if the request has been rejected
-            self.get_last_action().action == constants.ACTION_REJECTED,
-        ])
+        return self.author == user and self.is_rejected
 
     def user_can_take_moderation_action(self, user):
         """
         Can this user approve or reject the moderation request
         for the current step?
         """
-
-        if self.get_last_action().action == constants.ACTION_REJECTED:
+        if self.is_rejected:
             # If the last action was a rejection, no one can approve or
             # reject the current action (content author can now act on the
             # feedback and resubmit the edits for moderation)
