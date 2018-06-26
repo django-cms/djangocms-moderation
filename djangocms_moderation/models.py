@@ -325,7 +325,7 @@ class PageModerationRequest(models.Model):
 
     def __str__(self):
         return "{} {}".format(
-            self.reference_number,
+            self.pk,
             self.page.get_page_title(self.language)
         )
 
