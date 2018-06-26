@@ -25,7 +25,7 @@ class BaseTestCase(TestCase):
         cls.pg2 = create_page(title='Page 2', template='page.html', language='en',)
         cls.pg3 = create_page(title='Page 3', template='page.html', language='en', published=True)
         cls.pg4 = create_page(title='Page 4', template='page.html', language='en',)
-        cls.pg5 = create_page(title='Page 4', template='page.html', language='en',)
+        cls.pg5 = create_page(title='Page 4', template='page.html', language='en', published=True)
 
         # create users, groups and roles
         cls.user = User.objects.create_superuser(
