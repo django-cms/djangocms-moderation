@@ -9,7 +9,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import FormView
+from django.views.generic import FormView, ListView
 
 from cms.utils.urlutils import add_url_parameters
 
@@ -211,6 +211,36 @@ class SelectModerationView(FormView):
 
 
 select_new_moderation_request = SelectModerationView.as_view()
+
+
+class ModerationCommentsView(ListView):
+
+    template_name = 'djangocms_moderation/comment_list.html'
+
+    def dispatch(self, request, page_id, language, *args, **kwargs):
+        page_obj = get_page_or_404(page_id, language)
+        self.active_request = get_active_moderation_request(page_obj, language)
+
+        if not self.active_request.user_can_view_comments(request.user):
+            return HttpResponseForbidden('User is not allowed to view comments.')
+
+        return super(ModerationCommentsView, self).dispatch(
+            request, page_id, language, *args, **kwargs
+        )
+
+    def get_queryset(self):
+        return self.active_request.actions.all()
+
+    def get_context_data(self, **kwargs):
+        context = super(ModerationCommentsView, self).get_context_data(**kwargs)
+        context.update({
+            'title': _('View Comments'),
+            'is_popup': True,
+        })
+        return context
+
+
+moderation_comments = ModerationCommentsView.as_view()
 
 
 def moderation_confirmation_page(request, confirmation_id):

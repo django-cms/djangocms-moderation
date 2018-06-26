@@ -1,0 +1,32 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Comment" %}</th>
+                <th>{% trans "Author" %}</th>
+                <th>{% trans "Action" %}</th>
+                <th>{% trans "Date" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for action in object_list %}
+                <tr>
+                    <td>
+                        {% if action.message %}
+                            {{ action.message }}
+                        {% else %}
+                            <em>{% trans 'no comment provided' %}</em>
+                        {% endif %}
+
+                    </td>
+                    <td>{{ action.get_by_user_name }}</td>
+                    <td>{{ action.get_action_display }}</td>
+                    <td>{{ action.date_taken }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -224,6 +224,18 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertFalse(self.moderation_request3.user_can_edit_and_resubmit(self.user2))
         self.assertFalse(self.moderation_request3.user_can_edit_and_resubmit(self.user3))
 
+    def test_user_is_author(self):
+        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
+        self.assertFalse(self.moderation_request1.user_is_author(temp_user))
+        self.assertFalse(self.moderation_request1.user_is_author(self.user2))
+        self.assertTrue(self.moderation_request1.user_is_author(self.user))
+
+    def test_user_can_view_comments(self):
+        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
+        self.assertFalse(self.moderation_request1.user_can_view_comments(temp_user))
+        self.assertTrue(self.moderation_request1.user_can_view_comments(self.user2))
+        self.assertTrue(self.moderation_request1.user_can_view_comments(self.user))
+
     def test_user_can_moderate(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
         self.assertFalse(self.moderation_request1.user_can_moderate(temp_user))
