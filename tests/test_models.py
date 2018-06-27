@@ -154,7 +154,7 @@ class PageModerationRequestTest(BaseTestCase):
             ordered=False,
         )
 
-        # Now lets make the Approve action for wf3st1 stale...
+        # Now lets make the Approve action for wf3st1 archived...
         last_action = self.moderation_request3.get_last_action()
         last_action.is_archived = True
         last_action.save()
@@ -182,7 +182,7 @@ class PageModerationRequestTest(BaseTestCase):
             ordered=False,
         )
 
-        # Lets test with stale action
+        # Lets test with archived action
         self.assertQuerysetEqual(
             self.moderation_request2.get_pending_required_steps(),
             WorkflowStep.objects.none(),
@@ -190,7 +190,7 @@ class PageModerationRequestTest(BaseTestCase):
             ordered=False,
         )
 
-        # Make the last action stale
+        # Make the last action archived
         last_action = self.moderation_request2.get_last_action()
         last_action.is_archived = True
         last_action.save()
@@ -314,7 +314,7 @@ class PageModerationRequestTest(BaseTestCase):
         mock_nra.assert_called_once()
         mock_nrm.assert_called_once()
 
-    def test_rejection_makes_the_previous_actions_stale(self):
+    def test_rejection_makes_the_previous_actions_archived(self):
         previous_action_1 = self.moderation_request1.actions.create(
             by_user=self.user,
             action=constants.ACTION_APPROVED,

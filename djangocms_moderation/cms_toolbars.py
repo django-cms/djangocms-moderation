@@ -93,7 +93,6 @@ class ExtendedPageToolbar(PageToolbar):
 
         if moderation_request and moderation_request.is_approved:
             return super(ExtendedPageToolbar, self).add_publish_button(classes)
-
         elif moderation_request:
             # We have an active moderation request ongoing.
             user = self.request.user
@@ -118,7 +117,6 @@ class ExtendedPageToolbar(PageToolbar):
                 container.buttons.append(
                     ModalButton(name=_('Resubmit changes for moderation'), url=resubmit_request_url)
                 )
-
             elif moderation_request.user_can_take_moderation_action(user):
                 # Now we have a moderator, able to Approve or Reject changes
                 approve_request_url = get_admin_url(

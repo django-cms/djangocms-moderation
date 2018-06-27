@@ -73,7 +73,9 @@ class UpdateModerationRequestFormTest(BaseTestCase):
         self.assertEqual(field_moderator.empty_label, 'Any Role 2')
         self.assertQuerysetEqual(
             field_moderator.queryset,
-            User.objects.filter(pk__in=[self.user2.pk]), transform=lambda x: x, ordered=False
+            User.objects.filter(pk__in=[self.user2.pk]),
+            transform=lambda x: x,
+            ordered=False,
         )
 
     def test_form_init_cancelled_action(self):
@@ -134,7 +136,9 @@ class SelectModerationFormTest(BaseTestCase):
         self.assertIn('workflow', form.fields)
         field_workflow = form.fields['workflow']
         self.assertQuerysetEqual(
-            field_workflow.queryset, Workflow.objects.all(),
-            transform=lambda x: x, ordered=False
+            field_workflow.queryset,
+            Workflow.objects.all(),
+            transform=lambda x: x,
+            ordered=False,
         )
         self.assertEqual(field_workflow.initial, self.wf1)

@@ -540,8 +540,7 @@ class PageModerationRequestAction(models.Model):
 
     def __str__(self):
         return "{} - {}".format(
-            self.request.reference_number,
-            self.get_action_display()
+            self.request_id, self.get_action_display()
         )
 
     def get_by_user_name(self):

@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='pagemoderationrequestaction',
-            name='is_stale',
+            name='is_archived',
             field=models.BooleanField(default=False),
         ),
     ]

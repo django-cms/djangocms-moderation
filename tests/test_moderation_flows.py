@@ -1,15 +1,15 @@
-from cms.utils.urlutils import admin_reverse
 from django.test import TestCase
 from django.contrib.auth.models import User
 
 from cms.api import create_page
+from cms.utils.urlutils import admin_reverse
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import (
-    Workflow,
-    Role,
     PageModerationRequest,
     PageModerationRequestAction,
+    Role,
+    Workflow,
 )
 from djangocms_moderation.utils import get_admin_url
 
@@ -162,7 +162,7 @@ class ModerationFlowsTestCase(TestCase):
         self.assertTrue(third_action.action, constants.ACTION_REJECTED)
         self.assertTrue(third_action.message, 'Please, less swearing')
 
-        # Lets check that we now have 2 stale actions. First and second one
+        # Lets check that we now have 2 archived actions. First and second one
         self.assertEqual(2, PageModerationRequestAction.objects.filter(is_archived=True).count())
 
         # Now the original author can make amends and resubmit
