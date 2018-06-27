@@ -5,7 +5,6 @@ from cms.api import create_page
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import (
-    ConfirmationPage,
     PageModerationRequest,
     Role,
     Workflow,
@@ -26,6 +25,7 @@ class BaseTestCase(TestCase):
         cls.pg2 = create_page(title='Page 2', template='page.html', language='en',)
         cls.pg3 = create_page(title='Page 3', template='page.html', language='en', published=True)
         cls.pg4 = create_page(title='Page 4', template='page.html', language='en',)
+        cls.pg5 = create_page(title='Page 4', template='page.html', language='en', published=True)
 
         # create users, groups and roles
         cls.user = User.objects.create_superuser(
@@ -82,6 +82,11 @@ class BaseTestCase(TestCase):
             action=constants.ACTION_APPROVED,
             step_approved=cls.wf3st1,
         )
+        # This request will be rejected
+        cls.moderation_request4 = PageModerationRequest.objects.create(
+            page=cls.pg5, language='en', workflow=cls.wf3, is_active=True,)
+        cls.moderation_request4.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
+        cls.moderation_request4.actions.create(by_user=cls.user2, action=constants.ACTION_REJECTED)
 
 
 class BaseViewTestCase(BaseTestCase):

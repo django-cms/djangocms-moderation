@@ -57,7 +57,7 @@ class ModerationRequestView(FormView):
                 # Can't reject or approve a moderation request whose steps have all
                 # already been approved.
                 return HttpResponseBadRequest('Moderation request has already been approved.')
-            elif needs_ongoing and not self.active_request.user_can_take_action(user):
+            elif needs_ongoing and not self.active_request.user_can_take_moderation_action(user):
                 # User can't approve or reject a request where he's not part of the workflow
                 return HttpResponseForbidden('User is not allowed to update request.')
             elif self.action == constants.ACTION_APPROVED:
@@ -152,9 +152,9 @@ cancel_moderation_request = ModerationRequestView.as_view(
 
 reject_moderation_request = ModerationRequestView.as_view(
     action=constants.ACTION_REJECTED,
-    page_title=_('Reject changes'),
+    page_title=_('Send for rework'),
     form_class=UpdateModerationRequestForm,
-    success_message=_('The moderation request has been rejected.'),
+    success_message=_('The moderation request has been sent for rework.'),
 )
 
 approve_moderation_request = ModerationRequestView.as_view(
@@ -162,6 +162,13 @@ approve_moderation_request = ModerationRequestView.as_view(
     page_title=_('Approve changes'),
     form_class=UpdateModerationRequestForm,
     success_message=_('The changes have been approved.'),
+)
+
+resubmit_moderation_request = ModerationRequestView.as_view(
+    action=constants.ACTION_RESUBMITTED,
+    page_title=_('Resubmit changes'),
+    form_class=UpdateModerationRequestForm,
+    success_message=_('The request has been re-submitted.'),
 )
 
 

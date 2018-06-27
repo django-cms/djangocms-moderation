@@ -1,7 +1,5 @@
-from importlib import import_module
 from unittest.mock import patch
 
-from django.conf import settings
 from django.test.client import RequestFactory
 from django.utils.encoding import force_text
 
@@ -9,7 +7,6 @@ from cms.api import create_page, publish_page
 from cms.constants import PUBLISHER_STATE_DIRTY
 from cms.middleware.toolbar import ToolbarMiddleware
 from cms.toolbar.items import ButtonList, Dropdown, ModalItem
-from cms.toolbar.toolbar import CMSToolbar
 from cms.utils.conf import get_cms_setting
 
 from djangocms_moderation import constants
@@ -32,9 +29,8 @@ class BaseToolbarTest(BaseViewTestCase):
         request = RequestFactory().get('{}?{}'.format(page.get_absolute_url('en'), edit_mode))
         request.current_page = page
         request.user = user
-        engine = import_module(settings.SESSION_ENGINE)
         request.session = self.client.session
-        mid = ToolbarMiddleware().process_request(request)
+        ToolbarMiddleware().process_request(request)
         self.toolbar = request.toolbar
         self.toolbar.populate()
         self.toolbar.post_template_populate()
@@ -52,35 +48,34 @@ class ExtendedPageToolbarTest(BaseToolbarTest):
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
         self.assertTrue([button for button in buttons if force_text(button.name) == 'Publish page changes'])
 
+    def test_show_resubmit_button_if_moderation_request_is_rejected(self):
+        self.setup_toolbar(self.pg5, self.user)
+        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
+        self.assertEqual(len(buttons), 4)
+        self.assertEqual(force_text(buttons[0].name), 'View differences')
+        self.assertEqual(force_text(buttons[1].name), 'Resubmit changes for moderation')
+        self.assertEqual(force_text(buttons[2].name), 'Cancel request')
+        self.assertEqual(force_text(buttons[3].name), 'View comments')
+
     def test_show_moderation_dropdown_if_moderation_request_non_published_page(self):
         self.setup_toolbar(self.pg1, self.user)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
         self.assertEqual(len(buttons), 4)
+        # View difference button is not present
         self.assertEqual(force_text(buttons[0].name), 'Approve changes')
-        self.assertEqual(force_text(buttons[1].name), 'Reject changes')
+        self.assertEqual(force_text(buttons[1].name), 'Send for rework')
         self.assertEqual(force_text(buttons[2].name), 'Cancel request')
         self.assertEqual(force_text(buttons[3].name), 'View comments')
 
     def test_show_moderation_dropdown_if_moderation_request_previously_published_page(self):
-        # We don't have any fixture for published page in an active moderation
-        # request, so let's create one for this test.
-        published_page = create_page(
-            title='Page 5', template='page.html', language='en', published=True
-        )
-        moderation_request = PageModerationRequest.objects.create(
-            page=published_page, language='en', workflow=self.wf1, is_active=True
-        )
-        moderation_request.actions.create(
-            by_user=self.user, action=constants.ACTION_STARTED
-        )
-        self.setup_toolbar(published_page, self.user)
+        self.setup_toolbar(self.pg5, self.user)
         buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
-        self.assertEqual(len(buttons), 5)
+        self.assertEqual(len(buttons), 4)
+        # View difference button is present
         self.assertEqual(force_text(buttons[0].name), 'View differences')
-        self.assertEqual(force_text(buttons[1].name), 'Approve changes')
-        self.assertEqual(force_text(buttons[2].name), 'Reject changes')
-        self.assertEqual(force_text(buttons[3].name), 'Cancel request')
-        self.assertEqual(force_text(buttons[4].name), 'View comments')
+        self.assertEqual(force_text(buttons[1].name), 'Resubmit changes for moderation')
+        self.assertEqual(force_text(buttons[2].name), 'Cancel request')
+        self.assertEqual(force_text(buttons[3].name), 'View comments')
 
     def test_show_moderation_dropdown_with_no_actions_for_non_role_user(self):
         self.setup_toolbar(self.pg1, self.user3)

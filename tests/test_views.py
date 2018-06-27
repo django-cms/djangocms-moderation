@@ -4,7 +4,18 @@ from unittest.mock import patch
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
-from djangocms_moderation.views import *
+from cms.utils.urlutils import add_url_parameters
+
+from djangocms_moderation import constants
+from djangocms_moderation.forms import (
+    ModerationRequestForm,
+    UpdateModerationRequestForm,
+    SelectModerationForm,
+)
+from djangocms_moderation.models import (
+    ConfirmationPage,
+    ConfirmationFormSubmission,
+)
 from djangocms_moderation.utils import get_admin_url
 
 from .utils import BaseViewTestCase
@@ -93,7 +104,23 @@ class ModerationRequestViewTest(BaseViewTestCase):
             active_request=self.moderation_request1,
             workflow=self.wf1,
             form_cls=UpdateModerationRequestForm,
-            title=_('Reject changes')
+            title=_('Send for rework')
+        )
+
+    def test_resubmit_request_view_with_form(self):
+        response = self.client.get(get_admin_url(
+            name='cms_moderation_resubmit_request',
+            language='en',
+            args=(self.pg1.pk, 'en')
+        ))
+        self._assert_render(
+            response=response,
+            page=self.pg1,
+            action=constants.ACTION_RESUBMITTED,
+            active_request=self.moderation_request1,
+            workflow=self.wf1,
+            form_cls=UpdateModerationRequestForm,
+            title=_('Resubmit changes')
         )
 
     def test_approve_request_view_with_form(self):
@@ -155,7 +182,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
                 language='en',
                 args=(self.pg2.pk, 'en')
             ),
-            'workflow=10' # pg2 => no active requests, 10 => workflow does not exist
+            'workflow=10'  # pg2 => no active requests, 10 => workflow does not exist
         ))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content, b'No moderation workflow exists for page.')
@@ -173,7 +200,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
         response = self.client.get(get_admin_url(
             name='cms_moderation_approve_request',
             language='en',
-            args=(self.pg3.pk, 'en') # pg3 => active request with all approved steps
+            args=(self.pg3.pk, 'en')  # pg3 => active request with all approved steps
         ))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content, b'Moderation request has already been approved.')
@@ -185,7 +212,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
         response = self.client.get(get_admin_url(
             name='cms_moderation_approve_request',
             language='en',
-            args=(self.pg1.pk, 'en') # pg1 => active request
+            args=(self.pg1.pk, 'en')  # pg1 => active request
         ))
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.content, b'User is not allowed to update request.')

@@ -7,7 +7,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from adminsortable2.admin import CustomInlineFormSet
 
-from .constants import ACTION_CANCELLED, ACTION_REJECTED
+from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
 from .helpers import get_page_moderation_workflow
 from .models import Workflow
 
@@ -67,9 +67,6 @@ class ModerationRequestForm(forms.Form):
         if 'moderator' in self.fields:
             self.configure_moderator_field()
 
-    def get_moderator(self):
-        return self.cleaned_data.get('moderator')
-
     def configure_moderator_field(self):
         next_role = self.workflow.first_step.role
         users = next_role.get_users_queryset().exclude(pk=self.user.pk)
@@ -80,7 +77,7 @@ class ModerationRequestForm(forms.Form):
         self.workflow.submit_new_request(
             page=self.page,
             by_user=self.user,
-            to_user=self.get_moderator(),
+            to_user=self.cleaned_data.get('moderator'),
             language=self.language,
             message=self.cleaned_data['message'],
         )
@@ -89,17 +86,21 @@ class ModerationRequestForm(forms.Form):
 class UpdateModerationRequestForm(ModerationRequestForm):
 
     def configure_moderator_field(self):
+        # For cancelling and rejecting, we don't need to display a moderator
+        # field.
         if self.action in (ACTION_CANCELLED, ACTION_REJECTED):
             self.fields['moderator'].queryset = get_user_model().objects.none()
             self.fields['moderator'].widget = forms.HiddenInput()
             return
 
-        user_step = self.active_request.user_get_step(self.user)
-
-        if user_step:
-            next_step = user_step.get_next()
+        # If the content author is resubmitting the work after a rejected
+        # moderation request, the next step will be the first one - as it has
+        # to be approved again from the beginning
+        if self.action == ACTION_RESUBMITTED:
+            next_step = self.active_request.workflow.first_step
         else:
-            next_step = None
+            current_step = self.active_request.user_get_step(self.user)
+            next_step = current_step.get_next() if current_step else None
 
         if next_step:
             next_role = next_step.role
@@ -114,7 +115,7 @@ class UpdateModerationRequestForm(ModerationRequestForm):
         self.active_request.update_status(
             action=self.action,
             by_user=self.user,
-            to_user=self.get_moderator(),
+            to_user=self.cleaned_data.get('moderator'),
             message=self.cleaned_data['message'],
         )
 

@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('cms', '0020_old_tree_cleanup'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('djangocms_moderation', '0003_auto_20180420_0813'),
+        ('djangocms_moderation', '0005_pagemoderationrequestaction_is_archived'),
     ]
 
     operations = [
