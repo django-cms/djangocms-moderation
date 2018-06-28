@@ -119,7 +119,7 @@ workflows:
   version: 2
   build:
     jobs:
-      - py27_base
+      - py34_base
       - py35_base
       - py36_base
       - flake8:
