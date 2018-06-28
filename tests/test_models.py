@@ -350,7 +350,7 @@ class PageModerationRequestTest(BaseTestCase):
         )
         self.assertEqual(0, mock_uuid.call_count)
         request.generate_reference_number()
-        self.assertTrue(mock_uuid.assert_called_once)
+        mock_uuid.assert_called_once
         self.assertEqual(request.reference_number, 'abc123')
 
 
