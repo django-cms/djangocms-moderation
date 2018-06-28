@@ -44,7 +44,7 @@ def _send_email(request, action, recipients, subject, template):
         'author_name': author_name,
         'by_user_name': action.get_by_user_name(),
         'moderator_name': moderator_name,
-        'job_number': request.reference_number,
+        'job_id': request.id,
         'comment': request.get_last_action().message,
         'admin_url': get_absolute_url(admin_url, site),
     }

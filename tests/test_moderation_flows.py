@@ -117,7 +117,6 @@ class ModerationFlowsTestCase(TestCase):
         self.assertFalse(moderation_request.is_active)
         last_action = PageModerationRequestAction.objects.last()
         self.assertTrue(last_action.action, constants.ACTION_FINISHED)
-        self.assertTrue(moderation_request.reference_number)
 
     def test_reject_moderation_workflow(self):
         """
@@ -128,9 +127,6 @@ class ModerationFlowsTestCase(TestCase):
         4. author resubmits the amends
         5. all is approved by moderator_1 and moderator_2
         6. author cancels the request
-
-        We would check for the reference number, which should remain the same
-        through the whole moderation cycle
         """
         self.assertFalse(PageModerationRequest.objects.exists())
         self.assertFalse(PageModerationRequestAction.objects.exists())
@@ -139,9 +135,6 @@ class ModerationFlowsTestCase(TestCase):
         self._new_moderation_request(self.author)
 
         moderation_request = PageModerationRequest.objects.get()  # It exists
-        # make a note of the reference_number as it should not change
-        # through the workflow
-        reference_number = moderation_request.reference_number
 
         action = PageModerationRequestAction.objects.get()
         self.assertEqual(action.action, constants.ACTION_STARTED)
@@ -174,8 +167,6 @@ class ModerationFlowsTestCase(TestCase):
         self.assertTrue(moderation_request.is_active)
         last_action = PageModerationRequestAction.objects.last()
         self.assertTrue(last_action.action, constants.ACTION_RESUBMITTED)
-        # Check that the reference number is still the same
-        self.assertEqual(moderation_request.reference_number, reference_number)
 
         self._approve_moderation_request(self.moderator_1)
         self._approve_moderation_request(self.moderator_2)
@@ -188,5 +179,3 @@ class ModerationFlowsTestCase(TestCase):
         self.assertFalse(moderation_request.is_active)
         last_action = PageModerationRequestAction.objects.last()
         self.assertTrue(last_action.action, constants.ACTION_CANCELLED)
-
-        self.assertEqual(moderation_request.reference_number, reference_number)
