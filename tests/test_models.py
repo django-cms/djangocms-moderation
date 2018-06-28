@@ -348,9 +348,9 @@ class PageModerationRequestTest(BaseTestCase):
             is_active=True,
             workflow=self.wf1,
         )
-        self.assertEqual(0, mock_uuid.call_count)
-        request.generate_reference_number()
-        mock_uuid.assert_called_once
+        self.assertEqual(mock_uuid.call_count, 0)
+        request.set_reference_number()
+        mock_uuid.assert_called_once()
         self.assertEqual(request.reference_number, 'abc123')
 
 

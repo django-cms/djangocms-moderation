@@ -242,7 +242,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
         )
 
     def moderation_request(self, obj):
-        return obj.request.id
+        return obj.request_id
     moderation_request.short_description = _('Request')
 
     def show_user(self, obj):

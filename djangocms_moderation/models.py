@@ -463,7 +463,7 @@ class PageModerationRequest(models.Model):
     def user_can_view_comments(self, user):
         return self.user_is_author(user) or self.user_can_moderate(user)
 
-    def generate_reference_number(self):
+    def set_reference_number(self):
         self.reference_number = generate_reference_number(
             self.workflow.reference_number_backend,
             moderation_request=self,
