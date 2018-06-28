@@ -3,18 +3,17 @@
 Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for changes in {{ page_url }}.
 {% endblocktrans %}
 
-
 {% if comment %}
-Comment: <br/>
+{% trans 'Comment' %}: <br/>
 {{ comment }} <br/>
 {% endif %}
 
 {% if job_number %}
-Job Number:<br/>
+{% trans 'Job Number' %}:<br/>
 {{ job_number }}<br/>
 {% endif %}
 
 {% if admin_url %}
-Admin Url:<br/>
+{% trans 'Admin Url' %}:<br/>
 {{ admin_url }}<br/>
 {% endif %}

@@ -2,3 +2,18 @@
 {% blocktrans %}
 Hello {{ author_name }}, {{ by_user_name }} has approved your changes in {{ page_url }}.
 {% endblocktrans %}
+
+{% if comment %}
+{% trans 'Comment' %}: <br/>
+{{ comment }} <br/>
+{% endif %}
+
+{% if job_number %}
+{% trans 'Job Number' %}:<br/>
+{{ job_number }}<br/>
+{% endif %}
+
+{% if admin_url %}
+{% trans 'Admin Url' %}:<br/>
+{{ admin_url }}<br/>
+{% endif %}
