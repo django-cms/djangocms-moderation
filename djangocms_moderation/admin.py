@@ -85,9 +85,9 @@ class PageModerationRequestActionInline(admin.TabularInline):
 
 class PageModerationRequestAdmin(admin.ModelAdmin):
     inlines = [PageModerationRequestActionInline]
-    list_display = ['reference_number', 'page', 'language', 'workflow', 'show_status', 'date_sent']
-    list_filter = ['language', 'workflow']
-    fields = ['reference_number', 'workflow', 'page', 'language', 'is_active', 'show_status']
+    list_display = ['id', 'page', 'language', 'workflow', 'show_status', 'date_sent']
+    list_filter = ['language', 'workflow', 'id']
+    fields = ['id', 'workflow', 'page', 'language', 'is_active', 'show_status']
     readonly_fields = fields
 
     def has_add_permission(self, request):
@@ -242,7 +242,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
         )
 
     def moderation_request(self, obj):
-        return obj.request.reference_number
+        return obj.request.id
     moderation_request.short_description = _('Request')
 
     def show_user(self, obj):
