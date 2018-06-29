@@ -6,7 +6,7 @@ var plumber = require('gulp-plumber');
 var fs = require('fs');
 var gulpif = require('gulp-if');
 var sourcemaps = require('gulp-sourcemaps');
-// var eslint = require('gulp-eslint');
+var eslint = require('gulp-eslint');
 var webpack = require('webpack');
 
 var argv = require('minimist')(process.argv.slice(2)); // eslint-disable-line
@@ -36,17 +36,17 @@ var PROJECT_PATTERNS = {
     ]
 };
 
-// gulp.task('lint', ['lint:javascript']);
-// gulp.task('lint:javascript', function () {
-//     // DOCS: http://eslint.org
-//     return gulp.src(PROJECT_PATTERNS.js)
-//         .pipe(gulpif(!process.env.CI, plumber()))
-//         .pipe(eslint())
-//         .pipe(eslint.format())
-//         .pipe(eslint.failAfterError())
-//         .pipe(gulpif(!process.env.CI, plumber.stop()));
-// });
-//
+gulp.task('lint', ['lint:javascript']);
+gulp.task('lint:javascript', function () {
+   // DOCS: http://eslint.org
+   return gulp.src(PROJECT_PATTERNS.js)
+       .pipe(gulpif(!process.env.CI, plumber()))
+       .pipe(eslint())
+       .pipe(eslint.format())
+       .pipe(eslint.failAfterError())
+       .pipe(gulpif(!process.env.CI, plumber.stop()));
+});
+
 var webpackBundle = function (opts) {
     var webpackOptions = opts || {};
 
@@ -73,7 +73,7 @@ gulp.task('bundle', webpackBundle());
 
 gulp.task('watch', function () {
     gulp.start('bundle:watch');
-    // gulp.watch(PROJECT_PATTERNS.js, ['lint']);
+    gulp.watch(PROJECT_PATTERNS.js, ['lint']);
 });
 
 gulp.task('default', ['watch']);
