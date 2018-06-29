@@ -380,7 +380,7 @@ class ModerationCommentsViewTest(BaseViewTestCase):
 class ModerationConfirmationPageTest(BaseViewTestCase):
 
     def setUp(self):
-        super().setUp()
+        super(ModerationConfirmationPageTest, self).setUp()
         self.cp = ConfirmationPage.objects.create(
             name='Checklist Form',
         )
