@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from mock import patch
 
 from django.test import override_settings
 
