@@ -130,7 +130,7 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
 class WorkflowAdmin(admin.ModelAdmin):
     inlines = [WorkflowStepInline]
     list_display = ['name', 'is_default']
-    fields = ['name', 'is_default', 'reference_number_backend']
+    fields = ['name', 'is_default', 'compliance_number_backend']
 
 
 class ExtendedPageAdmin(PageAdmin):

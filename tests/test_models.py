@@ -338,8 +338,8 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertTrue(previous_action_1.is_archived)
         self.assertTrue(previous_action_2.is_archived)
 
-    @patch('djangocms_moderation.models.generate_reference_number')
-    def test_reference_number(self, mock_uuid):
+    @patch('djangocms_moderation.models.generate_compliance_number')
+    def test_compliance_number(self, mock_uuid):
         mock_uuid.return_value = 'abc123'
 
         request = PageModerationRequest.objects.create(
@@ -349,24 +349,24 @@ class PageModerationRequestTest(BaseTestCase):
             workflow=self.wf1,
         )
         self.assertEqual(mock_uuid.call_count, 0)
-        request.set_reference_number()
+        request.set_compliance_number()
         mock_uuid.assert_called_once()
-        self.assertEqual(request.reference_number, 'abc123')
+        self.assertEqual(request.compliance_number, 'abc123')
 
-    def test_reference_number_sequential_number_backend(self):
-        self.wf2.reference_number_backend = 'djangocms_moderation.backends.sequential_number_backend'
+    def test_compliance_number_sequential_number_backend(self):
+        self.wf2.compliance_number_backend = 'djangocms_moderation.backends.sequential_number_backend'
         request = PageModerationRequest.objects.create(
             page=self.pg1,
             language='en',
             workflow=self.wf2,
         )
         request.refresh_from_db()
-        self.assertIsNone(request.reference_number)
+        self.assertIsNone(request.compliance_number)
 
         expected = str(request.pk)
-        request.set_reference_number()
+        request.set_compliance_number()
         request.refresh_from_db()
-        self.assertEqual(request.reference_number, expected)
+        self.assertEqual(request.compliance_number, expected)
 
 
 class PageModerationRequestActionTest(BaseTestCase):

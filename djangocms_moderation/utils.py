@@ -32,6 +32,6 @@ def load_backend(path):
     return import_string(path)
 
 
-def generate_reference_number(path, **kwargs):
+def generate_compliance_number(path, **kwargs):
     backend = load_backend(path)
     return backend(**kwargs)

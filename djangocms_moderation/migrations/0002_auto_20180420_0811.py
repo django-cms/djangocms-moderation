@@ -27,6 +27,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='workflow',
             name='reference_number_backend',
-            field=models.CharField(choices=conf.REFERENCE_NUMBER_BACKENDS, default=conf.DEFAULT_REFERENCE_NUMBER_BACKEND, max_length=255),
+            field=models.CharField(choices=conf.COMPLIANCE_NUMBER_BACKENDS, default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND, max_length=255),
         ),
     ]

@@ -3,14 +3,14 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-from djangocms_moderation.utils import generate_reference_number
+from djangocms_moderation.utils import generate_compliance_number
 
 
 def populate_reference_number(apps, schema_editor):
     PageModerationRequest = apps.get_model('djangocms_moderation', 'PageModerationRequest')
 
     for moderation_request in PageModerationRequest.objects.all():
-        ref_number = generate_reference_number(moderation_request.workflow.reference_number_backend)
+        ref_number = generate_compliance_number(moderation_request.workflow.reference_number_backend)
         moderation_request.reference_number = ref_number
         moderation_request.save()
 

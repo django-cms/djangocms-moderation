@@ -19,7 +19,7 @@ from . import conf
 from . import constants
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
-from .utils import generate_reference_number
+from .utils import generate_compliance_number
 
 
 @python_2_unicode_compatible
@@ -126,10 +126,10 @@ class Workflow(models.Model):
         verbose_name=_('is default'),
         default=False,
     )
-    reference_number_backend = models.CharField(
-        choices=conf.REFERENCE_NUMBER_BACKENDS,
+    compliance_number_backend = models.CharField(
+        choices=conf.COMPLIANCE_NUMBER_BACKENDS,
         max_length=255,
-        default=conf.DEFAULT_REFERENCE_NUMBER_BACKEND,
+        default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND,
     )
 
     class Meta:
@@ -313,7 +313,7 @@ class PageModerationRequest(models.Model):
         verbose_name=_('date sent'),
         auto_now_add=True,
     )
-    reference_number = models.CharField(
+    compliance_number = models.CharField(
         max_length=32,
         null=True,
         unique=True,
@@ -463,12 +463,12 @@ class PageModerationRequest(models.Model):
     def user_can_view_comments(self, user):
         return self.user_is_author(user) or self.user_can_moderate(user)
 
-    def set_reference_number(self):
-        self.reference_number = generate_reference_number(
-            self.workflow.reference_number_backend,
+    def set_compliance_number(self):
+        self.compliance_number = generate_compliance_number(
+            self.workflow.compliance_number_backend,
             moderation_request=self,
         )
-        self.save(update_fields=['reference_number'])
+        self.save(update_fields=['compliance_number'])
 
 
 @python_2_unicode_compatible
