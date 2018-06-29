@@ -399,9 +399,7 @@ class ConfirmationPageTest(BaseTestCase):
         # This will make sure there are no form submissions
         # attached with the self.moderation_request1
         self.moderation_request1.form_submissions.all().delete()
-        self.cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
+        self.cp = ConfirmationPage.objects.create(name='Checklist Form')
         self.role1.confirmation_page = self.cp
         self.role1.save()
 
