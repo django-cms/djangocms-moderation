@@ -131,6 +131,7 @@ class Workflow(models.Model):
         max_length=255,
         default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND,
     )
+    identifier = models.CharField(max_length=128, blank=True, default='')
 
     class Meta:
         verbose_name = _('Workflow')
