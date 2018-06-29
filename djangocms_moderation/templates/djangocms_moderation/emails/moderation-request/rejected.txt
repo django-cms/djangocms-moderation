@@ -4,3 +4,15 @@ Hello {{ author_name }}, {{ by_user_name }} has rejected your changes in {{ page
 
 You can resubmit the necessary changes for another review, or cancel the moderation request.
 {% endblocktrans %}
+
+{% if comment %}
+{% trans 'Comment' %}: <br/>
+{{ comment }} <br/>
+{% endif %}
+
+{% trans 'Job ID' %}: {{ job_id }}<br/>
+
+{% if admin_url %}
+{% trans 'Admin Url' %}:<br/>
+{{ admin_url }}<br/>
+{% endif %}
