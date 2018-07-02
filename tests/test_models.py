@@ -314,6 +314,65 @@ class PageModerationRequestTest(BaseTestCase):
         mock_nra.assert_called_once()
         mock_nrm.assert_called_once()
 
+    def test_compliance_number_is_generated(self):
+        self.wf1.requires_compliance_number = True
+        self.assertTrue(self.moderation_request1.has_required_pending_steps())
+        self.moderation_request1.update_status(
+            action=constants.ACTION_APPROVED, by_user=self.user
+        )
+        self.moderation_request1.refresh_from_db()
+        self.assertFalse(self.moderation_request1.is_approved())
+        # Compliance number is not yet generated as there are more approvers
+        # to follow this one
+        self.assertIsNone(self.moderation_request1.compliance_number)
+
+        self.moderation_request1.update_status(
+            action=constants.ACTION_APPROVED, by_user=self.user3
+        )
+        self.moderation_request1.refresh_from_db()
+        self.assertTrue(self.moderation_request1.is_approved())
+        # Now the moderation request is approved, so the compliance should
+        # be generated
+        self.assertIsNotNone(self.moderation_request1.compliance_number)
+
+    def test_compliance_number_is_not_generated_when_rejected(self):
+        self.wf1.requires_compliance_number = True
+        self.assertTrue(self.moderation_request1.has_required_pending_steps())
+        self.moderation_request1.update_status(
+            action=constants.ACTION_APPROVED, by_user=self.user
+        )
+        self.moderation_request1.refresh_from_db()
+        self.assertFalse(self.moderation_request1.is_approved())
+        # Compliance number is not yet generated as there are more approvers
+        # to follow this one
+        self.assertIsNone(self.moderation_request1.compliance_number)
+
+        self.moderation_request1.update_status(
+            action=constants.ACTION_REJECTED, by_user=self.user3
+        )
+        self.moderation_request1.refresh_from_db()
+        self.assertFalse(self.moderation_request1.is_approved())
+        self.assertIsNone(self.moderation_request1.compliance_number)
+
+    def test_compliance_number_is_not_generated_when_disabled(self):
+        self.wf1.requires_compliance_number = False  # Disable the compliance number generation
+        self.assertTrue(self.moderation_request1.has_required_pending_steps())
+        self.moderation_request1.update_status(
+            action=constants.ACTION_APPROVED, by_user=self.user
+        )
+        self.moderation_request1.refresh_from_db()
+        self.assertFalse(self.moderation_request1.is_approved())
+        # Compliance number is not yet generated as there are more approvers
+        # to follow this one
+        self.assertIsNone(self.moderation_request1.compliance_number)
+
+        self.moderation_request1.update_status(
+            action=constants.ACTION_APPROVED, by_user=self.user3
+        )
+        self.moderation_request1.refresh_from_db()
+        self.assertTrue(self.moderation_request1.is_approved())
+        self.assertIsNone(self.moderation_request1.compliance_number)
+
     def test_rejection_makes_the_previous_actions_archived(self):
         previous_action_1 = self.moderation_request1.actions.create(
             by_user=self.user,

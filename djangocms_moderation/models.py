@@ -322,6 +322,7 @@ class PageModerationRequest(models.Model):
     )
     compliance_number = models.CharField(
         max_length=32,
+        blank=True,
         null=True,
         unique=True,
     )
@@ -392,6 +393,15 @@ class PageModerationRequest(models.Model):
         if new_action.to_user_id or new_action.to_role_id:
             notify_requested_moderator(self, new_action)
         notify_request_author(self, new_action)
+
+        # Certain workflows need to generate a compliance number.
+        # Lets check for that and do it here. We should only do this if the
+        # request is approved, otherwise there is no need to compliance number
+        if (
+            self.workflow.requires_compliance_number and self.is_approved() and
+            not self.compliance_number
+        ):
+            self.set_compliance_number()
 
     def get_first_action(self):
         return self.actions.first()

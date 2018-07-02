@@ -17,7 +17,9 @@ from djangocms_moderation.utils import get_admin_url
 class ModerationFlowsTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.workflow = Workflow.objects.create(name='Workflow 1', is_default=True, )
+        cls.workflow = Workflow.objects.create(
+            name='Workflow 1', is_default=True, requires_compliance_number=True
+        )
 
         cls.page = create_page(title='Page 1', template='page.html', language='en', )
 
@@ -72,7 +74,8 @@ class ModerationFlowsTestCase(TestCase):
         2. moderator_1 approves the first stage
         3. moderator_1 tries to approve the second stage - it should not work
         4. moderator_2 approves
-        5. author publishes the page and workflow is done
+        5. compliance number is generated
+        6. author publishes the page and workflow is done
         """
         self.assertFalse(PageModerationRequest.objects.exists())
         self.assertFalse(PageModerationRequestAction.objects.exists())
@@ -90,6 +93,8 @@ class ModerationFlowsTestCase(TestCase):
         second_action = PageModerationRequestAction.objects.last()
         self.assertTrue(second_action.action, constants.ACTION_APPROVED)
         self.assertTrue(second_action.message, 'Test message - approved')
+        # Compliance number is not generated yet
+        self.assertIsNone(moderation_request.compliance_number)
 
         # moderator_1 can't approve the second request, so they will get 403
         response = self._approve_moderation_request(self.moderator_1)
@@ -102,6 +107,8 @@ class ModerationFlowsTestCase(TestCase):
         moderation_request.refresh_from_db()
         self.assertEqual(moderation_request.author, self.author)
         self.assertTrue(moderation_request.is_active)
+        compliance_number = moderation_request.compliance_number
+        self.assertIsNotNone(compliance_number)
 
         third_action = PageModerationRequestAction.objects.last()
         self.assertTrue(third_action.action, constants.ACTION_APPROVED)
@@ -117,6 +124,7 @@ class ModerationFlowsTestCase(TestCase):
         self.assertFalse(moderation_request.is_active)
         last_action = PageModerationRequestAction.objects.last()
         self.assertTrue(last_action.action, constants.ACTION_FINISHED)
+        self.assertEqual(moderation_request.compliance_number, compliance_number)
 
     def test_reject_moderation_workflow(self):
         """
