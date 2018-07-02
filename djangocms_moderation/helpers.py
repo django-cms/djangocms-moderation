@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.contrib.contenttypes.models import ContentType
 
 from cms.models import Page
 
@@ -44,7 +45,7 @@ def get_workflow_or_none(pk):
 def get_active_moderation_request(page, language):
     try:
         return PageModerationRequest.objects.get(
-            page=page,
+            content_object=page,
             language=language,
             is_active=True,
         )
@@ -53,13 +54,13 @@ def get_active_moderation_request(page, language):
 
 
 def get_page_or_404(page_id, language):
-    return get_object_or_404(
-        Page,
+   content_type = ContentType.objects.get(app_label="cms", model="page") # how do we get this
+   content_type.get_object_for_this_type(
         pk=page_id,
-        is_page_type=False,
-        publisher_is_draft=True,
-        title_set__language=language,
-    )
+        is_page_type=False, # get these lines from app registration 
+        publisher_is_draft=True, # something like moderated_object_kwargs
+        title_set__language=language
+   )
 
 
 def is_moderation_enabled(page):

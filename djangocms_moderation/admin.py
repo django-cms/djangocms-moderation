@@ -85,9 +85,9 @@ class PageModerationRequestActionInline(admin.TabularInline):
 
 class PageModerationRequestAdmin(admin.ModelAdmin):
     inlines = [PageModerationRequestActionInline]
-    list_display = ['reference_number', 'page', 'language', 'workflow', 'show_status', 'date_sent']
+    list_display = ['reference_number', 'language', 'workflow', 'show_status', 'date_sent']
     list_filter = ['language', 'workflow']
-    fields = ['reference_number', 'workflow', 'page', 'language', 'is_active', 'show_status']
+    fields = ['reference_number', 'workflow', 'language', 'is_active', 'show_status']
     readonly_fields = fields
 
     def has_add_permission(self, request):
