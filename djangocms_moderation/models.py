@@ -126,12 +126,18 @@ class Workflow(models.Model):
         verbose_name=_('is default'),
         default=False,
     )
+    identifier = models.CharField(max_length=128, blank=True, default='')
+    requires_compliance_number = models.BooleanField(
+        help_text='Does the Compliance number need to be generated before '
+                  'the moderation request is approved? Please select the '
+                  'compliance number backend bellow',
+        default=False
+    )
     compliance_number_backend = models.CharField(
         choices=conf.COMPLIANCE_NUMBER_BACKENDS,
         max_length=255,
         default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND,
     )
-    identifier = models.CharField(max_length=128, blank=True, default='')
 
     class Meta:
         verbose_name = _('Workflow')
