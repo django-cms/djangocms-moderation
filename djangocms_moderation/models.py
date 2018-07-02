@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+
 import json
 
 from django.conf import settings
@@ -9,17 +10,19 @@ from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext
+from django.utils.translation import ugettext_lazy as _
 
 from cms.extensions import PageExtension
 from cms.extensions.extension_pool import extension_pool
 from cms.models.fields import PlaceholderField
 
-from . import conf
-from . import constants
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
 from .utils import generate_reference_number
+
+
+from . import conf, constants  # isort:skip
 
 
 @python_2_unicode_compatible

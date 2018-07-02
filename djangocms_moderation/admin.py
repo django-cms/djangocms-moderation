@@ -5,7 +5,8 @@ from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils.html import format_html, format_html_join
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext
+from django.utils.translation import ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.extensions import PageExtensionAdmin
@@ -13,7 +14,6 @@ from cms.models import Page
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from . import views
 from .constants import (
     ACTION_APPROVED,
     ACTION_CANCELLED,
@@ -37,6 +37,9 @@ from .models import (
     Workflow,
     WorkflowStep,
 )
+
+
+from . import views  # isort:skip
 
 
 try:

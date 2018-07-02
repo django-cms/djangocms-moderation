@@ -5,21 +5,23 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from cms.api import get_page_draft
-from cms.toolbar_base import CMSToolbar
-from cms.toolbar_pool import toolbar_pool
 from cms.toolbar.items import (
     Button,
     Dropdown,
     DropdownToggleButton,
     ModalButton,
 )
+from cms.toolbar_base import CMSToolbar
+from cms.toolbar_pool import toolbar_pool
 from cms.utils import page_permissions
 
-from . import conf
 from .helpers import get_active_moderation_request, is_moderation_enabled
 from .models import PageModeration
 from .monkeypatches import set_current_language
 from .utils import get_admin_url
+
+
+from . import conf  # isort:skip
 
 
 try:
