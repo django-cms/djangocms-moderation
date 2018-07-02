@@ -75,8 +75,12 @@ class PageModerationRequestActionInline(admin.TabularInline):
             return ''
 
         opts = ConfirmationFormSubmission._meta
-        url = reverse('admin:{}_{}_change'.format(opts.app_label, opts.model_name), args=[instance.pk,])
-        return format_html('<a href="{}" target="_blank">{}</a>',
+        url = reverse(
+            'admin:{}_{}_change'.format(opts.app_label, opts.model_name),
+            args=[instance.pk],
+        )
+        return format_html(
+            '<a href="{}" target="_blank">{}</a>',
             url,
             obj.step_approved.role.name
         )
@@ -214,7 +218,8 @@ class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
             return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
 
         url_patterns = [
-            _url(r'^moderation-confirmation-page/([0-9]+)/$',
+            _url(
+                r'^moderation-confirmation-page/([0-9]+)/$',
                 views.moderation_confirmation_page,
                 name='cms_moderation_confirmation_page',
             ),
@@ -251,7 +256,9 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
 
     def form_data(self, obj):
         data = obj.get_form_data()
-        return format_html_join('', '<p>{}: <b>{}</b><br />{}: <b>{}</b></p>',
+        return format_html_join(
+            '',
+            '<p>{}: <b>{}</b><br />{}: <b>{}</b></p>',
             ((ugettext('Question'), d['label'], ugettext('Answer'), d['value']) for d in data)
         )
     form_data.short_description = _('Form Data')

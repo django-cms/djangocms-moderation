@@ -8,3 +8,5 @@ dist/
 build/
 .env
 *.sqlite
+.coverage
+.python-version

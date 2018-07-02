@@ -24,7 +24,7 @@ from .utils import get_admin_url
 
 try:
     PageToolbar = toolbar_pool.toolbars['cms.cms_toolbars.PageToolbar']
-except:
+except:  # noqa: F722
     from cms.cms_toolbars import PageToolbar
 
 
@@ -228,4 +228,3 @@ class PageModerationToolbar(CMSToolbar):
 
 toolbar_pool.toolbars['cms.cms_toolbars.PageToolbar'] = ExtendedPageToolbar
 toolbar_pool.register(PageModerationToolbar)
-

@@ -237,18 +237,6 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request1.user_can_view_comments(self.user2))
         self.assertTrue(self.moderation_request1.user_can_view_comments(self.user))
 
-    def test_user_is_author(self):
-        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
-        self.assertFalse(self.moderation_request1.user_is_author(temp_user))
-        self.assertFalse(self.moderation_request1.user_is_author(self.user2))
-        self.assertTrue(self.moderation_request1.user_is_author(self.user))
-
-    def test_user_can_view_comments(self):
-        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
-        self.assertFalse(self.moderation_request1.user_can_view_comments(temp_user))
-        self.assertTrue(self.moderation_request1.user_can_view_comments(self.user2))
-        self.assertTrue(self.moderation_request1.user_can_view_comments(self.user))
-
     def test_user_can_moderate(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
         self.assertFalse(self.moderation_request1.user_can_moderate(temp_user))
@@ -412,7 +400,7 @@ class ConfirmationPageTest(BaseTestCase):
         self.assertFalse(result)
 
     def test_is_valid_returns_true_when_form_submission_exists(self):
-        cfs = ConfirmationFormSubmission.objects.create(
+        ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,

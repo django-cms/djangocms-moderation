@@ -1,14 +1,10 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 
 from cms.api import create_page
 
 from djangocms_moderation import constants
-from djangocms_moderation.models import (
-    PageModerationRequest,
-    Role,
-    Workflow,
-)
+from djangocms_moderation.models import PageModerationRequest, Role, Workflow
 
 
 class BaseTestCase(TestCase):
