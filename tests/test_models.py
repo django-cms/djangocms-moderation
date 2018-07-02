@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from mock import patch
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -78,7 +78,7 @@ class WorkflowTest(BaseTestCase):
             transform=lambda x: x,
             ordered=False,
         )
-        mock_nrm.assert_called_once()
+        self.assertEqual(mock_nrm.call_count, 1)
 
 
 class WorkflowStepTest(BaseTestCase):
@@ -281,8 +281,8 @@ class PageModerationRequestTest(BaseTestCase):
         )
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.filter(is_archived=False)), 2)
-        mock_nrm.assert_called_once()
-        mock_nra.assert_called_once()
+        self.assertEqual(mock_nrm.call_count, 1)
+        self.assertEqual(mock_nra.call_count, 1)
 
     @patch('djangocms_moderation.models.notify_request_author')
     @patch('djangocms_moderation.models.notify_requested_moderator')
@@ -295,7 +295,7 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
 
-        mock_nra.assert_called_once()
+        self.assertEqual(mock_nra.call_count, 1)
         # No need to notify the moderator, as this is assigned back to the
         # content author
         self.assertFalse(mock_nrm.called)
@@ -311,8 +311,8 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
 
-        mock_nra.assert_called_once()
-        mock_nrm.assert_called_once()
+        self.assertEqual(mock_nra.call_count, 1)
+        self.assertEqual(mock_nrm.call_count, 1)
 
     def test_rejection_makes_the_previous_actions_archived(self):
         previous_action_1 = self.moderation_request1.actions.create(
@@ -350,7 +350,7 @@ class PageModerationRequestTest(BaseTestCase):
         )
         self.assertEqual(mock_uuid.call_count, 0)
         request.set_reference_number()
-        mock_uuid.assert_called_once()
+        self.assertEqual(mock_uuid.call_count, 1)
         self.assertEqual(request.reference_number, 'abc123')
 
 
@@ -399,9 +399,7 @@ class ConfirmationPageTest(BaseTestCase):
         # This will make sure there are no form submissions
         # attached with the self.moderation_request1
         self.moderation_request1.form_submissions.all().delete()
-        self.cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
+        self.cp = ConfirmationPage.objects.create(name='Checklist Form')
         self.role1.confirmation_page = self.cp
         self.role1.save()
 

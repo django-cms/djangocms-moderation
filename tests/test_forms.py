@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from mock import MagicMock
 
 from django.contrib.auth.models import User
 from django.forms import HiddenInput

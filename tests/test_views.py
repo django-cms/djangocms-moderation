@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from mock import patch
 
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
@@ -380,7 +380,7 @@ class ModerationCommentsViewTest(BaseViewTestCase):
 class ModerationConfirmationPageTest(BaseViewTestCase):
 
     def setUp(self):
-        super().setUp()
+        super(ModerationConfirmationPageTest, self).setUp()
         self.cp = ConfirmationPage.objects.create(
             name='Checklist Form',
         )
