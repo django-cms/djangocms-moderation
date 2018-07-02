@@ -368,6 +368,23 @@ class PageModerationRequestTest(BaseTestCase):
         request.refresh_from_db()
         self.assertEqual(request.compliance_number, expected)
 
+    def test_compliance_number_sequential_number_with_identifier_prefix_backend(self):
+        self.wf2.compliance_number_backend = 'djangocms_moderation.backends.sequential_number_with_identifier_prefix_backend'
+        self.wf2.identifier = 'SSO'
+
+        request = PageModerationRequest.objects.create(
+            page=self.pg1,
+            language='en',
+            workflow=self.wf2,
+        )
+        request.refresh_from_db()
+        self.assertIsNone(request.compliance_number)
+
+        expected = "SSO{}".format(request.pk)
+        request.set_compliance_number()
+        request.refresh_from_db()
+        self.assertEqual(request.compliance_number, expected)
+
 
 class PageModerationRequestActionTest(BaseTestCase):
 
