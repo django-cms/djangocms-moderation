@@ -97,24 +97,24 @@ class WorkflowStepTest(BaseTestCase):
 class PageModerationRequestTest(BaseTestCase):
 
     def test_has_pending_step(self):
-        self.assertTrue(self.moderation_request1.has_pending_step)
-        self.assertFalse(self.moderation_request2.has_pending_step)
-        self.assertTrue(self.moderation_request3.has_pending_step)
+        self.assertTrue(self.moderation_request1.has_pending_step())
+        self.assertFalse(self.moderation_request2.has_pending_step())
+        self.assertTrue(self.moderation_request3.has_pending_step())
 
     def test_required_pending_steps(self):
-        self.assertTrue(self.moderation_request1.has_required_pending_steps)
-        self.assertFalse(self.moderation_request2.has_required_pending_steps)
-        self.assertFalse(self.moderation_request3.has_required_pending_steps)
+        self.assertTrue(self.moderation_request1.has_required_pending_steps())
+        self.assertFalse(self.moderation_request2.has_required_pending_steps())
+        self.assertFalse(self.moderation_request3.has_required_pending_steps())
 
     def test_is_approved(self):
-        self.assertFalse(self.moderation_request1.is_approved)
-        self.assertTrue(self.moderation_request2.is_approved)
-        self.assertTrue(self.moderation_request3.is_approved)
+        self.assertFalse(self.moderation_request1.is_approved())
+        self.assertTrue(self.moderation_request2.is_approved())
+        self.assertTrue(self.moderation_request3.is_approved())
 
     def test_is_rejected(self):
-        self.assertFalse(self.moderation_request1.is_rejected)
-        self.assertFalse(self.moderation_request2.is_rejected)
-        self.assertTrue(self.moderation_request4.is_rejected)
+        self.assertFalse(self.moderation_request1.is_rejected())
+        self.assertFalse(self.moderation_request2.is_rejected())
+        self.assertTrue(self.moderation_request4.is_rejected())
 
     def test_get_first_action(self):
         self.assertEqual(

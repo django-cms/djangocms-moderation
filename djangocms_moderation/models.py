@@ -343,19 +343,15 @@ class PageModerationRequest(models.Model):
         """
         return self.get_first_action().by_user
 
-    @cached_property
     def has_pending_step(self):
         return self.get_pending_steps().exists()
 
-    @cached_property
     def has_required_pending_steps(self):
         return self.get_pending_required_steps().exists()
 
-    @cached_property
     def is_approved(self):
-        return self.is_active and not self.has_required_pending_steps
+        return self.is_active and not self.has_required_pending_steps()
 
-    @cached_property
     def is_rejected(self):
         return self.get_last_action().action == constants.ACTION_REJECTED
 
@@ -431,14 +427,14 @@ class PageModerationRequest(models.Model):
         rejected by the moderator and submitted back to the content author
         for amends
         """
-        return self.author == user and self.is_rejected
+        return self.author == user and self.is_rejected()
 
     def user_can_take_moderation_action(self, user):
         """
         Can this user approve or reject the moderation request
         for the current step?
         """
-        if self.is_rejected:
+        if self.is_rejected():
             # If the last action was a rejection, no one can approve or
             # reject the current action (content author can now act on the
             # feedback and resubmit the edits for moderation)

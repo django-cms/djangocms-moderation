@@ -94,9 +94,9 @@ class PageModerationRequestAdmin(admin.ModelAdmin):
         return False
 
     def show_status(self, obj):
-        if obj.is_approved:
+        if obj.is_approved():
             status = ugettext('Ready for publishing')
-        elif obj.is_active and obj.has_pending_step:
+        elif obj.is_active and obj.has_pending_step():
             next_step = obj.get_next_required()
             role = next_step.role.name
             status = ugettext('Pending %(role)s approval') % {'role': role}
@@ -191,7 +191,7 @@ class ExtendedPageAdmin(PageAdmin):
 
         active_request = get_active_moderation_request(page, language)
 
-        if active_request and active_request.is_approved:
+        if active_request and active_request.is_approved():
             # The moderation request has been approved.
             # Let the user publish the page.
             return super(ExtendedPageAdmin, self).publish_page(request, page_id, language)
