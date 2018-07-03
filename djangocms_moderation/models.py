@@ -187,7 +187,7 @@ class Workflow(models.Model):
     @transaction.atomic
     def submit_new_request(self, by_user, page, language, message='', to_user=None):
         request = self.requests.create(
-            page=page,
+            content_object=page,
             language=language,
             is_active=True,
             workflow=self,
@@ -292,7 +292,7 @@ class PageModeration(PageExtension):
 class PageModerationRequest(models.Model):
 
     content_type = models.ForeignKey(
-        ContentType, 
+        ContentType,
         on_delete=models.CASCADE
     )
     object_id = models.PositiveIntegerField()

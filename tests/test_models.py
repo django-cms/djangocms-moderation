@@ -263,7 +263,7 @@ class PageModerationRequestTest(BaseTestCase):
         self.wf4st1 = self.wf4.steps.create(role=self.role4, is_required=True, order=1,)
         self.wf4st2 = self.wf4.steps.create(role=self.role1, is_required=False, order=2,)
         self.moderation_request4 = PageModerationRequest.objects.create(
-            page=self.pg5, language='en', workflow=self.wf4, is_active=True,)
+            content_object=self.pg5, language='en', workflow=self.wf4, is_active=True,)
         self.moderation_request4.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
         self.assertTrue(self.moderation_request4.user_can_moderate(self.user))
@@ -343,7 +343,7 @@ class PageModerationRequestTest(BaseTestCase):
         mock_uuid.return_value = 'abc123'
 
         request = PageModerationRequest.objects.create(
-            page=self.pg1,
+            content_object=self.pg1,
             language='en',
             is_active=True,
             workflow=self.wf1,
@@ -373,7 +373,7 @@ class PageModerationRequestActionTest(BaseTestCase):
 
     def test_save_when_to_user_not_passed_and_action_started(self):
         new_request = PageModerationRequest.objects.create(
-            page=self.pg2,
+            content_object=self.pg2,
             language='en',
             workflow=self.wf1,
             is_active=True,
