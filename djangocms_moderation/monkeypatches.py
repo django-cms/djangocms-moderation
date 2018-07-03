@@ -8,6 +8,7 @@ from cms.utils import page_permissions
 
 from .helpers import get_active_moderation_request
 
+
 # thread local support
 _thread_locals = local()
 

@@ -13,7 +13,6 @@ from django.views.generic import FormView, ListView
 
 from cms.utils.urlutils import add_url_parameters
 
-from . import constants
 from .forms import (
     ModerationRequestForm,
     SelectModerationForm,
@@ -25,8 +24,15 @@ from .helpers import (
     get_page_or_404,
     get_workflow_or_none,
 )
-from .models import ConfirmationFormSubmission, ConfirmationPage, PageModerationRequest
+from .models import (
+    ConfirmationFormSubmission,
+    ConfirmationPage,
+    PageModerationRequest,
+)
 from .utils import get_admin_url
+
+
+from . import constants  # isort:skip
 
 
 class ModerationRequestView(FormView):

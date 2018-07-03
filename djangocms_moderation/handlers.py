@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+
 import json
 
 from django.dispatch import receiver
@@ -7,7 +8,7 @@ from cms.operations import PUBLISH_PAGE_TRANSLATION
 from cms.signals import post_obj_operation
 
 from .constants import ACTION_FINISHED
-from .helpers import get_active_moderation_request, get_page_or_404
+from .helpers import get_active_moderation_request
 from .models import ConfirmationFormSubmission
 from .signals import confirmation_form_submission
 

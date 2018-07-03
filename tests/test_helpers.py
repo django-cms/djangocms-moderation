@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from mock import patch
 
 from django.test import override_settings
 
@@ -11,8 +11,8 @@ from djangocms_moderation.helpers import (
     is_moderation_enabled,
 )
 from djangocms_moderation.models import (
-    ConfirmationPage,
     ConfirmationFormSubmission,
+    ConfirmationPage,
     PageModeration,
     Workflow,
 )
@@ -102,7 +102,7 @@ class GetFormSubmissions(BaseTestCase):
             data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
             confirmation_page=cp,
         )
-        cfs2 = ConfirmationFormSubmission.objects.create(
+        ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st2,
             by_user=self.user,
