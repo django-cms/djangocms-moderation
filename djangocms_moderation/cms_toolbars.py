@@ -39,6 +39,23 @@ class ExtendedPageToolbar(PageToolbar):
         super(ExtendedPageToolbar, self).__init__(*args, **kwargs)
         set_current_language(self.current_lang)
 
+
+    def post_template_populate(self):
+        """ TEMPORARY: POC (hard coded primary key ) """
+        super(ExtendedPageToolbar, self).post_template_populate()
+        view_name = 'cms_moderation_new_request'
+
+        new_request_url = get_admin_url(
+                name=view_name,
+                language=self.current_lang,
+                args=('1', self.current_lang),
+            )
+        self.toolbar.add_modal_button(
+                name=_('Submit for moderation'),
+                url=new_request_url,
+                side=self.toolbar.RIGHT,
+            )
+
     @cached_property
     def moderation_request(self):
         if not self.page:
