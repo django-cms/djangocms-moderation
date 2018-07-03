@@ -128,12 +128,17 @@ class Workflow(models.Model):
         verbose_name=_('is default'),
         default=False,
     )
-    identifier = models.CharField(max_length=128, blank=True, default='')
+    identifier = models.CharField(
+        max_length=128, blank=True, default='',
+        help_text="Identifier is a 'free' field you could use for internal "
+                  "purposes. For example, it could be used as a workflow "
+                  "specific prefix of a compliance number",
+    )
     requires_compliance_number = models.BooleanField(
+        default=False,
         help_text='Does the Compliance number need to be generated before '
                   'the moderation request is approved? Please select the '
                   'compliance number backend bellow',
-        default=False
     )
     compliance_number_backend = models.CharField(
         choices=conf.COMPLIANCE_NUMBER_BACKENDS,
