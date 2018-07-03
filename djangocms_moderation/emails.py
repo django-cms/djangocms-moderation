@@ -4,17 +4,24 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.encoding import force_text
-from django.utils.translation import override as force_language, ugettext_lazy as _
+from django.utils.translation import (
+    override as force_language,
+    ugettext_lazy as _,
+)
+
+from cms.utils.conf import get_cms_setting
+
+from .utils import get_absolute_url
+
+
+from . import constants  # isort:skip
+
 
 try:
     from django.urls import reverse
 except ImportError:
     from django.core.urlresolvers import reverse
 
-from cms.utils.conf import get_cms_setting
-
-from . import constants
-from .utils import get_absolute_url
 
 email_subjects = {
     constants.ACTION_APPROVED: _('Changes Approved'),

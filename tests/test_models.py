@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from mock import patch
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -78,7 +78,7 @@ class WorkflowTest(BaseTestCase):
             transform=lambda x: x,
             ordered=False,
         )
-        mock_nrm.assert_called_once()
+        self.assertEqual(mock_nrm.call_count, 1)
 
 
 class WorkflowStepTest(BaseTestCase):
@@ -237,18 +237,6 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request1.user_can_view_comments(self.user2))
         self.assertTrue(self.moderation_request1.user_can_view_comments(self.user))
 
-    def test_user_is_author(self):
-        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
-        self.assertFalse(self.moderation_request1.user_is_author(temp_user))
-        self.assertFalse(self.moderation_request1.user_is_author(self.user2))
-        self.assertTrue(self.moderation_request1.user_is_author(self.user))
-
-    def test_user_can_view_comments(self):
-        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
-        self.assertFalse(self.moderation_request1.user_can_view_comments(temp_user))
-        self.assertTrue(self.moderation_request1.user_can_view_comments(self.user2))
-        self.assertTrue(self.moderation_request1.user_can_view_comments(self.user))
-
     def test_user_can_moderate(self):
         temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
         self.assertFalse(self.moderation_request1.user_can_moderate(temp_user))
@@ -281,8 +269,8 @@ class PageModerationRequestTest(BaseTestCase):
         )
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.filter(is_archived=False)), 2)
-        mock_nrm.assert_called_once()
-        mock_nra.assert_called_once()
+        self.assertEqual(mock_nrm.call_count, 1)
+        self.assertEqual(mock_nra.call_count, 1)
 
     @patch('djangocms_moderation.models.notify_request_author')
     @patch('djangocms_moderation.models.notify_requested_moderator')
@@ -295,7 +283,7 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
 
-        mock_nra.assert_called_once()
+        self.assertEqual(mock_nra.call_count, 1)
         # No need to notify the moderator, as this is assigned back to the
         # content author
         self.assertFalse(mock_nrm.called)
@@ -311,8 +299,8 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
 
-        mock_nra.assert_called_once()
-        mock_nrm.assert_called_once()
+        self.assertEqual(mock_nra.call_count, 1)
+        self.assertEqual(mock_nrm.call_count, 1)
 
     def test_compliance_number_is_generated(self):
         self.wf1.requires_compliance_number = True
@@ -408,8 +396,9 @@ class PageModerationRequestTest(BaseTestCase):
             workflow=self.wf1,
         )
         self.assertEqual(mock_uuid.call_count, 0)
+
         request.set_compliance_number()
-        mock_uuid.assert_called_once()
+        self.assertEqual(mock_uuid.call_count, 1)
         self.assertEqual(request.compliance_number, 'abc123')
 
     def test_compliance_number_sequential_number_backend(self):
@@ -490,9 +479,7 @@ class ConfirmationPageTest(BaseTestCase):
         # This will make sure there are no form submissions
         # attached with the self.moderation_request1
         self.moderation_request1.form_submissions.all().delete()
-        self.cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
+        self.cp = ConfirmationPage.objects.create(name='Checklist Form')
         self.role1.confirmation_page = self.cp
         self.role1.save()
 
@@ -505,7 +492,7 @@ class ConfirmationPageTest(BaseTestCase):
         self.assertFalse(result)
 
     def test_is_valid_returns_true_when_form_submission_exists(self):
-        cfs = ConfirmationFormSubmission.objects.create(
+        ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,

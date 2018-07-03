@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 from django.db.models import Manager, Q
 
 from .constants import (
-    ACCESS_DESCENDANTS,
     ACCESS_CHILDREN,
+    ACCESS_DESCENDANTS,
     ACCESS_PAGE,
     ACCESS_PAGE_AND_CHILDREN,
     ACCESS_PAGE_AND_DESCENDANTS,
@@ -34,6 +34,9 @@ class PageModerationManager(Manager):
                 & (Q(grant_on=ACCESS_CHILDREN) | Q(grant_on=ACCESS_PAGE_AND_CHILDREN))
             )
 
-        query |= Q(extended_object=page) & (Q(grant_on=ACCESS_PAGE_AND_DESCENDANTS) | Q(grant_on=ACCESS_PAGE_AND_CHILDREN) |
-                                 Q(grant_on=ACCESS_PAGE))
+        query |= Q(extended_object=page) & (
+            Q(grant_on=ACCESS_PAGE_AND_DESCENDANTS) |
+            Q(grant_on=ACCESS_PAGE_AND_CHILDREN) |
+            Q(grant_on=ACCESS_PAGE)
+        )
         return self.filter(query).order_by('-extended_object__node__depth').first()

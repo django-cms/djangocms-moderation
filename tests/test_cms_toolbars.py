@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from mock import patch
 
 from django.test.client import RequestFactory
 from django.utils.encoding import force_text
@@ -9,8 +9,7 @@ from cms.middleware.toolbar import ToolbarMiddleware
 from cms.toolbar.items import ButtonList, Dropdown, ModalItem
 from cms.utils.conf import get_cms_setting
 
-from djangocms_moderation import constants
-from djangocms_moderation.models import PageModeration, PageModerationRequest
+from djangocms_moderation.models import PageModeration
 from djangocms_moderation.utils import get_admin_url
 
 from .utils import BaseViewTestCase

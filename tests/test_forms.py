@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from mock import MagicMock
 
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
@@ -6,10 +6,9 @@ from django.forms import HiddenInput
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
     ModerationRequestForm,
-    UpdateModerationRequestForm,
     SelectModerationForm,
+    UpdateModerationRequestForm,
 )
-
 from djangocms_moderation.models import Workflow
 
 from .utils import BaseTestCase

@@ -1,6 +1,13 @@
-from djangocms_moderation.contrib.moderation_forms.cms_plugins import ModerationFormPlugin
-from djangocms_moderation.handlers import moderation_confirmation_form_submission
-from djangocms_moderation.models import ConfirmationFormSubmission, ConfirmationPage
+from djangocms_moderation.contrib.moderation_forms.cms_plugins import (
+    ModerationFormPlugin,
+)
+from djangocms_moderation.handlers import (
+    moderation_confirmation_form_submission,
+)
+from djangocms_moderation.models import (
+    ConfirmationFormSubmission,
+    ConfirmationPage,
+)
 
 from .utils import BaseTestCase
 

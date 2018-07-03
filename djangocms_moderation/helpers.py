@@ -2,13 +2,15 @@ from django.shortcuts import get_object_or_404
 
 from cms.models import Page
 
-from . import conf
 from .models import (
     ConfirmationFormSubmission,
     PageModeration,
     PageModerationRequest,
     Workflow,
 )
+
+
+from . import conf  # isort:skip
 
 
 def get_default_workflow():

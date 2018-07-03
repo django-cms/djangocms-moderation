@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from mock import patch
 
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
@@ -9,12 +9,12 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
     ModerationRequestForm,
-    UpdateModerationRequestForm,
     SelectModerationForm,
+    UpdateModerationRequestForm,
 )
 from djangocms_moderation.models import (
-    ConfirmationPage,
     ConfirmationFormSubmission,
+    ConfirmationPage,
 )
 from djangocms_moderation.utils import get_admin_url
 
@@ -161,7 +161,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
             args=(self.pg2.pk, 'en')
         ), {'moderator': '', 'message': 'Some review message'})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'reloadBrowser') # check html part
+        self.assertContains(response, 'reloadBrowser')  # check html part
 
     def test_throws_error_moderation_already_exists(self):
         response = self.client.get('{}?{}'.format(
@@ -170,7 +170,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
                 language='en',
                 args=(self.pg1.pk, 'en')
             ),
-            'workflow={}'.format(self.wf1.pk) # pg1 => active request
+            'workflow={}'.format(self.wf1.pk)  # pg1 => active request
         ))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content, b'Page already has an active moderation request.')
@@ -191,7 +191,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
         response = self.client.get(get_admin_url(
             name='cms_moderation_cancel_request',
             language='en',
-            args=(self.pg2.pk, 'en') # pg2 => no active requests
+            args=(self.pg2.pk, 'en')  # pg2 => no active requests
         ))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content, b'Page does not have an active moderation request.')
@@ -253,12 +253,12 @@ class ModerationRequestViewTest(BaseViewTestCase):
             page=self.pg1.pk,
             language='en',
         )
-        self.assertEqual(response.status_code, 302) # redirection
+        self.assertEqual(response.status_code, 302)  # redirection
         self.assertEqual(response.url, redirect_url)
 
     def test_does_not_redirect_to_confirmation_page_if_valid_check(self):
         self._create_confirmation_page(self.moderation_request1)
-        cfs = ConfirmationFormSubmission.objects.create(
+        ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
@@ -284,7 +284,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
 
     def test_renders_all_form_submissions(self):
         self._create_confirmation_page(self.moderation_request1)
-        cfs = ConfirmationFormSubmission.objects.create(
+        ConfirmationFormSubmission.objects.create(
             request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
@@ -380,7 +380,7 @@ class ModerationCommentsViewTest(BaseViewTestCase):
 class ModerationConfirmationPageTest(BaseViewTestCase):
 
     def setUp(self):
-        super().setUp()
+        super(ModerationConfirmationPageTest, self).setUp()
         self.cp = ConfirmationPage.objects.create(
             name='Checklist Form',
         )
@@ -389,7 +389,10 @@ class ModerationConfirmationPageTest(BaseViewTestCase):
         response = self.client.get(self.cp.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.templates[0].name, self.cp.template)
-        self.assertEqual(response.context['CONFIRMATION_BASE_TEMPLATE'], 'djangocms_moderation/base_confirmation_build.html')
+        self.assertEqual(
+            response.context['CONFIRMATION_BASE_TEMPLATE'],
+            'djangocms_moderation/base_confirmation_build.html',
+        )
 
     def test_renders_content_view(self):
         response = self.client.get(
