@@ -43,19 +43,25 @@ def get_workflow_or_none(pk):
 
 
 def get_active_moderation_request(page, language):
+    content_type = ContentType.objects.get_for_model(page)
     try:
-        return PageModerationRequest.objects.get(
-            content_object=page,
+        page = PageModerationRequest.objects.get(
+            content_type=content_type,
+            # content_object=page,
+            object_id=page.pk,
             language=language,
             is_active=True,
         )
+        # import pdb; pdb.set_trace()
+        return page
     except PageModerationRequest.DoesNotExist:
+        # import pdb; pdb.set_trace()
         return None
 
 
 def get_page_or_404(page_id, language):
    content_type = ContentType.objects.get(app_label="cms", model="page") # how do we get this
-   content_type.get_object_for_this_type(
+   return content_type.get_object_for_this_type(
         pk=page_id,
         is_page_type=False, # get these lines from app registration 
         publisher_is_draft=True, # something like moderated_object_kwargs
