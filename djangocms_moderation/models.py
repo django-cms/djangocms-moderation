@@ -10,8 +10,7 @@ from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
-from django.utils.translation import ugettext
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.extensions import PageExtension
 from cms.extensions.extension_pool import extension_pool
