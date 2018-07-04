@@ -92,7 +92,7 @@ class PageModerationRequestActionInline(admin.TabularInline):
 class PageModerationRequestAdmin(admin.ModelAdmin):
     inlines = [PageModerationRequestActionInline]
     list_display = ['id', 'page', 'language', 'workflow', 'show_status', 'date_sent']
-    list_filter = ['language', 'workflow', 'id', 'compliance_number',]
+    list_filter = ['language', 'workflow', 'id', 'compliance_number']
     fields = ['id', 'workflow', 'page', 'language', 'is_active', 'show_status', 'compliance_number']
     readonly_fields = fields
 
