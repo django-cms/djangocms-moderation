@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='pagemoderationrequest',
             name='compliance_number',
-            field=models.CharField(blank=True, max_length=32, null=True, unique=True),
+            field=models.CharField(blank=True, max_length=32, null=True, unique=True, editable=False),
         ),
         migrations.AddField(
             model_name='workflow',

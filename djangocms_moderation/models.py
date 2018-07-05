@@ -129,18 +129,23 @@ class Workflow(models.Model):
         default=False,
     )
     identifier = models.CharField(
-        max_length=128, blank=True, default='',
-        help_text="Identifier is a 'free' field you could use for internal "
-                  "purposes. For example, it could be used as a workflow "
-                  "specific prefix of a compliance number",
+        verbose_name=_('identifier'),
+        max_length=128,
+        blank=True,
+        default='',
+        help_text=_('Identifier is a \'free\' field you could use for internal '
+                    'purposes. For example, it could be used as a workflow '
+                    'specific prefix of a compliance number')
     )
     requires_compliance_number = models.BooleanField(
+        verbose_name=_('requires compliance number?'),
         default=False,
-        help_text='Does the Compliance number need to be generated before '
-                  'the moderation request is approved? Please select the '
-                  'compliance number backend below',
+        help_text=_('Does the Compliance number need to be generated before '
+                    'the moderation request is approved? Please select the '
+                    'compliance number backend below')
     )
     compliance_number_backend = models.CharField(
+        verbose_name=_('compliance number backend'),
         choices=conf.COMPLIANCE_NUMBER_BACKENDS,
         max_length=255,
         default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND,
@@ -328,10 +333,12 @@ class PageModerationRequest(models.Model):
         auto_now_add=True,
     )
     compliance_number = models.CharField(
+        verbose_name=_('compliance number'),
         max_length=32,
         blank=True,
         null=True,
         unique=True,
+        editable=False,
     )
 
     class Meta:

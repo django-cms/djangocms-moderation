@@ -4,8 +4,9 @@ from django.utils.translation import ugettext_lazy as _
 
 UUID_BACKEND = 'djangocms_moderation.backends.uuid4_backend'
 SEQUENTIAL_NUMBER_BACKEND = 'djangocms_moderation.backends.sequential_number_backend'
-SEQUENTIAL_NUMBER_WITH_IDENTIFIER_PREFIX_BACKEND = \
+SEQUENTIAL_NUMBER_WITH_IDENTIFIER_PREFIX_BACKEND = (
     'djangocms_moderation.backends.sequential_number_with_identifier_prefix_backend'
+)
 
 CORE_COMPLIANCE_NUMBER_BACKENDS = (
     (UUID_BACKEND, _('Unique alpha-numeric string')),
