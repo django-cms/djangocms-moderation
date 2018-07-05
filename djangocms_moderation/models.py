@@ -138,7 +138,7 @@ class Workflow(models.Model):
         default=False,
         help_text='Does the Compliance number need to be generated before '
                   'the moderation request is approved? Please select the '
-                  'compliance number backend bellow',
+                  'compliance number backend below',
     )
     compliance_number_backend = models.CharField(
         choices=conf.COMPLIANCE_NUMBER_BACKENDS,

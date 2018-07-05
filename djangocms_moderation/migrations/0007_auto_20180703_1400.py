@@ -35,5 +35,6 @@ class Migration(migrations.Migration):
             model_name='workflow',
             name='requires_compliance_number',
             field=models.BooleanField(default=False, help_text='Does the Compliance number need to be generated before the moderation request is approved? Please select the compliance number backend bellow'),
+            field=models.BooleanField(default=False, help_text='Does the Compliance number need to be generated before the moderation request is approved? Please select the compliance number backend below'),
         ),
     ]
