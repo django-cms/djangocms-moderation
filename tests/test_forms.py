@@ -15,6 +15,9 @@ from .utils import BaseTestCase
 
 
 class ModerationRequestFormTest(BaseTestCase):
+    def test_failure(self):
+        """just to see if CI picks this up"""
+        self.assertTrue(False)
 
     def test_form_init(self):
         form = ModerationRequestForm(
