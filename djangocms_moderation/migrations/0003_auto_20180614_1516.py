@@ -10,7 +10,7 @@ from djangocms_moderation.constants import ACTION_CHOICES
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('djangocms_moderation', '0003_auto_20180420_0813'),
+        ('djangocms_moderation', '0002_auto_20180420_0811'),
     ]
 
     operations = [

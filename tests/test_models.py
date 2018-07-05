@@ -323,43 +323,26 @@ class PageModerationRequestTest(BaseTestCase):
         # be generated
         self.assertIsNotNone(self.moderation_request1.compliance_number)
 
-    def test_handle_compliance_number(self):
-        def _refresh():
-            self.moderation_request1.refresh_from_db()
-            self.moderation_request2.refresh_from_db()
-            self.moderation_request3.refresh_from_db()
-
-        self.moderation_request1.handle_compliance_number()
-        self.moderation_request2.handle_compliance_number()
-        self.moderation_request3.handle_compliance_number()
-        _refresh()
-        # None of them have compliance number set, as
-        # workflow.requires_compliance_number is False by default
-        self.assertIsNone(self.moderation_request1.compliance_number)
-        self.assertIsNone(self.moderation_request2.compliance_number)
-        self.assertIsNone(self.moderation_request2.compliance_number)
+    def test_should_set_compliance_number(self):
+        # `Workflow.requires_compliance_number` is False by default
+        self.assertFalse(self.moderation_request1.should_set_compliance_number())
+        self.assertFalse(self.moderation_request2.should_set_compliance_number())
+        self.assertFalse(self.moderation_request3.should_set_compliance_number())
 
         # Lets enable compliance number
         self.wf1.requires_compliance_number = True
         self.wf2.requires_compliance_number = True
         self.wf3.requires_compliance_number = True
 
-        # Now, request2 and request3 should have the number generated.
-        # request1 is not approved yet, so the number will be None
-        self.moderation_request1.handle_compliance_number()
-        self.moderation_request2.handle_compliance_number()
-        self.moderation_request3.handle_compliance_number()
-        _refresh()
-        self.assertIsNone(self.moderation_request1.compliance_number)
-        self.assertIsNotNone(self.moderation_request2.compliance_number)
-        self.assertIsNotNone(self.moderation_request3.compliance_number)
+        # Now, request2 and request3 should allow the generation.
+        # request1 is not approved yet, so it shouldn't
+        self.assertFalse(self.moderation_request1.should_set_compliance_number())
+        self.assertTrue(self.moderation_request2.should_set_compliance_number())
+        self.assertTrue(self.moderation_request3.should_set_compliance_number())
 
-        # Now let's check that the number is not overwritten
-        request2_number = self.moderation_request2.compliance_number
-        self.moderation_request2.handle_compliance_number()
-        self.moderation_request2.refresh_from_db()
-        # The number should be the same as the one generated earlier
-        self.assertEqual(self.moderation_request2.compliance_number, request2_number)
+        # Now let's check that the compliance number should not be overridden
+        self.moderation_request2.set_compliance_number()
+        self.assertFalse(self.moderation_request1.should_set_compliance_number())
 
     def test_rejection_makes_the_previous_actions_archived(self):
         previous_action_1 = self.moderation_request1.actions.create(

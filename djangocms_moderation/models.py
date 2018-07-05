@@ -401,19 +401,20 @@ class PageModerationRequest(models.Model):
             notify_requested_moderator(self, new_action)
         notify_request_author(self, new_action)
 
-        self.handle_compliance_number()
+        if self.should_set_compliance_number():
+            self.set_compliance_number()
 
-    def handle_compliance_number(self):
+    def should_set_compliance_number(self):
         """
-        Certain workflows need to generate a compliance number.
-        Lets check for that and do it here.
+        Certain workflows need to generate a compliance number under some
+        circumstances.
+        Lets check for that here
         """
-        if all([
+        return all([
             self.workflow.requires_compliance_number,
             not self.compliance_number,
             self.is_approved(),
-        ]):
-            self.set_compliance_number()
+        ])
 
     def get_first_action(self):
         return self.actions.first()
