@@ -93,7 +93,7 @@ class ExtendedPageToolbar(PageToolbar):
 
         moderation_request = self.moderation_request
 
-        if moderation_request and moderation_request.is_approved:
+        if moderation_request and moderation_request.is_approved():
             return super(ExtendedPageToolbar, self).add_publish_button(classes)
         elif moderation_request:
             # We have an active moderation request ongoing.

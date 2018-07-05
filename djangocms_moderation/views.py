@@ -59,7 +59,7 @@ class ModerationRequestView(FormView):
             if self.action == constants.ACTION_STARTED:
                 # Can't start new request if there's one already.
                 return HttpResponseBadRequest('Page already has an active moderation request.')
-            elif self.active_request.is_approved and needs_ongoing:
+            elif self.active_request.is_approved() and needs_ongoing:
                 # Can't reject or approve a moderation request whose steps have all
                 # already been approved.
                 return HttpResponseBadRequest('Moderation request has already been approved.')

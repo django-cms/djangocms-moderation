@@ -97,24 +97,24 @@ class WorkflowStepTest(BaseTestCase):
 class PageModerationRequestTest(BaseTestCase):
 
     def test_has_pending_step(self):
-        self.assertTrue(self.moderation_request1.has_pending_step)
-        self.assertFalse(self.moderation_request2.has_pending_step)
-        self.assertTrue(self.moderation_request3.has_pending_step)
+        self.assertTrue(self.moderation_request1.has_pending_step())
+        self.assertFalse(self.moderation_request2.has_pending_step())
+        self.assertTrue(self.moderation_request3.has_pending_step())
 
     def test_required_pending_steps(self):
-        self.assertTrue(self.moderation_request1.has_required_pending_steps)
-        self.assertFalse(self.moderation_request2.has_required_pending_steps)
-        self.assertFalse(self.moderation_request3.has_required_pending_steps)
+        self.assertTrue(self.moderation_request1.has_required_pending_steps())
+        self.assertFalse(self.moderation_request2.has_required_pending_steps())
+        self.assertFalse(self.moderation_request3.has_required_pending_steps())
 
     def test_is_approved(self):
-        self.assertFalse(self.moderation_request1.is_approved)
-        self.assertTrue(self.moderation_request2.is_approved)
-        self.assertTrue(self.moderation_request3.is_approved)
+        self.assertFalse(self.moderation_request1.is_approved())
+        self.assertTrue(self.moderation_request2.is_approved())
+        self.assertTrue(self.moderation_request3.is_approved())
 
     def test_is_rejected(self):
-        self.assertFalse(self.moderation_request1.is_rejected)
-        self.assertFalse(self.moderation_request2.is_rejected)
-        self.assertTrue(self.moderation_request4.is_rejected)
+        self.assertFalse(self.moderation_request1.is_rejected())
+        self.assertFalse(self.moderation_request2.is_rejected())
+        self.assertTrue(self.moderation_request4.is_rejected())
 
     def test_get_first_action(self):
         self.assertEqual(
@@ -302,6 +302,48 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertEqual(mock_nra.call_count, 1)
         self.assertEqual(mock_nrm.call_count, 1)
 
+    def test_compliance_number_is_generated(self):
+        self.wf1.requires_compliance_number = True
+        self.assertTrue(self.moderation_request1.has_required_pending_steps())
+        self.moderation_request1.update_status(
+            action=constants.ACTION_APPROVED, by_user=self.user
+        )
+        self.moderation_request1.refresh_from_db()
+        self.assertFalse(self.moderation_request1.is_approved())
+        # Compliance number is not yet generated as there are more approvers
+        # to follow this one
+        self.assertIsNone(self.moderation_request1.compliance_number)
+
+        self.moderation_request1.update_status(
+            action=constants.ACTION_APPROVED, by_user=self.user3
+        )
+        self.moderation_request1.refresh_from_db()
+        self.assertTrue(self.moderation_request1.is_approved())
+        # Now the moderation request is approved, so the compliance should
+        # be generated
+        self.assertIsNotNone(self.moderation_request1.compliance_number)
+
+    def test_should_set_compliance_number(self):
+        # `Workflow.requires_compliance_number` is False by default
+        self.assertFalse(self.moderation_request1.should_set_compliance_number())
+        self.assertFalse(self.moderation_request2.should_set_compliance_number())
+        self.assertFalse(self.moderation_request3.should_set_compliance_number())
+
+        # Lets enable compliance number
+        self.wf1.requires_compliance_number = True
+        self.wf2.requires_compliance_number = True
+        self.wf3.requires_compliance_number = True
+
+        # Now, request2 and request3 should allow the generation.
+        # request1 is not approved yet, so it shouldn't
+        self.assertFalse(self.moderation_request1.should_set_compliance_number())
+        self.assertTrue(self.moderation_request2.should_set_compliance_number())
+        self.assertTrue(self.moderation_request3.should_set_compliance_number())
+
+        # Now let's check that the compliance number should not be overridden
+        self.moderation_request2.set_compliance_number()
+        self.assertFalse(self.moderation_request1.should_set_compliance_number())
+
     def test_rejection_makes_the_previous_actions_archived(self):
         previous_action_1 = self.moderation_request1.actions.create(
             by_user=self.user,
@@ -326,8 +368,8 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertTrue(previous_action_1.is_archived)
         self.assertTrue(previous_action_2.is_archived)
 
-    @patch('djangocms_moderation.models.generate_reference_number')
-    def test_reference_number(self, mock_uuid):
+    @patch('djangocms_moderation.models.generate_compliance_number')
+    def test_compliance_number(self, mock_uuid):
         mock_uuid.return_value = 'abc123'
 
         request = PageModerationRequest.objects.create(
@@ -337,9 +379,44 @@ class PageModerationRequestTest(BaseTestCase):
             workflow=self.wf1,
         )
         self.assertEqual(mock_uuid.call_count, 0)
-        request.set_reference_number()
+
+        request.set_compliance_number()
         self.assertEqual(mock_uuid.call_count, 1)
-        self.assertEqual(request.reference_number, 'abc123')
+        self.assertEqual(request.compliance_number, 'abc123')
+
+    def test_compliance_number_sequential_number_backend(self):
+        self.wf2.compliance_number_backend = 'djangocms_moderation.backends.sequential_number_backend'
+        request = PageModerationRequest.objects.create(
+            page=self.pg1,
+            language='en',
+            workflow=self.wf2,
+        )
+        request.refresh_from_db()
+        self.assertIsNone(request.compliance_number)
+
+        expected = str(request.pk)
+        request.set_compliance_number()
+        request.refresh_from_db()
+        self.assertEqual(request.compliance_number, expected)
+
+    def test_compliance_number_sequential_number_with_identifier_prefix_backend(self):
+        self.wf2.compliance_number_backend = (
+            'djangocms_moderation.backends.sequential_number_with_identifier_prefix_backend'
+        )
+        self.wf2.identifier = 'SSO'
+
+        request = PageModerationRequest.objects.create(
+            page=self.pg1,
+            language='en',
+            workflow=self.wf2,
+        )
+        request.refresh_from_db()
+        self.assertIsNone(request.compliance_number)
+
+        expected = "SSO{}".format(request.pk)
+        request.set_compliance_number()
+        request.refresh_from_db()
+        self.assertEqual(request.compliance_number, expected)
 
 
 class PageModerationRequestActionTest(BaseTestCase):

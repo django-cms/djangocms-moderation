@@ -18,7 +18,7 @@ from cms.models.fields import PlaceholderField
 
 from .emails import notify_request_author, notify_requested_moderator
 from .managers import PageModerationManager
-from .utils import generate_reference_number
+from .utils import generate_compliance_number
 
 
 from . import conf, constants  # isort:skip
@@ -128,10 +128,27 @@ class Workflow(models.Model):
         verbose_name=_('is default'),
         default=False,
     )
-    reference_number_backend = models.CharField(
-        choices=conf.REFERENCE_NUMBER_BACKENDS,
+    identifier = models.CharField(
+        verbose_name=_('identifier'),
+        max_length=128,
+        blank=True,
+        default='',
+        help_text=_('Identifier is a \'free\' field you could use for internal '
+                    'purposes. For example, it could be used as a workflow '
+                    'specific prefix of a compliance number')
+    )
+    requires_compliance_number = models.BooleanField(
+        verbose_name=_('requires compliance number?'),
+        default=False,
+        help_text=_('Does the Compliance number need to be generated before '
+                    'the moderation request is approved? Please select the '
+                    'compliance number backend below')
+    )
+    compliance_number_backend = models.CharField(
+        verbose_name=_('compliance number backend'),
+        choices=conf.COMPLIANCE_NUMBER_BACKENDS,
         max_length=255,
-        default=conf.DEFAULT_REFERENCE_NUMBER_BACKEND,
+        default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND,
     )
 
     class Meta:
@@ -315,10 +332,13 @@ class PageModerationRequest(models.Model):
         verbose_name=_('date sent'),
         auto_now_add=True,
     )
-    reference_number = models.CharField(
+    compliance_number = models.CharField(
+        verbose_name=_('compliance number'),
         max_length=32,
+        blank=True,
         null=True,
         unique=True,
+        editable=False,
     )
 
     class Meta:
@@ -338,19 +358,15 @@ class PageModerationRequest(models.Model):
         """
         return self.get_first_action().by_user
 
-    @cached_property
     def has_pending_step(self):
         return self.get_pending_steps().exists()
 
-    @cached_property
     def has_required_pending_steps(self):
         return self.get_pending_required_steps().exists()
 
-    @cached_property
     def is_approved(self):
-        return self.is_active and not self.has_required_pending_steps
+        return self.is_active and not self.has_required_pending_steps()
 
-    @cached_property
     def is_rejected(self):
         return self.get_last_action().action == constants.ACTION_REJECTED
 
@@ -392,6 +408,21 @@ class PageModerationRequest(models.Model):
             notify_requested_moderator(self, new_action)
         notify_request_author(self, new_action)
 
+        if self.should_set_compliance_number():
+            self.set_compliance_number()
+
+    def should_set_compliance_number(self):
+        """
+        Certain workflows need to generate a compliance number under some
+        circumstances.
+        Lets check for that here
+        """
+        return all([
+            self.workflow.requires_compliance_number,
+            not self.compliance_number,
+            self.is_approved(),
+        ])
+
     def get_first_action(self):
         return self.actions.first()
 
@@ -426,14 +457,14 @@ class PageModerationRequest(models.Model):
         rejected by the moderator and submitted back to the content author
         for amends
         """
-        return self.author == user and self.is_rejected
+        return self.author == user and self.is_rejected()
 
     def user_can_take_moderation_action(self, user):
         """
         Can this user approve or reject the moderation request
         for the current step?
         """
-        if self.is_rejected:
+        if self.is_rejected():
             # If the last action was a rejection, no one can approve or
             # reject the current action (content author can now act on the
             # feedback and resubmit the edits for moderation)
@@ -465,12 +496,12 @@ class PageModerationRequest(models.Model):
     def user_can_view_comments(self, user):
         return self.user_is_author(user) or self.user_can_moderate(user)
 
-    def set_reference_number(self):
-        self.reference_number = generate_reference_number(
-            self.workflow.reference_number_backend,
+    def set_compliance_number(self):
+        self.compliance_number = generate_compliance_number(
+            self.workflow.compliance_number_backend,
             moderation_request=self,
         )
-        self.save(update_fields=['reference_number'])
+        self.save(update_fields=['compliance_number'])
 
 
 @python_2_unicode_compatible

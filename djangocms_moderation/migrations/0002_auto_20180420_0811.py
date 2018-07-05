@@ -21,12 +21,12 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='pagemoderationrequest',
-            name='reference_number',
-            field=models.CharField(max_length=32, null=True, unique=True),
+            name='compliance_number',
+            field=models.CharField(blank=True, max_length=32, null=True, unique=True, editable=False),
         ),
         migrations.AddField(
             model_name='workflow',
-            name='reference_number_backend',
-            field=models.CharField(choices=conf.REFERENCE_NUMBER_BACKENDS, default=conf.DEFAULT_REFERENCE_NUMBER_BACKEND, max_length=255),
+            name='compliance_number_backend',
+            field=models.CharField(choices=conf.COMPLIANCE_NUMBER_BACKENDS, default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND, max_length=255),
         ),
     ]
