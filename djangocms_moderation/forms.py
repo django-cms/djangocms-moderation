@@ -75,7 +75,7 @@ class ModerationRequestForm(forms.Form):
 
     def save(self):
         self.workflow.submit_new_request(
-            page=self.page,
+            obj=self.page,
             by_user=self.user,
             to_user=self.cleaned_data.get('moderator'),
             language=self.language,

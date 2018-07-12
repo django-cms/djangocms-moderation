@@ -1,11 +1,12 @@
 from django.shortcuts import get_object_or_404
+from django.contrib.contenttypes.models import ContentType
 
 from cms.models import Page
 
 from .models import (
     ConfirmationFormSubmission,
-    PageModeration,
-    PageModerationRequest,
+    Moderation,
+    ModerationRequest,
     Workflow,
 )
 
@@ -22,7 +23,7 @@ def get_default_workflow():
 
 
 def get_page_moderation_settings(page):
-    moderation = PageModeration.objects.for_page(page)
+    moderation = Moderation.objects.for_page(page)
     return moderation
 
 
@@ -43,21 +44,25 @@ def get_workflow_or_none(pk):
         return None
 
 
-def get_active_moderation_request(page, language):
+def get_active_moderation_request(obj, language):
+    content_type = ContentType.objects.get_for_model(obj)
     try:
-        return PageModerationRequest.objects.get(
-            page=page,
+        return ModerationRequest.objects.get(
+            content_type=content_type,
+            object_id=obj.pk,
             language=language,
             is_active=True,
         )
-    except PageModerationRequest.DoesNotExist:
+    except ModerationRequest.DoesNotExist:
         return None
 
 
-def get_page_or_404(page_id, language):
-    return get_object_or_404(
-        Page,
-        pk=page_id,
+def get_page_or_404(obj_id, language):
+    # TODO is this needed in 4.x?
+    content_type = ContentType.objects.get(app_label="cms", model="page")  # how do we get this
+
+    return content_type.get_object_for_this_type(
+        pk=obj_id,
         is_page_type=False,
         publisher_is_draft=True,
         title_set__language=language,

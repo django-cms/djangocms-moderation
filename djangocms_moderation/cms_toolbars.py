@@ -16,7 +16,7 @@ from cms.toolbar_pool import toolbar_pool
 from cms.utils import page_permissions
 
 from .helpers import get_active_moderation_request, is_moderation_enabled
-from .models import PageModeration
+from .models import Moderation
 from .monkeypatches import set_current_language
 from .utils import get_admin_url
 
@@ -184,7 +184,7 @@ class ExtendedPageToolbar(PageToolbar):
         return container
 
 
-class PageModerationToolbar(CMSToolbar):
+class ModerationToolbar(CMSToolbar):
 
     def populate(self):
         """ Adds Moderation link to Page Toolbar Menu
@@ -206,11 +206,11 @@ class PageModerationToolbar(CMSToolbar):
             return
 
         try:
-            extension = PageModeration.objects.get(extended_object_id=page.pk)
-        except PageModeration.DoesNotExist:
+            extension = Moderation.objects.get(extended_object_id=page.pk)
+        except Moderation.DoesNotExist:
             extension = None
 
-        opts = PageModeration._meta
+        opts = Moderation._meta
 
         url_args = []
 
@@ -229,4 +229,4 @@ class PageModerationToolbar(CMSToolbar):
 
 
 toolbar_pool.toolbars['cms.cms_toolbars.PageToolbar'] = ExtendedPageToolbar
-toolbar_pool.register(PageModerationToolbar)
+toolbar_pool.register(ModerationToolbar)

@@ -9,7 +9,7 @@ from cms.middleware.toolbar import ToolbarMiddleware
 from cms.toolbar.items import ButtonList, Dropdown, ModalItem
 from cms.utils.conf import get_cms_setting
 
-from djangocms_moderation.models import PageModeration
+from djangocms_moderation.models import Moderation
 from djangocms_moderation.utils import get_admin_url
 
 from .utils import BaseViewTestCase
@@ -134,7 +134,7 @@ class PageModerationToolbarTest(BaseToolbarTest):
         new_page = create_page(title='New Page', template='page.html', language='en',)
         self.setup_toolbar(new_page, self.user)
         page_menu = self.toolbar.menus['page']
-        opts = PageModeration._meta
+        opts = Moderation._meta
         url = get_admin_url(
             name='{}_{}_{}'.format(opts.app_label, opts.model_name, 'add'),
             language='en',
@@ -145,10 +145,10 @@ class PageModerationToolbarTest(BaseToolbarTest):
 
     def test_moderation_menu_change_rendered(self):
         new_page = create_page(title='New Page', template='page.html', language='en',)
-        extension = PageModeration.objects.create(extended_object=new_page, enabled=True, workflow=self.wf1,)
+        extension = Moderation.objects.create(extended_object=new_page, enabled=True, workflow=self.wf1, )
         self.setup_toolbar(new_page, self.user)
         page_menu = self.toolbar.menus['page']
-        opts = PageModeration._meta
+        opts = Moderation._meta
         url = get_admin_url(
             name='{}_{}_{}'.format(opts.app_label, opts.model_name, 'change'),
             language='en',

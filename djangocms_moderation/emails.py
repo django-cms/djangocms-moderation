@@ -31,7 +31,7 @@ email_subjects = {
 
 
 def _send_email(request, action, recipients, subject, template):
-    page = request.page
+    page = request.content_object
     edit_on = get_cms_setting('CMS_TOOLBAR_URL__EDIT_ON')
     page_url = page.get_absolute_url(request.language) + '?' + edit_on
     author_name = request.get_first_action().get_by_user_name()
@@ -44,7 +44,7 @@ def _send_email(request, action, recipients, subject, template):
         moderator_name = ''
 
     site = page.node.site
-    admin_url = reverse('admin:djangocms_moderation_pagemoderationrequest_change', args=(request.pk,))
+    admin_url = reverse('admin:djangocms_moderation_moderationrequest_change', args=(request.pk,))
     context = {
         'page': page,
         'page_url': get_absolute_url(page_url, site),

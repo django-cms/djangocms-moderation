@@ -11,8 +11,8 @@ from djangocms_moderation import constants
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-    PageModerationRequest,
-    PageModerationRequestAction,
+    ModerationRequest,
+    ModerationRequestAction,
     Role,
     Workflow,
     WorkflowStep,
@@ -68,13 +68,13 @@ class WorkflowTest(BaseTestCase):
     def test_submit_new_request(self, mock_nrm):
         request = self.wf1.submit_new_request(
             by_user=self.user,
-            page=self.pg3,
+            obj=self.pg3,
             language='en',
             message='Some message',
         )
         self.assertQuerysetEqual(
             request.actions.all(),
-            PageModerationRequestAction.objects.filter(request=request),
+            ModerationRequestAction.objects.filter(request=request),
             transform=lambda x: x,
             ordered=False,
         )
@@ -94,7 +94,7 @@ class WorkflowStepTest(BaseTestCase):
         self.assertIsNone(self.wf1st3.get_next_required())
 
 
-class PageModerationRequestTest(BaseTestCase):
+class ModerationRequestTest(BaseTestCase):
 
     def test_has_pending_step(self):
         self.assertTrue(self.moderation_request1.has_pending_step())
@@ -250,8 +250,8 @@ class PageModerationRequestTest(BaseTestCase):
         self.wf4 = Workflow.objects.create(pk=4, name='Workflow 4',)
         self.wf4st1 = self.wf4.steps.create(role=self.role4, is_required=True, order=1,)
         self.wf4st2 = self.wf4.steps.create(role=self.role1, is_required=False, order=2,)
-        self.moderation_request4 = PageModerationRequest.objects.create(
-            page=self.pg5, language='en', workflow=self.wf4, is_active=True,)
+        self.moderation_request4 = ModerationRequest.objects.create(
+            content_object=self.pg5, language='en', workflow=self.wf4, is_active=True,)
         self.moderation_request4.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
         self.assertTrue(self.moderation_request4.user_can_moderate(self.user))
@@ -372,8 +372,8 @@ class PageModerationRequestTest(BaseTestCase):
     def test_compliance_number(self, mock_uuid):
         mock_uuid.return_value = 'abc123'
 
-        request = PageModerationRequest.objects.create(
-            page=self.pg1,
+        request = ModerationRequest.objects.create(
+            content_object=self.pg1,
             language='en',
             is_active=True,
             workflow=self.wf1,
@@ -386,8 +386,8 @@ class PageModerationRequestTest(BaseTestCase):
 
     def test_compliance_number_sequential_number_backend(self):
         self.wf2.compliance_number_backend = 'djangocms_moderation.backends.sequential_number_backend'
-        request = PageModerationRequest.objects.create(
-            page=self.pg1,
+        request = ModerationRequest.objects.create(
+            content_object=self.pg1,
             language='en',
             workflow=self.wf2,
         )
@@ -405,8 +405,8 @@ class PageModerationRequestTest(BaseTestCase):
         )
         self.wf2.identifier = 'SSO'
 
-        request = PageModerationRequest.objects.create(
-            page=self.pg1,
+        request = ModerationRequest.objects.create(
+            content_object=self.pg1,
             language='en',
             workflow=self.wf2,
         )
@@ -419,7 +419,7 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertEqual(request.compliance_number, expected)
 
 
-class PageModerationRequestActionTest(BaseTestCase):
+class ModerationRequestActionTest(BaseTestCase):
 
     def test_get_by_user_name(self):
         action = self.moderation_request3.actions.last()
@@ -439,8 +439,8 @@ class PageModerationRequestActionTest(BaseTestCase):
         self.assertEqual(new_action.to_role, self.role2)
 
     def test_save_when_to_user_not_passed_and_action_started(self):
-        new_request = PageModerationRequest.objects.create(
-            page=self.pg2,
+        new_request = ModerationRequest.objects.create(
+            content_object=self.pg2,
             language='en',
             workflow=self.wf1,
             is_active=True,

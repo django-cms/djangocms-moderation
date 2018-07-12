@@ -29,9 +29,9 @@ from .helpers import (
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-    PageModeration,
-    PageModerationRequest,
-    PageModerationRequestAction,
+    Moderation,
+    ModerationRequest,
+    ModerationRequestAction,
     Role,
     Workflow,
     WorkflowStep,
@@ -47,13 +47,13 @@ except KeyError:
     from cms.admin.pageadmin import PageAdmin
 
 
-class PageModerationAdmin(PageExtensionAdmin):
+class ModerationAdmin(PageExtensionAdmin):
     list_display = ['workflow', 'grant_on', 'enabled']
     fields = ['workflow', 'grant_on', 'enabled']
 
 
-class PageModerationRequestActionInline(admin.TabularInline):
-    model = PageModerationRequestAction
+class ModerationRequestActionInline(admin.TabularInline):
+    model = ModerationRequestAction
     fields = ['show_user', 'message', 'date_taken', 'form_submission']
     readonly_fields = fields
     verbose_name = _('Action')
@@ -89,11 +89,11 @@ class PageModerationRequestActionInline(admin.TabularInline):
     form_submission.short_description = _('Form Submission')
 
 
-class PageModerationRequestAdmin(admin.ModelAdmin):
-    inlines = [PageModerationRequestActionInline]
-    list_display = ['id', 'page', 'language', 'workflow', 'show_status', 'date_sent']
+class ModerationRequestAdmin(admin.ModelAdmin):
+    inlines = [ModerationRequestActionInline]
+    list_display = ['id', 'language', 'workflow', 'show_status', 'date_sent']
     list_filter = ['language', 'workflow', 'id', 'compliance_number']
-    fields = ['id', 'workflow', 'page', 'language', 'is_active', 'show_status', 'compliance_number']
+    fields = ['id', 'workflow', 'language', 'is_active', 'show_status', 'compliance_number']
     readonly_fields = fields
 
     def has_add_permission(self, request):
@@ -267,8 +267,8 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
 
 
 admin.site._registry[Page] = ExtendedPageAdmin(Page, admin.site)
-admin.site.register(PageModeration, PageModerationAdmin)
-admin.site.register(PageModerationRequest, PageModerationRequestAdmin)
+admin.site.register(Moderation, ModerationAdmin)
+admin.site.register(ModerationRequest, ModerationRequestAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
 

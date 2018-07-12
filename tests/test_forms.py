@@ -48,7 +48,7 @@ class ModerationRequestFormTest(BaseTestCase):
         self.assertTrue(form.is_valid())
         form.save()
         form.workflow.submit_new_request.assert_called_once_with(
-            page=self.pg2,
+            obj=self.pg2,
             by_user=self.user,
             to_user=None,
             language='en',

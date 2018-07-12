@@ -27,7 +27,7 @@ from .helpers import (
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-    PageModerationRequest,
+    ModerationRequest,
 )
 from .utils import get_admin_url
 
@@ -119,7 +119,7 @@ class ModerationRequestView(FormView):
         return kwargs
 
     def get_context_data(self, **kwargs):
-        opts = PageModerationRequest._meta
+        opts = ModerationRequest._meta
         form_submission_opts = ConfirmationFormSubmission._meta
 
         if self.active_request:

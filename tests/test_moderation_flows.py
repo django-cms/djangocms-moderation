@@ -6,8 +6,8 @@ from cms.utils.urlutils import admin_reverse
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import (
-    PageModerationRequest,
-    PageModerationRequestAction,
+    ModerationRequest,
+    ModerationRequestAction,
     Role,
     Workflow,
 )
@@ -77,20 +77,20 @@ class ModerationFlowsTestCase(TestCase):
         5. compliance number is generated
         6. author publishes the page and workflow is done
         """
-        self.assertFalse(PageModerationRequest.objects.exists())
-        self.assertFalse(PageModerationRequestAction.objects.exists())
+        self.assertFalse(ModerationRequest.objects.exists())
+        self.assertFalse(ModerationRequestAction.objects.exists())
 
         # Lets create a new moderation request
         self._new_moderation_request(self.author)
 
-        moderation_request = PageModerationRequest.objects.get()  # It exists
-        action = PageModerationRequestAction.objects.get()
+        moderation_request = ModerationRequest.objects.get()  # It exists
+        action = ModerationRequestAction.objects.get()
         self.assertEqual(action.action, constants.ACTION_STARTED)
 
         response = self._approve_moderation_request(self.moderator_1)
         self.assertEqual(response.status_code, 200)
 
-        second_action = PageModerationRequestAction.objects.last()
+        second_action = ModerationRequestAction.objects.last()
         self.assertTrue(second_action.action, constants.ACTION_APPROVED)
         self.assertTrue(second_action.message, 'Test message - approved')
         # Compliance number is not generated yet
@@ -110,7 +110,7 @@ class ModerationFlowsTestCase(TestCase):
         compliance_number = moderation_request.compliance_number
         self.assertIsNotNone(compliance_number)
 
-        third_action = PageModerationRequestAction.objects.last()
+        third_action = ModerationRequestAction.objects.last()
         self.assertTrue(third_action.action, constants.ACTION_APPROVED)
         self.assertTrue(second_action.message, 'message #2')
 
@@ -122,7 +122,7 @@ class ModerationFlowsTestCase(TestCase):
         moderation_request.refresh_from_db()
         # Moderation request is finished and last action is recorded
         self.assertFalse(moderation_request.is_active)
-        last_action = PageModerationRequestAction.objects.last()
+        last_action = ModerationRequestAction.objects.last()
         self.assertTrue(last_action.action, constants.ACTION_FINISHED)
         self.assertEqual(moderation_request.compliance_number, compliance_number)
 
@@ -136,15 +136,15 @@ class ModerationFlowsTestCase(TestCase):
         5. all is approved by moderator_1 and moderator_2
         6. author cancels the request
         """
-        self.assertFalse(PageModerationRequest.objects.exists())
-        self.assertFalse(PageModerationRequestAction.objects.exists())
+        self.assertFalse(ModerationRequest.objects.exists())
+        self.assertFalse(ModerationRequestAction.objects.exists())
 
         # Lets create a new moderation request
         self._new_moderation_request(self.author)
 
-        moderation_request = PageModerationRequest.objects.get()  # It exists
+        moderation_request = ModerationRequest.objects.get()  # It exists
 
-        action = PageModerationRequestAction.objects.get()
+        action = ModerationRequestAction.objects.get()
         self.assertEqual(action.action, constants.ACTION_STARTED)
 
         # moderator_1 will approve it now
@@ -159,12 +159,12 @@ class ModerationFlowsTestCase(TestCase):
         # Make sure that after the rejection, this moderation request is still active
         self.assertTrue(moderation_request.is_active)
 
-        third_action = PageModerationRequestAction.objects.last()
+        third_action = ModerationRequestAction.objects.last()
         self.assertTrue(third_action.action, constants.ACTION_REJECTED)
         self.assertTrue(third_action.message, 'Please, less swearing')
 
         # Lets check that we now have 2 archived actions. First and second one
-        self.assertEqual(2, PageModerationRequestAction.objects.filter(is_archived=True).count())
+        self.assertEqual(2, ModerationRequestAction.objects.filter(is_archived=True).count())
 
         # Now the original author can make amends and resubmit
         self._resubmit_moderation_request(self.author)
@@ -173,7 +173,7 @@ class ModerationFlowsTestCase(TestCase):
 
         moderation_request.refresh_from_db()
         self.assertTrue(moderation_request.is_active)
-        last_action = PageModerationRequestAction.objects.last()
+        last_action = ModerationRequestAction.objects.last()
         self.assertTrue(last_action.action, constants.ACTION_RESUBMITTED)
 
         self._approve_moderation_request(self.moderator_1)
@@ -185,5 +185,5 @@ class ModerationFlowsTestCase(TestCase):
 
         moderation_request.refresh_from_db()
         self.assertFalse(moderation_request.is_active)
-        last_action = PageModerationRequestAction.objects.last()
+        last_action = ModerationRequestAction.objects.last()
         self.assertTrue(last_action.action, constants.ACTION_CANCELLED)
