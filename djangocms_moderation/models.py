@@ -306,8 +306,21 @@ class Moderation(PageExtension):
         self.workflow_id = oldinstance.workflow_id
 
 
+class ModerationCollection(models.Model):
+    name = models.CharField(verbose_name=_('name'), max_length=128)
+    workflow = models.ForeignKey(
+        to=Workflow,
+        verbose_name=_('workflow'),
+        related_name='moderation_collections',
+    )
+
+
 @python_2_unicode_compatible
 class ModerationRequest(models.Model):
+    collection = models.ForeignKey(
+        to=ModerationCollection,
+        related_name='moderation_requests',
+    )
     content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
@@ -321,11 +334,6 @@ class ModerationRequest(models.Model):
         verbose_name=_('language'),
         max_length=5,
         choices=settings.LANGUAGES,
-    )
-    workflow = models.ForeignKey(
-        to=Workflow,
-        verbose_name=_('workflow'),
-        related_name='requests',
     )
     is_active = models.BooleanField(
         default=False,
@@ -360,6 +368,10 @@ class ModerationRequest(models.Model):
         Author of this request is the user who created the first action
         """
         return self.get_first_action().by_user
+
+    @cached_property
+    def workflow(self):
+        return self.collection.workflow
 
     def has_pending_step(self):
         return self.get_pending_steps().exists()

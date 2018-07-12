@@ -91,9 +91,9 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 class ModerationRequestAdmin(admin.ModelAdmin):
     inlines = [ModerationRequestActionInline]
-    list_display = ['id', 'language', 'workflow', 'show_status', 'date_sent']
-    list_filter = ['language', 'workflow', 'id', 'compliance_number']
-    fields = ['id', 'workflow', 'language', 'is_active', 'show_status', 'compliance_number']
+    list_display = ['id', 'language', 'collection', 'show_status', 'date_sent']
+    list_filter = ['language', 'collection', 'id', 'compliance_number']
+    fields = ['id', 'collection', 'workflow', 'language', 'is_active', 'show_status', 'compliance_number']
     readonly_fields = fields
 
     def has_add_permission(self, request):

@@ -4,7 +4,7 @@ from django.test import TestCase
 from cms.api import create_page
 
 from djangocms_moderation import constants
-from djangocms_moderation.models import ModerationRequest, Role, Workflow
+from djangocms_moderation.models import ModerationRequest, Role, Workflow, ModerationCollection
 
 
 class BaseTestCase(TestCase):
@@ -51,17 +51,21 @@ class BaseTestCase(TestCase):
         cls.wf3st2 = cls.wf3.steps.create(role=cls.role3, is_required=False, order=2,)
 
         # create page moderation requests and actions
+        cls.collection1 = ModerationCollection.objects.create(name='Collection 1', workflow=cls.wf1)
+        cls.collection2 = ModerationCollection.objects.create(name='Collection 2', workflow=cls.wf2)
+        cls.collection3 = ModerationCollection.objects.create(name='Collection 3', workflow=cls.wf3)
+
         cls.moderation_request1 = ModerationRequest.objects.create(
-            content_object=cls.pg1, language='en', workflow=cls.wf1, is_active=True,)
+            content_object=cls.pg1, language='en', collection=cls.collection1, is_active=True,)
         cls.moderation_request1.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
 
         ModerationRequest.objects.create(
-            content_object=cls.pg1, language='en', workflow=cls.wf1, is_active=False,)
+            content_object=cls.pg1, language='en', collection=cls.collection1, is_active=False,)
         ModerationRequest.objects.create(
-            content_object=cls.pg2, language='en', workflow=cls.wf2, is_active=False,)
+            content_object=cls.pg2, language='en', collection=cls.collection2, is_active=False,)
 
         cls.moderation_request2 = ModerationRequest.objects.create(
-            content_object=cls.pg3, language='en', workflow=cls.wf2, is_active=True,)
+            content_object=cls.pg3, language='en', collection=cls.collection2, is_active=True,)
         cls.moderation_request2.actions.create(
             by_user=cls.user, action=constants.ACTION_STARTED,)
         cls.moderation_request2.actions.create(
@@ -70,7 +74,7 @@ class BaseTestCase(TestCase):
             by_user=cls.user, action=constants.ACTION_APPROVED, step_approved=cls.wf2st2,)
 
         cls.moderation_request3 = ModerationRequest.objects.create(
-            content_object=cls.pg4, language='en', workflow=cls.wf3, is_active=True,)
+            content_object=cls.pg4, language='en',  collection=cls.collection3, is_active=True,)
         cls.moderation_request3.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
         cls.moderation_request3.actions.create(
             by_user=cls.user,
@@ -80,7 +84,7 @@ class BaseTestCase(TestCase):
         )
         # This request will be rejected
         cls.moderation_request4 = ModerationRequest.objects.create(
-            content_object=cls.pg5, language='en', workflow=cls.wf3, is_active=True,)
+            content_object=cls.pg5, language='en', collection=cls.collection3, is_active=True,)
         cls.moderation_request4.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
         cls.moderation_request4.actions.create(by_user=cls.user2, action=constants.ACTION_REJECTED)
 
