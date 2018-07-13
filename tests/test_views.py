@@ -9,7 +9,6 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
     ModerationRequestForm,
-    SelectModerationForm,
     UpdateModerationRequestForm,
 )
 from djangocms_moderation.models import (
@@ -217,7 +216,7 @@ class ModerationRequestViewTest(BaseViewTestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.content, b'User is not allowed to update request.')
 
-    @patch('djangocms_moderation.views.get_page_moderation_workflow', return_value=None)
+    @patch('djangocms_moderation.views.get_moderation_workflow', return_value=None)
     def test_throws_error_if_workflow_has_not_been_resolved(self, mock_gpmw):
         response = self.client.get(get_admin_url(
             name='cms_moderation_new_request',
@@ -301,49 +300,6 @@ class ModerationRequestViewTest(BaseViewTestCase):
         form_submissions = response.context_data['form_submissions']
         results = ConfirmationFormSubmission.objects.filter(request=self.moderation_request1)
         self.assertQuerysetEqual(form_submissions, results, transform=lambda x: x, ordered=False)
-
-
-class SelectModerationViewTest(BaseViewTestCase):
-
-    def test_renders_view_with_form(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_select_new_moderation',
-            language='en',
-            args=(self.pg1.pk, 'en')
-        ))
-        view = response.context_data['view']
-        form = response.context_data['adminform']
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template_name[0], 'djangocms_moderation/select_workflow_form.html')
-        self.assertEqual(view.page_id, str(self.pg1.pk))
-        self.assertEqual(view.current_lang, 'en')
-        self.assertIsInstance(form, SelectModerationForm)
-
-    def test_get_form_kwargs(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_select_new_moderation',
-            language='en',
-            args=(self.pg1.pk, 'en')
-        ))
-        view = response.context_data['view']
-        kwargs = view.get_form_kwargs()
-        self.assertEqual(kwargs.get('page'), self.pg1)
-
-    def test_form_valid(self):
-        response = self.client.post(get_admin_url(
-            name='cms_moderation_select_new_moderation',
-            language='en',
-            args=(self.pg1.pk, 'en')
-        ), {'workflow': self.wf2.pk})
-        form_valid_redirect_url = '{}?{}'.format(
-            get_admin_url(
-                name='cms_moderation_new_request',
-                language='en',
-                args=(self.pg1.pk, 'en')
-            ),
-            'workflow={}'.format(self.wf2.pk)
-        )
-        self.assertEqual(response.url, form_valid_redirect_url)
 
 
 class ModerationCommentsViewTest(BaseViewTestCase):

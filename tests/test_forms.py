@@ -6,7 +6,6 @@ from django.forms import HiddenInput
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
     ModerationRequestForm,
-    SelectModerationForm,
     UpdateModerationRequestForm,
 )
 from djangocms_moderation.models import Workflow
@@ -126,18 +125,3 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             to_user=None,
             message='Approved message',
         )
-
-
-class SelectModerationFormTest(BaseTestCase):
-
-    def test_form_init(self):
-        form = SelectModerationForm(page=self.pg1,)
-        self.assertIn('workflow', form.fields)
-        field_workflow = form.fields['workflow']
-        self.assertQuerysetEqual(
-            field_workflow.queryset,
-            Workflow.objects.all(),
-            transform=lambda x: x,
-            ordered=False,
-        )
-        self.assertEqual(field_workflow.initial, self.wf1)

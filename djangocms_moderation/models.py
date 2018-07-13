@@ -268,44 +268,6 @@ class WorkflowStep(models.Model):
         return self.get_next(cache=False, is_required=True)
 
 
-@python_2_unicode_compatible
-class Moderation(PageExtension):
-    ACCESS_CHOICES = (
-        (constants.ACCESS_PAGE, _('Current page')),
-        (constants.ACCESS_CHILDREN, _('Page children (immediate)')),
-        (constants.ACCESS_PAGE_AND_CHILDREN, _('Page and children (immediate)')),
-        (constants.ACCESS_DESCENDANTS, _('Page descendants')),
-        (constants.ACCESS_PAGE_AND_DESCENDANTS, _('Page and descendants')),
-    )
-
-    workflow = models.ForeignKey(
-        to=Workflow,
-        verbose_name=_('workflow'),
-        related_name='+',
-    )
-    grant_on = models.IntegerField(
-        verbose_name=_('grant on'),
-        choices=ACCESS_CHOICES,
-        default=constants.ACCESS_PAGE_AND_DESCENDANTS,
-    )
-    enabled = models.BooleanField(
-        verbose_name=_('enable moderation for page'),
-        default=True,
-    )
-
-    objects = PageModerationManager()
-
-    def __str__(self):
-        return self.extended_object.get_page_title()
-
-    @cached_property
-    def page(self):
-        return self.get_page()
-
-    def copy_relations(self, oldinstance, language):
-        self.workflow_id = oldinstance.workflow_id
-
-
 class ModerationCollection(models.Model):
     name = models.CharField(verbose_name=_('name'), max_length=128)
     workflow = models.ForeignKey(
@@ -329,7 +291,6 @@ class ModerationRequest(models.Model):
     content_object = GenericForeignKey(
         'content_type', 'object_id'
     )
-
     language = models.CharField(
         verbose_name=_('language'),
         max_length=5,
@@ -666,6 +627,3 @@ class ConfirmationFormSubmission(models.Model):
 
     def get_form_data(self):
         return json.loads(self.data)
-
-
-extension_pool.register(Moderation)

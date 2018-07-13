@@ -21,15 +21,11 @@ from .constants import (
 )
 from .forms import WorkflowStepInlineFormSet
 from .helpers import (
-    get_active_moderation_request,
     get_form_submission_for_step,
-    get_page_or_404,
-    is_moderation_enabled,
 )
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-    Moderation,
     ModerationRequest,
     ModerationRequestAction,
     Role,
@@ -45,11 +41,6 @@ try:
     PageAdmin = admin.site._registry[Page].__class__
 except KeyError:
     from cms.admin.pageadmin import PageAdmin
-
-
-class ModerationAdmin(PageExtensionAdmin):
-    list_display = ['workflow', 'grant_on', 'enabled']
-    fields = ['workflow', 'grant_on', 'enabled']
 
 
 class ModerationRequestActionInline(admin.TabularInline):
@@ -177,39 +168,12 @@ class ExtendedPageAdmin(PageAdmin):
                 action=ACTION_APPROVED,
             ),
             _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/select-workflow/$',
-                views.select_new_moderation_request,
-                'select_new_moderation',
-            ),
-            _url(
                 r'^([0-9]+)/([a-z\-]+)/moderation/comments/$',
                 views.moderation_comments,
                 'comments',
             ),
         ]
         return url_patterns + super(ExtendedPageAdmin, self).get_urls()
-
-    def publish_page(self, request, page_id, language):
-        page = get_page_or_404(page_id, language)
-
-        if not is_moderation_enabled(page):
-            return super(ExtendedPageAdmin, self).publish_page(request, page_id, language)
-
-        active_request = get_active_moderation_request(page, language)
-
-        if active_request and active_request.is_approved():
-            # The moderation request has been approved.
-            # Let the user publish the page.
-            return super(ExtendedPageAdmin, self).publish_page(request, page_id, language)
-        elif active_request:
-            message = ugettext('This page is currently undergoing moderation '
-                               'and can\'t be published until all parties have approved it.')
-        else:
-            message = ugettext('You need to submit this page for moderation before publishing.')
-
-        messages.warning(request, message)
-        path = page.get_absolute_url(language, fallback=True)
-        return HttpResponseRedirect(path)
 
 
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
@@ -267,7 +231,6 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
 
 
 admin.site._registry[Page] = ExtendedPageAdmin(Page, admin.site)
-admin.site.register(Moderation, ModerationAdmin)
 admin.site.register(ModerationRequest, ModerationRequestAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
