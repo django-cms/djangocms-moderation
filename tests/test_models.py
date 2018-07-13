@@ -16,7 +16,7 @@ from djangocms_moderation.models import (
     Role,
     Workflow,
     WorkflowStep,
-)
+    ModerationCollection)
 
 from .utils import BaseTestCase
 
@@ -244,20 +244,11 @@ class ModerationRequestTest(BaseTestCase):
         self.assertFalse(self.moderation_request3.user_can_moderate(temp_user))
 
         # check that it doesn't allow access to users that aren't part of this moderation request
-        self.pg5 = create_page(title='Page 5', template='page.html', language='en',)
-        self.user4 = User.objects.create_superuser(username='test4', email='test4@test.com', password='test4',)
-        self.role4 = Role.objects.create(name='Role 4', user=self.user4,)
-        self.wf4 = Workflow.objects.create(pk=4, name='Workflow 4',)
-        self.wf4st1 = self.wf4.steps.create(role=self.role4, is_required=True, order=1,)
-        self.wf4st2 = self.wf4.steps.create(role=self.role1, is_required=False, order=2,)
-        self.moderation_request4 = ModerationRequest.objects.create(
-            content_object=self.pg5, language='en', workflow=self.wf4, is_active=True,)
-        self.moderation_request4.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
-
+        user4 = User.objects.create_superuser(username='test4', email='test4@test.com', password='test4',)
         self.assertTrue(self.moderation_request4.user_can_moderate(self.user))
-        self.assertFalse(self.moderation_request4.user_can_moderate(self.user2))
-        self.assertFalse(self.moderation_request4.user_can_moderate(self.user3))
-        self.assertTrue(self.moderation_request4.user_can_moderate(self.user4))
+        self.assertTrue(self.moderation_request4.user_can_moderate(self.user2))
+        self.assertTrue(self.moderation_request4.user_can_moderate(self.user3))
+        self.assertFalse(self.moderation_request4.user_can_moderate(user4))
 
     @patch('djangocms_moderation.models.notify_request_author')
     @patch('djangocms_moderation.models.notify_requested_moderator')
@@ -376,7 +367,7 @@ class ModerationRequestTest(BaseTestCase):
             content_object=self.pg1,
             language='en',
             is_active=True,
-            workflow=self.wf1,
+            collection=self.collection1,
         )
         self.assertEqual(mock_uuid.call_count, 0)
 
@@ -389,7 +380,7 @@ class ModerationRequestTest(BaseTestCase):
         request = ModerationRequest.objects.create(
             content_object=self.pg1,
             language='en',
-            workflow=self.wf2,
+            collection=self.collection2,
         )
         request.refresh_from_db()
         self.assertIsNone(request.compliance_number)
@@ -408,7 +399,7 @@ class ModerationRequestTest(BaseTestCase):
         request = ModerationRequest.objects.create(
             content_object=self.pg1,
             language='en',
-            workflow=self.wf2,
+            collection=self.collection2,
         )
         request.refresh_from_db()
         self.assertIsNone(request.compliance_number)
@@ -442,7 +433,7 @@ class ModerationRequestActionTest(BaseTestCase):
         new_request = ModerationRequest.objects.create(
             content_object=self.pg2,
             language='en',
-            workflow=self.wf1,
+            collection=self.collection1,
             is_active=True,
         )
         new_action = new_request.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
