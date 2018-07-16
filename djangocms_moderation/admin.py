@@ -1,14 +1,12 @@
 from __future__ import unicode_literals
 
 from django.conf.urls import url
-from django.contrib import admin, messages
+from django.contrib import admin
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
-from cms.extensions import PageExtensionAdmin
 from cms.models import Page
 
 from adminsortable2.admin import SortableInlineAdminMixin
@@ -20,9 +18,7 @@ from .constants import (
     ACTION_RESUBMITTED,
 )
 from .forms import WorkflowStepInlineFormSet
-from .helpers import (
-    get_form_submission_for_step,
-)
+from .helpers import get_form_submission_for_step
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,

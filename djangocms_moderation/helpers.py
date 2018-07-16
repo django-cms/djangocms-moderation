@@ -1,11 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 
 
-from .models import (
-    ConfirmationFormSubmission,
-    ModerationRequest,
-    Workflow,
-)
+from .models import ConfirmationFormSubmission, ModerationRequest, Workflow
 
 
 def get_default_workflow():
