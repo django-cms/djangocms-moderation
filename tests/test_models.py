@@ -1,11 +1,11 @@
 import json
 from mock import patch
+from unittest import skip
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
-from cms.api import create_page
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import (
@@ -16,7 +16,7 @@ from djangocms_moderation.models import (
     Role,
     Workflow,
     WorkflowStep,
-    ModerationCollection)
+)
 
 from .utils import BaseTestCase
 
@@ -64,6 +64,7 @@ class WorkflowTest(BaseTestCase):
     def test_first_step(self):
         self.assertEqual(self.wf1.first_step, self.wf1st1)
 
+    @skip('4.0 rework TBC')
     @patch('djangocms_moderation.models.notify_requested_moderator')
     def test_submit_new_request(self, mock_nrm):
         request = self.wf1.submit_new_request(

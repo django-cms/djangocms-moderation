@@ -36,7 +36,9 @@ def get_active_moderation_request(obj, language):
 
 
 def get_page_or_404(obj_id, language):
-    # TODO is this needed in 4.x?
+    """
+    TODO is this needed in 4.x?
+    """
     content_type = ContentType.objects.get(app_label="cms", model="page")  # how do we get this
 
     return content_type.get_object_for_this_type(

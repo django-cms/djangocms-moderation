@@ -1,3 +1,5 @@
+from unittest import skip
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -67,6 +69,7 @@ class ModerationFlowsTestCase(TestCase):
     def _cancel_moderation_request(self, user, message='Test message - cancel'):
         return self._process_moderation_request(user, 'cancel', message)
 
+    @skip('4.0 rework TBC')
     def test_approve_moderation_workflow(self):
         """
         This case tests the following workflow:
@@ -126,6 +129,7 @@ class ModerationFlowsTestCase(TestCase):
         self.assertTrue(last_action.action, constants.ACTION_FINISHED)
         self.assertEqual(moderation_request.compliance_number, compliance_number)
 
+    @skip('4.0 rework TBC')
     def test_reject_moderation_workflow(self):
         """
         This case tests the following workflow:
