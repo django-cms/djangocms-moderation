@@ -7,6 +7,9 @@ from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 
+from djangocms_moderation import conf
+from djangocms_moderation.constants import ACTION_CHOICES
+
 
 class Migration(migrations.Migration):
 
@@ -39,7 +42,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50, verbose_name='name')),
                 ('content_type', models.CharField(choices=[('plain', 'Plain'), ('form', 'Form')], default='form', max_length=50, verbose_name='Content Type')),
-                ('template', models.CharField(choices=[('djangocms_moderation/moderation_confirmation.html', 'Default')], default='djangocms_moderation/moderation_confirmation.html', max_length=100, verbose_name='Template')),
+                ('template', models.CharField(choices=conf.CONFIRMATION_PAGE_TEMPLATES, default=conf.DEFAULT_CONFIRMATION_PAGE_TEMPLATE, max_length=100, verbose_name='Template')),
                 ('content', cms.models.fields.PlaceholderField(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE, slotname='confirmation_content', to='cms.Placeholder')),
             ],
             options={
@@ -59,7 +62,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('object_id', models.PositiveIntegerField()),
-                ('language', models.CharField(choices=[('en', 'en')], max_length=5, verbose_name='language')),
+                ('language', models.CharField(choices=settings.LANGUAGES, max_length=5, verbose_name='language')),
                 ('is_active', models.BooleanField(db_index=True, default=False)),
                 ('date_sent', models.DateTimeField(auto_now_add=True, verbose_name='date sent')),
                 ('compliance_number', models.CharField(blank=True, editable=False, max_length=32, null=True, unique=True, verbose_name='compliance number')),
@@ -75,7 +78,7 @@ class Migration(migrations.Migration):
             name='ModerationRequestAction',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action', models.CharField(choices=[('resubmitted', 'Resubmitted'), ('start', 'Started'), ('rejected', 'Rejected'), ('approved', 'Approved'), ('cancelled', 'Cancelled'), ('finished', 'Finished')], max_length=30, verbose_name='status')),
+                ('action', models.CharField(choices=ACTION_CHOICES, max_length=30, verbose_name='status')),
                 ('message', models.TextField(blank=True, verbose_name='message')),
                 ('date_taken', models.DateTimeField(auto_now_add=True, verbose_name='date taken')),
                 ('is_archived', models.BooleanField(default=False)),
@@ -110,7 +113,7 @@ class Migration(migrations.Migration):
                 ('is_default', models.BooleanField(default=False, verbose_name='is default')),
                 ('identifier', models.CharField(blank=True, default='', help_text="Identifier is a 'free' field you could use for internal purposes. For example, it could be used as a workflow specific prefix of a compliance number", max_length=128, verbose_name='identifier')),
                 ('requires_compliance_number', models.BooleanField(default=False, help_text='Does the Compliance number need to be generated before the moderation request is approved? Please select the compliance number backend below', verbose_name='requires compliance number?')),
-                ('compliance_number_backend', models.CharField(choices=[('djangocms_moderation.backends.uuid4_backend', 'Unique alpha-numeric string'), ('djangocms_moderation.backends.sequential_number_backend', 'Sequential number'), ('djangocms_moderation.backends.sequential_number_with_identifier_prefix_backend', 'Sequential number with identifier prefix')], default='djangocms_moderation.backends.uuid4_backend', max_length=255, verbose_name='compliance number backend')),
+                ('compliance_number_backend', models.CharField(choices=conf.COMPLIANCE_NUMBER_BACKENDS, default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND, max_length=255, verbose_name='compliance number backend')),
             ],
             options={
                 'verbose_name': 'Workflow',
