@@ -3,13 +3,17 @@ from mock import patch
 from unittest import skip
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+
+from cms.api import create_page
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
+    ModerationCollection,
     ModerationRequest,
     ModerationRequestAction,
     Role,
@@ -501,3 +505,57 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
             confirmation_page=self.cp,
         )
         self.assertEqual(cfs.get_by_user_name(), self.user.username)
+
+
+class ModerationCollectionTest(BaseTestCase):
+    def test_add_and_remove_from_collection(self):
+        def _moderation_requests_count(obj, collection=None):
+            """
+            Does the object exists in the Moderation request for a give collection
+            :return: <bool>
+            """
+            content_type = ContentType.objects.get_for_model(obj)
+            quertyset = ModerationRequest.objects.filter(
+                content_type=content_type,
+                object_id=obj.pk,
+            )
+            if collection:
+                quertyset = quertyset.filter(collection=collection)
+            return quertyset.count()
+
+        my_collection = ModerationCollection.objects.create(
+            author=self.user, name='My collection', workflow=self.wf1
+        )
+        my_collection2 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 2', workflow=self.wf1
+        )
+
+        my_page = create_page(title='My page', template='page.html', language='en',)
+        my_page2 = create_page(title='My page 2', template='page.html', language='en',)
+        my_page3 = create_page(title='My page 3', template='page.html', language='en',)
+
+        self.assertEqual(0, _moderation_requests_count(my_page))
+        self.assertIsNotNone(my_collection.add_object(my_page))
+        self.assertEqual(1, _moderation_requests_count(my_page))
+        # Adding the same object to the same collection is fine, it is already
+        # there so it won't be added again
+        self.assertIsNotNone(my_collection.add_object(my_page))
+        self.assertEqual(1, _moderation_requests_count(my_page, my_collection))
+
+        # This should not work as the item is already in my_collection
+        self.assertIsNone(my_collection2.add_object(my_page))
+        # But we can add pg2 to the my_collection as it is not there yet
+        self.assertEqual(0, _moderation_requests_count(my_page2))
+        self.assertIsNotNone(my_collection.add_object(my_page2))
+        self.assertEqual(1, _moderation_requests_count(my_page2, my_collection))
+        self.assertEqual(1, _moderation_requests_count(my_page, my_collection))
+
+        # pg3 has never been part of my_collection
+        self.assertEqual(0, _moderation_requests_count(my_page3, my_collection))
+        self.assertFalse(my_collection.remove_object(my_page3))
+        self.assertTrue(my_collection.remove_object(my_page))
+        self.assertEqual(0, _moderation_requests_count(my_page, my_collection))
+        self.assertEqual(0, _moderation_requests_count(my_page))
+
+        # Second removal is False as the item doesn't exist in the collection
+        self.assertFalse(my_collection.remove_object(my_page))
