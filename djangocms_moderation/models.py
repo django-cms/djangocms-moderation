@@ -282,15 +282,14 @@ class ModerationRequest(models.Model):
     collection = models.ForeignKey(
         to=ModerationCollection,
         related_name='moderation_requests',
+        on_delete=models.CASCADE
     )
     content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
     )
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey(
-        'content_type', 'object_id'
-    )
+    content_object = GenericForeignKey('content_type', 'object_id')
     language = models.CharField(
         verbose_name=_('language'),
         max_length=5,
