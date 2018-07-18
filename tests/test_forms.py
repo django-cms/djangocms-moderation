@@ -8,6 +8,7 @@ from djangocms_moderation.forms import (
     ModerationRequestForm,
     UpdateModerationRequestForm,
 )
+
 from .utils import BaseTestCase
 
 
