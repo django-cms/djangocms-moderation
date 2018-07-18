@@ -14,12 +14,9 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-from cms.extensions import PageExtension
-from cms.extensions.extension_pool import extension_pool
 from cms.models.fields import PlaceholderField
 
 from .emails import notify_request_author, notify_requested_moderator
-from .managers import PageModerationManager
 from .utils import generate_compliance_number
 
 

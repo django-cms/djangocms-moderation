@@ -13,10 +13,8 @@ from django.views.generic import FormView, ListView
 
 from cms.utils.urlutils import add_url_parameters
 
-from .forms import (
-    ModerationRequestForm,
-    UpdateModerationRequestForm,
-)
+from .forms import ModerationRequestForm, UpdateModerationRequestForm
+
 from .helpers import (
     get_active_moderation_request,
     get_moderation_workflow,

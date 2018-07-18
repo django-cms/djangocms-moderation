@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
-
 from djangocms_moderation import constants
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,

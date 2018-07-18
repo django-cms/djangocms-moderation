@@ -4,7 +4,12 @@ from django.test import TestCase
 from cms.api import create_page
 
 from djangocms_moderation import constants
-from djangocms_moderation.models import ModerationRequest, Role, Workflow, ModerationCollection
+from djangocms_moderation.models import (
+    ModerationCollection,
+    ModerationRequest,
+    Role,
+    Workflow,
+)
 
 
 class BaseTestCase(TestCase):
