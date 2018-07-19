@@ -511,51 +511,58 @@ class ModerationCollectionTest(BaseTestCase):
     def test_add_and_remove_from_collection(self):
         def _moderation_requests_count(obj, collection=None):
             """
-            Does the object exists in the Moderation request for a give collection
+            How many moderation requests are there [for a given collection]
             :return: <bool>
             """
             content_type = ContentType.objects.get_for_model(obj)
-            quertyset = ModerationRequest.objects.filter(
+            queryset = ModerationRequest.objects.filter(
                 content_type=content_type,
                 object_id=obj.pk,
             )
             if collection:
-                quertyset = quertyset.filter(collection=collection)
-            return quertyset.count()
+                queryset = queryset.filter(collection=collection)
+            return queryset.count()
 
-        my_collection = ModerationCollection.objects.create(
-            author=self.user, name='My collection', workflow=self.wf1
+        collection1 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
         )
-        my_collection2 = ModerationCollection.objects.create(
+        collection2 = ModerationCollection.objects.create(
             author=self.user, name='My collection 2', workflow=self.wf1
         )
 
-        my_page = create_page(title='My page', template='page.html', language='en',)
-        my_page2 = create_page(title='My page 2', template='page.html', language='en',)
-        my_page3 = create_page(title='My page 3', template='page.html', language='en',)
+        page1 = create_page(title='My page 1', template='page.html', language='en',)
+        page2 = create_page(title='My page 2', template='page.html', language='en',)
+        page3 = create_page(title='My page 3', template='page.html', language='en',)
 
-        self.assertEqual(0, _moderation_requests_count(my_page))
-        self.assertIsNotNone(my_collection.add_object(my_page))
-        self.assertEqual(1, _moderation_requests_count(my_page))
+        self.assertEqual(0, _moderation_requests_count(page1))
+        # Add `page1` to `collection1`
+        self.assertIsNotNone(collection1.add_object(page1))
+        self.assertEqual(1, _moderation_requests_count(page1))
+        self.assertEqual(1, _moderation_requests_count(page1, collection1))
+
         # Adding the same object to the same collection is fine, it is already
         # there so it won't be added again
-        self.assertIsNotNone(my_collection.add_object(my_page))
-        self.assertEqual(1, _moderation_requests_count(my_page, my_collection))
+        self.assertIsNotNone(collection1.add_object(page1))
+        self.assertEqual(1, _moderation_requests_count(page1, collection1))
+        self.assertEqual(1, _moderation_requests_count(page1))
 
-        # This should not work as the item is already in my_collection
-        self.assertIsNone(my_collection2.add_object(my_page))
-        # But we can add pg2 to the my_collection as it is not there yet
-        self.assertEqual(0, _moderation_requests_count(my_page2))
-        self.assertIsNotNone(my_collection.add_object(my_page2))
-        self.assertEqual(1, _moderation_requests_count(my_page2, my_collection))
-        self.assertEqual(1, _moderation_requests_count(my_page, my_collection))
+        # This should not work as `page1` is already part of `collection1`
+        self.assertIsNone(collection2.add_object(page1))
+        # But we can add `page2` to the `collection1` as it is not there yet
+        self.assertEqual(0, _moderation_requests_count(page2))
+        self.assertIsNotNone(collection1.add_object(page2))
+        self.assertEqual(1, _moderation_requests_count(page2))
+        self.assertEqual(1, _moderation_requests_count(page2, collection1))
+        self.assertEqual(1, _moderation_requests_count(page1, collection1))
 
-        # pg3 has never been part of my_collection
-        self.assertEqual(0, _moderation_requests_count(my_page3, my_collection))
-        self.assertFalse(my_collection.remove_object(my_page3))
-        self.assertTrue(my_collection.remove_object(my_page))
-        self.assertEqual(0, _moderation_requests_count(my_page, my_collection))
-        self.assertEqual(0, _moderation_requests_count(my_page))
+        # `page3` has never been part of `collection1`
+        self.assertEqual(0, _moderation_requests_count(page3, collection1))
+        # So we are not able to remove it
+        self.assertFalse(collection1.remove_object(page3))
+        # But we can remove `page1` from `collection1`
+        self.assertTrue(collection1.remove_object(page1))
+        self.assertEqual(0, _moderation_requests_count(page1, collection1))
+        self.assertEqual(0, _moderation_requests_count(page1))
 
-        # Second removal is False as the item doesn't exist in the collection
-        self.assertFalse(my_collection.remove_object(my_page))
+        # Second removal fails as the `page` is not part of `collection1` anymore
+        self.assertFalse(collection1.remove_object(page1))
