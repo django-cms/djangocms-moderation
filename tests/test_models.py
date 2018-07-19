@@ -10,6 +10,7 @@ from django.core.urlresolvers import reverse
 from cms.api import create_page
 
 from djangocms_moderation import constants
+from djangocms_moderation.exceptions import ObjectAlreadyInCollection, ObjectNotInCollection
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
@@ -536,21 +537,22 @@ class ModerationCollectionTest(BaseTestCase):
 
         self.assertEqual(0, _moderation_requests_count(page1))
         # Add `page1` to `collection1`
-        self.assertIsNotNone(collection1.add_object(page1))
+        collection1.add_object(page1)
         self.assertEqual(1, _moderation_requests_count(page1))
         self.assertEqual(1, _moderation_requests_count(page1, collection1))
 
         # Adding the same object to the same collection is fine, it is already
         # there so it won't be added again
-        self.assertIsNotNone(collection1.add_object(page1))
+        collection1.add_object(page1)
         self.assertEqual(1, _moderation_requests_count(page1, collection1))
         self.assertEqual(1, _moderation_requests_count(page1))
 
         # This should not work as `page1` is already part of `collection1`
-        self.assertIsNone(collection2.add_object(page1))
+        with self.assertRaises(ObjectAlreadyInCollection):
+            collection2.add_object(page1)
         # But we can add `page2` to the `collection1` as it is not there yet
         self.assertEqual(0, _moderation_requests_count(page2))
-        self.assertIsNotNone(collection1.add_object(page2))
+        collection1.add_object(page2)
         self.assertEqual(1, _moderation_requests_count(page2))
         self.assertEqual(1, _moderation_requests_count(page2, collection1))
         self.assertEqual(1, _moderation_requests_count(page1, collection1))
@@ -558,11 +560,13 @@ class ModerationCollectionTest(BaseTestCase):
         # `page3` has never been part of `collection1`
         self.assertEqual(0, _moderation_requests_count(page3, collection1))
         # So we are not able to remove it
-        self.assertFalse(collection1.remove_object(page3))
+        with self.assertRaises(ObjectNotInCollection):
+            collection1.remove_object(page3)
         # But we can remove `page1` from `collection1`
-        self.assertTrue(collection1.remove_object(page1))
+        collection1.remove_object(page1)
         self.assertEqual(0, _moderation_requests_count(page1, collection1))
         self.assertEqual(0, _moderation_requests_count(page1))
 
         # Second removal fails as the `page` is not part of `collection1` anymore
-        self.assertFalse(collection1.remove_object(page1))
+        with self.assertRaises(ObjectNotInCollection):
+            collection1.remove_object(page1)

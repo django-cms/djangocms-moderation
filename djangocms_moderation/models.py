@@ -16,6 +16,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.models.fields import PlaceholderField
 
+from djangocms_moderation.exceptions import ObjectAlreadyInCollection, ObjectNotInCollection
 from .emails import notify_request_author, notify_requested_moderator
 from .utils import generate_compliance_number
 
@@ -299,7 +300,7 @@ class ModerationCollection(models.Model):
                 object_id=obj.pk,
                 collection=self,
             )
-        return None
+        raise ObjectAlreadyInCollection("{} is already part of another collection".format(obj))
 
     def remove_object(self, obj):
         """
@@ -316,7 +317,7 @@ class ModerationCollection(models.Model):
             )
         except ModerationRequest.DoesNotExist:
             # Nothing to remove
-            return False
+            raise ObjectNotInCollection("{} is not part of this collection".format(obj))
 
         moderation_request.delete()
         return True
