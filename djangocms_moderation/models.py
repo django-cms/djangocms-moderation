@@ -272,6 +272,8 @@ class ModerationCollection(models.Model):
         verbose_name=_('workflow'),
         related_name='moderation_collections',
     )
+    # TODO: proper implementations and handlers coming later for is_locked
+    is_locked = models.BooleanField(verbose_name=_('is locked'), default=False)
 
 
 @python_2_unicode_compatible

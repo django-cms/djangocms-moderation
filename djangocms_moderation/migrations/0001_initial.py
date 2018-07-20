@@ -55,6 +55,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=128, verbose_name='name')),
+                ('is_locked', models.BooleanField(default=False, verbose_name='is locked')),
             ],
         ),
         migrations.CreateModel(
