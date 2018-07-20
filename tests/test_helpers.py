@@ -10,7 +10,7 @@ from djangocms_moderation.models import (
     ConfirmationPage,
 )
 
-from .utils import BaseTestCase
+from .utils.base import BaseTestCase
 
 
 class GetCurrentModerationRequestTest(BaseTestCase):
