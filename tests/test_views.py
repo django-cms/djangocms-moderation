@@ -18,7 +18,7 @@ from djangocms_moderation.models import (
 )
 from djangocms_moderation.utils import get_admin_url
 
-from .utils import BaseViewTestCase
+from .utils.base import BaseViewTestCase
 
 
 class ModerationRequestViewTest(BaseViewTestCase):

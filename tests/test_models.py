@@ -17,7 +17,7 @@ from djangocms_moderation.models import (
     WorkflowStep,
 )
 
-from .utils import BaseTestCase
+from .utils.base import BaseTestCase
 
 
 class RoleTest(BaseTestCase):
