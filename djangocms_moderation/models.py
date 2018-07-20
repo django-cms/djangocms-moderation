@@ -280,47 +280,30 @@ class ModerationCollection(models.Model):
         related_name='moderation_collections',
     )
 
-    def add_object(self, obj):
+    def create_moderation_request_from_content_object(self, content_object):
         """
         Add object to the ModerationRequest in this collection.
         :return: <ModerationRequest|None>
         """
-        content_type = ContentType.objects.get_for_model(obj)
+        content_type = ContentType.objects.get_for_model(content_object)
         # Object can ever be part of only one collection
         # TODO: collection will have a "status", so we know when the collection
         # is active or cancelled etc..
         existing_request_exists = ModerationRequest.objects.filter(
             content_type=content_type,
-            object_id=obj.pk,
+            object_id=content_object.pk,
         ).exclude(collection=self).exists()
 
         if not existing_request_exists:
             return ModerationRequest.objects.get_or_create(
                 content_type=content_type,
-                object_id=obj.pk,
+                object_id=content_object.pk,
                 collection=self,
             )
-        raise ObjectAlreadyInCollection("{} is already part of another collection".format(obj))
-
-    def remove_object(self, obj):
-        """
-        Removing the object from the collection basically means deleting the
-        moderation request associated with this collection.
-        :return: <bool>
-        """
-        try:
-            content_type = ContentType.objects.get_for_model(obj)
-            moderation_request = ModerationRequest.objects.get(
-                content_type=content_type,
-                object_id=obj.pk,
-                collection=self
-            )
-        except ModerationRequest.DoesNotExist:
-            # Nothing to remove
-            raise ObjectNotInCollection("{} is not part of this collection".format(obj))
-
-        moderation_request.delete()
-        return True
+        raise ObjectAlreadyInCollection(
+            "{} is already part of existing moderation request which is part "
+            "of another active collection".format(content_object)
+        )
 
 
 @python_2_unicode_compatible

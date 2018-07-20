@@ -509,7 +509,7 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
 
 
 class ModerationCollectionTest(BaseTestCase):
-    def test_add_and_remove_from_collection(self):
+    def test_create_moderation_request_from_content_object(self):
         def _moderation_requests_count(obj, collection=None):
             """
             How many moderation requests are there [for a given collection]
@@ -533,40 +533,25 @@ class ModerationCollectionTest(BaseTestCase):
 
         page1 = create_page(title='My page 1', template='page.html', language='en',)
         page2 = create_page(title='My page 2', template='page.html', language='en',)
-        page3 = create_page(title='My page 3', template='page.html', language='en',)
 
         self.assertEqual(0, _moderation_requests_count(page1))
         # Add `page1` to `collection1`
-        collection1.add_object(page1)
+        collection1.create_moderation_request_from_content_object(page1)
         self.assertEqual(1, _moderation_requests_count(page1))
         self.assertEqual(1, _moderation_requests_count(page1, collection1))
 
         # Adding the same object to the same collection is fine, it is already
         # there so it won't be added again
-        collection1.add_object(page1)
+        collection1.create_moderation_request_from_content_object(page1)
         self.assertEqual(1, _moderation_requests_count(page1, collection1))
         self.assertEqual(1, _moderation_requests_count(page1))
 
         # This should not work as `page1` is already part of `collection1`
         with self.assertRaises(ObjectAlreadyInCollection):
-            collection2.add_object(page1)
+            collection2.create_moderation_request_from_content_object(page1)
         # But we can add `page2` to the `collection1` as it is not there yet
         self.assertEqual(0, _moderation_requests_count(page2))
-        collection1.add_object(page2)
+        collection1.create_moderation_request_from_content_object(page2)
         self.assertEqual(1, _moderation_requests_count(page2))
         self.assertEqual(1, _moderation_requests_count(page2, collection1))
         self.assertEqual(1, _moderation_requests_count(page1, collection1))
-
-        # `page3` has never been part of `collection1`
-        self.assertEqual(0, _moderation_requests_count(page3, collection1))
-        # So we are not able to remove it
-        with self.assertRaises(ObjectNotInCollection):
-            collection1.remove_object(page3)
-        # But we can remove `page1` from `collection1`
-        collection1.remove_object(page1)
-        self.assertEqual(0, _moderation_requests_count(page1, collection1))
-        self.assertEqual(0, _moderation_requests_count(page1))
-
-        # Second removal fails as the `page` is not part of `collection1` anymore
-        with self.assertRaises(ObjectNotInCollection):
-            collection1.remove_object(page1)
