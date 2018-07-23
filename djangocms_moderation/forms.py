@@ -8,8 +8,6 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from adminsortable2.admin import CustomInlineFormSet
 
 from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
-from .helpers import get_page_moderation_workflow
-from .models import Workflow
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
@@ -75,7 +73,7 @@ class ModerationRequestForm(forms.Form):
 
     def save(self):
         self.workflow.submit_new_request(
-            page=self.page,
+            obj=self.page,
             by_user=self.user,
             to_user=self.cleaned_data.get('moderator'),
             language=self.language,
@@ -118,18 +116,3 @@ class UpdateModerationRequestForm(ModerationRequestForm):
             to_user=self.cleaned_data.get('moderator'),
             message=self.cleaned_data['message'],
         )
-
-
-class SelectModerationForm(forms.Form):
-    required_css_class = 'required'
-
-    workflow = forms.ModelChoiceField(
-        label=_('workflow to trigger'),
-        queryset=Workflow.objects.all(),
-        required=True,
-    )
-
-    def __init__(self, *args, **kwargs):
-        page = kwargs.pop('page')
-        super(SelectModerationForm, self).__init__(*args, **kwargs)
-        self.fields['workflow'].initial = get_page_moderation_workflow(page)
