@@ -12,6 +12,17 @@ from djangocms_moderation.models import (
 
 from .utils.base import BaseTestCase
 
+class GetWorkflowOrNoneTest(BaseTestCase):
+
+    def test_existing_workflow(self):
+        workflow = Workflow.objects.get(pk=1)
+        self.assertEqual(get_workflow_or_none(1), workflow)
+        workflow = Workflow.objects.get(pk=2)
+        self.assertEqual(get_workflow_or_none(2), workflow)
+
+    def test_non_existing_workflow(self):
+        self.assertIsNone(get_workflow_or_none(10))
+
 
 class GetCurrentModerationRequestTest(BaseTestCase):
 
