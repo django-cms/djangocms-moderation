@@ -1,24 +1,28 @@
 import json
 from mock import patch
+from unittest import skip
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
 from cms.api import create_page
 
 from djangocms_moderation import constants
+from djangocms_moderation.exceptions import ObjectAlreadyInCollection, ObjectNotInCollection
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-    PageModerationRequest,
-    PageModerationRequestAction,
+    ModerationCollection,
+    ModerationRequest,
+    ModerationRequestAction,
     Role,
     Workflow,
     WorkflowStep,
 )
 
-from .utils import BaseTestCase
+from .utils.base import BaseTestCase
 
 
 class RoleTest(BaseTestCase):
@@ -64,17 +68,18 @@ class WorkflowTest(BaseTestCase):
     def test_first_step(self):
         self.assertEqual(self.wf1.first_step, self.wf1st1)
 
+    @skip('4.0 rework TBC')
     @patch('djangocms_moderation.models.notify_requested_moderator')
     def test_submit_new_request(self, mock_nrm):
         request = self.wf1.submit_new_request(
             by_user=self.user,
-            page=self.pg3,
+            obj=self.pg3,
             language='en',
             message='Some message',
         )
         self.assertQuerysetEqual(
             request.actions.all(),
-            PageModerationRequestAction.objects.filter(request=request),
+            ModerationRequestAction.objects.filter(request=request),
             transform=lambda x: x,
             ordered=False,
         )
@@ -94,7 +99,7 @@ class WorkflowStepTest(BaseTestCase):
         self.assertIsNone(self.wf1st3.get_next_required())
 
 
-class PageModerationRequestTest(BaseTestCase):
+class ModerationRequestTest(BaseTestCase):
 
     def test_has_pending_step(self):
         self.assertTrue(self.moderation_request1.has_pending_step())
@@ -244,20 +249,11 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertFalse(self.moderation_request3.user_can_moderate(temp_user))
 
         # check that it doesn't allow access to users that aren't part of this moderation request
-        self.pg5 = create_page(title='Page 5', template='page.html', language='en',)
-        self.user4 = User.objects.create_superuser(username='test4', email='test4@test.com', password='test4',)
-        self.role4 = Role.objects.create(name='Role 4', user=self.user4,)
-        self.wf4 = Workflow.objects.create(pk=4, name='Workflow 4',)
-        self.wf4st1 = self.wf4.steps.create(role=self.role4, is_required=True, order=1,)
-        self.wf4st2 = self.wf4.steps.create(role=self.role1, is_required=False, order=2,)
-        self.moderation_request4 = PageModerationRequest.objects.create(
-            page=self.pg5, language='en', workflow=self.wf4, is_active=True,)
-        self.moderation_request4.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
-
+        user4 = User.objects.create_superuser(username='test4', email='test4@test.com', password='test4',)
         self.assertTrue(self.moderation_request4.user_can_moderate(self.user))
-        self.assertFalse(self.moderation_request4.user_can_moderate(self.user2))
-        self.assertFalse(self.moderation_request4.user_can_moderate(self.user3))
-        self.assertTrue(self.moderation_request4.user_can_moderate(self.user4))
+        self.assertTrue(self.moderation_request4.user_can_moderate(self.user2))
+        self.assertTrue(self.moderation_request4.user_can_moderate(self.user3))
+        self.assertFalse(self.moderation_request4.user_can_moderate(user4))
 
     @patch('djangocms_moderation.models.notify_request_author')
     @patch('djangocms_moderation.models.notify_requested_moderator')
@@ -372,11 +368,11 @@ class PageModerationRequestTest(BaseTestCase):
     def test_compliance_number(self, mock_uuid):
         mock_uuid.return_value = 'abc123'
 
-        request = PageModerationRequest.objects.create(
-            page=self.pg1,
+        request = ModerationRequest.objects.create(
+            content_object=self.pg1,
             language='en',
             is_active=True,
-            workflow=self.wf1,
+            collection=self.collection1,
         )
         self.assertEqual(mock_uuid.call_count, 0)
 
@@ -386,10 +382,10 @@ class PageModerationRequestTest(BaseTestCase):
 
     def test_compliance_number_sequential_number_backend(self):
         self.wf2.compliance_number_backend = 'djangocms_moderation.backends.sequential_number_backend'
-        request = PageModerationRequest.objects.create(
-            page=self.pg1,
+        request = ModerationRequest.objects.create(
+            content_object=self.pg1,
             language='en',
-            workflow=self.wf2,
+            collection=self.collection2,
         )
         request.refresh_from_db()
         self.assertIsNone(request.compliance_number)
@@ -405,10 +401,10 @@ class PageModerationRequestTest(BaseTestCase):
         )
         self.wf2.identifier = 'SSO'
 
-        request = PageModerationRequest.objects.create(
-            page=self.pg1,
+        request = ModerationRequest.objects.create(
+            content_object=self.pg1,
             language='en',
-            workflow=self.wf2,
+            collection=self.collection2,
         )
         request.refresh_from_db()
         self.assertIsNone(request.compliance_number)
@@ -419,7 +415,7 @@ class PageModerationRequestTest(BaseTestCase):
         self.assertEqual(request.compliance_number, expected)
 
 
-class PageModerationRequestActionTest(BaseTestCase):
+class ModerationRequestActionTest(BaseTestCase):
 
     def test_get_by_user_name(self):
         action = self.moderation_request3.actions.last()
@@ -439,10 +435,10 @@ class PageModerationRequestActionTest(BaseTestCase):
         self.assertEqual(new_action.to_role, self.role2)
 
     def test_save_when_to_user_not_passed_and_action_started(self):
-        new_request = PageModerationRequest.objects.create(
-            page=self.pg2,
+        new_request = ModerationRequest.objects.create(
+            content_object=self.pg2,
             language='en',
-            workflow=self.wf1,
+            collection=self.collection1,
             is_active=True,
         )
         new_action = new_request.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
@@ -510,3 +506,52 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
             confirmation_page=self.cp,
         )
         self.assertEqual(cfs.get_by_user_name(), self.user.username)
+
+
+class ModerationCollectionTest(BaseTestCase):
+    def test_create_moderation_request_from_content_object(self):
+        def _moderation_requests_count(obj, collection=None):
+            """
+            How many moderation requests are there [for a given collection]
+            :return: <bool>
+            """
+            content_type = ContentType.objects.get_for_model(obj)
+            queryset = ModerationRequest.objects.filter(
+                content_type=content_type,
+                object_id=obj.pk,
+            )
+            if collection:
+                queryset = queryset.filter(collection=collection)
+            return queryset.count()
+
+        collection1 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        collection2 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 2', workflow=self.wf1
+        )
+
+        page1 = create_page(title='My page 1', template='page.html', language='en',)
+        page2 = create_page(title='My page 2', template='page.html', language='en',)
+
+        self.assertEqual(0, _moderation_requests_count(page1))
+        # Add `page1` to `collection1`
+        collection1.create_moderation_request_from_content_object(page1)
+        self.assertEqual(1, _moderation_requests_count(page1))
+        self.assertEqual(1, _moderation_requests_count(page1, collection1))
+
+        # Adding the same object to the same collection is fine, it is already
+        # there so it won't be added again
+        collection1.create_moderation_request_from_content_object(page1)
+        self.assertEqual(1, _moderation_requests_count(page1, collection1))
+        self.assertEqual(1, _moderation_requests_count(page1))
+
+        # This should not work as `page1` is already part of `collection1`
+        with self.assertRaises(ObjectAlreadyInCollection):
+            collection2.create_moderation_request_from_content_object(page1)
+        # But we can add `page2` to the `collection1` as it is not there yet
+        self.assertEqual(0, _moderation_requests_count(page2))
+        collection1.create_moderation_request_from_content_object(page2)
+        self.assertEqual(1, _moderation_requests_count(page2))
+        self.assertEqual(1, _moderation_requests_count(page2, collection1))
+        self.assertEqual(1, _moderation_requests_count(page1, collection1))

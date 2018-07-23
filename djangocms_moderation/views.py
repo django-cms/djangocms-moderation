@@ -13,21 +13,16 @@ from django.views.generic import FormView, ListView
 
 from cms.utils.urlutils import add_url_parameters
 
-from .forms import (
-    ModerationRequestForm,
-    SelectModerationForm,
-    UpdateModerationRequestForm,
-)
+from .forms import ModerationRequestForm, UpdateModerationRequestForm
 from .helpers import (
     get_active_moderation_request,
-    get_page_moderation_workflow,
+    get_moderation_workflow,
     get_page_or_404,
-    get_workflow_or_none,
 )
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-    PageModerationRequest,
+    ModerationRequest,
 )
 from .utils import get_admin_url
 
@@ -93,10 +88,8 @@ class ModerationRequestView(FormView):
         elif self.action != constants.ACTION_STARTED:
             # All except for the new request endpoint require an active moderation request
             return HttpResponseBadRequest('Page does not have an active moderation request.')
-        elif request.GET.get('workflow'):
-            self.workflow = get_workflow_or_none(request.GET.get('workflow'))
         else:
-            self.workflow = get_page_moderation_workflow(self.page)
+            self.workflow = get_moderation_workflow()
 
         if not self.workflow:
             return HttpResponseBadRequest('No moderation workflow exists for page.')
@@ -119,7 +112,7 @@ class ModerationRequestView(FormView):
         return kwargs
 
     def get_context_data(self, **kwargs):
-        opts = PageModerationRequest._meta
+        opts = ModerationRequest._meta
         form_submission_opts = ConfirmationFormSubmission._meta
 
         if self.active_request:
@@ -176,47 +169,6 @@ resubmit_moderation_request = ModerationRequestView.as_view(
     form_class=UpdateModerationRequestForm,
     success_message=_('The request has been re-submitted.'),
 )
-
-
-class SelectModerationView(FormView):
-
-    form_class = SelectModerationForm
-    template_name = 'djangocms_moderation/select_workflow_form.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        self.page_id = args[0]
-        self.current_lang = args[1]
-        return super(SelectModerationView, self).dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super(SelectModerationView, self).get_context_data(**kwargs)
-        context.update({
-            'has_change_permission': True,
-            'root_path': reverse('admin:index'),
-            'adminform': context['form'],
-            'is_popup': True,
-        })
-        return context
-
-    def get_form_kwargs(self):
-        kwargs = super(SelectModerationView, self).get_form_kwargs()
-        kwargs['page'] = get_page_or_404(self.page_id, self.current_lang)
-        return kwargs
-
-    def form_valid(self, form):
-        selected_workflow = form.cleaned_data['workflow']
-        redirect_url = add_url_parameters(
-            get_admin_url(
-                name='cms_moderation_new_request',
-                language=self.current_lang,
-                args=(self.page_id, self.current_lang),
-            ),
-            workflow=selected_workflow.pk
-        )
-        return HttpResponseRedirect(redirect_url)
-
-
-select_new_moderation_request = SelectModerationView.as_view()
 
 
 class ModerationCommentsView(ListView):
