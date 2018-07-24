@@ -274,6 +274,8 @@ class ModerationCollection(models.Model):
     )
     # TODO: proper implementations and handlers coming later for is_locked
     is_locked = models.BooleanField(verbose_name=_('is locked'), default=False)
+    date_created = models.DateTimeField(auto_created=True, editable=False)
+    date_modified = models.DateTimeField(auto_now=True, editable=False)
 
 
 @python_2_unicode_compatible
