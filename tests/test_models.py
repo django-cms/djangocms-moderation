@@ -1,4 +1,6 @@
 import json
+
+from cms.api import create_page
 from mock import patch
 from unittest import skip
 
@@ -7,10 +9,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
-from cms.api import create_page
-
 from djangocms_moderation import constants
-from djangocms_moderation.exceptions import ObjectAlreadyInCollection, ObjectNotInCollection
+from djangocms_moderation.exceptions import ObjectAlreadyInCollection
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,

@@ -16,7 +16,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.models.fields import PlaceholderField
 
-from djangocms_moderation.exceptions import ObjectAlreadyInCollection, ObjectNotInCollection
+from djangocms_moderation.exceptions import ObjectAlreadyInCollection
 from .emails import notify_request_author, notify_requested_moderator
 from .utils import generate_compliance_number
 
@@ -279,6 +279,8 @@ class ModerationCollection(models.Model):
         verbose_name=_('workflow'),
         related_name='moderation_collections',
     )
+    # TODO: proper implementations and handlers coming later for is_locked
+    is_locked = models.BooleanField(verbose_name=_('is locked'), default=False)
 
     def create_moderation_request_from_content_object(self, content_object):
         """
