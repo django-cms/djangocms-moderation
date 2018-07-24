@@ -1,5 +1,4 @@
 import json
-
 from mock import patch
 from unittest import skip
 
@@ -11,7 +10,10 @@ from django.core.urlresolvers import reverse
 from cms.api import create_page
 
 from djangocms_moderation import constants
-from djangocms_moderation.exceptions import ObjectAlreadyInCollection, CollectionIsLocked
+from djangocms_moderation.exceptions import (
+    ObjectAlreadyInCollection,
+    CollectionIsLocked,
+)
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
