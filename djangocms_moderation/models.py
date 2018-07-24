@@ -17,8 +17,8 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.models.fields import PlaceholderField
 
 from djangocms_moderation.exceptions import (
-    ObjectAlreadyInCollection,
     CollectionIsLocked,
+    ObjectAlreadyInCollection,
 )
 
 from .emails import notify_request_author, notify_requested_moderator

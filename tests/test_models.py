@@ -11,8 +11,8 @@ from cms.api import create_page
 
 from djangocms_moderation import constants
 from djangocms_moderation.exceptions import (
-    ObjectAlreadyInCollection,
     CollectionIsLocked,
+    ObjectAlreadyInCollection,
 )
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
