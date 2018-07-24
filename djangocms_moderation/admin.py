@@ -22,13 +22,13 @@ from .helpers import get_form_submission_for_step
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
+    ModerationCollection,
     ModerationRequest,
     ModerationRequestAction,
     Role,
     Workflow,
     WorkflowStep,
 )
-
 
 from . import views  # isort:skip
 
@@ -82,9 +82,24 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     list_filter = ['language', 'collection', 'id', 'compliance_number']
     fields = ['id', 'collection', 'workflow', 'language', 'is_active', 'show_status', 'compliance_number']
     readonly_fields = fields
+    change_list_template = 'djangocms_moderation/moderation_request_list.html'
 
     def has_add_permission(self, request):
         return False
+
+    def changelist_view(self, request, extra_context=None):
+        # TODO get the collection properly here
+        try:
+            collection = ModerationCollection.objects.get(
+                pk=request.GET.get('collection__id__exact')
+            )
+        except ModerationCollection.DoesNotExist:
+            collection = None
+
+        extra_context = {
+            'collection': collection
+        }
+        return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
     def show_status(self, obj):
         if obj.is_approved():
@@ -123,7 +138,46 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
 class WorkflowAdmin(admin.ModelAdmin):
     inlines = [WorkflowStepInline]
     list_display = ['name', 'is_default']
-    fields = ['name', 'is_default', 'identifier', 'requires_compliance_number', 'compliance_number_backend']
+    fields = [
+        'name',
+        'is_default',
+        'identifier',
+        'requires_compliance_number','compliance_number_backend',
+    ]
+
+
+class ModerationCollectionAdmin(admin.ModelAdmin):
+    list_display = [
+        'id',
+        'name_with_requests_link',
+        'moderator',
+        'workflow',
+        'status',
+        'is_locked',
+        'date_created',
+    ]
+
+    def name_with_requests_link(self, obj):
+        """
+        Name of the collection should link to the list of associated
+        moderation requests
+        """
+        return '<a href="{}?collection__id__exact={}">{}</a>'.format(
+            reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+            obj.pk,
+            obj.name,
+        )
+
+    def moderator(self, obj):
+        # TODO return obj.author once #34 is merged
+        return 'John Placeholder'
+
+    def status(self, obj):
+        # TODO return Collection status once implemented
+        return 'Status placeholder'
+
+    name_with_requests_link.allow_tags = True
+    name_with_requests_link.short_description = 'Name'
 
 
 class ExtendedPageAdmin(PageAdmin):
@@ -228,6 +282,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
 
 admin.site._registry[Page] = ExtendedPageAdmin(Page, admin.site)
 admin.site.register(ModerationRequest, ModerationRequestAdmin)
+admin.site.register(ModerationCollection, ModerationCollectionAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
 

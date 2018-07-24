@@ -277,6 +277,9 @@ class ModerationCollection(models.Model):
     date_created = models.DateTimeField(auto_created=True, editable=False)
     date_modified = models.DateTimeField(auto_now=True, editable=False)
 
+    def __str__(self):
+        return self.name
+
 
 @python_2_unicode_compatible
 class ModerationRequest(models.Model):
