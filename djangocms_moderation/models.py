@@ -16,12 +16,8 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.models.fields import PlaceholderField
 
-from djangocms_moderation.exceptions import (
-    CollectionIsLocked,
-    ObjectAlreadyInCollection,
-)
-
 from .emails import notify_request_author, notify_requested_moderator
+from .exceptions import CollectionIsLocked, ObjectAlreadyInCollection
 from .utils import generate_compliance_number
 
 
@@ -304,7 +300,7 @@ class ModerationCollection(models.Model):
         ).exclude(collection=self).exists()
 
         if not existing_request_exists:
-            return ModerationRequest.objects.get_or_create(
+            return self.moderation_requests.get_or_create(
                 content_type=content_type,
                 object_id=content_object.pk,
                 collection=self,
