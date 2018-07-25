@@ -79,17 +79,17 @@ class ModerationRequestActionInline(admin.TabularInline):
 class ModerationRequestAdmin(admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
     inlines = [ModerationRequestActionInline]
-    list_display = ['id', 'content_object', 'collection', 'show_status', 'date_sent']
+    list_display = ['id', 'content_type', 'content_object', 'collection', 'show_status']
     list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'show_status']
     readonly_fields = ['id', 'collection', 'workflow', 'is_active', 'show_status']
-    change_list_template = 'djangocms_moderation/moderation_request_list.html'
+    change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
 
     def has_add_permission(self, request):
         return False
 
     def changelist_view(self, request, extra_context=None):
-        # TODO get the collection properly here
+        # TODO Investigate a better way of getting the selected Collection?
         try:
             collection = ModerationCollection.objects.get(
                 pk=request.GET.get('collection__id__exact')

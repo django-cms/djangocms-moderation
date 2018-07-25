@@ -1,0 +1,11 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+{{ block.super }}
+
+{% comment %}
+    TODO This template will be overridden to provide required functionality.
+    For now, lets just output selected collection
+{% endcomment %}
+Selected collection: {{ collection }}
+{% endblock %}
