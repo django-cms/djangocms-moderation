@@ -77,11 +77,12 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
+    actions = None  # remove `delete_selected` for now, it will be handled later
     inlines = [ModerationRequestActionInline]
-    list_display = ['id', 'language', 'collection', 'show_status', 'date_sent']
-    list_filter = ['language', 'collection', 'id', 'compliance_number']
-    fields = ['id', 'collection', 'workflow', 'language', 'is_active', 'show_status', 'compliance_number']
-    readonly_fields = fields
+    list_display = ['id', 'content_object', 'collection', 'show_status', 'date_sent']
+    list_filter = ['collection']
+    fields = ['id', 'collection', 'workflow', 'is_active', 'show_status']
+    readonly_fields = ['id', 'collection', 'workflow', 'is_active', 'show_status']
     change_list_template = 'djangocms_moderation/moderation_request_list.html'
 
     def has_add_permission(self, request):
