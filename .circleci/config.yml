@@ -139,21 +139,13 @@ jobs:
          keys: py35-
      - run: docker load -i caches/py35.tar || true
      - run: docker run py35 gulp lint
-  py27-dj111-sqlite-cms35:
+  py27-dj111-sqlite-cms4:
     <<: *py27default
-  py34-dj111-sqlite-cms35:
+  py34-dj111-sqlite-cms4:
     <<: *py34default
-  py35-dj111-sqlite-cms35:
+  py35-dj111-sqlite-cms4:
     <<: *py35default
-  py36-dj111-sqlite-cms35:
-    <<: *py36default
-  py36-dj111-sqlite-cms36:
-    <<: *py36default
-  py34-dj20-sqlite-cms36:
-    <<: *py34default
-  py35-dj20-sqlite-cms36:
-    <<: *py35default
-  py36-dj20-sqlite-cms36:
+  py36-dj111-sqlite-cms4:
     <<: *py36default
 
 #######################
@@ -175,27 +167,16 @@ workflows:
       - eslint:
           requires:
             - py35_base
-      - py27-dj111-sqlite-cms35:
+      - py27-dj111-sqlite-cms4:
           requires:
             - py27_base
-      - py34-dj111-sqlite-cms35:
+      - py34-dj111-sqlite-cms4:
           requires:
             - py34_base
-      - py35-dj111-sqlite-cms35:
+      - py35-dj111-sqlite-cms4:
           requires:
             - py35_base
-      - py36-dj111-sqlite-cms35:
+      - py36-dj111-sqlite-cms4:
           requires:
             - py36_base
-      - py36-dj111-sqlite-cms36:
-          requires:
-            - py36_base
-      - py34-dj20-sqlite-cms36:
-          requires:
-            - py34_base
-      - py35-dj20-sqlite-cms36:
-          requires:
-            - py35_base
-      - py36-dj20-sqlite-cms36:
-          requires:
-            - py36_base
+
