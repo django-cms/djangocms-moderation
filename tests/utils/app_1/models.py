@@ -1,5 +1,3 @@
-from django.db import models
-
 from djangocms_versioning.models import BaseVersion
 
 
