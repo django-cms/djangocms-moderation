@@ -1,4 +1,8 @@
-from unittest.mock import Mock
+try:
+    from unittest.mock import Mock
+except ImportError:
+    from mock import Mock
+
 from unittest import TestCase
 
 from django.apps import apps
@@ -9,14 +13,9 @@ from cms.test_utils.testcases import CMSTestCase
 from cms.utils.setup import setup_cms_apps
 
 from djangocms_moderation.cms_config import ModerationExtension
-from .utils.app_1.models import (
-    TestModel3,
-    TestModel4,
-)
-from .utils.app_2.models import (
-    TestModel1,
-    TestModel2,
-)
+
+from .utils.app_1.models import TestModel3, TestModel4
+from .utils.app_2.models import TestModel1, TestModel2
 
 
 class CMSConfigTest(CMSTestCase, TestCase):

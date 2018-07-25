@@ -8,4 +8,3 @@ class CMSApp1Config(CMSAppConfig):
     djangocms_moderation_enabled = True
     versioning_models = [TestModel3, TestModel4]
     moderated_models = [TestModel3, TestModel4]
-

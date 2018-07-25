@@ -1,4 +1,5 @@
 from django.core.exceptions import ImproperlyConfigured
+
 from cms.app_base import CMSAppExtension
 
 
