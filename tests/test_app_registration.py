@@ -27,18 +27,9 @@ class CMSConfigTest(CMSTestCase, TestCase):
     def test_missing_versioning_enabled(self):
         extension = ModerationExtension()
         cms_config = Mock(
+            moderated_models=[TestModel1, TestModel2, TestModel3, TestModel4],
             djangocms_moderation_enabled=True,
-            app_config=Mock(label='blah_cms_config')
-        )
-
-        with self.assertRaises(ImproperlyConfigured):
-            extension.configure_app(cms_config)
-
-    def test_invalid_moderated_models_type(self):
-        extension = ModerationExtension()
-        cms_config = Mock(
-            djangocms_moderation_enabled=True,
-            moderated_models=23234,
+            djangocms_versioning_enabled=False,
             app_config=Mock(label='blah_cms_config')
         )
 
