@@ -79,11 +79,21 @@ class ModerationRequestActionInline(admin.TabularInline):
 class ModerationRequestAdmin(admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
     inlines = [ModerationRequestActionInline]
-    list_display = ['id', 'content_type', 'content_object', 'collection', 'show_status']
+    list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
     list_filter = ['collection']
-    fields = ['id', 'collection', 'workflow', 'is_active', 'show_status']
-    readonly_fields = ['id', 'collection', 'workflow', 'is_active', 'show_status']
+    fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
+    readonly_fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+
+    def get_title(self, obj):
+        return obj.content_object
+    get_title.short_description = _('Title')
+
+    def get_preview_link(self, obj):
+        # TODO this will return Version object preview link once implemented
+        return "Link placeholder"
+    get_preview_link.allow_tags = True
+    get_preview_link.short_description = _('Preview')
 
     def has_add_permission(self, request):
         return False
@@ -102,7 +112,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         }
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
-    def show_status(self, obj):
+    def get_status(self, obj):
         if obj.is_approved():
             status = ugettext('Ready for publishing')
         elif obj.is_active and obj.has_pending_step():
@@ -118,7 +128,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             }
             status = ugettext('%(action)s by %(name)s') % message_data
         return status
-    show_status.short_description = _('Status')
+    get_status.short_description = _('Status')
 
 
 class RoleAdmin(admin.ModelAdmin):
@@ -143,14 +153,15 @@ class WorkflowAdmin(admin.ModelAdmin):
         'name',
         'is_default',
         'identifier',
-        'requires_compliance_number','compliance_number_backend',
+        'requires_compliance_number',
+        'compliance_number_backend',
     ]
 
 
 class ModerationCollectionAdmin(admin.ModelAdmin):
     list_display = [
         'id',
-        'name_with_requests_link',
+        'get_name_with_requests_link',
         'moderator',
         'workflow',
         'status',
@@ -158,7 +169,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         'date_created',
     ]
 
-    def name_with_requests_link(self, obj):
+    def get_name_with_requests_link(self, obj):
         """
         Name of the collection should link to the list of associated
         moderation requests
@@ -168,17 +179,18 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             obj.pk,
             obj.name,
         )
+    get_name_with_requests_link.allow_tags = True
+    get_name_with_requests_link.short_description = 'Name'
 
     def moderator(self, obj):
         # TODO return obj.author once #34 is merged
         return 'John Placeholder'
 
     def status(self, obj):
-        # TODO return Collection status once implemented
-        return 'Status placeholder'
-
-    name_with_requests_link.allow_tags = True
-    name_with_requests_link.short_description = 'Name'
+        # TODO more statuses to come in the future, once implemented
+        if obj.is_locked:
+            return _("Collection")
+        return _("In review")
 
 
 class ExtendedPageAdmin(PageAdmin):
