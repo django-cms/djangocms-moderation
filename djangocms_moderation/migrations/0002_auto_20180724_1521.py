@@ -15,12 +15,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='moderationcollection',
             name='date_created',
-            field=models.DateTimeField(auto_now_add=True, editable=False),
+            field=models.DateTimeField(auto_now_add=True),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='moderationcollection',
             name='date_modified',
-            field=models.DateTimeField(auto_now=True, editable=False),
+            field=models.DateTimeField(auto_now=True),
         ),
     ]
