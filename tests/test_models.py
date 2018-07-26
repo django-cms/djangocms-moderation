@@ -501,3 +501,14 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
             confirmation_page=self.cp,
         )
         self.assertEqual(cfs.get_by_user_name(), self.user.username)
+
+
+class ModerationCollectionTest(BaseTestCase):
+    def allow_submit_for_review(self):
+        self.collection1.is_locked = True
+        self.collection1.save()
+        self.assertFalse(self.collection1.allow_submit_for_review)
+
+        self.collection1.is_locked = False
+        self.collection1.save()
+        self.assertTRue(self.collection1.allow_submit_for_review)

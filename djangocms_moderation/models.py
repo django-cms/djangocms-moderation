@@ -280,6 +280,11 @@ class ModerationCollection(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def allow_submit_for_review(self):
+        # TODO limited check for now
+        return not self.is_locked
+
 
 @python_2_unicode_compatible
 class ModerationRequest(models.Model):

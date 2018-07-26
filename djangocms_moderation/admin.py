@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -129,6 +130,41 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             status = ugettext('%(action)s by %(name)s') % message_data
         return status
     get_status.short_description = _('Status')
+
+    def submit_for_review(self, request, collection_id):
+        """
+        This should submit all the moderation requests for the given collection
+        id coming from a request
+        to moderation flow
+        """
+        try:
+            collection = ModerationCollection.objects.get(pk=88)
+        except ModerationCollection.DoesNotExist:
+            collection = None
+
+        if collection:
+            self.message_user(request, 'You collection has been submitted for a review')
+            # Redirect back to the collection filtered moderation request change list
+            redirect_url = "{}?collection__id__exact={}".format(
+                reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+                collection.id
+            )
+        else:
+            # Redirect to collection list
+            redirect_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+            self.message_user(request, "Couldn't find the collection")
+        return HttpResponseRedirect(redirect_url)
+
+    def get_urls(self):
+        urls = super(ModerationRequestAdmin, self).get_urls()
+        my_urls = [
+            url(
+                '^collection/(?P<collection_id>\d+)/submit-for-review/$',
+                self.submit_for_review,
+                name="cms_moderation_submit_for_review"
+            ),
+        ]
+        return my_urls + urls
 
 
 class RoleAdmin(admin.ModelAdmin):
