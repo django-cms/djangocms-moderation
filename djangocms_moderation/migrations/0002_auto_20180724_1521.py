@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='moderationcollection',
             name='date_created',
-            field=models.DateTimeField(auto_created=True, editable=False, default='2018-01-01'),
+            field=models.DateTimeField(auto_now_add=True, editable=False),
             preserve_default=False,
         ),
         migrations.AddField(
