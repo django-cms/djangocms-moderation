@@ -147,6 +147,14 @@ jobs:
     <<: *py35default
   py36-dj111-sqlite-cms4:
     <<: *py36default
+  py27-dj20-sqlite-cms4:
+    <<: *py27default
+  py34-dj20-sqlite-cms4:
+    <<: *py34default
+  py35-dj20-sqlite-cms4:
+    <<: *py35default
+  py36-dj20-sqlite-cms4:
+    <<: *py36default
 
 #######################
 
@@ -179,4 +187,17 @@ workflows:
       - py36-dj111-sqlite-cms4:
           requires:
             - py36_base
+      - py27-dj20-sqlite-cms4:
+          requires:
+            - py27_base
+      - py34-dj20-sqlite-cms4:
+          requires:
+            - py34_base
+      - py35-dj20-sqlite-cms4:
+          requires:
+            - py35_base
+      - py36-dj20-sqlite-cms4:
+          requires:
+            - py36_base
+
 
