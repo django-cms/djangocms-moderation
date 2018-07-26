@@ -20,6 +20,6 @@ class ModerationExtension(CMSAppExtension):
             if moderated_model not in versioning_models:
                 raise ImproperlyConfigured('Moderated models need to be Versionable, please include every'
                                            'model that needs to be moderated in versioning_models entry'
-                )
+                                           )
 
         self.moderated_models.extend(moderated_models)

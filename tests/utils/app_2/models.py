@@ -1,5 +1,6 @@
-from djangocms_versioning.models import BaseVersion
 from django.db import models
+
+from djangocms_versioning.models import BaseVersion
 
 
 class GrouperModel(models.Model):

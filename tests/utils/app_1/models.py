@@ -1,5 +1,6 @@
-from djangocms_versioning.models import BaseVersion
 from django.db import models
+
+from djangocms_versioning.models import BaseVersion
 
 
 class GrouperModel(models.Model):
@@ -12,4 +13,3 @@ class TestModel3(BaseVersion):
 
 class TestModel4(BaseVersion):
     content = models.ForeignKey(GrouperModel)
-
