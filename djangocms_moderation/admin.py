@@ -138,7 +138,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         to moderation flow
         """
         try:
-            collection = ModerationCollection.objects.get(pk=88)
+            collection = ModerationCollection.objects.get(pk=collection_id)
         except ModerationCollection.DoesNotExist:
             collection = None
 
