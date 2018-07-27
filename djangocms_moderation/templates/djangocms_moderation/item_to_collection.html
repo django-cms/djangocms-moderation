@@ -1,0 +1,64 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+<h2>Add to Collection</h2>
+<div>
+    <h3>Select existing collection</h3>
+    <div class="form-row">
+        <div>
+            <select id="djangocms_moderation_collections" name="collections">
+                {% for collection in collections %}
+                    <option value="{{ collection.pk }}">{{ collection.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <h3>Create new collection</h3>
+    <div class="form-row">
+        <div>
+            {% trans "Name" %}
+        </div>
+        <div>
+            <input name="collection_name" id="djangocms_moderation_collection_name">
+        </div>
+    </div>
+    <div class="form-row">
+        <div>
+            {% trans "Workflow" %}
+        </div>
+        <div>
+           <select id="djangocms_moderation_collection_workflow" name="collection_workflow">
+                {% for workflow in workflows %}
+                    <option value="{{ workflow.pk }}">{{ workflow.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <!-- List of collection objects -->
+     <table>
+        <thead>
+            <tr>
+                <th>{% trans "Content Type" %}</th>
+                <th>{% trans "Identifier" %}</th>
+                <th>{% trans "Author" %}</th>
+                <th>{% trans "Edit Date" %}</th>
+                <th>{% trans "Version" %}</th>
+                <th>{% trans "Status" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for content_object in content_object_list %}
+                <tr>
+                    <td>{{ content_object.content_type }}</td>
+                    <td>{{ content_object.identifier }}</td>
+                    <td>{{ content_object.author }}</td>
+                    <td>{{ content_object.edit_date }}</td>
+                    <td>{{ content_object.version }}</td>
+                    <td>{{ content_object.status }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
