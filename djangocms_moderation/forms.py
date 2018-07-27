@@ -126,7 +126,9 @@ class ItemToCollectionForm(forms.Form):
         widget=forms.Select(),
     )
 
-    collection_name = forms.CharField()
+    collection_name = forms.CharField(
+        required=False
+    )
 
     workflow = forms.CharField(
         label=_('Select existing collection'),
@@ -135,4 +137,32 @@ class ItemToCollectionForm(forms.Form):
     )
 
     content_object = forms.CharField()
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        existing_collection = bool(cleaned_data['collection_id'])
+
+        # when we are creating a new collection
+        if not existing_collection:
+            if not cleaned_data['collection_name']:
+                raise forms.ValidationError(
+                    "Collection name is required"
+                )
+
+            if not cleaned_data['workflow']:
+                raise forms.ValidationError(
+                    "Workflow is required"
+                )
+
+        # we creating a new collection
+        new_collection = cleaned_data['collection_name'] and cleaned_data['workflow']
+
+        # when existing collection is selected
+        # and new collection is being created at the same time
+        if new_collection and existing_collection:
+            raise forms.ValidationError(
+                "You can only create a new collection"
+                "or select an existing one"
+            )
 
