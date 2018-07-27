@@ -13,7 +13,11 @@ from django.views.generic import FormView, ListView, DetailView
 
 from cms.utils.urlutils import add_url_parameters
 
-from .forms import ModerationRequestForm, UpdateModerationRequestForm
+from .forms import (
+    ModerationRequestForm,
+    UpdateModerationRequestForm,
+    ItemToCollectionForm
+)
 from .helpers import (
     get_active_moderation_request,
     get_moderation_workflow,
@@ -23,6 +27,8 @@ from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
     ModerationRequest,
+    ModerationCollection,
+    Workflow
 )
 from .utils import get_admin_url
 
@@ -30,21 +36,38 @@ from .utils import get_admin_url
 from . import constants  # isort:skip
 
 
-class CollectionView(DetailView):
+class ItemToCollectionView(FormView):
     template_name = 'djangocms_moderation/item_to_collection.html'
+    form_class = ItemToCollectionForm
 
-    def dispatch(self, request, *args, **kwargs):
-        return super(CollectionView, self).dispatch(
-            request, *args, **kwargs
-        )
+    def form_valid(self, form):
+        if form.is_valid():
+            if form.cleaned_data['collection_id']:
+                collection = ModerationCollection.objects.get(
+                                pk=form.cleaned_data['collection_id']
+                )
+            else:
+                collection = ModerationCollection.objects.create(
+                    name=form.cleaned_data['collection_name'],
+                    workflow=form.cleaned_data['workflow']
+                )
 
-    def add_item(self, request, *args, **kwargs):
-        """ Add item to collection """
-        pass
+            content_object = object()  # content_type_magic
+            collection.add_object(content_object)
+
+    def get_context_data(self, **kwargs):
+        context = super(ItemToCollectionView, self).get_context_data(**kwargs)
+        context.update({
+            'workflow_list': Workflow.objects.all(),
+            'collection_list': ModerationCollection.objects.all(),
+            'content_object': object()  # content_type_magic
+        })
+
+        return context
 
 
-item_to_collection = CollectionView.as_view()
 
+item_to_collection = ItemToCollectionView.as_view()
 
 
 class ModerationRequestView(FormView):

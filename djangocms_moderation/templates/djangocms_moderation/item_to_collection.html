@@ -8,7 +8,7 @@
     <div class="form-row">
         <div>
             <select id="djangocms_moderation_collections" name="collections">
-                {% for collection in collections %}
+                {% for collection in collection_list %}
                     <option value="{{ collection.pk }}">{{ collection.name }}</option>
                 {% endfor %}
             </select>
@@ -29,7 +29,7 @@
         </div>
         <div>
            <select id="djangocms_moderation_collection_workflow" name="collection_workflow">
-                {% for workflow in workflows %}
+                {% for workflow in workflow_list %}
                     <option value="{{ workflow.pk }}">{{ workflow.name }}</option>
                 {% endfor %}
             </select>

@@ -116,3 +116,23 @@ class UpdateModerationRequestForm(ModerationRequestForm):
             to_user=self.cleaned_data.get('moderator'),
             message=self.cleaned_data['message'],
         )
+
+
+class ItemToCollectionForm(forms.Form):
+
+    collection_id = forms.CharField(
+        label=_('Select existing collection'),
+        required=False,
+        widget=forms.Select(),
+    )
+
+    collection_name = forms.CharField()
+
+    workflow = forms.CharField(
+        label=_('Select existing collection'),
+        required=False,
+        widget=forms.Select(),
+    )
+
+    content_object = forms.CharField()
+
