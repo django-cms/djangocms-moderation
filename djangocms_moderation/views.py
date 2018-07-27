@@ -69,7 +69,6 @@ class ItemToCollectionView(FormView):
 
 item_to_collection = ItemToCollectionView.as_view()
 
-
 class ModerationRequestView(FormView):
 
     action = None
