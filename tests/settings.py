@@ -1,5 +1,8 @@
 HELPER_SETTINGS = {
     'INSTALLED_APPS': [
+        'tests.utils.app_1',
+        'tests.utils.app_2',
+        'djangocms_versioning',
         'filer',
         'easy_thumbnails',
         'absolute',
