@@ -9,7 +9,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import FormView, ListView
+from django.views.generic import FormView, ListView, DetailView
 
 from cms.utils.urlutils import add_url_parameters
 
@@ -28,6 +28,23 @@ from .utils import get_admin_url
 
 
 from . import constants  # isort:skip
+
+
+class CollectionView(DetailView):
+    template_name = 'djangocms_moderation/item_to_collection.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        return super(CollectionView, self).dispatch(
+            request, *args, **kwargs
+        )
+
+    def add_item(self, request, *args, **kwargs):
+        """ Add item to collection """
+        pass
+
+
+item_to_collection = CollectionView.as_view()
+
 
 
 class ModerationRequestView(FormView):

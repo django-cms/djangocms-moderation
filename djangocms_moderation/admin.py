@@ -168,6 +168,11 @@ class ExtendedPageAdmin(PageAdmin):
                 views.moderation_comments,
                 'comments',
             ),
+            _url(
+                r'^([0-9]+)/([a-z\-]+)/moderation/collection/item$',
+                views.item_to_collection,
+                'item_to_collection',
+            ),
         ]
         return url_patterns + super(ExtendedPageAdmin, self).get_urls()
 
