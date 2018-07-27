@@ -282,7 +282,7 @@ class ModerationCollection(models.Model):
     # TODO: proper implementations and handlers coming later for is_locked
     is_locked = models.BooleanField(verbose_name=_('is locked'), default=False)
 
-    def create_moderation_request_from_content_object(self, content_object):
+    def add_object(self, content_object):
         """
         Add object to the ModerationRequest in this collection.
         :return: <ModerationRequest|None>

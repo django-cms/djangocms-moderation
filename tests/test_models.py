@@ -540,30 +540,30 @@ class ModerationCollectionTest(BaseTestCase):
     def test_create_moderation_request_from_content_object(self):
         self.assertEqual(0, self._moderation_requests_count(self.page1))
         # Add `page1` to `collection1`
-        self.collection1.create_moderation_request_from_content_object(self.page1)
+        self.collection1.add_object(self.page1)
         self.assertEqual(1, self._moderation_requests_count(self.page1))
         self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
 
         # Adding the same object to the same collection is fine, it is already
         # there so it won't be added again
-        self.collection1.create_moderation_request_from_content_object(self.page1)
+        self.collection1.add_object(self.page1)
         self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
         self.assertEqual(1, self._moderation_requests_count(self.page1))
 
         # This should not work as `page1` is already part of `collection1`
         with self.assertRaises(ObjectAlreadyInCollection):
-            self.collection2.create_moderation_request_from_content_object(self.page1)
+            self.collection2.add_object(self.page1)
 
         # We can add `page2` to the `collection1` as it is not there yet
         self.assertEqual(0, self._moderation_requests_count(self.page2))
-        self.collection1.create_moderation_request_from_content_object(self.page2)
+        self.collection1.add_object(self.page2)
         self.assertEqual(1, self._moderation_requests_count(self.page2))
         self.assertEqual(1, self._moderation_requests_count(self.page2, self.collection1))
         self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
 
     def test_create_moderation_request_from_content_object_locked_collection(self):
         # This works, as the collection is not locked
-        self.collection2.create_moderation_request_from_content_object(self.page1)
+        self.collection2.add_object(self.page1)
         self.assertEqual(1, self._moderation_requests_count(self.page1))
 
         # Now, let's lock the collection, so we can't add to it anymore
@@ -571,6 +571,6 @@ class ModerationCollectionTest(BaseTestCase):
         self.collection2.save()
 
         with self.assertRaises(CollectionIsLocked):
-            self.collection2.create_moderation_request_from_content_object(self.page1)
+            self.collection2.add_object(self.page1)
 
         self.assertEqual(1, self._moderation_requests_count(self.page1))
