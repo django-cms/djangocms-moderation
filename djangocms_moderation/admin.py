@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from cms.toolbar.items import ModalButton
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -12,6 +13,8 @@ from cms.models import Page
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
+from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
+from djangocms_moderation.utils import get_admin_url
 from .constants import (
     ACTION_APPROVED,
     ACTION_CANCELLED,
@@ -108,8 +111,15 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         except ModerationCollection.DoesNotExist:
             collection = None
 
+        if collection:
+            submit_for_moderation_url = reverse('admin:cms_moderation_submit_for_moderation', args=(collection.id,))
+            submit_for_moderation_button = ModalButton('Submit for review', submit_for_moderation_url)
+        else:
+            submit_for_moderation_button = None
+
         extra_context = {
-            'collection': collection
+            'collection': collection,
+            'submit_for_moderation_button': submit_for_moderation_button
         }
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
@@ -131,7 +141,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return status
     get_status.short_description = _('Status')
 
-    def submit_for_review(self, request, collection_id):
+    def submit_for_moderation(self, request, collection_id):
         """
         This should submit all the moderation requests for the given collection
         id coming from a request
@@ -143,14 +153,21 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             collection = None
 
         if collection:
-            self.message_user(request, 'You collection has been submitted for a review')
-            # Redirect back to the collection filtered moderation request change list
+            redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
             redirect_url = "{}?collection__id__exact={}".format(
-                reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+                redirect_url,
                 collection.id
             )
+
+            try:
+                collection.submit_for_moderation(request.user)
+            except CollectionCantBeSubmittedForReview:
+                self.message_user(request, "This collection can't be submitted for a review")
+            else:
+                self.message_user(request, 'You collection has been submitted for a review')
+                # Redirect back to the collection filtered moderation request change list
         else:
-            # Redirect to collection list
+            # If the collection doesn't exists, redirect to collection list view
             redirect_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
             self.message_user(request, "Couldn't find the collection")
         return HttpResponseRedirect(redirect_url)
@@ -160,8 +177,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         my_urls = [
             url(
                 '^collection/(?P<collection_id>\d+)/submit-for-review/$',
-                self.submit_for_review,
-                name="cms_moderation_submit_for_review"
+                self.submit_for_moderation,
+                name="cms_moderation_submit_for_moderation"
             ),
         ]
         return my_urls + urls

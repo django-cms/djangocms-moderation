@@ -4,11 +4,9 @@
 
 {% block object-tools-items %}
 {{ block.super }}
-{% if collection.allow_submit_for_review %}
+{% if collection.allow_submit_for_moderation and submit_for_moderation_button %}
     <li>
-        <a href="{% url 'admin:cms_moderation_submit_for_review' collection.id %}">
-            {% trans 'Submit for review' %}
-        </a>
+        {{ submit_for_moderation_button.render }}
     </li>
 {% endif %}
 {% endblock %}

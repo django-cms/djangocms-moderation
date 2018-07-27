@@ -1,0 +1,2 @@
+class CollectionCantBeSubmittedForReview(Exception):
+    pass

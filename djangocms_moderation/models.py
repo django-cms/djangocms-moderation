@@ -16,6 +16,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.models.fields import PlaceholderField
 
+from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
 from .emails import notify_request_author, notify_requested_moderator
 from .utils import generate_compliance_number
 
@@ -280,8 +281,30 @@ class ModerationCollection(models.Model):
     def __str__(self):
         return self.name
 
+    def submit_for_moderation(self, by_user):
+        """
+        Submit all the moderation requests belonging to this collection for
+        moderation and mark the collection as locked
+        :param by_user:
+        """
+
+        if not self.allow_submit_for_moderation:
+            raise CollectionCantBeSubmittedForReview()
+
+        for moderation_request in self.moderation_requests.all():
+            # If the ACTION_STARTED already exists, don't create it again, as
+            # the request has already started
+            moderation_request.actions.get_or_create(
+                by_user=by_user,
+                to_user=None,
+                action=constants.ACTION_STARTED,
+            )
+        # Lock the collection as it has been now submitted for moderation
+        self.is_locked = True
+        self.save(update_fields=['is_locked'])
+
     @property
-    def allow_submit_for_review(self):
+    def allow_submit_for_moderation(self):
         # TODO limited check for now
         return not self.is_locked
 

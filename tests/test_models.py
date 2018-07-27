@@ -504,11 +504,11 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
 
 
 class ModerationCollectionTest(BaseTestCase):
-    def allow_submit_for_review(self):
+    def allow_submit_for_moderation(self):
         self.collection1.is_locked = True
         self.collection1.save()
-        self.assertFalse(self.collection1.allow_submit_for_review)
+        self.assertFalse(self.collection1.allow_submit_for_moderation)
 
         self.collection1.is_locked = False
         self.collection1.save()
-        self.assertTRue(self.collection1.allow_submit_for_review)
+        self.assertTRue(self.collection1.allow_submit_for_moderation)
