@@ -25,7 +25,6 @@ class ModerationToolbar(CMSToolbar):
             language=self.current_lang,
             args=()
         )
-
         self.toolbar.add_modal_button(
                 name=_('Submit for moderation'),
                 url=url,

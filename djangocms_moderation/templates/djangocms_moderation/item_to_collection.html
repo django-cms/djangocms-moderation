@@ -1,8 +1,10 @@
 {% extends "admin/change_form.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block content %}
 <h2>{% trans "Add to Collection" %}</h2>
+<form action="{{ request.get_full_path }}" method="post">
 <div>
     <h3>{% trans "Add to existing collection" %}</h3>
     <div class="form-row">
@@ -11,7 +13,7 @@
                 <option value="1" id="djangocms_moderation_collections_1">Summer Collection</option>
                 <option value="2" id="djangocms_moderation_collections_2">Winter Collection</option>
                 <option value="3" id="djangocms_moderation_collections_3">Autumn Collection</option>
-                <option value="4" id="djangocms_moderation_collections_4">Sprint Collection</option>
+                <option value="4" id="djangocms_moderation_collections_4">Spring Collection</option>
             </select>
             <a href="#">(Edit)</a> | <a href="#">(Add)</a>
         </div>
@@ -30,7 +32,7 @@
         </thead>
         <tbody>
             <tr class="djangocms_moderation_collections_1">
-                <td>Page</td>
+                <td>Summer Page</td>
                 <td>About</td>
                 <td>Damilare Onajole</td>
                 <td>2018-06-06 1:30 p.m</td>
@@ -38,7 +40,7 @@
                 <td>Published</td>
             </tr>
             <tr class="djangocms_moderation_collections_1">
-                <td>Page</td>
+                <td>Summer Page</td>
                 <td>About</td>
                 <td>Damilare Onajole</td>
                 <td>2018-06-06 1:30 p.m</td>
@@ -46,55 +48,79 @@
                 <td>Published</td>
             </tr>
              <tr class="djangocms_moderation_collections_1">
-                <td>Page</td>
+                <td>Summer Page</td>
                 <td>About</td>
                 <td>Damilare Onajole</td>
                 <td>2018-06-06 1:30 p.m</td>
                 <td>3</td>
                 <td>Published</td>
             </tr>
-            <tr class="djangocms_moderation_collections_2">
-                <td>Page</td>
+            <tr class="hidden djangocms_moderation_collections_2">
+                <td>Winter Page</td>
                 <td>About</td>
                 <td>Damilare Onajole</td>
                 <td>2018-06-06 1:30 p.m</td>
                 <td>1</td>
                 <td>Published</td>
             </tr>
-            <tr class="djangocms_moderation_collections_2">
-                <td>Page</td>
+            <tr class="hidden djangocms_moderation_collections_2">
+                <td>Winter Page</td>
                 <td>About</td>
                 <td>Damilare Onajole</td>
                 <td>2018-06-06 1:30 p.m</td>
                 <td>2</td>
                 <td>Published</td>
             </tr>
-             <tr class="djangocms_moderation_collections_2">
-                <td>Page</td>
+             <tr class="hidden djangocms_moderation_collections_2">
+                <td>Winter Page</td>
                 <td>About</td>
                 <td>Damilare Onajole</td>
                 <td>2018-06-06 1:30 p.m</td>
                 <td>3</td>
                 <td>Published</td>
             </tr>
-            <tr class="djangocms_moderation_collections_3">
-                <td>Page</td>
+            <tr class="hidden djangocms_moderation_collections_3">
+                <td>Autumn Page</td>
                 <td>About</td>
                 <td>Damilare Onajole</td>
                 <td>2018-06-06 1:30 p.m</td>
                 <td>1</td>
                 <td>Published</td>
             </tr>
-            <tr class="djangocms_moderation_collections_3">
-                <td>Page</td>
+            <tr class="hidden djangocms_moderation_collections_3">
+                <td>Autumn Page</td>
                 <td>About</td>
                 <td>Damilare Onajole</td>
                 <td>2018-06-06 1:30 p.m</td>
                 <td>2</td>
                 <td>Published</td>
             </tr>
-             <tr class="djangocms_moderation_collections_3">
-                <td>Page</td>
+             <tr class="hidden djangocms_moderation_collections_3">
+                <td>Autumn Page</td>
+                <td>About</td>
+                <td>Damilare Onajole</td>
+                <td>2018-06-06 1:30 p.m</td>
+                <td>3</td>
+                <td>Published</td>
+            </tr>
+            <tr class="hidden djangocms_moderation_collections_4">
+                <td>Spring Page</td>
+                <td>About</td>
+                <td>Damilare Onajole</td>
+                <td>2018-06-06 1:30 p.m</td>
+                <td>1</td>
+                <td>Published</td>
+            </tr>
+            <tr class="hidden djangocms_moderation_collections_4">
+                <td>Spring Page</td>
+                <td>About</td>
+                <td>Damilare Onajole</td>
+                <td>2018-06-06 1:30 p.m</td>
+                <td>2</td>
+                <td>Published</td>
+            </tr>
+             <tr class="hidden djangocms_moderation_collections_4">
+                <td>Spring Page</td>
                 <td>About</td>
                 <td>Damilare Onajole</td>
                 <td>2018-06-06 1:30 p.m</td>
@@ -103,5 +129,17 @@
             </tr>
         </tbody>
     </table>
+    <div class="submit-row">
+        <input type="submit" value="{% trans 'Submit' %}" class="default" name="_save">
+    </div>
 </div>
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script type="text/javascript">
+ $(function() {
+    $( "#djangocms_moderation_collections" ).change(function() {
+        $('[class*="djangocms_moderation_collections_"]').addClass('hidden')
+        $('.djangocms_moderation_collections_' + this.value).removeClass('hidden');
+    });
+});
+</script>
 {% endblock %}
