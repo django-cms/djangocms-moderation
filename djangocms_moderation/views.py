@@ -62,6 +62,7 @@ class ItemToCollectionView(FormView):
             'workflow_list': Workflow.objects.all(),
             'collection_list': ModerationCollection.objects.all(),
             'opts': ModerationCollection._meta,
+            'title': _('Add to collection'),
             'content_object': object()  # content_type_magic
         })
 
