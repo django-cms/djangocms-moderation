@@ -11,18 +11,13 @@ from cms.models import Page
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from .constants import (
-    ACTION_APPROVED,
-    ACTION_CANCELLED,
-    ACTION_REJECTED,
-    ACTION_RESUBMITTED,
-)
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_form_submission_for_step
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
     ModerationRequest,
+    ModerationCollection,
     ModerationRequestAction,
     Role,
     Workflow,
@@ -126,55 +121,22 @@ class WorkflowAdmin(admin.ModelAdmin):
     fields = ['name', 'is_default', 'identifier', 'requires_compliance_number', 'compliance_number_backend']
 
 
-class ExtendedPageAdmin(PageAdmin):
+class ModerationCollectionAdmin(admin.ModelAdmin):
+    view_on_site = True
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):
-            name = 'cms_moderation_{}'.format(name)
             return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
 
         url_patterns = [
-            _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/new/$',
-                views.new_moderation_request,
-                'new_request',
-            ),
-            _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/resubmit/$',
-                views.resubmit_moderation_request,
-                'resubmit_request',
-                action=ACTION_RESUBMITTED,
-            ),
-            _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/cancel/$',
-                views.cancel_moderation_request,
-                'cancel_request',
-                action=ACTION_CANCELLED,
-            ),
-            _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/reject/$',
-                views.reject_moderation_request,
-                'reject_request',
-                action=ACTION_REJECTED,
-            ),
-            _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/approve/$',
-                views.approve_moderation_request,
-                'approve_request',
-                action=ACTION_APPROVED,
-            ),
-            _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/comments/$',
-                views.moderation_comments,
-                'comments',
-            ),
-            _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/collection/item$',
+          _url(
+                r'^item$',
                 views.item_to_collection,
-                'item_to_collection',
-            ),
+                name='item_to_collection',
+            )
         ]
-        return url_patterns + super(ExtendedPageAdmin, self).get_urls()
+
+        return url_patterns + super(ModerationCollectionAdmin, self).get_urls()
 
 
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
@@ -231,8 +193,8 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
     form_data.short_description = _('Form Data')
 
 
-admin.site._registry[Page] = ExtendedPageAdmin(Page, admin.site)
 admin.site.register(ModerationRequest, ModerationRequestAdmin)
+admin.site.register(ModerationCollection, ModerationCollectionAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
 

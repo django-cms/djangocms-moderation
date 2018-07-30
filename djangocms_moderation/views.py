@@ -9,7 +9,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import FormView, ListView, DetailView
+from django.views.generic import FormView, ListView, DetailView, CreateView
 
 from cms.utils.urlutils import add_url_parameters
 
@@ -57,14 +57,15 @@ class ItemToCollectionView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super(ItemToCollectionView, self).get_context_data(**kwargs)
+        # import pdb; pdb.set_trace()
         context.update({
             'workflow_list': Workflow.objects.all(),
             'collection_list': ModerationCollection.objects.all(),
+            'opts': ModerationCollection._meta,
             'content_object': object()  # content_type_magic
         })
 
         return context
-
 
 
 item_to_collection = ItemToCollectionView.as_view()

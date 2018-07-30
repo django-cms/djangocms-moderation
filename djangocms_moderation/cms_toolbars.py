@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
 
-from cms.api import get_page_draft
 from cms.toolbar_base import CMSToolbar
 from cms.toolbar_pool import toolbar_pool
+from .utils import get_admin_url
+from .monkeypatches import set_current_language
 
 
 class ModerationToolbar(CMSToolbar):
@@ -15,15 +16,19 @@ class ModerationToolbar(CMSToolbar):
 
     def __init__(self, *args, **kwargs):
         super(ModerationToolbar, self).__init__(*args, **kwargs)
-
+        set_current_language(self.current_lang)
 
     def post_template_populate(self):
         super(ModerationToolbar, self).post_template_populate()
-        new_request_url = 'http://google.com'
+        url = get_admin_url(
+            name='item_to_collection',
+            language=self.current_lang,
+            args=()
+        )
 
         self.toolbar.add_modal_button(
                 name=_('Submit for moderation'),
-                url=new_request_url,
+                url=url,
                 side=self.toolbar.RIGHT,
         )
 
