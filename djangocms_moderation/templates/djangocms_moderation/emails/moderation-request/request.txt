@@ -1,6 +1,6 @@
 {% load i18n %}
 {% blocktrans %}
-Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for changes in {{ page_url }}.
+Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for changes in the Collection {{ collection }}.
 {% endblocktrans %}
 
 {% if comment %}
@@ -8,7 +8,9 @@ Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for c
 {{ comment }} <br/>
 {% endif %}
 
+{% if job_id %}
 {% trans 'Job ID' %}: {{ job_id }}<br/>
+{% endif %}
 
 {% if admin_url %}
 {% trans 'Admin Url' %}:<br/>

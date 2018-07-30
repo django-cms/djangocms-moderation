@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
 from djangocms_moderation import constants
+from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
@@ -15,7 +16,7 @@ from djangocms_moderation.models import (
     Role,
     Workflow,
     WorkflowStep,
-)
+    ModerationCollection)
 
 from .utils import BaseTestCase
 
@@ -64,7 +65,7 @@ class WorkflowTest(BaseTestCase):
         self.assertEqual(self.wf1.first_step, self.wf1st1)
 
     @skip('4.0 rework TBC')
-    @patch('djangocms_moderation.models.notify_requested_moderator')
+    @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_submit_new_request(self, mock_nrm):
         request = self.wf1.submit_new_request(
             by_user=self.user,
@@ -250,8 +251,9 @@ class ModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request4.user_can_moderate(self.user3))
         self.assertFalse(self.moderation_request4.user_can_moderate(user4))
 
+    @skip('Emails are going to change in 1.0.x')
     @patch('djangocms_moderation.models.notify_request_author')
-    @patch('djangocms_moderation.models.notify_requested_moderator')
+    @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_update_status_action_approved(self, mock_nrm, mock_nra):
         self.moderation_request1.update_status(
             action=constants.ACTION_APPROVED,
@@ -263,8 +265,9 @@ class ModerationRequestTest(BaseTestCase):
         self.assertEqual(mock_nrm.call_count, 1)
         self.assertEqual(mock_nra.call_count, 1)
 
+    @skip('Emails are going to change in 1.0.x')
     @patch('djangocms_moderation.models.notify_request_author')
-    @patch('djangocms_moderation.models.notify_requested_moderator')
+    @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_update_status_action_rejected(self, mock_nrm, mock_nra):
         self.moderation_request1.update_status(
             action=constants.ACTION_REJECTED,
@@ -279,8 +282,9 @@ class ModerationRequestTest(BaseTestCase):
         # content author
         self.assertFalse(mock_nrm.called)
 
+    @skip('Emails are going to change in 1.0.x')
     @patch('djangocms_moderation.models.notify_request_author')
-    @patch('djangocms_moderation.models.notify_requested_moderator')
+    @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_update_status_action_resubmitted(self, mock_nrm, mock_nra):
         self.moderation_request1.update_status(
             action=constants.ACTION_RESUBMITTED,
@@ -511,4 +515,53 @@ class ModerationCollectionTest(BaseTestCase):
 
         self.collection1.is_locked = False
         self.collection1.save()
-        self.assertTRue(self.collection1.allow_submit_for_moderation)
+        self.assertTrue(self.collection1.allow_submit_for_moderation)
+
+    @patch('djangocms_moderation.models.notify_collection_moderators')
+    def test_submit_for_moderation(self, mock_ncm):
+        collection = ModerationCollection.objects.create(
+            name='Collection 1', workflow=self.wf1, is_locked=True
+        )
+        moderation_request1 = ModerationRequest.objects.create(
+            content_object=self.pg1, language='en', collection=collection, is_active=True
+        )
+        # action1
+        moderation_request1.actions.create(
+            by_user=self.user, action=constants.ACTION_STARTED
+        )
+        # moderation_request2
+        ModerationRequest.objects.create(
+            content_object=self.pg1, language='en', collection=collection, is_active=False
+        )
+        # moderation_request3
+        ModerationRequest.objects.create(
+            content_object=self.pg2, language='en', collection=collection, is_active=False
+        )
+
+        self.assertEqual(
+            1, ModerationRequestAction.objects.filter(
+                request__collection=collection
+            ).count()
+        )
+
+        # This should not work as the collection is_locked
+        with self.assertRaises(CollectionCantBeSubmittedForReview):
+            collection.submit_for_moderation(self.user)
+
+        self.assertEqual(0, mock_ncm.call_count)
+        collection.is_locked = False
+        collection.save()
+
+        collection.submit_for_moderation(self.user)
+        self.assertEqual(1, mock_ncm.call_count)
+
+        collection.refresh_from_db()
+        # Collection should lock itself
+        self.assertTrue(collection.is_locked)
+        # We will now have 3 actions with status STARTED. 1 for the existing
+        # `action1` and 2 more for `moderation_request2` and `moderation_request3`
+        self.assertEqual(
+            3, ModerationRequestAction.objects.filter(
+                request__collection=collection, action=constants.ACTION_STARTED
+            ).count()
+        )

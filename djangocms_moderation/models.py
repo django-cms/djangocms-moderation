@@ -17,7 +17,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.models.fields import PlaceholderField
 
 from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
-from .emails import notify_request_author, notify_requested_moderator
+from .emails import notify_request_author, notify_collection_moderators
 from .utils import generate_compliance_number
 
 
@@ -214,7 +214,7 @@ class Workflow(models.Model):
             action=constants.ACTION_STARTED,
             message=message,
         )
-        notify_requested_moderator(request, new_action)
+        # notify_collection_moderators(request, new_action)
         return request
 
 
@@ -287,14 +287,14 @@ class ModerationCollection(models.Model):
         moderation and mark the collection as locked
         :param by_user:
         """
-
         if not self.allow_submit_for_moderation:
             raise CollectionCantBeSubmittedForReview()
 
+        action = None
         for moderation_request in self.moderation_requests.all():
             # If the ACTION_STARTED already exists, don't create it again, as
             # the request has already started
-            moderation_request.actions.get_or_create(
+            action, _ = moderation_request.actions.get_or_create(
                 by_user=by_user,
                 to_user=None,
                 action=constants.ACTION_STARTED,
@@ -302,6 +302,7 @@ class ModerationCollection(models.Model):
         # Lock the collection as it has been now submitted for moderation
         self.is_locked = True
         self.save(update_fields=['is_locked'])
+        notify_collection_moderators(collection=self, action=action)
 
     @property
     def allow_submit_for_moderation(self):
@@ -412,8 +413,9 @@ class ModerationRequest(models.Model):
         )
 
         if new_action.to_user_id or new_action.to_role_id:
-            notify_requested_moderator(self, new_action)
-        notify_request_author(self, new_action)
+            # notify_collection_moderators(self, new_action)
+            pass
+        # notify_request_author(self, new_action)
 
         if self.should_set_compliance_number():
             self.set_compliance_number()
