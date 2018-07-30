@@ -1,4 +1,7 @@
 import json
+
+from django.db import transaction
+from django.db.transaction import TransactionManagementError
 from mock import patch
 from unittest import skip
 
@@ -6,6 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.db import IntegrityError
 
 from cms.api import create_page
 
@@ -372,7 +376,7 @@ class ModerationRequestTest(BaseTestCase):
         mock_uuid.return_value = 'abc123'
 
         request = ModerationRequest.objects.create(
-            content_object=self.pg1,
+            content_object=self.pg4,
             language='en',
             is_active=True,
             collection=self.collection1,
@@ -537,16 +541,25 @@ class ModerationCollectionTest(BaseTestCase):
             queryset = queryset.filter(collection=collection)
         return queryset.count()
 
-    def test_create_moderation_request_from_content_object(self):
+    def test_add_object(self):
         self.assertEqual(0, self._moderation_requests_count(self.page1))
         # Add `page1` to `collection1`
         self.collection1.add_object(self.page1)
         self.assertEqual(1, self._moderation_requests_count(self.page1))
         self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
 
-        # Adding the same object to the same collection is fine, it is already
-        # there so it won't be added again
-        self.collection1.add_object(self.page1)
+        # Adding the same object to the same collection will raise an exception
+        # as we have an unique_together constrain
+
+        try:
+            # We do this in the atomic block because otherwise Django won't
+            # be able to continue executing the rest of the test.
+            with transaction.atomic():
+                self.collection1.add_object(self.page1)
+            self.fail('Adding the same object twice should not be allowed')
+        except (ObjectAlreadyInCollection, TransactionManagementError):
+            pass
+
         self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
         self.assertEqual(1, self._moderation_requests_count(self.page1))
 

@@ -21,4 +21,8 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='author'),
             preserve_default=False,
         ),
+        migrations.AlterUniqueTogether(
+            name='moderationrequest',
+            unique_together=set([('collection', 'object_id', 'content_type')]),
+        ),
     ]

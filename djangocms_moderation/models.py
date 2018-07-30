@@ -9,7 +9,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.db import models, transaction
+from django.db import models, transaction, IntegrityError
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -300,15 +300,21 @@ class ModerationCollection(models.Model):
         ).exclude(collection=self).exists()
 
         if not existing_request_exists:
-            return self.moderation_requests.get_or_create(
-                content_type=content_type,
-                object_id=content_object.pk,
-                collection=self,
+            try:
+                return self.moderation_requests.create(
+                    content_type=content_type,
+                    object_id=content_object.pk,
+                    collection=self,
+                )
+            except IntegrityError:
+                raise ObjectAlreadyInCollection(
+                   "{} is already part of this collection".format(content_object)
+                )
+        else:
+            raise ObjectAlreadyInCollection(
+                "{} is already part of existing moderation request which is part "
+                "of another active collection".format(content_object)
             )
-        raise ObjectAlreadyInCollection(
-            "{} is already part of existing moderation request which is part "
-            "of another active collection".format(content_object)
-        )
 
 
 @python_2_unicode_compatible
@@ -349,6 +355,7 @@ class ModerationRequest(models.Model):
     class Meta:
         verbose_name = _('Request')
         verbose_name_plural = _('Requests')
+        unique_together = ('collection', 'object_id', 'content_type')
 
     def __str__(self):
         return "{} {}".format(

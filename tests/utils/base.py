@@ -71,7 +71,7 @@ class BaseTestCase(TestCase):
         cls.moderation_request1.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
 
         ModerationRequest.objects.create(
-            content_object=cls.pg1, language='en', collection=cls.collection1, is_active=False,)
+            content_object=cls.pg3, language='en', collection=cls.collection1, is_active=False,)
         ModerationRequest.objects.create(
             content_object=cls.pg2, language='en', collection=cls.collection2, is_active=False,)
 
