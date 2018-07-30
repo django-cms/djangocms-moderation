@@ -66,7 +66,7 @@ class WorkflowTest(BaseTestCase):
 
     @skip('4.0 rework TBC')
     @patch('djangocms_moderation.models.notify_collection_moderators')
-    def test_submit_new_request(self, mock_nrm):
+    def test_submit_new_request(self, mock_ncm):
         request = self.wf1.submit_new_request(
             by_user=self.user,
             obj=self.pg3,
@@ -79,7 +79,7 @@ class WorkflowTest(BaseTestCase):
             transform=lambda x: x,
             ordered=False,
         )
-        self.assertEqual(mock_nrm.call_count, 1)
+        self.assertEqual(mock_ncm.call_count, 1)
 
 
 class WorkflowStepTest(BaseTestCase):
@@ -254,7 +254,7 @@ class ModerationRequestTest(BaseTestCase):
     @skip('Emails are going to change in 1.0.x')
     @patch('djangocms_moderation.models.notify_request_author')
     @patch('djangocms_moderation.models.notify_collection_moderators')
-    def test_update_status_action_approved(self, mock_nrm, mock_nra):
+    def test_update_status_action_approved(self, mock_ncm, mock_nra):
         self.moderation_request1.update_status(
             action=constants.ACTION_APPROVED,
             by_user=self.user,
@@ -262,13 +262,13 @@ class ModerationRequestTest(BaseTestCase):
         )
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.filter(is_archived=False)), 2)
-        self.assertEqual(mock_nrm.call_count, 1)
+        self.assertEqual(mock_ncm.call_count, 1)
         self.assertEqual(mock_nra.call_count, 1)
 
     @skip('Emails are going to change in 1.0.x')
     @patch('djangocms_moderation.models.notify_request_author')
     @patch('djangocms_moderation.models.notify_collection_moderators')
-    def test_update_status_action_rejected(self, mock_nrm, mock_nra):
+    def test_update_status_action_rejected(self, mock_ncm, mock_nra):
         self.moderation_request1.update_status(
             action=constants.ACTION_REJECTED,
             by_user=self.user,
@@ -280,12 +280,12 @@ class ModerationRequestTest(BaseTestCase):
         self.assertEqual(mock_nra.call_count, 1)
         # No need to notify the moderator, as this is assigned back to the
         # content author
-        self.assertFalse(mock_nrm.called)
+        self.assertFalse(mock_ncm.called)
 
     @skip('Emails are going to change in 1.0.x')
     @patch('djangocms_moderation.models.notify_request_author')
     @patch('djangocms_moderation.models.notify_collection_moderators')
-    def test_update_status_action_resubmitted(self, mock_nrm, mock_nra):
+    def test_update_status_action_resubmitted(self, mock_ncm, mock_nra):
         self.moderation_request1.update_status(
             action=constants.ACTION_RESUBMITTED,
             by_user=self.user,
@@ -295,7 +295,7 @@ class ModerationRequestTest(BaseTestCase):
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
 
         self.assertEqual(mock_nra.call_count, 1)
-        self.assertEqual(mock_nrm.call_count, 1)
+        self.assertEqual(mock_ncm.call_count, 1)
 
     def test_compliance_number_is_generated(self):
         self.wf1.requires_compliance_number = True
