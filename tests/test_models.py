@@ -3,13 +3,21 @@ from mock import patch
 from unittest import skip
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
+from cms.api import create_page
+
 from djangocms_moderation import constants
+from djangocms_moderation.exceptions import (
+    CollectionIsLocked,
+    ObjectAlreadyInCollection,
+)
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
+    ModerationCollection,
     ModerationRequest,
     ModerationRequestAction,
     Role,
@@ -364,7 +372,7 @@ class ModerationRequestTest(BaseTestCase):
         mock_uuid.return_value = 'abc123'
 
         request = ModerationRequest.objects.create(
-            content_object=self.pg1,
+            content_object=self.pg4,
             language='en',
             is_active=True,
             collection=self.collection1,
@@ -501,3 +509,69 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
             confirmation_page=self.cp,
         )
         self.assertEqual(cfs.get_by_user_name(), self.user.username)
+
+
+class ModerationCollectionTest(BaseTestCase):
+    def setUp(self):
+        self.collection1 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        self.collection2 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 2', workflow=self.wf1
+        )
+
+        self.page1 = create_page(title='My page 1', template='page.html', language='en',)
+        self.page2 = create_page(title='My page 2', template='page.html', language='en',)
+
+    def _moderation_requests_count(self, obj, collection=None):
+        """
+        How many moderation requests are there [for a given collection]
+        :return: <bool>
+        """
+        content_type = ContentType.objects.get_for_model(obj)
+        queryset = ModerationRequest.objects.filter(
+            content_type=content_type,
+            object_id=obj.pk,
+        )
+        if collection:
+            queryset = queryset.filter(collection=collection)
+        return queryset.count()
+
+    def test_add_object(self):
+        self.assertEqual(0, self._moderation_requests_count(self.page1))
+        # Add `page1` to `collection1`
+        self.collection1.add_object(self.page1)
+        self.assertEqual(1, self._moderation_requests_count(self.page1))
+        self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
+
+        # Adding the same object to the same collection will raise an exception
+        with self.assertRaises(ObjectAlreadyInCollection):
+            self.collection1.add_object(self.page1)
+
+        self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
+        self.assertEqual(1, self._moderation_requests_count(self.page1))
+
+        # This should not work as `page1` is already part of `collection1`
+        with self.assertRaises(ObjectAlreadyInCollection):
+            self.collection2.add_object(self.page1)
+
+        # We can add `page2` to the `collection1` as it is not there yet
+        self.assertEqual(0, self._moderation_requests_count(self.page2))
+        self.collection1.add_object(self.page2)
+        self.assertEqual(1, self._moderation_requests_count(self.page2))
+        self.assertEqual(1, self._moderation_requests_count(self.page2, self.collection1))
+        self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
+
+    def test_create_moderation_request_from_content_object_locked_collection(self):
+        # This works, as the collection is not locked
+        self.collection2.add_object(self.page1)
+        self.assertEqual(1, self._moderation_requests_count(self.page1))
+
+        # Now, let's lock the collection, so we can't add to it anymore
+        self.collection2.is_locked = True
+        self.collection2.save()
+
+        with self.assertRaises(CollectionIsLocked):
+            self.collection2.add_object(self.page1)
+
+        self.assertEqual(1, self._moderation_requests_count(self.page1))
