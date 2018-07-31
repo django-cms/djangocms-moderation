@@ -204,23 +204,6 @@ class Workflow(models.Model):
         lookup = self._lookup_active_request(page, language)
         return lookup.exists()
 
-    @transaction.atomic
-    def submit_new_request(self, by_user, obj, language, message='', to_user=None):
-        request = self.requests.create(
-            content_object=obj,
-            language=language,
-            is_active=True,
-            workflow=self,
-        )
-        new_action = request.actions.create(
-            by_user=by_user,
-            to_user=to_user,
-            action=constants.ACTION_STARTED,
-            message=message,
-        )
-        # notify_collection_moderators(request, new_action)
-        return request
-
 
 @python_2_unicode_compatible
 class WorkflowStep(models.Model):

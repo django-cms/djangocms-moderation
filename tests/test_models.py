@@ -71,23 +71,6 @@ class WorkflowTest(BaseTestCase):
     def test_first_step(self):
         self.assertEqual(self.wf1.first_step, self.wf1st1)
 
-    @skip('4.0 rework TBC')
-    @patch('djangocms_moderation.models.notify_collection_moderators')
-    def test_submit_new_request(self, mock_ncm):
-        request = self.wf1.submit_new_request(
-            by_user=self.user,
-            obj=self.pg3,
-            language='en',
-            message='Some message',
-        )
-        self.assertQuerysetEqual(
-            request.actions.all(),
-            ModerationRequestAction.objects.filter(request=request),
-            transform=lambda x: x,
-            ordered=False,
-        )
-        self.assertEqual(mock_ncm.call_count, 1)
-
 
 class WorkflowStepTest(BaseTestCase):
 

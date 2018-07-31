@@ -42,16 +42,7 @@ class ModerationRequestFormTest(BaseTestCase):
             workflow=self.wf1,
             active_request=None,
         )
-        form.workflow.submit_new_request = MagicMock()
         self.assertTrue(form.is_valid())
-        form.save()
-        form.workflow.submit_new_request.assert_called_once_with(
-            obj=self.pg2,
-            by_user=self.user,
-            to_user=None,
-            language='en',
-            message='Some message',
-        )
 
 
 class UpdateModerationRequestFormTest(BaseTestCase):

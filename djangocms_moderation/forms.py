@@ -71,15 +71,6 @@ class ModerationRequestForm(forms.Form):
         self.fields['moderator'].empty_label = ugettext('Any {role}').format(role=next_role.name)
         self.fields['moderator'].queryset = users
 
-    def save(self):
-        self.workflow.submit_new_request(
-            obj=self.page,
-            by_user=self.user,
-            to_user=self.cleaned_data.get('moderator'),
-            language=self.language,
-            message=self.cleaned_data['message'],
-        )
-
 
 class UpdateModerationRequestForm(ModerationRequestForm):
 
