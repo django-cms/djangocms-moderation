@@ -16,8 +16,12 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.models.fields import PlaceholderField
 
-from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
-from .emails import notify_request_author, notify_collection_moderators
+from .emails import notify_collection_moderators
+from .exceptions import (
+    CollectionIsLocked,
+    ObjectAlreadyInCollection,
+    CollectionCantBeSubmittedForReview,
+)
 from .utils import generate_compliance_number
 
 
@@ -268,6 +272,12 @@ class WorkflowStep(models.Model):
 
 class ModerationCollection(models.Model):
     name = models.CharField(verbose_name=_('name'), max_length=128)
+    author = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        verbose_name=_('author'),
+        related_name='+',
+        on_delete=models.CASCADE,
+    )
     workflow = models.ForeignKey(
         to=Workflow,
         verbose_name=_('workflow'),
@@ -310,6 +320,35 @@ class ModerationCollection(models.Model):
         # TODO limited check for now
         return not self.is_locked
 
+    def add_object(self, content_object):
+        """
+        Add object to the ModerationRequest in this collection.
+        :return: <ModerationRequest|None>
+        """
+        if self.is_locked:
+            raise CollectionIsLocked(
+                "Can't add the object to the collection, because it is locked"
+            )
+
+        content_type = ContentType.objects.get_for_model(content_object)
+        # Object can ever be part of only one collection
+        existing_request_exists = ModerationRequest.objects.filter(
+            content_type=content_type,
+            object_id=content_object.pk,
+        ).exists()
+
+        if not existing_request_exists:
+            return self.moderation_requests.create(
+                content_type=content_type,
+                object_id=content_object.pk,
+                collection=self,
+            )
+        else:
+            raise ObjectAlreadyInCollection(
+                "{} is already part of existing moderation request which is part "
+                "of another active collection".format(content_object)
+            )
+
 
 @python_2_unicode_compatible
 class ModerationRequest(models.Model):
@@ -349,6 +388,7 @@ class ModerationRequest(models.Model):
     class Meta:
         verbose_name = _('Request')
         verbose_name_plural = _('Requests')
+        unique_together = ('collection', 'object_id', 'content_type')
 
     def __str__(self):
         return "{} {}".format(

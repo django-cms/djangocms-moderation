@@ -3,11 +3,18 @@ from mock import patch
 from unittest import skip
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 
+from cms.api import create_page
+
 from djangocms_moderation import constants
-from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
+from djangocms_moderation.exceptions import (
+    ObjectAlreadyInCollection,
+    CollectionCantBeSubmittedForReview,
+    CollectionIsLocked,
+)
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
@@ -18,7 +25,7 @@ from djangocms_moderation.models import (
     WorkflowStep,
     ModerationCollection)
 
-from .utils import BaseTestCase
+from .utils.base import BaseTestCase
 
 
 class RoleTest(BaseTestCase):
@@ -368,7 +375,7 @@ class ModerationRequestTest(BaseTestCase):
         mock_uuid.return_value = 'abc123'
 
         request = ModerationRequest.objects.create(
-            content_object=self.pg1,
+            content_object=self.pg4,
             language='en',
             is_active=True,
             collection=self.collection1,
@@ -508,6 +515,17 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
 
 
 class ModerationCollectionTest(BaseTestCase):
+    def setUp(self):
+        self.collection1 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        self.collection2 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 2', workflow=self.wf1
+        )
+
+        self.page1 = create_page(title='My page 1', template='page.html', language='en',)
+        self.page2 = create_page(title='My page 2', template='page.html', language='en',)
+
     def allow_submit_for_moderation(self):
         self.collection1.is_locked = True
         self.collection1.save()
@@ -519,11 +537,8 @@ class ModerationCollectionTest(BaseTestCase):
 
     @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_submit_for_moderation(self, mock_ncm):
-        collection = ModerationCollection.objects.create(
-            name='Collection 1', workflow=self.wf1, is_locked=True
-        )
         moderation_request1 = ModerationRequest.objects.create(
-            content_object=self.pg1, language='en', collection=collection, is_active=True
+            content_object=self.pg1, language='en', collection=self.collection1, is_active=True
         )
         # action1
         moderation_request1.actions.create(
@@ -531,37 +546,92 @@ class ModerationCollectionTest(BaseTestCase):
         )
         # moderation_request2
         ModerationRequest.objects.create(
-            content_object=self.pg1, language='en', collection=collection, is_active=False
+            content_object=self.pg3, language='en', collection=self.collection1, is_active=False
         )
         # moderation_request3
         ModerationRequest.objects.create(
-            content_object=self.pg2, language='en', collection=collection, is_active=False
+            content_object=self.pg2, language='en', collection=self.collection1, is_active=False
         )
 
         self.assertEqual(
             1, ModerationRequestAction.objects.filter(
-                request__collection=collection
+                request__collection=self.collection1
             ).count()
         )
 
+        self.collection1.is_locked = True
+        self.collection1.save()
         # This should not work as the collection is_locked
         with self.assertRaises(CollectionCantBeSubmittedForReview):
-            collection.submit_for_moderation(self.user)
+            self.collection1.submit_for_moderation(self.user)
 
         self.assertEqual(0, mock_ncm.call_count)
-        collection.is_locked = False
-        collection.save()
+        self.collection1.is_locked = False
+        self.collection1.save()
 
-        collection.submit_for_moderation(self.user)
+        self.collection1.submit_for_moderation(self.user)
         self.assertEqual(1, mock_ncm.call_count)
 
-        collection.refresh_from_db()
+        self.collection1.refresh_from_db()
         # Collection should lock itself
-        self.assertTrue(collection.is_locked)
+        self.assertTrue(self.collection1.is_locked)
         # We will now have 3 actions with status STARTED. 1 for the existing
         # `action1` and 2 more for `moderation_request2` and `moderation_request3`
         self.assertEqual(
             3, ModerationRequestAction.objects.filter(
-                request__collection=collection, action=constants.ACTION_STARTED
+                request__collection=self.collection1, action=constants.ACTION_STARTED
             ).count()
         )
+
+    def _moderation_requests_count(self, obj, collection=None):
+        """
+        How many moderation requests are there [for a given collection]
+        :return: <bool>
+        """
+        content_type = ContentType.objects.get_for_model(obj)
+        queryset = ModerationRequest.objects.filter(
+            content_type=content_type,
+            object_id=obj.pk,
+        )
+        if collection:
+            queryset = queryset.filter(collection=collection)
+        return queryset.count()
+
+    def test_add_object(self):
+        self.assertEqual(0, self._moderation_requests_count(self.page1))
+        # Add `page1` to `collection1`
+        self.collection1.add_object(self.page1)
+        self.assertEqual(1, self._moderation_requests_count(self.page1))
+        self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
+
+        # Adding the same object to the same collection will raise an exception
+        with self.assertRaises(ObjectAlreadyInCollection):
+            self.collection1.add_object(self.page1)
+
+        self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
+        self.assertEqual(1, self._moderation_requests_count(self.page1))
+
+        # This should not work as `page1` is already part of `collection1`
+        with self.assertRaises(ObjectAlreadyInCollection):
+            self.collection2.add_object(self.page1)
+
+        # We can add `page2` to the `collection1` as it is not there yet
+        self.assertEqual(0, self._moderation_requests_count(self.page2))
+        self.collection1.add_object(self.page2)
+        self.assertEqual(1, self._moderation_requests_count(self.page2))
+        self.assertEqual(1, self._moderation_requests_count(self.page2, self.collection1))
+        self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
+
+    def test_create_moderation_request_from_content_object_locked_collection(self):
+        # This works, as the collection is not locked
+        self.collection2.add_object(self.page1)
+        self.assertEqual(1, self._moderation_requests_count(self.page1))
+
+        # Now, let's lock the collection, so we can't add to it anymore
+        self.collection2.is_locked = True
+        self.collection2.save()
+
+        with self.assertRaises(CollectionIsLocked):
+            self.collection2.add_object(self.page1)
+
+        self.assertEqual(1, self._moderation_requests_count(self.page1))
