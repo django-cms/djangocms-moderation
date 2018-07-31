@@ -46,20 +46,13 @@ class ItemToCollectionView(FormView):
                 collection = ModerationCollection.objects.get(
                                 pk=form.cleaned_data['collection_id']
                 )
-            else:
-                collection = ModerationCollection.objects.create(
-                    name=form.cleaned_data['collection_name'],
-                    workflow=form.cleaned_data['workflow']
-                )
 
             content_object = object()  # content_type_magic
             collection.add_object(content_object)
 
     def get_context_data(self, **kwargs):
         context = super(ItemToCollectionView, self).get_context_data(**kwargs)
-        # import pdb; pdb.set_trace()
         context.update({
-            'workflow_list': Workflow.objects.all(),
             'collection_list': ModerationCollection.objects.all(),
             'opts': ModerationCollection._meta,
             'title': _('Add to collection'),

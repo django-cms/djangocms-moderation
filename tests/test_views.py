@@ -15,10 +15,86 @@ from djangocms_moderation.forms import (
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
+    ModerationCollection
 )
 from djangocms_moderation.utils import get_admin_url
 
 from .utils.base import BaseViewTestCase
+
+
+class ItemToCollectionViewTest(BaseViewTestCase):
+
+    def _assert_render(self, response, form_cls):
+        view = response.context_data['view']
+        form = response.context_data['adminform']
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name[0], 'djangocms_moderation/request_form.html')
+        self.assertEqual(view.language, 'en')
+        self.assertEqual(response.context_data['title'], _('Add to collection'))
+        self.assertIsInstance(form, form_cls)
+
+    def test_new_request_without_collections(self):
+        response = self.client.get(
+            get_admin_url(
+                name='item_to_collection',
+                language='en',
+                args=()
+            )
+        )
+
+        self._assert_render()
+        self.assertEqual(response.context_data['collections'], [])
+
+    def test_new_request_with_existing_collections(self):
+
+        collection_1 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        collection_2 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 2', workflow=self.wf1
+        )
+
+        response = self.client.get(
+            get_admin_url(
+                name='item_to_collection',
+                language='en',
+                args=()
+            )
+        )
+
+        self._assert_render()
+        self.assertTrue(collection_1 in response.context_data['collections'])
+        self.assertTrue(collection_2 in response.context_data['collections'])
+        self.assertTrue(2, len(response.context_data['collections']))
+
+    def test_add_object_to_collections(self):
+
+        collection_1 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+
+        response = self.client.post(
+            get_admin_url(
+                name='item_to_collection',
+                language='en',
+                args=()
+            )
+        ), {'collection_id':  collection_1.pk , '': ''}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'reloadBrowser')
+
+    def test_invalid_content_object(self):
+        pass
+
+    def test_invalid_collection(self):
+        pass
+
+    def test_show_partial_content_objects(self):
+        pass
+
+    def test_show_content_objects(self):
+        pass
 
 
 class ModerationRequestViewTest(BaseViewTestCase):
