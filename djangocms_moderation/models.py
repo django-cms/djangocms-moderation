@@ -300,16 +300,11 @@ class ModerationCollection(models.Model):
         ).exclude(collection=self).exists()
 
         if not existing_request_exists:
-            try:
-                return self.moderation_requests.create(
-                    content_type=content_type,
-                    object_id=content_object.pk,
-                    collection=self,
-                )
-            except IntegrityError:
-                raise ObjectAlreadyInCollection(
-                   "{} is already part of this collection".format(content_object)
-                )
+            return self.moderation_requests.create(
+                content_type=content_type,
+                object_id=content_object.pk,
+                collection=self,
+            )
         else:
             raise ObjectAlreadyInCollection(
                 "{} is already part of existing moderation request which is part "

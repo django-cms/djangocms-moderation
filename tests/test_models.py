@@ -557,7 +557,7 @@ class ModerationCollectionTest(BaseTestCase):
             with transaction.atomic():
                 self.collection1.add_object(self.page1)
             self.fail('Adding the same object twice should not be allowed')
-        except (ObjectAlreadyInCollection, TransactionManagementError):
+        except IntegrityError:
             pass
 
         self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
