@@ -296,12 +296,13 @@ class ModerationCollection(models.Model):
             # the request has already started
             action, _ = moderation_request.actions.get_or_create(
                 by_user=by_user,
-                to_user=None,
                 action=constants.ACTION_STARTED,
             )
         # Lock the collection as it has been now submitted for moderation
         self.is_locked = True
         self.save(update_fields=['is_locked'])
+        # It is fine to pass any `action` from any moderation_request.actions
+        # above as it will have the same moderators
         notify_collection_moderators(collection=self, action=action)
 
     @property
@@ -500,7 +501,7 @@ class ModerationRequest(models.Model):
         return False
 
     def user_is_author(self, user):
-        return user == self.get_first_action().by_user
+        return user == self.author
 
     def user_can_view_comments(self, user):
         return self.user_is_author(user) or self.user_can_moderate(user)

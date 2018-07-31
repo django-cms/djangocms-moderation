@@ -3,6 +3,16 @@
 Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for changes in the Collection {{ collection }}.
 {% endblocktrans %}
 
+<p>
+{% trans 'Items included in this collection:' %}
+</p>
+<ul>
+{% for moderation_request in collection.moderation_requests.all %}
+    <li>{{ moderation_request }}</li>
+{% endfor %}
+</ul>
+
+
 {% if comment %}
 {% trans 'Comment' %}: <br/>
 {{ comment }} <br/>
