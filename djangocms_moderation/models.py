@@ -297,7 +297,7 @@ class ModerationCollection(models.Model):
         existing_request_exists = ModerationRequest.objects.filter(
             content_type=content_type,
             object_id=content_object.pk,
-        ).exclude(collection=self).exists()
+        ).exists()
 
         if not existing_request_exists:
             return self.moderation_requests.create(

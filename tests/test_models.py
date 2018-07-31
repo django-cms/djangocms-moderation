@@ -549,16 +549,8 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
 
         # Adding the same object to the same collection will raise an exception
-        # as we have an unique_together constrain
-
-        try:
-            # We do this in the atomic block because otherwise Django won't
-            # be able to continue executing the rest of the test.
-            with transaction.atomic():
-                self.collection1.add_object(self.page1)
-            self.fail('Adding the same object twice should not be allowed')
-        except IntegrityError:
-            pass
+        with self.assertRaises(ObjectAlreadyInCollection):
+            self.collection1.add_object(self.page1)
 
         self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
         self.assertEqual(1, self._moderation_requests_count(self.page1))
