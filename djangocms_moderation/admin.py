@@ -160,6 +160,7 @@ class WorkflowAdmin(admin.ModelAdmin):
 
 
 class ModerationCollectionAdmin(admin.ModelAdmin):
+    actions = None  # remove `delete_selected` for now, it will be handled later
     list_display = [
         'id',
         'get_name_with_requests_link',
