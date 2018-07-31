@@ -163,7 +163,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     list_display = [
         'id',
         'get_name_with_requests_link',
-        'moderator',
+        'get_moderator',
         'workflow',
         'status',
         'is_locked',
@@ -181,17 +181,17 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             obj.name,
         )
     get_name_with_requests_link.allow_tags = True
-    get_name_with_requests_link.short_description = 'Name'
+    get_name_with_requests_link.short_description = _('Name')
 
-    def moderator(self, obj):
-        # TODO return obj.author once #34 is merged
-        return 'John Placeholder'
+    def get_moderator(self, obj):
+        return obj.author
+    get_moderator.short_description = _('Moderator')
 
     def status(self, obj):
         # TODO more statuses to come in the future, once implemented
         if obj.is_locked:
-            return _("Collection")
-        return _("In review")
+            return _("In review")
+        return _("Collection")
 
 
 class ExtendedPageAdmin(PageAdmin):
