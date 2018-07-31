@@ -1,7 +1,4 @@
 import json
-
-from django.db import transaction
-from django.db.transaction import TransactionManagementError
 from mock import patch
 from unittest import skip
 
@@ -9,7 +6,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.db import IntegrityError
 
 from cms.api import create_page
 
