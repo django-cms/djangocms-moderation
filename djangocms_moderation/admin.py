@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-from cms.toolbar.items import ModalButton
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -10,17 +9,17 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.models import Page
+from cms.toolbar.items import Button
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
-from djangocms_moderation.utils import get_admin_url
 from .constants import (
     ACTION_APPROVED,
     ACTION_CANCELLED,
     ACTION_REJECTED,
     ACTION_RESUBMITTED,
 )
+from .exceptions import CollectionCantBeSubmittedForReview
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_form_submission_for_step
 from .models import (
@@ -116,7 +115,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             submit_for_moderation_url = reverse(
                 'admin:cms_moderation_submit_for_moderation', args=(collection.id,)
             )
-            submit_for_moderation_button = ModalButton(
+            submit_for_moderation_button = Button(
                 'Submit for review', submit_for_moderation_url
             )
         else:
