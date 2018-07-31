@@ -428,18 +428,13 @@ class ModerationRequest(models.Model):
         )
         self.save(update_fields=['is_active'])
 
-        new_action = self.actions.create(
+        self.actions.create(
             by_user=by_user,
             to_user=to_user,
             action=action,
             message=message,
             step_approved=step_approved,
         )
-
-        if new_action.to_user_id or new_action.to_role_id:
-            # notify_collection_moderators(self, new_action)
-            pass
-        # notify_request_author(self, new_action)
 
         if self.should_set_compliance_number():
             self.set_compliance_number()
