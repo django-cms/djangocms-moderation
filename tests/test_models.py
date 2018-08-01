@@ -1,6 +1,5 @@
 import json
 from mock import patch
-from unittest import skip
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -490,7 +489,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.page1 = create_page(title='My page 1', template='page.html', language='en',)
         self.page2 = create_page(title='My page 2', template='page.html', language='en',)
 
-    def allow_submit_for_moderation(self):
+    def test_allow_submit_for_moderation(self):
         self.collection1.is_locked = True
         self.collection1.save()
         self.assertFalse(self.collection1.allow_submit_for_moderation)
@@ -586,7 +585,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertEqual(1, self._moderation_requests_count(self.page2, self.collection1))
         self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
 
-    def test_create_moderation_request_from_content_object_locked_collection(self):
+    def test_add_object_locked_collection(self):
         # This works, as the collection is not locked
         self.collection2.add_object(self.page1)
         self.assertEqual(1, self._moderation_requests_count(self.page1))
