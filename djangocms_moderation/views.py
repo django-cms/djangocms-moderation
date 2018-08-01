@@ -52,9 +52,19 @@ class ItemToCollectionView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super(ItemToCollectionView, self).get_context_data(**kwargs)
+        opts_meta = ModerationCollection._meta
+        # @todo update filter to exclude finished/approved collections
+        collection_list = ModerationCollection.objects.filter(is_locked=False)
+        all_collection_objects = []
+
+        for collection in collection_list:
+            all_collection_objects.extend([request.content_object
+                                           for request in collection.moderation_requests.all()])
+
         context.update({
-            'collection_list': ModerationCollection.objects.all(),
-            'opts': ModerationCollection._meta,
+            'collection_list': collection_list,
+            'content_object_list': all_collection_objects,
+            'opts': opts_meta,
             'title': _('Add to collection'),
             'content_object': object()  # content_type_magic
         })
