@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -19,7 +18,6 @@ from .constants import (
     ACTION_REJECTED,
     ACTION_RESUBMITTED,
 )
-from .exceptions import CollectionCantBeSubmittedForReview
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_form_submission_for_step
 from .models import (
@@ -81,6 +79,7 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
+    view_on_site = True
     actions = None  # remove `delete_selected` for now, it will be handled later
     inlines = [ModerationRequestActionInline]
     list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
@@ -113,7 +112,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
         if collection:
             submit_for_moderation_url = reverse(
-                'admin:cms_moderation_submit_for_moderation', args=(collection.id,)
+                'admin:cms_moderation_submit_collection_for_moderation', args=(collection.id,)
             )
             submit_for_moderation_button = Button(
                 'Submit for review', submit_for_moderation_url
@@ -145,42 +144,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return status
     get_status.short_description = _('Status')
 
-    def submit_for_moderation(self, request, collection_id):
-        """
-        This should submit all the moderation requests for the given
-        collection_id to a moderation flow
-        """
-        try:
-            collection = ModerationCollection.objects.get(pk=collection_id)
-        except ModerationCollection.DoesNotExist:
-            collection = None
-
-        if collection:
-            try:
-                collection.submit_for_moderation(request.user)
-            except CollectionCantBeSubmittedForReview:
-                self.message_user(request, "This collection can't be submitted for a review")
-            else:
-                self.message_user(request, 'Your collection has been submitted for a review')
-            # Redirect back to the collection filtered moderation request change list
-            redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-            redirect_url = "{}?collection__id__exact={}".format(
-                redirect_url,
-                collection.id
-            )
-        else:
-            # If the collection doesn't exists, redirect to collection list view
-            redirect_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
-            self.message_user(request, "Couldn't find the collection")
-        return HttpResponseRedirect(redirect_url)
-
     def get_urls(self):
         urls = super(ModerationRequestAdmin, self).get_urls()
         my_urls = [
             url(
                 '^collection/(?P<collection_id>\d+)/submit-for-review/$',
-                self.submit_for_moderation,
-                name="cms_moderation_submit_for_moderation"
+                views.submit_collection_for_moderation,
+                name="cms_moderation_submit_collection_for_moderation",
             ),
         ]
         return my_urls + urls

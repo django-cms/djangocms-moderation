@@ -107,3 +107,30 @@ class UpdateModerationRequestForm(ModerationRequestForm):
             to_user=self.cleaned_data.get('moderator'),
             message=self.cleaned_data['message'],
         )
+
+
+class CollectionModerationSubmitForm(forms.Form):
+    moderator = forms.ModelChoiceField(
+        label=_('moderator'),
+        queryset=get_user_model().objects.none(),
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.collection = kwargs.pop('collection')
+        self.user = kwargs.pop('user')
+        super(CollectionModerationSubmitForm, self).__init__(*args, **kwargs)
+
+        if 'moderator' in self.fields:
+            self.configure_moderator_field()
+
+    def configure_moderator_field(self):
+        next_role = self.collection.workflow.first_step.role
+        users = next_role.get_users_queryset().exclude(pk=self.user.pk)
+        self.fields['moderator'].empty_label = ugettext('Any {role}').format(role=next_role.name)
+        self.fields['moderator'].queryset = users
+
+    def save(self):
+        self.collection.submit_for_moderation(
+            self.user, self.cleaned_data['moderator']
+        )

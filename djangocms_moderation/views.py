@@ -13,7 +13,8 @@ from django.views.generic import FormView, ListView
 
 from cms.utils.urlutils import add_url_parameters
 
-from .forms import ModerationRequestForm, UpdateModerationRequestForm
+from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
+from .forms import ModerationRequestForm, UpdateModerationRequestForm, CollectionModerationSubmitForm
 from .helpers import (
     get_active_moderation_request,
     get_moderation_workflow,
@@ -23,7 +24,7 @@ from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
     ModerationRequest,
-)
+    ModerationCollection)
 from .utils import get_admin_url
 
 
@@ -240,3 +241,41 @@ def moderation_confirmation_page(request, confirmation_id):
             reviewed=True,
         )
     return render(request, confirmation_page_instance.template, context)
+
+
+class SubmitCollectionForModeration(FormView):
+    template_name = 'djangocms_moderation/request_form.html'
+    form_class = CollectionModerationSubmitForm
+
+    def get_form_kwargs(self):
+        kwargs = super(SubmitCollectionForModeration, self).get_form_kwargs()
+        kwargs['collection'] = ModerationCollection.objects.get(pk=self.kwargs['collection_id'])
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        try:
+            form.save()
+        except CollectionCantBeSubmittedForReview:
+            messages.error(self.request, "This collection can't be submitted for a review")
+        else:
+            messages.success(self.request, 'Your collection has been submitted for a review')
+        # Redirect back to the collection filtered moderation request change list
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            form.collection.id
+        )
+        return HttpResponseRedirect(redirect_url)
+
+    def get_context_data(self, **kwargs):
+        context = super(SubmitCollectionForModeration, self).get_context_data(**kwargs)
+        context.update({
+            'opts': ModerationCollection._meta,
+            'title': _('Submit collection for review'),
+            'adminform': context['form'],
+        })
+        return context
+
+
+submit_collection_for_moderation = SubmitCollectionForModeration.as_view()

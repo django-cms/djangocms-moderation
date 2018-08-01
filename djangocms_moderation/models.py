@@ -274,7 +274,7 @@ class ModerationCollection(models.Model):
     def __str__(self):
         return self.name
 
-    def submit_for_moderation(self, by_user):
+    def submit_for_moderation(self, by_user, to_user):
         """
         Submit all the moderation requests belonging to this collection for
         moderation and mark the collection as locked
@@ -289,6 +289,7 @@ class ModerationCollection(models.Model):
             # the request has already started
             action, _ = moderation_request.actions.get_or_create(
                 by_user=by_user,
+                to_user=to_user,
                 action=constants.ACTION_STARTED,
             )
         # Lock the collection as it has been now submitted for moderation

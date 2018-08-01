@@ -526,13 +526,13 @@ class ModerationCollectionTest(BaseTestCase):
         self.collection1.save()
         # This should not work as the collection is_locked
         with self.assertRaises(CollectionCantBeSubmittedForReview):
-            self.collection1.submit_for_moderation(self.user)
+            self.collection1.submit_for_moderation(self.user, None)
 
         self.assertEqual(0, mock_ncm.call_count)
         self.collection1.is_locked = False
         self.collection1.save()
 
-        self.collection1.submit_for_moderation(self.user)
+        self.collection1.submit_for_moderation(self.user, None)
         self.assertEqual(1, mock_ncm.call_count)
 
         self.collection1.refresh_from_db()
