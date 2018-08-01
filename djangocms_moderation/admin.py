@@ -101,17 +101,14 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         # If we filter by a specific collection, we want to add this collection
         # to the context
-        collection = None
         collection_id = request.GET.get('collection__id__exact')
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
             except ModerationCollection.DoesNotExist:
                 pass
-
-        extra_context = {
-            'collection': collection
-        }
+            else:
+                extra_context = dict(collection=collection)
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
     def get_status(self, obj):
