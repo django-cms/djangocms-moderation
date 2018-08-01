@@ -11,6 +11,7 @@ from djangocms_moderation import constants
 from djangocms_moderation.forms import (
     ModerationRequestForm,
     UpdateModerationRequestForm,
+    ItemToCollectionForm
 )
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
@@ -25,6 +26,11 @@ from .utils.base import BaseViewTestCase
 class ItemToCollectionViewTest(BaseViewTestCase):
 
     def setUp(self):
+        from django.contrib.auth.models import User
+        self.user = User.objects.create_user(
+            username='test1', email='test1@test.com', password='test1', is_staff=True
+        )
+
         self.collection_1 = ModerationCollection.objects.create(
             author=self.user, name='My collection 1', workflow=self.wf1
         )
@@ -32,18 +38,18 @@ class ItemToCollectionViewTest(BaseViewTestCase):
             author=self.user, name='My collection 2', workflow=self.wf1
         )
 
-    def _assert_render(self, response, form_cls):
+    def _assert_render(self, response):
         view = response.context_data['view']
-        form = response.context_data['adminform']
+        form = response.context_data['form']
+
+        self.assertIsInstance(form, ItemToCollectionForm)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template_name[0], 'djangocms_moderation/request_form.html')
-        self.assertEqual(view.language, 'en')
+        self.assertEqual(response.template_name[0], 'djangocms_moderation/item_to_collection.html')
         self.assertEqual(response.context_data['title'], _('Add to collection'))
-        self.assertIsInstance(form, form_cls)
 
     def test_new_request_without_collections(self):
-        ModerationCollection.objects.delete()
-
+        ModerationCollection.objects.all().delete()
+        self.client.force_login(self.user)
         response = self.client.get(
             get_admin_url(
                 name='item_to_collection',
@@ -52,11 +58,11 @@ class ItemToCollectionViewTest(BaseViewTestCase):
             )
         )
 
-        self._assert_render()
-        self.assertEqual(response.context_data['collections'], [])
+        self._assert_render(response)
+        self.assertEqual(list(response.context_data['collection_list']), [])
 
     def test_new_request_with_existing_collections(self):
-
+        self.client.force_login(self.user)
         response = self.client.get(
             get_admin_url(
                 name='item_to_collection',
@@ -65,13 +71,13 @@ class ItemToCollectionViewTest(BaseViewTestCase):
             )
         )
 
-        self._assert_render()
-        self.assertTrue(self.collection_1 in response.context_data['collections'])
-        self.assertTrue(self.collection_2 in response.context_data['collections'])
-        self.assertTrue(2, len(response.context_data['collections']))
+        self._assert_render(response)
+        self.assertTrue(self.collection_1 in response.context_data['collection_list'])
+        self.assertTrue(self.collection_2 in response.context_data['collection_list'])
+        self.assertTrue(2, len(response.context_data['collection_list']))
 
     def test_add_object_to_collections(self):
-
+        self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
                 name='item_to_collection',
@@ -84,6 +90,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.assertContains(response, 'reloadBrowser')
 
         # ensure object is in collection
+        self.client.force_login(self.user)
         response = self.client.get(
             get_admin_url(
                 name='item_to_collection',
@@ -95,7 +102,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.assertTrue(self.pg1 in response.context_data['content_object_list'])
 
     def test_invalid_content_object(self):
-
+        self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
                 name='item_to_collection',
@@ -104,10 +111,12 @@ class ItemToCollectionViewTest(BaseViewTestCase):
             )
             , {'collection_id': self.collection_1.pk, 'content_object_id': object()})
 
+
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, _('Invalid Object'))
 
     def test_invalid_collection(self):
+        self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
                 name='item_to_collection',
@@ -123,6 +132,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.collection_1.is_locked = True
         self.collection_1.save()
 
+        self.client.force_login(self.user)
         response = self.client.get(
             get_admin_url(
                 name='item_to_collection',
@@ -131,11 +141,13 @@ class ItemToCollectionViewTest(BaseViewTestCase):
             )
         )
 
-        self._assert_render()
-        self.assertFalse(self.collection_1 in response.context_data['collections'])
-        self.assertTrue(self.collection_2 in response.context_data['collections'])
-        self.assertTrue(1, len(response.context_data['collections']))
+        self._assert_render(response)
+        self.assertFalse(self.collection_1 in response.context_data['collection_list'])
+        self.assertTrue(self.collection_2 in response.context_data['collection_list'])
+        self.assertTrue(1, len(response.context_data['collection_list']))
 
+    def test_authenticated_users_only(self):
+        pass
 
 
 
