@@ -274,6 +274,10 @@ class ModerationCollection(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def author_name(self):
+        return self.author.get_full_name() or self.author.get_username()
+
     def submit_for_moderation(self, by_user, to_user):
         """
         Submit all the moderation requests belonging to this collection for
@@ -614,7 +618,7 @@ class ModerationRequestAction(models.Model):
         return self._get_user_name(self.to_user)
 
     def _get_user_name(self, user):
-        return user.get_full_name() or getattr(user, user.USERNAME_FIELD)
+        return user.get_full_name() or user.get_username()
 
     def save(self, **kwargs):
         """

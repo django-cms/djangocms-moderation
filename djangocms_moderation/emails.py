@@ -31,8 +31,6 @@ email_subjects = {
 
 
 def _send_email(collection, action, recipients, subject, template):
-    author_name = 'Author placeholder'  # TODO: this will be collection.author
-
     if action.to_user_id:
         moderator_name = action.get_to_user_name()
     elif action.to_role_id:
@@ -43,7 +41,7 @@ def _send_email(collection, action, recipients, subject, template):
     admin_url = reverse('admin:djangocms_moderation_moderationcollection_change', args=(collection.pk,))
     context = {
         'collection': collection,
-        'author_name': author_name,
+        'author_name': collection.author_name,
         'by_user_name': action.get_by_user_name(),
         'moderator_name': moderator_name,
         'admin_url': get_absolute_url(admin_url),
