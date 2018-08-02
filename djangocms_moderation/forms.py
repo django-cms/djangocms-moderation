@@ -109,7 +109,7 @@ class UpdateModerationRequestForm(ModerationRequestForm):
         )
 
 
-class CollectionModerationSubmitForm(forms.Form):
+class SubmitCollectionForModerationForm(forms.Form):
     moderator = forms.ModelChoiceField(
         label=_('moderator'),
         queryset=get_user_model().objects.none(),
@@ -119,7 +119,7 @@ class CollectionModerationSubmitForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.collection = kwargs.pop('collection')
         self.user = kwargs.pop('user')
-        super(CollectionModerationSubmitForm, self).__init__(*args, **kwargs)
+        super(SubmitCollectionForModerationForm, self).__init__(*args, **kwargs)
 
         if 'moderator' in self.fields:
             self.configure_moderator_field()

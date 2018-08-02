@@ -301,6 +301,10 @@ class ModerationCollection(models.Model):
 
     @property
     def allow_submit_for_moderation(self):
+        """
+        Can this collection submitted for moderation?
+        :return: <bool>
+        """
         # TODO limited check for now
         return not self.is_locked
 

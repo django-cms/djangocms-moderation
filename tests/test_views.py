@@ -1,9 +1,11 @@
 import json
-from mock import patch
+from mock import patch, Mock
 from unittest import skip
 
 from django.contrib.auth.models import User
+from django.contrib.messages import get_messages
 from django.utils.translation import ugettext_lazy as _
+from django.urls import reverse
 
 from cms.utils.urlutils import add_url_parameters
 
@@ -15,7 +17,7 @@ from djangocms_moderation.forms import (
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-)
+    ModerationCollection)
 from djangocms_moderation.utils import get_admin_url
 
 from .utils.base import BaseViewTestCase
@@ -389,3 +391,27 @@ class ModerationConfirmationPageTest(BaseViewTestCase):
             reviewed=True,
         )
         self.assertEqual(response.context['redirect_url'], redirect_url)
+
+
+class SubmitCollectionForModerationViewTest(BaseViewTestCase):
+    def setUp(self):
+        super(SubmitCollectionForModerationViewTest, self).setUp()
+        self.url = reverse(
+            'admin:cms_moderation_submit_collection_for_moderation',
+            args=(self.collection2.pk,)
+        )
+        request_change_list_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        self.request_change_list_url = "{}?collection__id__exact={}".format(
+            request_change_list_url,
+            self.collection2.pk
+        )
+
+    @patch.object(ModerationCollection, 'submit_for_moderation')
+    def test_submit_collection_for_moderation(self, submit_mock):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(self.url)
+        assert submit_mock.called
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(self.request_change_list_url, response.url)

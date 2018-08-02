@@ -14,7 +14,7 @@ from django.views.generic import FormView, ListView
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
-from .forms import ModerationRequestForm, UpdateModerationRequestForm, CollectionModerationSubmitForm
+from .forms import ModerationRequestForm, UpdateModerationRequestForm, SubmitCollectionForModerationForm
 from .helpers import (
     get_active_moderation_request,
     get_moderation_workflow,
@@ -245,7 +245,7 @@ def moderation_confirmation_page(request, confirmation_id):
 
 class SubmitCollectionForModeration(FormView):
     template_name = 'djangocms_moderation/request_form.html'
-    form_class = CollectionModerationSubmitForm
+    form_class = SubmitCollectionForModerationForm
 
     def get_form_kwargs(self):
         kwargs = super(SubmitCollectionForModeration, self).get_form_kwargs()
@@ -257,9 +257,9 @@ class SubmitCollectionForModeration(FormView):
         try:
             form.save()
         except CollectionCantBeSubmittedForReview:
-            messages.error(self.request, "This collection can't be submitted for a review")
+            messages.error(self.request, _("This collection can't be submitted for a review"))
         else:
-            messages.success(self.request, 'Your collection has been submitted for a review')
+            messages.success(self.request, _("Your collection has been submitted for a review"))
         # Redirect back to the collection filtered moderation request change list
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         redirect_url = "{}?collection__id__exact={}".format(
