@@ -28,6 +28,7 @@ class ModerationToolbar(CMSToolbar):
             get_admin_url(
                 name='item_to_collection',
                 language=self.current_lang,
+                args=()
             ),
             content_object_id=page.pk
         )

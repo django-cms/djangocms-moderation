@@ -38,38 +38,58 @@ from . import constants  # isort:skip
 
 class ItemToCollectionView(FormView):
     template_name = 'djangocms_moderation/item_to_collection.html'
+    success_template_name = 'djangocms_moderation/request_finalized.html'
     form_class = ItemToCollectionForm
 
     def get_form_kwargs(self):
         kwargs = super(ItemToCollectionView, self).get_form_kwargs()
-        kwargs['content_object_id'] = self.request.GET.get('content_object_id')
+        kwargs['initial'].update({
+            'content_object_id': self.request.GET.get('content_object_id')
+        })
 
         return kwargs
 
-    def form_valid(self, form):
-        if form.is_valid():
-            if form.cleaned_data['collection_id']:
-                collection = ModerationCollection.objects.get(
-                                pk=form.cleaned_data['collection_id']
-                )
+    def form_invalid(self, form):
+        pass  # @ todo
 
-                collection.add_object(
-                    form.cleaned_data['content_object_id']
-                )
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if form.cleaned_data['collection_id']:
+            collection = ModerationCollection.objects.get(
+                            pk=form.cleaned_data['collection_id']
+            )
+
+            collection.add_object(
+                # @todo: this is to be replaced
+                get_page_or_404(form.cleaned_data['content_object_id'], 'en')
+            )
+
+        return response
+
+    def get_success_url(self, **kwargs):
+        return self.request.get_raw_uri()
 
     def get_context_data(self, **kwargs):
+
         context = super(ItemToCollectionView, self).get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
         collection_list = ModerationCollection.objects.filter(is_locked=False)
-        all_collection_objects = []
+        collection_id = self.request.GET.get('collection_id')
+        content_object_list = []
 
-        for collection in collection_list:
-            all_collection_objects.extend([request.content_object
-                                           for request in collection.moderation_requests.all()])
+        if collection_list:
+            if collection_id:
+                collection = ModerationCollection.objects.get(pk=collection_id)
+            else:
+                collection = collection_list[0]
+                collection_id = collection.pk
+
+            content_object_list = collection.moderation_requests.all()
 
         context.update({
+            'collection_id': collection_id,
             'collection_list': collection_list,
-            'content_object_list': all_collection_objects,
+            'content_object_list':  content_object_list,
             'opts': opts_meta,
             'title': _('Add to collection'),
         })
