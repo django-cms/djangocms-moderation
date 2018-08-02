@@ -41,7 +41,7 @@ class WorkflowStepInlineFormSet(CustomInlineFormSet):
                 selected_roles.append(selected_role.pk)
 
 
-class ModerationRequestForm(forms.Form):
+class UpdateModerationRequestForm(forms.Form):
     moderator = forms.ModelChoiceField(
         label=_('moderator'),
         queryset=get_user_model().objects.none(),
@@ -60,19 +60,10 @@ class ModerationRequestForm(forms.Form):
         self.user = kwargs.pop('user')
         self.workflow = kwargs.pop('workflow')
         self.active_request = kwargs.pop('active_request')
-        super(ModerationRequestForm, self).__init__(*args, **kwargs)
+        super(UpdateModerationRequestForm, self).__init__(*args, **kwargs)
 
         if 'moderator' in self.fields:
             self.configure_moderator_field()
-
-    def configure_moderator_field(self):
-        next_role = self.workflow.first_step.role
-        users = next_role.get_users_queryset().exclude(pk=self.user.pk)
-        self.fields['moderator'].empty_label = ugettext('Any {role}').format(role=next_role.name)
-        self.fields['moderator'].queryset = users
-
-
-class UpdateModerationRequestForm(ModerationRequestForm):
 
     def configure_moderator_field(self):
         # For cancelling and rejecting, we don't need to display a moderator

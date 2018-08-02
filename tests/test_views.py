@@ -10,10 +10,7 @@ from django.urls import reverse
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_moderation import constants
-from djangocms_moderation.forms import (
-    ModerationRequestForm,
-    UpdateModerationRequestForm,
-)
+from djangocms_moderation.forms import UpdateModerationRequestForm
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
@@ -37,46 +34,6 @@ class ModerationRequestViewTest(BaseViewTestCase):
         self.assertEqual(view.active_request, active_request)
         self.assertEqual(response.context_data['title'], title)
         self.assertIsInstance(form, form_cls)
-
-    def test_new_request_view_with_form(self):
-        response = self.client.get(
-            get_admin_url(
-                name='cms_moderation_new_request',
-                language='en',
-                args=(self.pg2.pk, 'en')
-            )
-        )
-        self._assert_render(
-            response=response,
-            page=self.pg2,
-            action=constants.ACTION_STARTED,
-            active_request=None,
-            workflow=self.wf1,
-            form_cls=ModerationRequestForm,
-            title=_('Submit for moderation')
-        )
-
-    @skip('4.0 rework TBC')
-    def test_new_request_view_with_form_workflow_passed_param(self):
-        response = self.client.get(
-            '{}?{}'.format(
-                get_admin_url(
-                    name='cms_moderation_new_request',
-                    language='en',
-                    args=(self.pg2.pk, 'en')
-                ),
-                'workflow={}'.format(self.wf2.pk)
-            )
-        )
-        self._assert_render(
-            response=response,
-            page=self.pg2,
-            action=constants.ACTION_STARTED,
-            active_request=None,
-            workflow=self.wf2,
-            form_cls=ModerationRequestForm,
-            title=_('Submit for moderation')
-        )
 
     def test_cancel_request_view_with_form(self):
         response = self.client.get(get_admin_url(
@@ -142,56 +99,6 @@ class ModerationRequestViewTest(BaseViewTestCase):
             title=_('Approve changes')
         )
 
-    def test_get_form_kwargs(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_new_request',
-            language='en',
-            args=(self.pg2.pk, 'en')
-        ))
-        view = response.context_data['view']
-        kwargs = view.get_form_kwargs()
-        self.assertEqual(kwargs.get('action'), view.action)
-        self.assertEqual(kwargs.get('language'), view.language)
-        self.assertEqual(kwargs.get('page'), view.page)
-        self.assertEqual(kwargs.get('user'), view.request.user)
-        self.assertEqual(kwargs.get('workflow'), view.workflow)
-        self.assertEqual(kwargs.get('active_request'), view.active_request)
-
-    @skip('4.0 rework TBC')
-    def test_form_valid(self):
-        response = self.client.post(get_admin_url(
-            name='cms_moderation_new_request',
-            language='en',
-            args=(self.pg2.pk, 'en')
-        ), {'moderator': '', 'message': 'Some review message'})
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'reloadBrowser')  # check html part
-
-    def test_throws_error_moderation_already_exists(self):
-        response = self.client.get('{}?{}'.format(
-            get_admin_url(
-                name='cms_moderation_new_request',
-                language='en',
-                args=(self.pg1.pk, 'en')
-            ),
-            'workflow={}'.format(self.wf1.pk)  # pg1 => active request
-        ))
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'Page already has an active moderation request.')
-
-    @skip('4.0 rework TBC')
-    def test_throws_error_invalid_workflow_passed(self):
-        response = self.client.get('{}?{}'.format(
-            get_admin_url(
-                name='cms_moderation_new_request',
-                language='en',
-                args=(self.pg2.pk, 'en')
-            ),
-            'workflow=10'  # pg2 => no active requests, 10 => workflow does not exist
-        ))
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'No moderation workflow exists for page.')
-
     def test_throws_no_active_moderation_request(self):
         response = self.client.get(get_admin_url(
             name='cms_moderation_cancel_request',
@@ -221,16 +128,6 @@ class ModerationRequestViewTest(BaseViewTestCase):
         ))
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.content, b'User is not allowed to update request.')
-
-    @patch('djangocms_moderation.views.get_moderation_workflow', return_value=None)
-    def test_throws_error_if_workflow_has_not_been_resolved(self, mock_gpmw):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_new_request',
-            language='en',
-            args=(self.pg2.pk, 'en')
-        ))
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'No moderation workflow exists for page.')
 
     def _create_confirmation_page(self, moderation_request):
         # First delete all the form submissions for the passed moderation_request

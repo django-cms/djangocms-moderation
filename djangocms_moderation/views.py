@@ -14,7 +14,7 @@ from django.views.generic import FormView, ListView
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
-from .forms import ModerationRequestForm, UpdateModerationRequestForm, SubmitCollectionForModerationForm
+from .forms import UpdateModerationRequestForm, SubmitCollectionForModerationForm
 from .helpers import (
     get_active_moderation_request,
     get_moderation_workflow,
@@ -135,13 +135,6 @@ class ModerationRequestView(FormView):
         })
         return context
 
-
-new_moderation_request = ModerationRequestView.as_view(
-    action=constants.ACTION_STARTED,
-    page_title=_('Submit for moderation'),
-    form_class=ModerationRequestForm,
-    success_message=_('The page has been sent for moderation.'),
-)
 
 cancel_moderation_request = ModerationRequestView.as_view(
     action=constants.ACTION_CANCELLED,

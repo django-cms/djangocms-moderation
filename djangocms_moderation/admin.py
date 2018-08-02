@@ -228,11 +228,6 @@ class ExtendedPageAdmin(PageAdmin):
 
         url_patterns = [
             _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/new/$',
-                views.new_moderation_request,
-                'new_request',
-            ),
-            _url(
                 r'^([0-9]+)/([a-z\-]+)/moderation/resubmit/$',
                 views.resubmit_moderation_request,
                 'resubmit_request',
