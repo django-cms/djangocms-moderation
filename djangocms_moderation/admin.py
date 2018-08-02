@@ -109,7 +109,17 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             except (ValueError, ModerationCollection.DoesNotExist):
                 pass
             else:
-                extra_context = dict(collection=collection)
+                submit_for_moderation_url = reverse(
+                    'admin:cms_moderation_submit_collection_for_moderation',
+                    args=(collection_id,)
+                )
+                submit_for_moderation_button = Button(
+                    'Submit for review', submit_for_moderation_url
+                )
+                extra_context = {
+                    'collection': collection,
+                    'submit_for_moderation_button': submit_for_moderation_button
+                }
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
     def get_status(self, obj):
