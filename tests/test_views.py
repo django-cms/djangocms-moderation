@@ -1,9 +1,7 @@
 import json
-from mock import patch, Mock
-from unittest import skip
+import mock
 
 from django.contrib.auth.models import User
-from django.contrib.messages import get_messages
 from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse
 
@@ -303,7 +301,7 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
             self.collection2.pk
         )
 
-    @patch.object(ModerationCollection, 'submit_for_moderation')
+    @mock.patch.object(ModerationCollection, 'submit_for_moderation')
     def test_submit_collection_for_moderation(self, submit_mock):
         response = self.client.get(self.url)
         self.assertEqual(200, response.status_code)
@@ -312,3 +310,39 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
         assert submit_mock.called
         self.assertEqual(302, response.status_code)
         self.assertEqual(self.request_change_list_url, response.url)
+
+
+class ModerationRequestChangeListView(BaseViewTestCase):
+    def setUp(self):
+        super(ModerationRequestChangeListView, self).setUp()
+        self.collection_submit_url = reverse(
+            'admin:cms_moderation_submit_collection_for_moderation',
+            args=(self.collection2.pk,)
+        )
+        self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        self.url_with_filter = "{}?collection__id__exact={}".format(
+            self.url, self.collection2.pk
+        )
+
+    def test_change_list_view_should_contain_collection_object(self):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotIn('collection', response.context)
+
+        response = self.client.get(self.url_with_filter)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(response.context['collection'], self.collection2)
+
+    @mock.patch.object(ModerationCollection, 'allow_submit_for_moderation')
+    def test_change_list_view_should_contain_submit_collection_button(self, allow_submit_mock):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotIn('submit_for_moderation_button', response.context)
+
+        allow_submit_mock.__get__ = mock.Mock(return_value=False)
+        response = self.client.get(self.url_with_filter)
+        self.assertNotIn('submit_for_moderation_button', response.context)
+
+        allow_submit_mock.__get__ = mock.Mock(return_value=True)
+        response = self.client.get(self.url_with_filter)
+        self.assertIn('submit_for_moderation_button', response.context)

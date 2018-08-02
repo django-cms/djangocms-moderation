@@ -4,12 +4,7 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.encoding import force_text
-from django.utils.translation import (
-    override as force_language,
-    ugettext_lazy as _,
-)
-
-from cms.utils.conf import get_cms_setting
+from django.utils.translation import ugettext_lazy as _
 
 from .utils import get_absolute_url
 
