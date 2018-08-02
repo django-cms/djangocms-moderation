@@ -18,9 +18,9 @@ from cms.models.fields import PlaceholderField
 
 from .emails import notify_collection_moderators
 from .exceptions import (
+    CollectionCantBeSubmittedForModeration,
     CollectionIsLocked,
     ObjectAlreadyInCollection,
-    CollectionCantBeSubmittedForModeration,
 )
 from .utils import generate_compliance_number
 

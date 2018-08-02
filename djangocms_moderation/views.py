@@ -13,8 +13,11 @@ from django.views.generic import FormView, ListView
 
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_moderation.exceptions import CollectionCantBeSubmittedForModeration
-from .forms import UpdateModerationRequestForm, SubmitCollectionForModerationForm
+from .exceptions import CollectionCantBeSubmittedForModeration
+from .forms import (
+    SubmitCollectionForModerationForm,
+    UpdateModerationRequestForm,
+)
 from .helpers import (
     get_active_moderation_request,
     get_moderation_workflow,
@@ -23,8 +26,9 @@ from .helpers import (
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
+    ModerationCollection,
     ModerationRequest,
-    ModerationCollection)
+)
 from .utils import get_admin_url
 
 

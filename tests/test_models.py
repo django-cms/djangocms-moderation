@@ -10,19 +10,20 @@ from cms.api import create_page
 
 from djangocms_moderation import constants
 from djangocms_moderation.exceptions import (
-    ObjectAlreadyInCollection,
     CollectionCantBeSubmittedForModeration,
     CollectionIsLocked,
+    ObjectAlreadyInCollection,
 )
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
+    ModerationCollection,
     ModerationRequest,
     ModerationRequestAction,
     Role,
     Workflow,
     WorkflowStep,
-    ModerationCollection)
+)
 
 from .utils.base import BaseTestCase
 
