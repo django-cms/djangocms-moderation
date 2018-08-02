@@ -12,6 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView, ListView, DetailView, CreateView
 
 from cms.utils.urlutils import add_url_parameters
+from cms
 
 from .forms import (
     ModerationRequestForm,
@@ -40,6 +41,12 @@ class ItemToCollectionView(FormView):
     template_name = 'djangocms_moderation/item_to_collection.html'
     form_class = ItemToCollectionForm
 
+    def get_form_kwargs(self):
+        kwargs = super(ItemToCollectionView, self).get_form_kwargs()
+        kwargs['content_object_id'] = self.request.GET.get('content_object_id')
+
+        return kwargs
+
     def form_valid(self, form):
         if form.is_valid():
             if form.cleaned_data['collection_id']:
@@ -47,13 +54,14 @@ class ItemToCollectionView(FormView):
                                 pk=form.cleaned_data['collection_id']
                 )
 
-            content_object = object()  # content_type_magic
-            collection.add_object(content_object)
+
+            collection.add_object(
+                form.cleaned_data['content_object_id']
+            )
 
     def get_context_data(self, **kwargs):
         context = super(ItemToCollectionView, self).get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
-        # @todo update filter to exclude finished/approved collections
         collection_list = ModerationCollection.objects.filter(is_locked=False)
         all_collection_objects = []
 
@@ -66,7 +74,6 @@ class ItemToCollectionView(FormView):
             'content_object_list': all_collection_objects,
             'opts': opts_meta,
             'title': _('Add to collection'),
-            'content_object': object()  # content_type_magic
         })
 
         return context
