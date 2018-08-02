@@ -13,7 +13,7 @@ from django.views.generic import FormView, ListView
 
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_moderation.exceptions import CollectionCantBeSubmittedForReview
+from djangocms_moderation.exceptions import CollectionCantBeSubmittedForModeration
 from .forms import UpdateModerationRequestForm, SubmitCollectionForModerationForm
 from .helpers import (
     get_active_moderation_request,
@@ -249,7 +249,7 @@ class SubmitCollectionForModeration(FormView):
     def form_valid(self, form):
         try:
             form.save()
-        except CollectionCantBeSubmittedForReview:
+        except CollectionCantBeSubmittedForModeration:
             messages.error(self.request, _("This collection can't be submitted for a review"))
         else:
             messages.success(self.request, _("Your collection has been submitted for a review"))

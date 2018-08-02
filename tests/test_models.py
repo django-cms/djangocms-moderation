@@ -11,7 +11,7 @@ from cms.api import create_page
 from djangocms_moderation import constants
 from djangocms_moderation.exceptions import (
     ObjectAlreadyInCollection,
-    CollectionCantBeSubmittedForReview,
+    CollectionCantBeSubmittedForModeration,
     CollectionIsLocked,
 )
 from djangocms_moderation.models import (
@@ -490,13 +490,19 @@ class ModerationCollectionTest(BaseTestCase):
         self.page2 = create_page(title='My page 2', template='page.html', language='en',)
 
     def test_allow_submit_for_moderation(self):
+        self.collection1.is_locked = False
+        self.collection1.save()
+        # This is false, as we don't have any moderation requests in this collection
+        self.assertFalse(self.collection1.allow_submit_for_moderation)
+
+        ModerationRequest.objects.create(
+            content_object=self.pg1, collection=self.collection1, is_active=True
+        )
+        self.assertTrue(self.collection1.allow_submit_for_moderation)
+
         self.collection1.is_locked = True
         self.collection1.save()
         self.assertFalse(self.collection1.allow_submit_for_moderation)
-
-        self.collection1.is_locked = False
-        self.collection1.save()
-        self.assertTrue(self.collection1.allow_submit_for_moderation)
 
     @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_submit_for_moderation(self, mock_ncm):
@@ -525,7 +531,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.collection1.is_locked = True
         self.collection1.save()
         # This should not work as the collection is_locked
-        with self.assertRaises(CollectionCantBeSubmittedForReview):
+        with self.assertRaises(CollectionCantBeSubmittedForModeration):
             self.collection1.submit_for_moderation(self.user, None)
 
         self.assertEqual(0, mock_ncm.call_count)

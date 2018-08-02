@@ -1,4 +1,4 @@
-class CollectionCantBeSubmittedForReview(Exception):
+class CollectionCantBeSubmittedForModeration(Exception):
     pass
 
 

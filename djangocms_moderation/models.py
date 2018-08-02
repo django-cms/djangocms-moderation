@@ -20,7 +20,7 @@ from .emails import notify_collection_moderators
 from .exceptions import (
     CollectionIsLocked,
     ObjectAlreadyInCollection,
-    CollectionCantBeSubmittedForReview,
+    CollectionCantBeSubmittedForModeration,
 )
 from .utils import generate_compliance_number
 
@@ -278,14 +278,13 @@ class ModerationCollection(models.Model):
     def author_name(self):
         return self.author.get_full_name() or self.author.get_username()
 
-    def submit_for_moderation(self, by_user, to_user):
+    def submit_for_moderation(self, by_user, to_user=None):
         """
         Submit all the moderation requests belonging to this collection for
         moderation and mark the collection as locked
-        :param by_user:
         """
         if not self.allow_submit_for_moderation:
-            raise CollectionCantBeSubmittedForReview()
+            raise CollectionCantBeSubmittedForModeration()
 
         action = None
         for moderation_request in self.moderation_requests.all():
@@ -310,7 +309,7 @@ class ModerationCollection(models.Model):
         :return: <bool>
         """
         # TODO limited check for now
-        return not self.is_locked
+        return not self.is_locked and self.moderation_requests.exists()
 
     def add_object(self, content_object):
         """

@@ -111,9 +111,7 @@ class SubmitCollectionForModerationForm(forms.Form):
         self.collection = kwargs.pop('collection')
         self.user = kwargs.pop('user')
         super(SubmitCollectionForModerationForm, self).__init__(*args, **kwargs)
-
-        if 'moderator' in self.fields:
-            self.configure_moderator_field()
+        self.configure_moderator_field()
 
     def configure_moderator_field(self):
         next_role = self.collection.workflow.first_step.role
@@ -123,5 +121,5 @@ class SubmitCollectionForModerationForm(forms.Form):
 
     def save(self):
         self.collection.submit_for_moderation(
-            self.user, self.cleaned_data['moderator']
+            self.user, self.cleaned_data.get('moderator')
         )
