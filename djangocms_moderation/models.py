@@ -337,35 +337,6 @@ class ModerationCollection(models.Model):
                 "of another active collection".format(content_object)
             )
 
-    def add_object(self, content_object):
-        """
-        Add object to the ModerationRequest in this collection.
-        :return: <ModerationRequest|None>
-        """
-        if self.is_locked:
-            raise CollectionIsLocked(
-                "Can't add the object to the collection, because it is locked"
-            )
-
-        content_type = ContentType.objects.get_for_model(content_object)
-        # Object can ever be part of only one collection
-        existing_request_exists = ModerationRequest.objects.filter(
-            content_type=content_type,
-            object_id=content_object.pk,
-        ).exists()
-
-        if not existing_request_exists:
-            return self.moderation_requests.create(
-                content_type=content_type,
-                object_id=content_object.pk,
-                collection=self,
-            )
-        else:
-            raise ObjectAlreadyInCollection(
-                "{} is already part of existing moderation request which is part "
-                "of another active collection".format(content_object)
-            )
-
 
 @python_2_unicode_compatible
 class ModerationRequest(models.Model):

@@ -85,7 +85,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
     list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
-    readonly_fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
+    readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
 
     def get_title(self, obj):
@@ -95,35 +95,22 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     def get_preview_link(self, obj):
         # TODO this will return Version object preview link once implemented
         return "Link placeholder"
-    get_preview_link.allow_tags = True
     get_preview_link.short_description = _('Preview')
 
     def has_add_permission(self, request):
         return False
 
     def changelist_view(self, request, extra_context=None):
-        # TODO Investigate a better way of getting the selected Collection?
-        try:
-            collection = ModerationCollection.objects.get(
-                pk=request.GET.get('collection__id__exact')
-            )
-        except ModerationCollection.DoesNotExist:
-            collection = None
-
-        if collection:
-            submit_for_moderation_url = reverse(
-                'admin:cms_moderation_submit_collection_for_moderation', args=(collection.id,)
-            )
-            submit_for_moderation_button = Button(
-                'Submit for review', submit_for_moderation_url
-            )
-        else:
-            submit_for_moderation_button = None
-
-        extra_context = {
-            'collection': collection,
-            'submit_for_moderation_button': submit_for_moderation_button
-        }
+        # If we filter by a specific collection, we want to add this collection
+        # to the context
+        collection_id = request.GET.get('collection__id__exact')
+        if collection_id:
+            try:
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                pass
+            else:
+                extra_context = dict(collection=collection)
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
     def get_status(self, obj):
@@ -200,12 +187,12 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         Name of the collection should link to the list of associated
         moderation requests
         """
-        return '<a href="{}?collection__id__exact={}">{}</a>'.format(
+        return format_html(
+            '<a href="{}?collection__id__exact={}">{}</a>',
             reverse('admin:djangocms_moderation_moderationrequest_changelist'),
             obj.pk,
             obj.name,
         )
-    get_name_with_requests_link.allow_tags = True
     get_name_with_requests_link.short_description = _('Name')
 
     def get_moderator(self, obj):
@@ -213,10 +200,12 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     get_moderator.short_description = _('Moderator')
 
     def status(self, obj):
-        # TODO more statuses to come in the future, once implemented
+        # TODO more statuses to come in the future, once implemented.
+        # It will very likely be a ModerationCollection.status field
         if obj.is_locked:
             return _("In review")
         return _("Collection")
+    status.short_description = _('Status')
 
 
 class ExtendedPageAdmin(PageAdmin):
