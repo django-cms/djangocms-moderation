@@ -22,6 +22,7 @@ from .helpers import get_form_submission_for_step
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
+    ModerationCollection,
     ModerationRequest,
     ModerationRequestAction,
     Role,
@@ -77,16 +78,40 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
+    actions = None  # remove `delete_selected` for now, it will be handled later
     inlines = [ModerationRequestActionInline]
-    list_display = ['id', 'language', 'collection', 'show_status', 'date_sent']
-    list_filter = ['language', 'collection', 'id', 'compliance_number']
-    fields = ['id', 'collection', 'workflow', 'language', 'is_active', 'show_status', 'compliance_number']
+    list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
+    list_filter = ['collection']
+    fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
+    change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+
+    def get_title(self, obj):
+        return obj.content_object
+    get_title.short_description = _('Title')
+
+    def get_preview_link(self, obj):
+        # TODO this will return Version object preview link once implemented
+        return "Link placeholder"
+    get_preview_link.short_description = _('Preview')
 
     def has_add_permission(self, request):
         return False
 
-    def show_status(self, obj):
+    def changelist_view(self, request, extra_context=None):
+        # If we filter by a specific collection, we want to add this collection
+        # to the context
+        collection_id = request.GET.get('collection__id__exact')
+        if collection_id:
+            try:
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                pass
+            else:
+                extra_context = dict(collection=collection)
+        return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
+
+    def get_status(self, obj):
         if obj.is_approved():
             status = ugettext('Ready for publishing')
         elif obj.is_active and obj.has_pending_step():
@@ -102,7 +127,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             }
             status = ugettext('%(action)s by %(name)s') % message_data
         return status
-    show_status.short_description = _('Status')
+    get_status.short_description = _('Status')
 
 
 class RoleAdmin(admin.ModelAdmin):
@@ -123,7 +148,51 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
 class WorkflowAdmin(admin.ModelAdmin):
     inlines = [WorkflowStepInline]
     list_display = ['name', 'is_default']
-    fields = ['name', 'is_default', 'identifier', 'requires_compliance_number', 'compliance_number_backend']
+    fields = [
+        'name',
+        'is_default',
+        'identifier',
+        'requires_compliance_number',
+        'compliance_number_backend',
+    ]
+
+
+class ModerationCollectionAdmin(admin.ModelAdmin):
+    actions = None  # remove `delete_selected` for now, it will be handled later
+    list_display = [
+        'id',
+        'get_name_with_requests_link',
+        'get_moderator',
+        'workflow',
+        'status',
+        'is_locked',
+        'date_created',
+    ]
+
+    def get_name_with_requests_link(self, obj):
+        """
+        Name of the collection should link to the list of associated
+        moderation requests
+        """
+        return format_html(
+            '<a href="{}?collection__id__exact={}">{}</a>',
+            reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+            obj.pk,
+            obj.name,
+        )
+    get_name_with_requests_link.short_description = _('Name')
+
+    def get_moderator(self, obj):
+        return obj.author
+    get_moderator.short_description = _('Moderator')
+
+    def status(self, obj):
+        # TODO more statuses to come in the future, once implemented.
+        # It will very likely be a ModerationCollection.status field
+        if obj.is_locked:
+            return _("In review")
+        return _("Collection")
+    status.short_description = _('Status')
 
 
 class ExtendedPageAdmin(PageAdmin):
@@ -228,6 +297,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
 
 admin.site._registry[Page] = ExtendedPageAdmin(Page, admin.site)
 admin.site.register(ModerationRequest, ModerationRequestAdmin)
+admin.site.register(ModerationCollection, ModerationCollectionAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
 
