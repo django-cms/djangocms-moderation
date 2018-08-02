@@ -141,15 +141,17 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     get_status.short_description = _('Status')
 
     def get_urls(self):
-        urls = super(ModerationRequestAdmin, self).get_urls()
-        my_urls = [
-            url(
+        def _url(regex, fn, name, **kwargs):
+            return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
+
+        url_patterns = [
+            _url(
                 '^collection/(?P<collection_id>\d+)/submit-for-review/$',
                 views.submit_collection_for_moderation,
                 name="cms_moderation_submit_collection_for_moderation",
             ),
         ]
-        return my_urls + urls
+        return url_patterns + super(ModerationRequestAdmin, self).get_urls()
 
 
 class RoleAdmin(admin.ModelAdmin):
