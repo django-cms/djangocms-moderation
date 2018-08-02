@@ -150,9 +150,6 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         pass
 
 
-
-
-
 class ModerationRequestViewTest(BaseViewTestCase):
 
     def _assert_render(self, response, page, action, workflow, active_request, form_cls, title):

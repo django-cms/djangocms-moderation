@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView, ListView, DetailView, CreateView
 
 from cms.utils.urlutils import add_url_parameters
-from cms
+
 
 from .forms import (
     ModerationRequestForm,
@@ -29,7 +29,6 @@ from .models import (
     ConfirmationPage,
     ModerationRequest,
     ModerationCollection,
-    Workflow
 )
 from .utils import get_admin_url
 
@@ -54,10 +53,9 @@ class ItemToCollectionView(FormView):
                                 pk=form.cleaned_data['collection_id']
                 )
 
-
-            collection.add_object(
-                form.cleaned_data['content_object_id']
-            )
+                collection.add_object(
+                    form.cleaned_data['content_object_id']
+                )
 
     def get_context_data(self, **kwargs):
         context = super(ItemToCollectionView, self).get_context_data(**kwargs)
