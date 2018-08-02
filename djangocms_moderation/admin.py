@@ -105,7 +105,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
-            except ModerationCollection.DoesNotExist:
+            except (ValueError, ModerationCollection.DoesNotExist):
                 pass
             else:
                 extra_context = dict(collection=collection)
