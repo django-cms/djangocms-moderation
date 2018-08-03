@@ -1,15 +1,17 @@
 from django.db import models
 
-from djangocms_versioning.models import BaseVersion
+
+class App1Post(models.Model):
+    pass
 
 
-class GrouperModel(models.Model):
-    content = models.CharField(max_length=255)
+class App1PostContent(models.Model):
+    post = models.ForeignKey(App1Post, on_delete=models.CASCADE)
 
 
-class TestModel3(BaseVersion):
-    content = models.ForeignKey(GrouperModel)
+class App1Title(models.Model):
+    pass
 
 
-class TestModel4(BaseVersion):
-    content = models.ForeignKey(GrouperModel)
+class App1TitleContent(models.Model):
+    title = models.ForeignKey(App1Title, on_delete=models.CASCADE)
