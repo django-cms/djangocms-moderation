@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
 
+from cms.api import get_page_draft
 from cms.toolbar_base import CMSToolbar
 from cms.toolbar_pool import toolbar_pool
-from cms.api import get_page_draft
 from cms.utils.urlutils import add_url_parameters
 
-from .utils import get_admin_url
 from .monkeypatches import set_current_language
+from .utils import get_admin_url
 
 
 class ModerationToolbar(CMSToolbar):

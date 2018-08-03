@@ -9,15 +9,14 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import FormView, ListView, DetailView, CreateView
+from django.views.generic import CreateView, DetailView, FormView, ListView
 
 from cms.utils.urlutils import add_url_parameters
 
-
 from .forms import (
+    ItemToCollectionForm,
     ModerationRequestForm,
     UpdateModerationRequestForm,
-    ItemToCollectionForm
 )
 from .helpers import (
     get_active_moderation_request,
@@ -27,10 +26,12 @@ from .helpers import (
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-    ModerationRequest,
     ModerationCollection,
+    ModerationRequest,
 )
 from .utils import get_admin_url
+
+
 from . import constants  # isort:skip
 
 

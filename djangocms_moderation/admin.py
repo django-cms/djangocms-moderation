@@ -18,7 +18,6 @@ from .models import (
     ConfirmationPage,
     ModerationCollection,
     ModerationRequest,
-    ModerationCollection,
     ModerationRequestAction,
     Role,
     Workflow,

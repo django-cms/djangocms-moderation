@@ -10,15 +10,15 @@ from cms.utils.urlutils import add_url_parameters
 
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
+    ItemToCollectionForm,
     ModerationRequestForm,
     UpdateModerationRequestForm,
-    ItemToCollectionForm
 )
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
     ModerationCollection,
-    ModerationRequest
+    ModerationRequest,
 )
 from djangocms_moderation.utils import get_admin_url
 

@@ -9,8 +9,8 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from adminsortable2.admin import CustomInlineFormSet
 
 from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
-from .models import (ModerationCollection, ModerationRequest)
 from .helpers import get_content_object
+from .models import ModerationCollection, ModerationRequest
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
@@ -162,7 +162,3 @@ class ItemToCollectionForm(forms.Form):
             ))
 
         self.cleaned_data['content_object'] = content_object
-
-
-
-
