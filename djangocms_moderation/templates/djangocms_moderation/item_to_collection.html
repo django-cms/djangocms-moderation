@@ -14,11 +14,10 @@
 <div>
     <h2>{% trans "Add to existing collection" %}</h2>
     <div class="form-row">
-
-    console.log('redirect page')
-});
-</script><div class="related-widget-wrapper widget-wrapper-links-2">
+        <div class="related-widget-wrapper widget-wrapper-links-2">
             {{ form.content_object_id.as_hidden }}
+            {{ form.content_object_id.errors }}
+            {{ form.collection_id.errors }}
             <select id="djangocms_moderation_collections" name="collection_id">
                 {% for collection in collection_list %}
                 <option value="{{ collection.pk }}" id="djangocms_moderation_collections_{{ collection.pk }}">
@@ -65,4 +64,7 @@
 <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
 <script type="text/javascript">
  $(function() {
+    console.log('redirect page')
+});
+</script>
 {% endblock %}

@@ -31,14 +31,13 @@ from .models import (
     ModerationCollection,
 )
 from .utils import get_admin_url
-
-
 from . import constants  # isort:skip
 
 
 class ItemToCollectionView(FormView):
     template_name = 'djangocms_moderation/item_to_collection.html'
     form_class = ItemToCollectionForm
+    success_template_name = 'djangocms_moderation/request_finalized.html'
 
     def get_form_kwargs(self):
         kwargs = super(ItemToCollectionView, self).get_form_kwargs()
@@ -49,15 +48,15 @@ class ItemToCollectionView(FormView):
         return kwargs
 
     def form_valid(self, form):
-        response = super().form_valid(form)
         collection = form.cleaned_data['collection']
         content_object = form.cleaned_data['content_object']
         collection.add_object(content_object)
 
-        return response
+        messages.success(self.request, _('Item successfully added to moderation collection'))
+        return render(self.request, self.success_template_name, {})
 
-    def get_success_url(self, **kwargs):
-        return self.request.get_raw_uri()
+    # def get_success_url(self, **kwargs):
+    #     return self.request.get_raw_uri()
 
     def get_context_data(self, **kwargs):
 
@@ -88,6 +87,7 @@ class ItemToCollectionView(FormView):
 
 
 item_to_collection = ItemToCollectionView.as_view()
+
 
 class ModerationRequestView(FormView):
 

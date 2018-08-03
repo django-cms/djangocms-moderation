@@ -3,6 +3,7 @@ from mock import patch
 from unittest import skip
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
@@ -16,7 +17,8 @@ from djangocms_moderation.forms import (
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-    ModerationCollection
+    ModerationCollection,
+    ModerationRequest
 )
 from djangocms_moderation.utils import get_admin_url
 
@@ -47,7 +49,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.assertEqual(response.template_name[0], 'djangocms_moderation/item_to_collection.html')
         self.assertEqual(response.context_data['title'], _('Add to collection'))
 
-    def test_new_request_without_collections(self):
+    def test_no_collections(self):
         ModerationCollection.objects.all().delete()
         self.client.force_login(self.user)
         response = self.client.get(
@@ -61,7 +63,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self._assert_render(response)
         self.assertEqual(list(response.context_data['collection_list']), [])
 
-    def test_new_request_with_existing_collections(self):
+    def test_collections(self):
         self.client.force_login(self.user)
         response = self.client.get(
             get_admin_url(
@@ -77,6 +79,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.assertTrue(2, len(response.context_data['collection_list']))
 
     def test_add_object_to_collections(self):
+        ModerationRequest.objects.all().delete()
         self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
@@ -89,19 +92,18 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'reloadBrowser')
 
-        # ensure object is in collection
-        self.client.force_login(self.user)
-        response = self.client.get(
-            get_admin_url(
-                name='item_to_collection',
-                language='en',
-                args=()
-            )
-        )
+        content_type = ContentType.objects.get_for_model(self.pg1)
+        moderation_request = ModerationRequest.objects.filter(
+            content_type=content_type,
+            object_id=self.pg1.pk,
+        )[0]
 
-        self.assertTrue(self.pg1 in response.context_data['content_object_list'])
+        self.assertEqual(moderation_request.collection, self.collection_1)
 
-    def test_invalid_content_object(self):
+    def test_invalid_content_already_in_collection(self):
+        # add object
+        self.collection_1._add_object(self.pg1)
+
         self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
@@ -109,13 +111,25 @@ class ItemToCollectionViewTest(BaseViewTestCase):
                 language='en',
                 args=()
             )
-            , {'collection_id': self.collection_1.pk, 'content_object_id': object()})
-
+            , {'collection_id': self.collection_1.pk, 'content_object_id': self.pg1.pk})
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, _('Invalid Object'))
+        self.assertContains(response, _('is already part of existing moderation request which is part'))
 
-    def test_invalid_collection(self):
+    def test_non_existing_content_object(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            get_admin_url(
+                name='item_to_collection',
+                language='en',
+                args=()
+            )
+            , {'collection_id': self.collection_1.pk, 'content_object_id': 9000})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, _('Invalid content_object_id, does not exist'))
+
+    def test_non_existing_collection(self):
         self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
@@ -126,11 +140,30 @@ class ItemToCollectionViewTest(BaseViewTestCase):
             , {'collection_id': 9000, 'content_object_id': self.pg1.pk})
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, _('Invalid Collection'))
+        self.assertContains(response, _('Collection does not exist'))
 
     def test_exclude_locked_collections(self):
+        ModerationRequest.objects.all().delete()
         self.collection_1.is_locked = True
         self.collection_1.save()
+
+        self.client.force_login(self.user)
+        response = self.client.post(
+            get_admin_url(
+                name='item_to_collection',
+                language='en',
+                args=()
+            )
+            , {'collection_id': self.collection_1.pk, 'content_object_id': self.pg1.pk})
+
+        self.assertContains(response, _("because it is locked"))
+
+    def test_list_content_objects_from_first_collection(self):
+        ModerationRequest.objects.all().delete()
+
+        collections = ModerationCollection.objects.filter(is_locked=False)
+        collections[0]._add_object(self.pg1)
+        collections[1]._add_object(self.pg2)
 
         self.client.force_login(self.user)
         response = self.client.get(
@@ -141,13 +174,58 @@ class ItemToCollectionViewTest(BaseViewTestCase):
             )
         )
 
-        self._assert_render(response)
-        self.assertFalse(self.collection_1 in response.context_data['collection_list'])
-        self.assertTrue(self.collection_2 in response.context_data['collection_list'])
-        self.assertTrue(1, len(response.context_data['collection_list']))
+        moderation_requests = ModerationRequest.objects.filter(collection=collections[0])
+        # moderation request is content_object
+        for mod_request in moderation_requests:
+            self.assertTrue(mod_request in response.context_data['content_object_list'])
+
+    def test_list_content_objects_from_collection_id_param(self):
+        ModerationRequest.objects.all().delete()
+
+        self.collection_1._add_object(self.pg1)
+        self.collection_2._add_object(self.pg2)
+
+        self.client.force_login(self.user)
+        response = self.client.get(
+            add_url_parameters(
+                get_admin_url(
+                    name='item_to_collection',
+                    language='en',
+                    args=()
+                ), collection_id=self.collection_2.pk
+            )
+        )
+
+        moderation_requests = ModerationRequest.objects.filter(collection=self.collection_2)
+        # moderation request is content_object
+        for mod_request in moderation_requests:
+            self.assertTrue(mod_request in response.context_data['content_object_list'])
+
+    def test_content_object_id_from_params(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            add_url_parameters(
+                get_admin_url(
+                    name='item_to_collection',
+                    language='en',
+                    args=()
+                ), content_object_id=self.pg1.pk
+            )
+        )
+
+        form = response.context_data['form']
+        self.assertEqual(self.pg1.pk, int(form.initial['content_object_id']))
 
     def test_authenticated_users_only(self):
-        pass
+        response = self.client.get(
+            get_admin_url(
+                name='item_to_collection',
+                language='en',
+                args=()
+            )
+        )
+
+        self.assertEqual(response.status_code, 302)
 
 
 class ModerationRequestViewTest(BaseViewTestCase):

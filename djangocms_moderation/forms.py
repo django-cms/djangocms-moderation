@@ -10,7 +10,7 @@ from adminsortable2.admin import CustomInlineFormSet
 
 from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
 from .models import (ModerationCollection, ModerationRequest)
-from .helpers import get_page_or_404
+from .helpers import get_content_object
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
@@ -127,24 +127,28 @@ class ItemToCollectionForm(forms.Form):
     content_object_id = forms.IntegerField()
 
     def clean_collection_id(self):
-        collection = ModerationCollection.objects.get(
-            pk=self.cleaned_data['collection_id']
-        )
-
-        if not collection:
+        try:
+            collection = ModerationCollection.objects.get(
+                pk=self.cleaned_data['collection_id']
+            )
+        except ModerationCollection.DoesNotExist:
             raise forms.ValidationError(
                 _('Collection does not exists')
             )
 
-        if self.is_locked:
+        if collection.is_locked:
             raise forms.ValidationError(
-                "Can't add the object to the collection, because it is locked"
+                _("Can't add the object to the collection, because it is locked")
             )
 
         self.cleaned_data['collection'] = collection
 
     def clean_content_object_id(self):
-        content_object = get_page_or_404(self.cleaned_data['content_object_id'], 'en')
+        content_object = get_content_object(self.cleaned_data['content_object_id'])
+
+        if not content_object:
+            raise forms.ValidationError(_('Invalid content_object_id, does not exists'))
+
         content_type = ContentType.objects.get_for_model(content_object)
         request_with_object_exists = ModerationRequest.objects.filter(
             content_type=content_type,
@@ -152,10 +156,10 @@ class ItemToCollectionForm(forms.Form):
         ).exists()
 
         if request_with_object_exists:
-            raise forms.ValidationError(
+            raise forms.ValidationError(_(
                 "{} is already part of existing moderation request which is part "
                 "of another active collection".format(content_object)
-            )
+            ))
 
         self.cleaned_data['content_object'] = content_object
 
