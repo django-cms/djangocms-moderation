@@ -5,5 +5,5 @@ from threading import local
 _thread_locals = local()
 
 
-def set_current_language(user):
-    _thread_locals.request_language = user
+def set_current_language(current_language):
+    _thread_locals.request_language = current_language
