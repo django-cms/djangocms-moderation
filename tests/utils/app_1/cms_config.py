@@ -20,5 +20,3 @@ class CMSApp1Config(CMSAppConfig):
             grouper_field_name='title'
         )
     ]
-
-

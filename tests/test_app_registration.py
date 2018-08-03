@@ -14,8 +14,8 @@ from cms.utils.setup import setup_cms_apps
 
 from djangocms_moderation.cms_config import ModerationExtension
 
-from .utils.app_1.models import (App1PostContent, App1TitleContent)
-from .utils.app_2.models import (App2PostContent, App2TitleContent)
+from .utils.app_1.models import App1PostContent, App1TitleContent
+from .utils.app_2.models import App2PostContent, App2TitleContent
 
 
 class CMSConfigTest(CMSTestCase, TestCase):

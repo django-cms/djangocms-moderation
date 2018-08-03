@@ -2,7 +2,7 @@ from cms.app_base import CMSAppConfig
 
 from djangocms_versioning.datastructures import VersionableItem
 
-from .models import App2TitleContent, App2PostContent
+from .models import App2PostContent, App2TitleContent
 
 
 class CMSApp1Config(CMSAppConfig):
@@ -20,5 +20,3 @@ class CMSApp1Config(CMSAppConfig):
             grouper_field_name='title'
         )
     ]
-
-
