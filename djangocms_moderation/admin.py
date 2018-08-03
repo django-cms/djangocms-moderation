@@ -7,7 +7,6 @@ from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
-from cms.models import Page
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
@@ -26,12 +25,6 @@ from .models import (
 
 
 from . import views  # isort:skip
-
-
-try:
-    PageAdmin = admin.site._registry[Page].__class__
-except KeyError:
-    from cms.admin.pageadmin import PageAdmin
 
 
 class ModerationRequestActionInline(admin.TabularInline):
@@ -152,6 +145,7 @@ class WorkflowAdmin(admin.ModelAdmin):
 
 
 class ModerationCollectionAdmin(admin.ModelAdmin):
+    view_on_site = True
     actions = None  # remove `delete_selected` for now, it will be handled later
     list_display = [
         'id',
@@ -187,10 +181,6 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             return _("In review")
         return _("Collection")
     status.short_description = _('Status')
-
-
-class ModerationCollectionAdmin(admin.ModelAdmin):
-    view_on_site = True
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):

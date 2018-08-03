@@ -39,4 +39,5 @@ class ModerationToolbar(CMSToolbar):
                 side=self.toolbar.RIGHT,
         )
 
+
 toolbar_pool.register(ModerationToolbar)

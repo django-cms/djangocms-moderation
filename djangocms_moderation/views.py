@@ -9,7 +9,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import CreateView, DetailView, FormView, ListView
+from django.views.generic import FormView, ListView
 
 from cms.utils.urlutils import add_url_parameters
 

@@ -41,7 +41,6 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         )
 
     def _assert_render(self, response):
-        view = response.context_data['view']
         form = response.context_data['form']
 
         self.assertIsInstance(form, ItemToCollectionForm)
@@ -86,8 +85,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
                 name='item_to_collection',
                 language='en',
                 args=()
-            )
-            , {'collection_id':  self.collection_1.pk, 'content_object_id': self.pg1.pk})
+            ), {'collection_id':  self.collection_1.pk, 'content_object_id': self.pg1.pk})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'reloadBrowser')
@@ -110,8 +108,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
                 name='item_to_collection',
                 language='en',
                 args=()
-            )
-            , {'collection_id': self.collection_1.pk, 'content_object_id': self.pg1.pk})
+            ), {'collection_id': self.collection_1.pk, 'content_object_id': self.pg1.pk})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, _('is already part of existing moderation request which is part'))
@@ -123,8 +120,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
                 name='item_to_collection',
                 language='en',
                 args=()
-            )
-            , {'collection_id': self.collection_1.pk, 'content_object_id': 9000})
+            ), {'collection_id': self.collection_1.pk, 'content_object_id': 9000})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, _('Invalid content_object_id, does not exist'))
@@ -136,8 +132,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
                 name='item_to_collection',
                 language='en',
                 args=()
-            )
-            , {'collection_id': 9000, 'content_object_id': self.pg1.pk})
+            ), {'collection_id': 9000, 'content_object_id': self.pg1.pk})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, _('Collection does not exist'))
@@ -153,8 +148,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
                 name='item_to_collection',
                 language='en',
                 args=()
-            )
-            , {'collection_id': self.collection_1.pk, 'content_object_id': self.pg1.pk})
+            ), {'collection_id': self.collection_1.pk, 'content_object_id': self.pg1.pk})
 
         self.assertContains(response, _("because it is locked"))
 
