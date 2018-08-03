@@ -1,11 +1,24 @@
 from cms.app_base import CMSAppConfig
 
-from .models import TestModel1, TestModel2
+from djangocms_versioning.datastructures import VersionableItem
+
+from .models import App2TitleContent, App2PostContent
 
 
-class CMSApp2Config(CMSAppConfig):
-    # djangocms_versioning_enabled = True
-    # djangocms_moderation_enabled = True
-    versioning_models = [TestModel1, TestModel2]
-    moderated_models = [TestModel1, TestModel2]
+class CMSApp1Config(CMSAppConfig):
+    djangocms_moderation_enabled = True
+    djangocms_versioning_enabled = True
+    moderated_models = (App2PostContent, App2TitleContent)
+
+    versioning = [
+        VersionableItem(
+            content_model=App2PostContent,
+            grouper_field_name='post'
+        ),
+        VersionableItem(
+            content_model=App2TitleContent,
+            grouper_field_name='title'
+        )
+    ]
+
 

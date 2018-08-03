@@ -3,7 +3,7 @@ try:
 except ImportError:
     from mock import Mock
 
-from unittest import TestCase, skip
+from unittest import TestCase
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
@@ -14,11 +14,10 @@ from cms.utils.setup import setup_cms_apps
 
 from djangocms_moderation.cms_config import ModerationExtension
 
-from .utils.app_1.models import TestModel3, TestModel4
-from .utils.app_2.models import TestModel1, TestModel2
+from .utils.app_1.models import (App1PostContent, App1TitleContent)
+from .utils.app_2.models import (App2PostContent, App2TitleContent)
 
 
-@skip
 class CMSConfigTest(CMSTestCase, TestCase):
 
     def setUp(self):
@@ -28,7 +27,7 @@ class CMSConfigTest(CMSTestCase, TestCase):
     def test_missing_versioning_enabled(self):
         extension = ModerationExtension()
         cms_config = Mock(
-            moderated_models=[TestModel1, TestModel2, TestModel3, TestModel4],
+            moderated_models=[App1PostContent, App1TitleContent, App2PostContent, App2TitleContent],
             djangocms_moderation_enabled=True,
             djangocms_versioning_enabled=False,
             app_config=Mock(label='blah_cms_config')
@@ -37,43 +36,21 @@ class CMSConfigTest(CMSTestCase, TestCase):
         with self.assertRaises(ImproperlyConfigured):
             extension.configure_app(cms_config)
 
-    def test_moderated_model_not_in_versioning_models(self):
-        extension = ModerationExtension()
-        cms_config = Mock(
-            djangocms_moderation_enabled=True,
-            moderated_models=[TestModel1, TestModel2, TestModel3, TestModel4],
-            versioning_models=[TestModel3, TestModel4],
-            app_config=Mock(label='blah_cms_config')
-        )
 
-        with self.assertRaises(ImproperlyConfigured):
-            extension.configure_app(cms_config)
-
-    def test_valid_cms_config(self):
-        extension = ModerationExtension()
-        cms_config = Mock(
-            djangocms_moderation_enabled=True,
-            moderated_models=[TestModel1, TestModel2, TestModel3, TestModel4],
-            versioning_models=[TestModel1, TestModel2, TestModel3, TestModel4],
-            app_config=Mock(label='blah_cms_config')
-        )
-
-        extension.configure_app(cms_config)
-        self.assertTrue(TestModel1 in extension.moderated_models)
-        self.assertTrue(TestModel2 in extension.moderated_models)
-        self.assertTrue(TestModel3 in extension.moderated_models)
-        self.assertTrue(TestModel4 in extension.moderated_models)
-
-@skip
 class CMSConfigIntegrationTest(CMSTestCase):
 
     def setUp(self):
         app_registration.get_cms_extension_apps.cache_clear()
         app_registration.get_cms_config_apps.cache_clear()
+        self.moderated_models = (App2PostContent, App2TitleContent,
+                                 App1PostContent, App1TitleContent)
 
     def test_config_with_two_apps(self):
         setup_cms_apps()
         moderation_config = apps.get_app_config('djangocms_moderation')
         registered_model = moderation_config.cms_extension.moderated_models
+
+        for model in self.moderated_models:
+            self.assertIn(model, registered_model)
 
         self.assertEqual(len(registered_model), 4)

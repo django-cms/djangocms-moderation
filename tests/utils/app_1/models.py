@@ -1,13 +1,17 @@
 from django.db import models
 
 
-class GrouperModel(models.Model):
-    content = models.CharField(max_length=255)
+class App1Post(models.Model):
+    pass
 
 
-class TestModel3(models.Model):
-    content = models.ForeignKey(GrouperModel)
+class App1PostContent(models.Model):
+    post = models.ForeignKey(App1Post, on_delete=models.CASCADE)
 
 
-class TestModel4(models.Model):
-    content = models.ForeignKey(GrouperModel)
+class App1Title(models.Model):
+    pass
+
+
+class App1TitleContent(models.Model):
+    title = models.ForeignKey(App1Title, on_delete=models.CASCADE)
