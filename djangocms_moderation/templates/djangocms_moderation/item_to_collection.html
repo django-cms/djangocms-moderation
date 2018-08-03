@@ -3,12 +3,21 @@
 {% load static %}
 
 {% block content %}
+{% if errors %}
+    <p class="errornote">
+        {% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
+    </p>
+    {{ form.non_field_errors }}
+{% endif %}
 <form action="{{ request.get_full_path }}" method="post">
 {% csrf_token %}
 <div>
     <h2>{% trans "Add to existing collection" %}</h2>
     <div class="form-row">
-        <div class="related-widget-wrapper widget-wrapper-links-2">
+
+    console.log('redirect page')
+});
+</script><div class="related-widget-wrapper widget-wrapper-links-2">
             {{ form.content_object_id.as_hidden }}
             <select id="djangocms_moderation_collections" name="collection_id">
                 {% for collection in collection_list %}
@@ -56,7 +65,4 @@
 <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
 <script type="text/javascript">
  $(function() {
-    console.log('redirect page')
-});
-</script>
 {% endblock %}

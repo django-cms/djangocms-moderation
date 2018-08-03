@@ -2,12 +2,15 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from adminsortable2.admin import CustomInlineFormSet
 
 from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
+from .models import (ModerationCollection, ModerationRequest)
+from .helpers import get_page_or_404
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
@@ -122,3 +125,40 @@ class ItemToCollectionForm(forms.Form):
 
     collection_id = forms.IntegerField()
     content_object_id = forms.IntegerField()
+
+    def clean_collection_id(self):
+        collection = ModerationCollection.objects.get(
+            pk=self.cleaned_data['collection_id']
+        )
+
+        if not collection:
+            raise forms.ValidationError(
+                _('Collection does not exists')
+            )
+
+        if self.is_locked:
+            raise forms.ValidationError(
+                "Can't add the object to the collection, because it is locked"
+            )
+
+        self.cleaned_data['collection'] = collection
+
+    def clean_content_object_id(self):
+        content_object = get_page_or_404(self.cleaned_data['content_object_id'], 'en')
+        content_type = ContentType.objects.get_for_model(content_object)
+        request_with_object_exists = ModerationRequest.objects.filter(
+            content_type=content_type,
+            object_id=content_object.pk,
+        ).exists()
+
+        if request_with_object_exists:
+            raise forms.ValidationError(
+                "{} is already part of existing moderation request which is part "
+                "of another active collection".format(content_object)
+            )
+
+        self.cleaned_data['content_object'] = content_object
+
+
+
+

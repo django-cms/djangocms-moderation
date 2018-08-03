@@ -38,7 +38,6 @@ from . import constants  # isort:skip
 
 class ItemToCollectionView(FormView):
     template_name = 'djangocms_moderation/item_to_collection.html'
-    success_template_name = 'djangocms_moderation/request_finalized.html'
     form_class = ItemToCollectionForm
 
     def get_form_kwargs(self):
@@ -49,20 +48,11 @@ class ItemToCollectionView(FormView):
 
         return kwargs
 
-    def form_invalid(self, form):
-        pass  # @ todo
-
     def form_valid(self, form):
         response = super().form_valid(form)
-        if form.cleaned_data['collection_id']:
-            collection = ModerationCollection.objects.get(
-                            pk=form.cleaned_data['collection_id']
-            )
-
-            collection.add_object(
-                # @todo: this is to be replaced
-                get_page_or_404(form.cleaned_data['content_object_id'], 'en')
-            )
+        collection = form.cleaned_data['collection']
+        content_object = form.cleaned_data['content_object']
+        collection.add_object(content_object)
 
         return response
 
