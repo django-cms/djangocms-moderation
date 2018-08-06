@@ -53,7 +53,7 @@ class ItemToCollectionView(FormView):
             content_object_list = collection.moderation_requests.all()
 
         context.update({
-            'collection_id': collection_id,
+            'collection_id': int(collection_id),
             'collection_list': collection_list,
             'content_object_list':  content_object_list,
             'opts': opts_meta,

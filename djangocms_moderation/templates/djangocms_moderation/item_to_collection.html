@@ -20,7 +20,9 @@
             {{ form.collection_id.errors }}
             <select id="djangocms_moderation_collections" name="collection_id">
                 {% for collection in collection_list %}
-                <option value="{{ collection.pk }}" id="djangocms_moderation_collections_{{ collection.pk }}">
+                <option value="{{ collection.pk }}"
+                        {% if collection_id == collection.pk %}selected="selected"{% endif %}
+                        id="djangocms_moderation_collections_{{ collection.pk }}">
                     {{ collection.name }}
                 </option>
                 {% endfor %}
@@ -61,4 +63,24 @@
     </div>
 </div>
 </form>
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script type="text/javascript">
+ $(function() {
+
+   var collection_sel = $('#djangocms_moderation_collections')
+   collection_sel.data('prev', collection_sel.val());
+   collection_sel.change(function() {
+       jqThis = $(this)
+
+       if(location.href.indexOf('collection_id') == -1){
+            new_url = location.href + '&collection_id=' + jqThis.val()
+       } else {
+            new_url = location.href.replace("collection_id="+jqThis.data("prev"),
+                                            "collection_id="+jqThis.val())
+       }
+
+       location.href = new_url
+   });
+});
+</script>
 {% endblock %}
