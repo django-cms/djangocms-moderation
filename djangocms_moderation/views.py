@@ -40,7 +40,7 @@ class ItemToCollectionView(FormView):
         context = super(ItemToCollectionView, self).get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
         collection_list = ModerationCollection.objects.filter(is_locked=False)
-        collection_id = self.request.GET.get('collection_id')
+        collection_id = self.request.GET.get('collection_id', 0)
         content_object_list = []
 
         if collection_list:
