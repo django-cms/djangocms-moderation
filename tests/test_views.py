@@ -10,7 +10,7 @@ from djangocms_moderation.utils import get_admin_url
 from .utils.base import BaseViewTestCase
 
 
-class ItemToCollectionViewTest(BaseViewTestCase):
+class CollectionItemViewTest(BaseViewTestCase):
 
     def setUp(self):
         from django.contrib.auth.models import User
