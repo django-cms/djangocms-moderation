@@ -139,19 +139,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return status
     get_status.short_description = _('Status')
 
-    def get_urls(self):
-        def _url(regex, fn, name, **kwargs):
-            return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
-
-        url_patterns = [
-            _url(
-                '^collection/(?P<collection_id>\d+)/submit-for-review/$',
-                views.submit_collection_for_moderation,
-                name="cms_moderation_submit_collection_for_moderation",
-            ),
-        ]
-        return url_patterns + super(ModerationRequestAdmin, self).get_urls()
-
 
 class RoleAdmin(admin.ModelAdmin):
     list_display = ['name', 'user', 'group', 'confirmation_page']
@@ -216,6 +203,19 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             return _("In review")
         return _("Collection")
     status.short_description = _('Status')
+
+    def get_urls(self):
+        def _url(regex, fn, name, **kwargs):
+            return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
+
+        url_patterns = [
+            _url(
+                '^collection/(?P<collection_id>\d+)/submit-for-review/$',
+                views.submit_collection_for_moderation,
+                name="cms_moderation_submit_collection_for_moderation",
+            ),
+        ]
+        return url_patterns + super(ModerationCollectionAdmin, self).get_urls()
 
 
 class ExtendedPageAdmin(PageAdmin):

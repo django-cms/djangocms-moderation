@@ -308,7 +308,7 @@ class ModerationCollection(models.Model):
         Can this collection submitted for moderation?
         :return: <bool>
         """
-        # TODO limited check for now
+        # TODO limited check for now, consider makings this a model field
         return not self.is_locked and self.moderation_requests.exists()
 
     def add_object(self, content_object):
