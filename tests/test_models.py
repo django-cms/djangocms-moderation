@@ -506,26 +506,17 @@ class ModerationCollectionTest(BaseTestCase):
 
     @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_submit_for_moderation(self, mock_ncm):
-        moderation_request1 = ModerationRequest.objects.create(
-            content_object=self.pg1, language='en', collection=self.collection1, is_active=True
-        )
-        # action1
-        moderation_request1.actions.create(
-            by_user=self.user, action=constants.ACTION_STARTED
-        )
-        # moderation_request2
         ModerationRequest.objects.create(
-            content_object=self.pg3, language='en', collection=self.collection1, is_active=False
+            content_object=self.pg1, language='en', collection=self.collection1
         )
-        # moderation_request3
         ModerationRequest.objects.create(
-            content_object=self.pg2, language='en', collection=self.collection1, is_active=False
+            content_object=self.pg3, language='en', collection=self.collection1
         )
 
-        self.assertEqual(
-            1, ModerationRequestAction.objects.filter(
+        self.assertFalse(
+            ModerationRequestAction.objects.filter(
                 request__collection=self.collection1
-            ).count()
+            ).exists()
         )
 
         self.collection1.is_locked = False
@@ -537,10 +528,9 @@ class ModerationCollectionTest(BaseTestCase):
         self.collection1.refresh_from_db()
         # Collection should lock itself
         self.assertTrue(self.collection1.is_locked)
-        # We will now have 3 actions with status STARTED. 1 for the existing
-        # `action1` and 2 more for `moderation_request2` and `moderation_request3`
+        # We will now have 2 actions with status STARTED.
         self.assertEqual(
-            3, ModerationRequestAction.objects.filter(
+            2, ModerationRequestAction.objects.filter(
                 request__collection=self.collection1, action=constants.ACTION_STARTED
             ).count()
         )

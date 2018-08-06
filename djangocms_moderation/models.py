@@ -282,11 +282,8 @@ class ModerationCollection(models.Model):
         Submit all the moderation requests belonging to this collection for
         moderation and mark the collection as locked
         """
-        action = None
         for moderation_request in self.moderation_requests.all():
-            # If the ACTION_STARTED already exists, don't create it again, as
-            # the request has already started
-            action, _ = moderation_request.actions.get_or_create(
+            action = moderation_request.actions.create(
                 by_user=by_user,
                 to_user=to_user,
                 action=constants.ACTION_STARTED,
