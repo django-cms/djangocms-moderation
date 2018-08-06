@@ -3,6 +3,6 @@ tox
 coverage
 flake8
 isort
-aldryn-forms>=3.0.3
+-e git+git://github.com/aldryn/aldryn-forms.git@master#egg=aldryn-forms
 mock
 -e git+git://github.com/divio/djangocms-versioning.git@master#egg=djangocms-versioning
