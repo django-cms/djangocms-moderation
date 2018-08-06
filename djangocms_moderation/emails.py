@@ -43,7 +43,7 @@ def _send_email(collection, action, recipients, subject, template):
     }
     template = 'djangocms_moderation/emails/moderation-request/{}'.format(template)
 
-    # TODO consider cms's `with force_language(lang)`?
+    # TODO What language should the email be sent in? e.g. `with force_language(lang):`
     subject = force_text(subject)
     content = render_to_string(template, context)
 

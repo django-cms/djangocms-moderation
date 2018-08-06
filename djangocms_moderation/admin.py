@@ -8,7 +8,6 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.models import Page
-from cms.toolbar.items import Button
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
@@ -115,21 +114,18 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                         'admin:cms_moderation_submit_collection_for_moderation',
                         args=(collection_id,)
                     )
-                    submit_for_moderation_button = Button(
-                        'Submit for review', submit_for_moderation_url
-                    )
-                    extra_context['submit_for_moderation_button'] = submit_for_moderation_button
+                    extra_context['submit_for_moderation_url'] = submit_for_moderation_url
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
     def get_status(self, obj):
+        last_action = obj.get_last_action()
         if obj.is_approved():
             status = ugettext('Ready for publishing')
         elif obj.is_active and obj.has_pending_step():
             next_step = obj.get_next_required()
             role = next_step.role.name
             status = ugettext('Pending %(role)s approval') % {'role': role}
-        elif obj.get_last_action():
-            last_action = obj.get_last_action()
+        elif last_action:
             # We can have moderation requests without any action (e.g. the
             # ones not submitted for moderation yet)
             user_name = last_action.get_by_user_name()

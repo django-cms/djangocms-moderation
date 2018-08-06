@@ -243,10 +243,17 @@ def moderation_confirmation_page(request, confirmation_id):
 class SubmitCollectionForModeration(FormView):
     template_name = 'djangocms_moderation/request_form.html'
     form_class = SubmitCollectionForModerationForm
+    collection = None  # Populated in dispatch method
+
+    def dispatch(self, request, *args, **kwargs):
+        self.collection = get_object_or_404(
+            ModerationCollection, pk=self.kwargs['collection_id']
+        )
+        return super(SubmitCollectionForModeration, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(SubmitCollectionForModeration, self).get_form_kwargs()
-        kwargs['collection'] = ModerationCollection.objects.get(pk=self.kwargs['collection_id'])
+        kwargs['collection'] = self.collection
         kwargs['user'] = self.request.user
         return kwargs
 
@@ -261,7 +268,7 @@ class SubmitCollectionForModeration(FormView):
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         redirect_url = "{}?collection__id__exact={}".format(
             redirect_url,
-            form.collection.id
+            self.collection.id
         )
         return HttpResponseRedirect(redirect_url)
 

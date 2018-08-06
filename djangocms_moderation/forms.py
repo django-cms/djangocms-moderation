@@ -61,9 +61,7 @@ class UpdateModerationRequestForm(forms.Form):
         self.workflow = kwargs.pop('workflow')
         self.active_request = kwargs.pop('active_request')
         super(UpdateModerationRequestForm, self).__init__(*args, **kwargs)
-
-        if 'moderator' in self.fields:
-            self.configure_moderator_field()
+        self.configure_moderator_field()
 
     def configure_moderator_field(self):
         # For cancelling and rejecting, we don't need to display a moderator
@@ -121,5 +119,6 @@ class SubmitCollectionForModerationForm(forms.Form):
 
     def save(self):
         self.collection.submit_for_moderation(
-            self.user, self.cleaned_data.get('moderator')
+            to_user=self.user,
+            by_user=self.cleaned_data.get('moderator'),
         )

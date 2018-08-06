@@ -335,15 +335,15 @@ class ModerationRequestChangeListView(BaseViewTestCase):
         self.assertEqual(response.context['collection'], self.collection2)
 
     @mock.patch.object(ModerationCollection, 'allow_submit_for_moderation')
-    def test_change_list_view_should_contain_submit_collection_button(self, allow_submit_mock):
+    def test_change_list_view_should_contain_submit_collection_url(self, allow_submit_mock):
         response = self.client.get(self.url)
         self.assertEqual(200, response.status_code)
-        self.assertNotIn('submit_for_moderation_button', response.context)
+        self.assertNotIn('submit_for_moderation_url', response.context)
 
         allow_submit_mock.__get__ = mock.Mock(return_value=False)
         response = self.client.get(self.url_with_filter)
-        self.assertNotIn('submit_for_moderation_button', response.context)
+        self.assertNotIn('submit_for_moderation_url', response.context)
 
         allow_submit_mock.__get__ = mock.Mock(return_value=True)
         response = self.client.get(self.url_with_filter)
-        self.assertIn('submit_for_moderation_button', response.context)
+        self.assertIn('submit_for_moderation_url', response.context)
