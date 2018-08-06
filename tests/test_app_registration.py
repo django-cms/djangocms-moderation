@@ -34,9 +34,9 @@ class CMSConfigTest(CMSTestCase, TestCase):
             app_config=Mock(label='blah_cms_config')
         )
 
-        with self.assertRaises(ImproperlyConfigured) as improperly_configured:
+        err_msg = 'Versioning needs to be enabled for Moderation'
+        with self.assertRaisesMessage(ImproperlyConfigured, err_msg):
             extension.configure_app(cms_config)
-            self.assertEqual(improperly_configured.exception, 'Versioning needs to be enabled for Moderation')
 
     @patch('django.apps.apps.get_app_config')
     def test_model_not_in_versionables_by_content(self, get_app_config):
@@ -48,10 +48,11 @@ class CMSConfigTest(CMSTestCase, TestCase):
             app_config=Mock(label='blah_cms_config')
         )
 
-        with self.assertRaises(ImproperlyConfigured) as improperly_configured:
+        err_msg = 'Moderated model %s need to be Versionable, please include every model that ' \
+                  'needs to be moderated in djangocms_versioning VersionableItem entry' % App1PostContent
+
+        with self.assertRaisesMessage(ImproperlyConfigured, err_msg):
             extension.configure_app(cms_config)
-            self.assertContains(improperly_configured.exception,
-                                'Moderated model %s need to be Versionable' % str(App1PostContent))
 
 
 class CMSConfigIntegrationTest(CMSTestCase):
