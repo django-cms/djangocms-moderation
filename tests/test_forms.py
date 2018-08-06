@@ -1,10 +1,12 @@
-from mock import MagicMock
+from cms.api import create_page
+import mock
 
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
 
 from djangocms_moderation import constants
-from djangocms_moderation.forms import UpdateModerationRequestForm
+from djangocms_moderation.forms import UpdateModerationRequestForm, SubmitCollectionForModerationForm
+from djangocms_moderation.models import ModerationCollection
 
 from .utils.base import BaseTestCase
 
@@ -69,7 +71,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             workflow=self.wf1,
             active_request=self.moderation_request1,
         )
-        form.active_request.update_status = MagicMock()
+        form.active_request.update_status = mock.MagicMock()
         self.assertTrue(form.is_valid())
         form.save()
         form.active_request.update_status.assert_called_once_with(
@@ -78,3 +80,27 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             to_user=None,
             message='Approved message',
         )
+
+
+class SubmitCollectionForModerationFormTest(BaseTestCase):
+    @mock.patch.object(ModerationCollection, 'allow_submit_for_moderation')
+    def test_form_is_invalid_if_collection_cant_be_submitted_for_review(self, allow_submit_mock):
+        data = {
+            'moderator': None,
+        }
+
+        allow_submit_mock.__get__ = mock.Mock(return_value=False)
+        form = SubmitCollectionForModerationForm(
+            data,
+            collection=self.collection1,
+            user=self.user,
+        )
+        self.assertFalse(form.is_valid())
+
+        allow_submit_mock.__get__ = mock.Mock(return_value=True)
+        form = SubmitCollectionForModerationForm(
+            data,
+            collection=self.collection1,
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid())

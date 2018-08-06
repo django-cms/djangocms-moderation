@@ -10,7 +10,6 @@ from cms.api import create_page
 
 from djangocms_moderation import constants
 from djangocms_moderation.exceptions import (
-    CollectionCantBeSubmittedForModeration,
     CollectionIsLocked,
     ObjectAlreadyInCollection,
 )
@@ -529,13 +528,6 @@ class ModerationCollectionTest(BaseTestCase):
             ).count()
         )
 
-        self.collection1.is_locked = True
-        self.collection1.save()
-        # This should not work as the collection is_locked
-        with self.assertRaises(CollectionCantBeSubmittedForModeration):
-            self.collection1.submit_for_moderation(self.user, None)
-
-        self.assertEqual(0, mock_ncm.call_count)
         self.collection1.is_locked = False
         self.collection1.save()
 

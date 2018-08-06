@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -117,8 +118,13 @@ class SubmitCollectionForModerationForm(forms.Form):
         self.fields['moderator'].empty_label = ugettext('Any {role}').format(role=next_role.name)
         self.fields['moderator'].queryset = users
 
+    def clean(self):
+        if not self.collection.allow_submit_for_moderation:
+            self.add_error(None, _("This collection can't be submitted for a review"))
+        return super(SubmitCollectionForModerationForm, self).clean()
+
     def save(self):
         self.collection.submit_for_moderation(
-            to_user=self.user,
-            by_user=self.cleaned_data.get('moderator'),
+            by_user=self.user,
+            to_user=self.cleaned_data.get('moderator'),
         )

@@ -18,7 +18,6 @@ from cms.models.fields import PlaceholderField
 
 from .emails import notify_collection_moderators
 from .exceptions import (
-    CollectionCantBeSubmittedForModeration,
     CollectionIsLocked,
     ObjectAlreadyInCollection,
 )
@@ -283,9 +282,6 @@ class ModerationCollection(models.Model):
         Submit all the moderation requests belonging to this collection for
         moderation and mark the collection as locked
         """
-        if not self.allow_submit_for_moderation:
-            raise CollectionCantBeSubmittedForModeration()
-
         action = None
         for moderation_request in self.moderation_requests.all():
             # If the ACTION_STARTED already exists, don't create it again, as
