@@ -38,7 +38,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.client.force_login(self.user)
         response = self.client.get(
             get_admin_url(
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
             )
@@ -51,7 +51,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.client.force_login(self.user)
         response = self.client.get(
             get_admin_url(
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
             )
@@ -67,7 +67,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
             ), {'collection_id':  self.collection_1.pk, 'content_object_id': self.pg1.pk})
@@ -90,7 +90,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
             ), {'collection_id': self.collection_1.pk, 'content_object_id': self.pg1.pk})
@@ -102,7 +102,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
             ), {'collection_id': self.collection_1.pk, 'content_object_id': 9000})
@@ -114,7 +114,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
             ), {'collection_id': 9000, 'content_object_id': self.pg1.pk})
@@ -130,7 +130,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
             ), {'collection_id': self.collection_1.pk, 'content_object_id': self.pg1.pk})
@@ -147,7 +147,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         self.client.force_login(self.user)
         response = self.client.get(
             get_admin_url(
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
             )
@@ -168,7 +168,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         response = self.client.get(
             add_url_parameters(
                 get_admin_url(
-                    name='item_to_collection',
+                    name='cms_moderation_item_to_collection',
                     language='en',
                     args=()
                 ), collection_id=self.collection_2.pk
@@ -185,7 +185,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
         response = self.client.get(
             add_url_parameters(
                 get_admin_url(
-                    name='item_to_collection',
+                    name='cms_moderation_item_to_collection',
                     language='en',
                     args=()
                 ), content_object_id=self.pg1.pk
@@ -198,7 +198,7 @@ class ItemToCollectionViewTest(BaseViewTestCase):
     def test_authenticated_users_only(self):
         response = self.client.get(
             get_admin_url(
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
             )

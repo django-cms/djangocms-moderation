@@ -45,8 +45,7 @@ def get_page_or_404(obj_id, language):
 
 
 def get_content_object(obj_id):
-    """
-        Temporary function for getting content object
+    """ @todo: add app_label, and model args
     """
     content_type = ContentType.objects.get(app_label="cms", model="page")  # how do we get this
 

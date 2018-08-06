@@ -45,8 +45,8 @@
         <tbody>
         {% for content_object in content_object_list %}
             <tr class="row1 djangocms_moderation_collections_1">
-                <td>{{content_object.content_type}}</td>
-                <td>{{content_object.content_object}}</td>
+                <td>{{ content_object.content_type }}</td>
+                <td>{{ content_object.content_object }}</td>
                 <td>Stub Author [versioning]</td>
                 <td>Stub Date [versioning]</td>
                 <td>Stub VNumber [versioning]</td>
@@ -61,10 +61,4 @@
     </div>
 </div>
 </form>
-<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
-<script type="text/javascript">
- $(function() {
-    console.log('redirect page')
-});
-</script>
 {% endblock %}

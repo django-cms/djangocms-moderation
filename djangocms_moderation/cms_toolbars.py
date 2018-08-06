@@ -22,11 +22,15 @@ class ModerationToolbar(CMSToolbar):
         set_current_language(self.current_lang)
 
     def post_template_populate(self):
+        """
+        @todo replace page object with generic content object
+        :return:
+        """
         super(ModerationToolbar, self).post_template_populate()
         page = get_page_draft(self.request.current_page)
         url = add_url_parameters(
             get_admin_url(
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
                 language=self.current_lang,
                 args=()
             ),
@@ -34,9 +38,9 @@ class ModerationToolbar(CMSToolbar):
         )
 
         self.toolbar.add_modal_button(
-                name=_('Submit for moderation'),
-                url=url,
-                side=self.toolbar.RIGHT,
+            name=_('Submit for moderation'),
+            url=url,
+            side=self.toolbar.RIGHT,
         )
 
 

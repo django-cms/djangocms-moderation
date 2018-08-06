@@ -190,7 +190,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
           _url(
                 r'^item/add/$',
                 views.item_to_collection,
-                name='item_to_collection',
+                name='cms_moderation_item_to_collection',
             )
         ]
 

@@ -11,7 +11,6 @@ from .forms import ItemToCollectionForm
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
-
 from . import constants  # isort:skip
 
 
@@ -35,9 +34,6 @@ class ItemToCollectionView(FormView):
 
         messages.success(self.request, _('Item successfully added to moderation collection'))
         return render(self.request, self.success_template_name, {})
-
-    # def get_success_url(self, **kwargs):
-    #     return self.request.get_raw_uri()
 
     def get_context_data(self, **kwargs):
 
