@@ -7,7 +7,7 @@ from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
 
-from .forms import ItemToCollectionForm
+from .forms import CollectionItemForm
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
@@ -16,7 +16,7 @@ from . import constants  # isort:skip
 
 class CollectionItemView(FormView):
     template_name = 'djangocms_moderation/item_to_collection.html'
-    form_class = ItemToCollectionForm
+    form_class = CollectionItemForm
     success_template_name = 'djangocms_moderation/request_finalized.html'
 
     def get_form_kwargs(self):

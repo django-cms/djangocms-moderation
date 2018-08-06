@@ -319,7 +319,7 @@ class ModerationCollection(models.Model):
     def _add_object(self, content_object):
         """
         Add object to the ModerationRequest in this collection.
-        Requires validation from .forms.ItemToCollectionForm
+        Requires validation from .forms.CollectionItemForm
         :return: <ModerationRequest|None>
         """
 

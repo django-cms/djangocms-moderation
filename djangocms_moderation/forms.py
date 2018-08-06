@@ -121,20 +121,15 @@ class UpdateModerationRequestForm(ModerationRequestForm):
         )
 
 
-class ItemToCollectionForm(forms.Form):
+class CollectionItemForm(forms.Form):
 
     collection_id = forms.IntegerField()
     content_object_id = forms.IntegerField()
 
     def clean_collection_id(self):
-        try:
-            collection = ModerationCollection.objects.get(
-                pk=self.cleaned_data['collection_id']
-            )
-        except ModerationCollection.DoesNotExist:
-            raise forms.ValidationError(
-                _('Collection does not exists')
-            )
+        collection = ModerationCollection.objects.get(
+            pk=self.cleaned_data['collection_id']
+        )
 
         if collection.is_locked:
             raise forms.ValidationError(
@@ -147,7 +142,7 @@ class ItemToCollectionForm(forms.Form):
         content_object = get_content_object(self.cleaned_data['content_object_id'])
 
         if not content_object:
-            raise forms.ValidationError(_('Invalid content_object_id, does not exists'))
+            raise forms.ValidationError(_('Invalid content_object_id, does not exist'))
 
         content_type = ContentType.objects.get_for_model(content_object)
         request_with_object_exists = ModerationRequest.objects.filter(

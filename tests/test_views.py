@@ -3,7 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_moderation.forms import ItemToCollectionForm
+from djangocms_moderation.forms import CollectionItemForm
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
 
@@ -28,7 +28,7 @@ class CollectionItemViewTest(BaseViewTestCase):
     def _assert_render(self, response):
         form = response.context_data['form']
 
-        self.assertIsInstance(form, ItemToCollectionForm)
+        self.assertIsInstance(form, CollectionItemForm)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.template_name[0], 'djangocms_moderation/item_to_collection.html')
         self.assertEqual(response.context_data['title'], _('Add to collection'))
@@ -96,7 +96,11 @@ class CollectionItemViewTest(BaseViewTestCase):
             ), {'collection_id': self.collection_1.pk, 'content_object_id': self.pg1.pk})
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, _('is already part of existing moderation request which is part'))
+        self.assertTrue('content_object_id' in response.context_data['form'].errors.keys())
+        self.assertIn(
+              "is already part of existing moderation request which is part",
+              response.context_data['form'].errors['content_object_id'][0]
+        )
 
     def test_non_existing_content_object(self):
         self.client.force_login(self.user)
@@ -108,19 +112,11 @@ class CollectionItemViewTest(BaseViewTestCase):
             ), {'collection_id': self.collection_1.pk, 'content_object_id': 9000})
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, _('Invalid content_object_id, does not exist'))
 
-    def test_non_existing_collection(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            get_admin_url(
-                name='cms_moderation_item_to_collection',
-                language='en',
-                args=()
-            ), {'collection_id': 9000, 'content_object_id': self.pg1.pk})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, _('Collection does not exist'))
+        self.assertEqual(
+            _('Invalid content_object_id, does not exist'),
+            response.context_data['form'].errors['content_object_id'][0]
+        )
 
     def test_exclude_locked_collections(self):
         ModerationRequest.objects.all().delete()
@@ -135,7 +131,10 @@ class CollectionItemViewTest(BaseViewTestCase):
                 args=()
             ), {'collection_id': self.collection_1.pk, 'content_object_id': self.pg1.pk})
 
-        self.assertContains(response, _("because it is locked"))
+        self.assertEqual(
+            "Can't add the object to the collection, because it is locked",
+            response.context_data['form'].errors['collection_id'][0]
+        )
 
     def test_list_content_objects_from_first_collection(self):
         ModerationRequest.objects.all().delete()
