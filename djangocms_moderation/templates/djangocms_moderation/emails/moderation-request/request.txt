@@ -1,6 +1,7 @@
 {% load i18n %}
-{% blocktrans %}
-Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for changes in the Collection {{ collection }}.
+{% blocktrans with collection.name as collection_name %}
+Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for
+changes in the collection {{ collection_name }}.
 {% endblocktrans %}
 
 <p>
@@ -8,7 +9,9 @@ Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for c
 </p>
 <ul>
 {% for moderation_request in collection.moderation_requests.all %}
-    <li>{{ moderation_request }}</li>
+    <li>
+        {{ moderation_request.pk }} - {{ moderation_request.content_object }} ({{ moderation_request.content_type }})
+    </li>
 {% endfor %}
 </ul>
 
