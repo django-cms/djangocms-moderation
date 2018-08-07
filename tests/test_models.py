@@ -1,6 +1,5 @@
 import json
 from mock import patch
-from unittest import skip
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -70,23 +69,6 @@ class WorkflowTest(BaseTestCase):
 
     def test_first_step(self):
         self.assertEqual(self.wf1.first_step, self.wf1st1)
-
-    @skip('4.0 rework TBC')
-    @patch('djangocms_moderation.models.notify_requested_moderator')
-    def test_submit_new_request(self, mock_nrm):
-        request = self.wf1.submit_new_request(
-            by_user=self.user,
-            obj=self.pg3,
-            language='en',
-            message='Some message',
-        )
-        self.assertQuerysetEqual(
-            request.actions.all(),
-            ModerationRequestAction.objects.filter(request=request),
-            transform=lambda x: x,
-            ordered=False,
-        )
-        self.assertEqual(mock_nrm.call_count, 1)
 
 
 class WorkflowStepTest(BaseTestCase):
@@ -258,9 +240,7 @@ class ModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request4.user_can_moderate(self.user3))
         self.assertFalse(self.moderation_request4.user_can_moderate(user4))
 
-    @patch('djangocms_moderation.models.notify_request_author')
-    @patch('djangocms_moderation.models.notify_requested_moderator')
-    def test_update_status_action_approved(self, mock_nrm, mock_nra):
+    def test_update_status_action_approved(self):
         self.moderation_request1.update_status(
             action=constants.ACTION_APPROVED,
             by_user=self.user,
@@ -268,12 +248,8 @@ class ModerationRequestTest(BaseTestCase):
         )
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.filter(is_archived=False)), 2)
-        self.assertEqual(mock_nrm.call_count, 1)
-        self.assertEqual(mock_nra.call_count, 1)
 
-    @patch('djangocms_moderation.models.notify_request_author')
-    @patch('djangocms_moderation.models.notify_requested_moderator')
-    def test_update_status_action_rejected(self, mock_nrm, mock_nra):
+    def test_update_status_action_rejected(self):
         self.moderation_request1.update_status(
             action=constants.ACTION_REJECTED,
             by_user=self.user,
@@ -282,14 +258,7 @@ class ModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
 
-        self.assertEqual(mock_nra.call_count, 1)
-        # No need to notify the moderator, as this is assigned back to the
-        # content author
-        self.assertFalse(mock_nrm.called)
-
-    @patch('djangocms_moderation.models.notify_request_author')
-    @patch('djangocms_moderation.models.notify_requested_moderator')
-    def test_update_status_action_resubmitted(self, mock_nrm, mock_nra):
+    def test_update_status_action_resubmitted(self):
         self.moderation_request1.update_status(
             action=constants.ACTION_RESUBMITTED,
             by_user=self.user,
@@ -297,9 +266,6 @@ class ModerationRequestTest(BaseTestCase):
         )
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
-
-        self.assertEqual(mock_nra.call_count, 1)
-        self.assertEqual(mock_nrm.call_count, 1)
 
     def test_compliance_number_is_generated(self):
         self.wf1.requires_compliance_number = True
@@ -523,6 +489,52 @@ class ModerationCollectionTest(BaseTestCase):
         self.page1 = create_page(title='My page 1', template='page.html', language='en',)
         self.page2 = create_page(title='My page 2', template='page.html', language='en',)
 
+    def test_allow_submit_for_moderation(self):
+        self.collection1.is_locked = False
+        self.collection1.save()
+        # This is false, as we don't have any moderation requests in this collection
+        self.assertFalse(self.collection1.allow_submit_for_moderation)
+
+        ModerationRequest.objects.create(
+            content_object=self.pg1, collection=self.collection1, is_active=True
+        )
+        self.assertTrue(self.collection1.allow_submit_for_moderation)
+
+        self.collection1.is_locked = True
+        self.collection1.save()
+        self.assertFalse(self.collection1.allow_submit_for_moderation)
+
+    @patch('djangocms_moderation.models.notify_collection_moderators')
+    def test_submit_for_moderation(self, mock_ncm):
+        ModerationRequest.objects.create(
+            content_object=self.pg1, language='en', collection=self.collection1
+        )
+        ModerationRequest.objects.create(
+            content_object=self.pg3, language='en', collection=self.collection1
+        )
+
+        self.assertFalse(
+            ModerationRequestAction.objects.filter(
+                request__collection=self.collection1
+            ).exists()
+        )
+
+        self.collection1.is_locked = False
+        self.collection1.save()
+
+        self.collection1.submit_for_moderation(self.user, None)
+        self.assertEqual(1, mock_ncm.call_count)
+
+        self.collection1.refresh_from_db()
+        # Collection should lock itself
+        self.assertTrue(self.collection1.is_locked)
+        # We will now have 2 actions with status STARTED.
+        self.assertEqual(
+            2, ModerationRequestAction.objects.filter(
+                request__collection=self.collection1, action=constants.ACTION_STARTED
+            ).count()
+        )
+
     def _moderation_requests_count(self, obj, collection=None):
         """
         How many moderation requests are there [for a given collection]
@@ -562,7 +574,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertEqual(1, self._moderation_requests_count(self.page2, self.collection1))
         self.assertEqual(1, self._moderation_requests_count(self.page1, self.collection1))
 
-    def test_create_moderation_request_from_content_object_locked_collection(self):
+    def test_add_object_locked_collection(self):
         # This works, as the collection is not locked
         self.collection2.add_object(self.page1)
         self.assertEqual(1, self._moderation_requests_count(self.page1))

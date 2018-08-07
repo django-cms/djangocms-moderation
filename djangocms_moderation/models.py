@@ -16,7 +16,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.models.fields import PlaceholderField
 
-from .emails import notify_request_author, notify_requested_moderator
+from .emails import notify_collection_moderators
 from .exceptions import CollectionIsLocked, ObjectAlreadyInCollection
 from .utils import generate_compliance_number
 
@@ -200,23 +200,6 @@ class Workflow(models.Model):
         lookup = self._lookup_active_request(page, language)
         return lookup.exists()
 
-    @transaction.atomic
-    def submit_new_request(self, by_user, obj, language, message='', to_user=None):
-        request = self.requests.create(
-            content_object=obj,
-            language=language,
-            is_active=True,
-            workflow=self,
-        )
-        new_action = request.actions.create(
-            by_user=by_user,
-            to_user=to_user,
-            action=constants.ACTION_STARTED,
-            message=message,
-        )
-        notify_requested_moderator(request, new_action)
-        return request
-
 
 @python_2_unicode_compatible
 class WorkflowStep(models.Model):
@@ -286,6 +269,37 @@ class ModerationCollection(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def author_name(self):
+        return self.author.get_full_name() or self.author.get_username()
+
+    def submit_for_moderation(self, by_user, to_user=None):
+        """
+        Submit all the moderation requests belonging to this collection for
+        moderation and mark the collection as locked
+        """
+        for moderation_request in self.moderation_requests.all():
+            action = moderation_request.actions.create(
+                by_user=by_user,
+                to_user=to_user,
+                action=constants.ACTION_STARTED,
+            )
+        # Lock the collection as it has been now submitted for moderation
+        self.is_locked = True
+        self.save(update_fields=['is_locked'])
+        # It is fine to pass any `action` from any moderation_request.actions
+        # above as it will have the same moderators
+        notify_collection_moderators(collection=self, action=action)
+
+    @property
+    def allow_submit_for_moderation(self):
+        """
+        Can this collection submitted for moderation?
+        :return: <bool>
+        """
+        # TODO limited check for now, consider makings this a model field
+        return not self.is_locked and self.moderation_requests.exists()
 
     def add_object(self, content_object):
         """
@@ -412,17 +426,13 @@ class ModerationRequest(models.Model):
         )
         self.save(update_fields=['is_active'])
 
-        new_action = self.actions.create(
+        self.actions.create(
             by_user=by_user,
             to_user=to_user,
             action=action,
             message=message,
             step_approved=step_approved,
         )
-
-        if new_action.to_user_id or new_action.to_role_id:
-            notify_requested_moderator(self, new_action)
-        notify_request_author(self, new_action)
 
         if self.should_set_compliance_number():
             self.set_compliance_number()
@@ -507,7 +517,7 @@ class ModerationRequest(models.Model):
         return False
 
     def user_is_author(self, user):
-        return user == self.get_first_action().by_user
+        return user == self.author
 
     def user_can_view_comments(self, user):
         return self.user_is_author(user) or self.user_can_moderate(user)
@@ -597,7 +607,7 @@ class ModerationRequestAction(models.Model):
         return self._get_user_name(self.to_user)
 
     def _get_user_name(self, user):
-        return user.get_full_name() or getattr(user, user.USERNAME_FIELD)
+        return user.get_full_name() or user.get_username()
 
     def save(self, **kwargs):
         """

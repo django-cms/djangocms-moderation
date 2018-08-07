@@ -41,7 +41,7 @@ class WorkflowStepInlineFormSet(CustomInlineFormSet):
                 selected_roles.append(selected_role.pk)
 
 
-class ModerationRequestForm(forms.Form):
+class UpdateModerationRequestForm(forms.Form):
     moderator = forms.ModelChoiceField(
         label=_('moderator'),
         queryset=get_user_model().objects.none(),
@@ -60,28 +60,8 @@ class ModerationRequestForm(forms.Form):
         self.user = kwargs.pop('user')
         self.workflow = kwargs.pop('workflow')
         self.active_request = kwargs.pop('active_request')
-        super(ModerationRequestForm, self).__init__(*args, **kwargs)
-
-        if 'moderator' in self.fields:
-            self.configure_moderator_field()
-
-    def configure_moderator_field(self):
-        next_role = self.workflow.first_step.role
-        users = next_role.get_users_queryset().exclude(pk=self.user.pk)
-        self.fields['moderator'].empty_label = ugettext('Any {role}').format(role=next_role.name)
-        self.fields['moderator'].queryset = users
-
-    def save(self):
-        self.workflow.submit_new_request(
-            obj=self.page,
-            by_user=self.user,
-            to_user=self.cleaned_data.get('moderator'),
-            language=self.language,
-            message=self.cleaned_data['message'],
-        )
-
-
-class UpdateModerationRequestForm(ModerationRequestForm):
+        super(UpdateModerationRequestForm, self).__init__(*args, **kwargs)
+        self.configure_moderator_field()
 
     def configure_moderator_field(self):
         # For cancelling and rejecting, we don't need to display a moderator
@@ -115,4 +95,35 @@ class UpdateModerationRequestForm(ModerationRequestForm):
             by_user=self.user,
             to_user=self.cleaned_data.get('moderator'),
             message=self.cleaned_data['message'],
+        )
+
+
+class SubmitCollectionForModerationForm(forms.Form):
+    moderator = forms.ModelChoiceField(
+        label=_('moderator'),
+        queryset=get_user_model().objects.none(),
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.collection = kwargs.pop('collection')
+        self.user = kwargs.pop('user')
+        super(SubmitCollectionForModerationForm, self).__init__(*args, **kwargs)
+        self.configure_moderator_field()
+
+    def configure_moderator_field(self):
+        next_role = self.collection.workflow.first_step.role
+        users = next_role.get_users_queryset().exclude(pk=self.user.pk)
+        self.fields['moderator'].empty_label = ugettext('Any {role}').format(role=next_role.name)
+        self.fields['moderator'].queryset = users
+
+    def clean(self):
+        if not self.collection.allow_submit_for_moderation:
+            self.add_error(None, _("This collection can't be submitted for a review"))
+        return super(SubmitCollectionForModerationForm, self).clean()
+
+    def save(self):
+        self.collection.submit_for_moderation(
+            by_user=self.user,
+            to_user=self.cleaned_data.get('moderator'),
         )

@@ -109,23 +109,33 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 pass
             else:
                 extra_context = dict(collection=collection)
+                if collection.allow_submit_for_moderation:
+                    submit_for_moderation_url = reverse(
+                        'admin:cms_moderation_submit_collection_for_moderation',
+                        args=(collection_id,)
+                    )
+                    extra_context['submit_for_moderation_url'] = submit_for_moderation_url
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
     def get_status(self, obj):
+        last_action = obj.get_last_action()
         if obj.is_approved():
             status = ugettext('Ready for publishing')
         elif obj.is_active and obj.has_pending_step():
             next_step = obj.get_next_required()
             role = next_step.role.name
             status = ugettext('Pending %(role)s approval') % {'role': role}
-        else:
-            last_action = obj.get_last_action()
+        elif last_action:
+            # We can have moderation requests without any action (e.g. the
+            # ones not submitted for moderation yet)
             user_name = last_action.get_by_user_name()
             message_data = {
                 'action': last_action.get_action_display(),
                 'name': user_name,
             }
             status = ugettext('%(action)s by %(name)s') % message_data
+        else:
+            status = ugettext('Ready for submission')
         return status
     get_status.short_description = _('Status')
 
@@ -194,6 +204,19 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return _("Collection")
     status.short_description = _('Status')
 
+    def get_urls(self):
+        def _url(regex, fn, name, **kwargs):
+            return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
+
+        url_patterns = [
+            _url(
+                '^(?P<collection_id>\d+)/submit-for-review/$',
+                views.submit_collection_for_moderation,
+                name="cms_moderation_submit_collection_for_moderation",
+            ),
+        ]
+        return url_patterns + super(ModerationCollectionAdmin, self).get_urls()
+
 
 class ExtendedPageAdmin(PageAdmin):
 
@@ -203,11 +226,6 @@ class ExtendedPageAdmin(PageAdmin):
             return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
 
         url_patterns = [
-            _url(
-                r'^([0-9]+)/([a-z\-]+)/moderation/new/$',
-                views.new_moderation_request,
-                'new_request',
-            ),
             _url(
                 r'^([0-9]+)/([a-z\-]+)/moderation/resubmit/$',
                 views.resubmit_moderation_request,

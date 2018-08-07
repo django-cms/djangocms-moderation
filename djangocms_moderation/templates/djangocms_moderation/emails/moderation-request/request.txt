@@ -1,14 +1,29 @@
 {% load i18n %}
-{% blocktrans %}
-Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for changes in {{ page_url }}.
+{% blocktrans with collection.name as collection_name %}
+Hello {{ moderator_name }}, {{ by_user_name }} has requested your approval for
+changes in the collection {{ collection_name }}.
 {% endblocktrans %}
+
+<p>
+{% trans 'Items included in this collection:' %}
+</p>
+<ul>
+{% for moderation_request in collection.moderation_requests.all %}
+    <li>
+        {{ moderation_request.pk }} - {{ moderation_request.content_object }} ({{ moderation_request.content_type }})
+    </li>
+{% endfor %}
+</ul>
+
 
 {% if comment %}
 {% trans 'Comment' %}: <br/>
 {{ comment }} <br/>
 {% endif %}
 
+{% if job_id %}
 {% trans 'Job ID' %}: {{ job_id }}<br/>
+{% endif %}
 
 {% if admin_url %}
 {% trans 'Admin Url' %}:<br/>
