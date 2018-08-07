@@ -6,7 +6,6 @@ from cms.toolbar_base import CMSToolbar
 from cms.toolbar_pool import toolbar_pool
 from cms.utils.urlutils import add_url_parameters
 
-from .monkeypatches import set_current_language
 from .utils import get_admin_url
 
 
@@ -19,7 +18,6 @@ class ModerationToolbar(CMSToolbar):
 
     def __init__(self, *args, **kwargs):
         super(ModerationToolbar, self).__init__(*args, **kwargs)
-        set_current_language(self.current_lang)
 
     def post_template_populate(self):
         """
