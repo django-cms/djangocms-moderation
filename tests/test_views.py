@@ -1,7 +1,7 @@
 import mock
 
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 
@@ -269,4 +269,3 @@ class ModerationRequestChangeListView(BaseViewTestCase):
         allow_submit_mock.__get__ = mock.Mock(return_value=True)
         response = self.client.get(self.url_with_filter)
         self.assertIn('submit_for_moderation_url', response.context)
-

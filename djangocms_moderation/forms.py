@@ -108,7 +108,7 @@ class CollectionItemForm(forms.Form):
 
     def clean_collection_id(self):
         """
-        Validated collection_id, ensure it is not locked. 
+        Validated collection_id, ensure it is not locked.
         :return:
         """
         collection = ModerationCollection.objects.get(

@@ -2,26 +2,17 @@ from __future__ import unicode_literals
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import (
-    HttpResponseRedirect,
-)
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
 
-from .forms import (
-    CollectionItemForm,
-    SubmitCollectionForModerationForm,
-)
-
-from .models import (
-    ConfirmationPage,
-    ModerationCollection
-)
-
+from .forms import CollectionItemForm, SubmitCollectionForModerationForm
+from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
+
 
 from . import constants  # isort:skip
 
