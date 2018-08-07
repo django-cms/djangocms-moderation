@@ -17,10 +17,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.models.fields import PlaceholderField
 
 from .emails import notify_collection_moderators
-from .exceptions import (
-    CollectionIsLocked,
-    ObjectAlreadyInCollection,
-)
+from .exceptions import CollectionIsLocked, ObjectAlreadyInCollection
 from .utils import generate_compliance_number
 
 
