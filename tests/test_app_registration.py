@@ -4,6 +4,7 @@ except ImportError:
     from mock import Mock
 
 from unittest import TestCase
+from unittest.mock import patch
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
@@ -33,15 +34,33 @@ class CMSConfigTest(CMSTestCase, TestCase):
             app_config=Mock(label='blah_cms_config')
         )
 
-        with self.assertRaises(ImproperlyConfigured):
+        err_msg = 'Versioning needs to be enabled for Moderation'
+        with self.assertRaisesMessage(ImproperlyConfigured, err_msg):
             extension.configure_app(cms_config)
 
+
+    @patch('django.apps.apps.get_app_config')
+    def test_model_not_in_versionables_by_content(self, get_app_config):
+        extension = ModerationExtension()
+        cms_config = Mock(
+            moderated_models=[App1PostContent],
+            djangocms_moderation_enabled=True,
+            djangocms_versioning_enabled=True,
+            app_config=Mock(label='blah_cms_config')
+        )
+
+        err_msg = 'Moderated model %s need to be Versionable, please include every model that ' \
+                  'needs to be moderated in djangocms_versioning VersionableItem entry' % App1PostContent
+
+        with self.assertRaisesMessage(ImproperlyConfigured, err_msg):
+            extension.configure_app(cms_config)
 
 class CMSConfigIntegrationTest(CMSTestCase):
 
     def setUp(self):
         app_registration.get_cms_extension_apps.cache_clear()
         app_registration.get_cms_config_apps.cache_clear()
+
         self.moderated_models = (
             App2PostContent, App2TitleContent,
             App1PostContent, App1TitleContent

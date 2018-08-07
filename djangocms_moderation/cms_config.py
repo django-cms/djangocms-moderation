@@ -21,8 +21,8 @@ class ModerationExtension(CMSAppExtension):
             # @todo replace this with a to be provided func from versioning_extensions
             if model not in versioning_extension.versionables_by_content:
                 raise ImproperlyConfigured(
-                    'Moderated models need to be Versionable, please include every '
-                    'model that needs to be moderated in djangocms_versioning VersionableItem entry'
+                    'Moderated model %s need to be Versionable, please include every model that '
+                    'needs to be moderated in djangocms_versioning VersionableItem entry' % model
                 )
 
         self.moderated_models.extend(moderated_models)
