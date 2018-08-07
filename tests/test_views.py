@@ -1,4 +1,8 @@
+import mock
+
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import User
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
@@ -13,7 +17,7 @@ from .utils.base import BaseViewTestCase
 class CollectionItemViewTest(BaseViewTestCase):
 
     def setUp(self):
-        from django.contrib.auth.models import User
+
         self.user = User.objects.create_user(
             username='test1', email='test1@test.com', password='test1', is_staff=True
         )
@@ -31,6 +35,7 @@ class CollectionItemViewTest(BaseViewTestCase):
         self.assertIsInstance(form, CollectionItemForm)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.template_name[0], 'djangocms_moderation/item_to_collection.html')
+
         self.assertEqual(response.context_data['title'], _('Add to collection'))
 
     def test_no_collections(self):
@@ -204,3 +209,64 @@ class CollectionItemViewTest(BaseViewTestCase):
         )
 
         self.assertEqual(response.status_code, 302)
+
+
+class SubmitCollectionForModerationViewTest(BaseViewTestCase):
+    def setUp(self):
+        super(SubmitCollectionForModerationViewTest, self).setUp()
+        self.url = reverse(
+            'admin:cms_moderation_submit_collection_for_moderation',
+            args=(self.collection2.pk,)
+        )
+        request_change_list_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        self.request_change_list_url = "{}?collection__id__exact={}".format(
+            request_change_list_url,
+            self.collection2.pk
+        )
+
+    @mock.patch.object(ModerationCollection, 'submit_for_moderation')
+    def test_submit_collection_for_moderation(self, submit_mock):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(self.url)
+        assert submit_mock.called
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(self.request_change_list_url, response.url)
+
+
+class ModerationRequestChangeListView(BaseViewTestCase):
+    def setUp(self):
+        super(ModerationRequestChangeListView, self).setUp()
+        self.collection_submit_url = reverse(
+            'admin:cms_moderation_submit_collection_for_moderation',
+            args=(self.collection2.pk,)
+        )
+        self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        self.url_with_filter = "{}?collection__id__exact={}".format(
+            self.url, self.collection2.pk
+        )
+
+    def test_change_list_view_should_contain_collection_object(self):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotIn('collection', response.context)
+
+        response = self.client.get(self.url_with_filter)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(response.context['collection'], self.collection2)
+
+    @mock.patch.object(ModerationCollection, 'allow_submit_for_moderation')
+    def test_change_list_view_should_contain_submit_collection_url(self, allow_submit_mock):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+        self.assertNotIn('submit_for_moderation_url', response.context)
+
+        allow_submit_mock.__get__ = mock.Mock(return_value=False)
+        response = self.client.get(self.url_with_filter)
+        self.assertNotIn('submit_for_moderation_url', response.context)
+
+        allow_submit_mock.__get__ = mock.Mock(return_value=True)
+        response = self.client.get(self.url_with_filter)
+        self.assertIn('submit_for_moderation_url', response.context)
+

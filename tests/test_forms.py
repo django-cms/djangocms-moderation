@@ -1,66 +1,16 @@
-from mock import MagicMock
+import mock
 
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
 
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
-    ModerationRequestForm,
+    SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
 )
+from djangocms_moderation.models import ModerationCollection
 
 from .utils.base import BaseTestCase
-
-
-class ModerationCollectionFormTest(BaseTestCase):
-
-    def test_form_init(self):
-        pass
-
-    def test_form_save(self):
-        pass
-
-
-class ModerationRequestFormTest(BaseTestCase):
-
-    def test_form_init(self):
-        form = ModerationRequestForm(
-            action=constants.ACTION_STARTED,
-            language='en',
-            page=self.pg2,
-            user=self.user,
-            workflow=self.wf1,
-            active_request=None,
-        )
-        self.assertIn('moderator', form.fields)
-        field_moderator = form.fields['moderator']
-        self.assertEqual(field_moderator.empty_label, 'Any Role 1')
-        self.assertQuerysetEqual(field_moderator.queryset, User.objects.none())
-
-    def test_form_save(self):
-        data = {
-            'moderator': None,
-            'message': 'Some message'
-        }
-        form = ModerationRequestForm(
-            data,
-            action=constants.ACTION_STARTED,
-            language='en',
-            page=self.pg2,
-            user=self.user,
-            workflow=self.wf1,
-            active_request=None,
-        )
-        form.workflow.submit_new_request = MagicMock()
-        self.assertTrue(form.is_valid())
-        form.save()
-        form.workflow.submit_new_request.assert_called_once_with(
-            obj=self.pg2,
-            by_user=self.user,
-            to_user=None,
-            language='en',
-            message='Some message',
-        )
 
 
 class UpdateModerationRequestFormTest(BaseTestCase):
@@ -74,7 +24,6 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             workflow=self.wf1,
             active_request=self.moderation_request1,
         )
-        self.assertIsInstance(form, ModerationRequestForm)
         field_moderator = form.fields['moderator']
         self.assertEqual(field_moderator.empty_label, 'Any Role 2')
         self.assertQuerysetEqual(
@@ -124,7 +73,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             workflow=self.wf1,
             active_request=self.moderation_request1,
         )
-        form.active_request.update_status = MagicMock()
+        form.active_request.update_status = mock.MagicMock()
         self.assertTrue(form.is_valid())
         form.save()
         form.active_request.update_status.assert_called_once_with(
@@ -133,3 +82,27 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             to_user=None,
             message='Approved message',
         )
+
+
+class SubmitCollectionForModerationFormTest(BaseTestCase):
+    @mock.patch.object(ModerationCollection, 'allow_submit_for_moderation')
+    def test_form_is_invalid_if_collection_cant_be_submitted_for_review(self, allow_submit_mock):
+        data = {
+            'moderator': None,
+        }
+
+        allow_submit_mock.__get__ = mock.Mock(return_value=False)
+        form = SubmitCollectionForModerationForm(
+            data,
+            collection=self.collection1,
+            user=self.user,
+        )
+        self.assertFalse(form.is_valid())
+
+        allow_submit_mock.__get__ = mock.Mock(return_value=True)
+        form = SubmitCollectionForModerationForm(
+            data,
+            collection=self.collection1,
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid())

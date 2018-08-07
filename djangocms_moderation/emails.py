@@ -4,12 +4,7 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.encoding import force_text
-from django.utils.translation import (
-    override as force_language,
-    ugettext_lazy as _,
-)
-
-from cms.utils.conf import get_cms_setting
+from django.utils.translation import ugettext_lazy as _
 
 from .utils import get_absolute_url
 
@@ -30,12 +25,7 @@ email_subjects = {
 }
 
 
-def _send_email(request, action, recipients, subject, template):
-    obj = request.content_object
-    edit_on = get_cms_setting('CMS_TOOLBAR_URL__EDIT_ON')
-    page_url = obj.get_absolute_url(request.language) + '?' + edit_on
-    author_name = request.get_first_action().get_by_user_name()
-
+def _send_email(collection, action, recipients, subject, template):
     if action.to_user_id:
         moderator_name = action.get_to_user_name()
     elif action.to_role_id:
@@ -43,23 +33,19 @@ def _send_email(request, action, recipients, subject, template):
     else:
         moderator_name = ''
 
-    site = obj.node.site
-    admin_url = reverse('admin:djangocms_moderation_moderationrequest_change', args=(request.pk,))
+    admin_url = reverse('admin:djangocms_moderation_moderationcollection_change', args=(collection.pk,))
     context = {
-        'page': obj,
-        'page_url': get_absolute_url(page_url, site),
-        'author_name': author_name,
+        'collection': collection,
+        'author_name': collection.author_name,
         'by_user_name': action.get_by_user_name(),
         'moderator_name': moderator_name,
-        'job_id': request.pk,
-        'comment': request.get_last_action().message,
-        'admin_url': get_absolute_url(admin_url, site),
+        'admin_url': get_absolute_url(admin_url),
     }
     template = 'djangocms_moderation/emails/moderation-request/{}'.format(template)
 
-    with force_language(request.language):
-        subject = force_text(subject)
-        content = render_to_string(template, context)
+    # TODO What language should the email be sent in? e.g. `with force_language(lang):`
+    subject = force_text(subject)
+    content = render_to_string(template, context)
 
     message = EmailMessage(
         subject=subject,
@@ -88,7 +74,7 @@ def notify_request_author(request, action):
     return status
 
 
-def notify_requested_moderator(request, action):
+def notify_collection_moderators(collection, action):
     if action.to_user_id and not action.to_user.email:
         return 0
 
@@ -102,7 +88,7 @@ def notify_requested_moderator(request, action):
         return 0
 
     status = _send_email(
-        request=request,
+        collection=collection,
         action=action,
         recipients=recipients,
         subject=_('Review requested'),

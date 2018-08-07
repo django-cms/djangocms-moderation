@@ -1,14 +1,26 @@
 from __future__ import unicode_literals
 
 from django.contrib import messages
+from django.core.urlresolvers import reverse
+from django.http import (
+    HttpResponseRedirect,
+)
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
 
-from .forms import CollectionItemForm
-from .models import ConfirmationPage, ModerationCollection
+from .forms import (
+    CollectionItemForm,
+    SubmitCollectionForModerationForm,
+)
+
+from .models import (
+    ConfirmationPage,
+    ModerationCollection
+)
+
 from .utils import get_admin_url
 
 from . import constants  # isort:skip
@@ -105,3 +117,45 @@ def moderation_confirmation_page(request, confirmation_id):
             reviewed=True,
         )
     return render(request, confirmation_page_instance.template, context)
+
+
+class SubmitCollectionForModeration(FormView):
+    template_name = 'djangocms_moderation/request_form.html'
+    form_class = SubmitCollectionForModerationForm
+    collection = None  # Populated in dispatch method
+
+    def dispatch(self, request, *args, **kwargs):
+        self.collection = get_object_or_404(
+            ModerationCollection,
+            pk=self.kwargs['collection_id'],
+        )
+        return super(SubmitCollectionForModeration, self).dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(SubmitCollectionForModeration, self).get_form_kwargs()
+        kwargs['collection'] = self.collection
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, _("Your collection has been submitted for a review"))
+        # Redirect back to the collection filtered moderation request change list
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            self.collection.id
+        )
+        return HttpResponseRedirect(redirect_url)
+
+    def get_context_data(self, **kwargs):
+        context = super(SubmitCollectionForModeration, self).get_context_data(**kwargs)
+        context.update({
+            'opts': ModerationCollection._meta,
+            'title': _('Submit collection for review'),
+            'adminform': context['form'],
+        })
+        return context
+
+
+submit_collection_for_moderation = SubmitCollectionForModeration.as_view()
