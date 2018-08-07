@@ -246,7 +246,8 @@ class SubmitCollectionForModeration(FormView):
 
     def dispatch(self, request, *args, **kwargs):
         self.collection = get_object_or_404(
-            ModerationCollection, pk=self.kwargs['collection_id']
+            ModerationCollection,
+            pk=self.kwargs['collection_id'],
         )
         return super(SubmitCollectionForModeration, self).dispatch(request, *args, **kwargs)
 

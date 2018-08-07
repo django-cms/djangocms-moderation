@@ -210,7 +210,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
         url_patterns = [
             _url(
-                '^collection/(?P<collection_id>\d+)/submit-for-review/$',
+                '^(?P<collection_id>\d+)/submit-for-review/$',
                 views.submit_collection_for_moderation,
                 name="cms_moderation_submit_collection_for_moderation",
             ),
