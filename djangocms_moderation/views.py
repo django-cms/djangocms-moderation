@@ -48,6 +48,12 @@ class CollectionItemView(FormView):
         return render(self.request, self.success_template_name, {})
 
     def get_context_data(self, **kwargs):
+        """
+        Gets collection_id from params or from the first collection in the list
+        when no ?collection_id is not supplied
+
+        Always gets content_object_list from a collection at a time
+        """
 
         context = super(CollectionItemView, self).get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta

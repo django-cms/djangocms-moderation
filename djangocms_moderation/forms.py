@@ -107,6 +107,10 @@ class CollectionItemForm(forms.Form):
     content_object_id = forms.IntegerField()
 
     def clean_collection_id(self):
+        """
+        Validated collection_id, ensure it is not locked. 
+        :return:
+        """
         collection = ModerationCollection.objects.get(
             pk=self.cleaned_data['collection_id']
         )
@@ -119,6 +123,12 @@ class CollectionItemForm(forms.Form):
         self.cleaned_data['collection'] = collection
 
     def clean_content_object_id(self):
+        """
+        Validates content_object_id: Checks that a given content_object_id has
+        a content_object and it is not currently part of any ModerationRequest
+
+        :return:
+        """
         content_object = get_content_object(self.cleaned_data['content_object_id'])
 
         if not content_object:
