@@ -1,11 +1,13 @@
-from cms.api import create_page
 import mock
 
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
 
 from djangocms_moderation import constants
-from djangocms_moderation.forms import UpdateModerationRequestForm, SubmitCollectionForModerationForm
+from djangocms_moderation.forms import (
+    SubmitCollectionForModerationForm,
+    UpdateModerationRequestForm,
+)
 from djangocms_moderation.models import ModerationCollection
 
 from .utils.base import BaseTestCase
