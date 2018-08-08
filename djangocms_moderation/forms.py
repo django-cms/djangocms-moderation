@@ -1,7 +1,9 @@
 from __future__ import unicode_literals
 
 from django import forms
+from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.contenttypes.models import ContentType
 from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -103,24 +105,37 @@ class UpdateModerationRequestForm(forms.Form):
 
 class CollectionItemForm(forms.Form):
 
-    collection_id = forms.IntegerField()
+    collection = forms.ModelChoiceField(
+        queryset=ModerationCollection.objects.all(),
+        required=True
+    )
     content_object_id = forms.IntegerField()
 
-    def clean_collection_id(self):
+    def set_collection_id_widget(self, request):
+        related_modeladmin = admin.site._registry.get(ModerationCollection)
+        dbfield = ModerationRequest._meta.get_field('collection')
+        formfield = self.fields['collection']
+        formfield.widget = RelatedFieldWidgetWrapper(
+            formfield.widget,
+            dbfield.rel,
+            admin_site=admin.site,
+            can_add_related=related_modeladmin.has_add_permission(request),
+            can_change_related=related_modeladmin.has_change_permission(request),
+            can_delete_related=related_modeladmin.has_delete_permission(request),
+        )
+
+    def clean_collection(self):
         """
         Validated collection_id, ensure it is not locked.
         :return:
         """
-        collection = ModerationCollection.objects.get(
-            pk=self.cleaned_data['collection_id']
-        )
 
-        if collection.is_locked:
+        if self.cleaned_data['collection'].is_locked:
             raise forms.ValidationError(
                 _("Can't add the object to the collection, because it is locked")
             )
 
-        self.cleaned_data['collection'] = collection
+        # self.cleaned_data['collection'] = collection
 
     def clean_content_object_id(self):
         """

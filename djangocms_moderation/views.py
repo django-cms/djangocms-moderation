@@ -23,10 +23,16 @@ class CollectionItemView(FormView):
     success_template_name = 'djangocms_moderation/request_finalized.html'
 
     def get_form_kwargs(self):
+        collection_id = self.request.GET.get('collection_id')
         kwargs = super(CollectionItemView, self).get_form_kwargs()
         kwargs['initial'].update({
-            'content_object_id': self.request.GET.get('content_object_id')
+            'content_object_id': self.request.GET.get('content_object_id'),
         })
+
+        if collection_id:
+            kwargs['initial'].update({
+                'collection': collection_id
+            })
 
         return kwargs
 
@@ -37,6 +43,11 @@ class CollectionItemView(FormView):
 
         messages.success(self.request, _('Item successfully added to moderation collection'))
         return render(self.request, self.success_template_name, {})
+
+    def get_form(self, **kwargs):
+        form = super(CollectionItemView, self).get_form(**kwargs)
+        form.set_collection_id_widget(self.request)
+        return form
 
     def get_context_data(self, **kwargs):
         """
@@ -61,12 +72,14 @@ class CollectionItemView(FormView):
 
             content_object_list = collection.moderation_requests.all()
 
+
         context.update({
             'collection_id': int(collection_id),
             'collection_list': collection_list,
             'content_object_list':  content_object_list,
             'opts': opts_meta,
             'title': _('Add to collection'),
+            'form': self.get_form(),
         })
 
         return context

@@ -17,18 +17,7 @@
         <div class="related-widget-wrapper widget-wrapper-links-2">
             {{ form.content_object_id.as_hidden }}
             {{ form.content_object_id.errors }}
-            {{ form.collection_id.errors }}
-            <select id="djangocms_moderation_collections" name="collection_id">
-                {% for collection in collection_list %}
-                <option value="{{ collection.pk }}"
-                        {% if collection_id == collection.pk %}selected="selected"{% endif %}
-                        id="djangocms_moderation_collections_{{ collection.pk }}">
-                    {{ collection.name }}
-                </option>
-                {% endfor %}
-            </select>
-            <a class="related-widget-wrapper-link change-related" id="change_id_collection" title="Change selected Workflow" href="/en/admin/djangocms_moderation/moderationcollection/{{ collection_id }}/change"><img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>
-            <a class="related-widget-wrapper-link add-related" id="add_id_collection" href="/en/admin/djangocms_moderation/moderationcollection/add" class="cms-btn " data-rel="modal" data-on-close="REFRESH_PAGE"><img src="/static/admin/img/icon-addlink.svg" alt="Add"></a>
+            {{ form.collection }}
         </div>
     </div>
     <!-- List of collection objects -->
@@ -67,7 +56,7 @@
 <script type="text/javascript">
  $(function() {
 
-   var collection_sel = $('#djangocms_moderation_collections')
+   var collection_sel = $('#id_collection')
    collection_sel.data('prev', collection_sel.val());
    collection_sel.change(function() {
        jqThis = $(this)
