@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from django.contrib import messages
+from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -21,6 +21,12 @@ class CollectionItemView(FormView):
     template_name = 'djangocms_moderation/item_to_collection.html'
     form_class = CollectionItemForm
     success_template_name = 'djangocms_moderation/request_finalized.html'
+
+    # class Media:
+    #     css = {
+    #         'all':('/media/css/widgets.css',),
+    #     }
+    #     js = ('/admin/jsi18n/',)
 
     def get_form_kwargs(self):
         collection_id = self.request.GET.get('collection_id')
@@ -47,6 +53,7 @@ class CollectionItemView(FormView):
     def get_form(self, **kwargs):
         form = super(CollectionItemView, self).get_form(**kwargs)
         form.set_collection_widget(self.request)
+
         return form
 
     def get_context_data(self, **kwargs):
@@ -66,11 +73,13 @@ class CollectionItemView(FormView):
             collection = ModerationCollection.objects.get(pk=collection_id)
             content_object_list = collection.moderation_requests.all()
 
+        model_admin = admin.site._registry.get(ModerationCollection)
         context.update({
             'content_object_list':  content_object_list,
             'opts': opts_meta,
             'title': _('Add to collection'),
             'form': self.get_form(),
+            'media': model_admin.media,
         })
 
         return context

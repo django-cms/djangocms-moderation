@@ -2,8 +2,8 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.contrib import admin
-from django.contrib.auth import get_user_model
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import ugettext, ugettext_lazy as _
