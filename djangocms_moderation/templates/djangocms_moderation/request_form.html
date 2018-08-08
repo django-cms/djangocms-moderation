@@ -14,7 +14,7 @@
             <fieldset class="module aligned">
                 {% for field in adminform.visible_fields %}
                     <div class="form-row">
-                        <div {% if field.errors %} class="errors"{% endif %}>
+                        <div{% if field.errors %} class="errors"{% endif %}>
                             {% if field.errors %}{{ field.errors }}{% endif %}
                             {{ field.label_tag }}
                             {{ field }}

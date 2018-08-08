@@ -16,30 +16,28 @@ class ModerationToolbar(CMSToolbar):
             'all': ('djangocms_moderation/css/moderation.css',)
         }
 
-    def __init__(self, *args, **kwargs):
-        super(ModerationToolbar, self).__init__(*args, **kwargs)
-
     def post_template_populate(self):
         """
-        @todo replace page object with generic content object
+        @TODO replace page object with generic content object
         :return:
         """
         super(ModerationToolbar, self).post_template_populate()
         page = get_page_draft(self.request.current_page)
-        url = add_url_parameters(
-            get_admin_url(
-                name='cms_moderation_item_to_collection',
-                language=self.current_lang,
-                args=()
-            ),
-            content_object_id=page.pk
-        )
+        if page:
+            url = add_url_parameters(
+                get_admin_url(
+                    name='cms_moderation_item_to_collection',
+                    language=self.current_lang,
+                    args=()
+                ),
+                content_object_id=page.pk
+            )
 
-        self.toolbar.add_modal_button(
-            name=_('Submit for moderation'),
-            url=url,
-            side=self.toolbar.RIGHT,
-        )
+            self.toolbar.add_modal_button(
+                name=_('Submit for moderation'),
+                url=url,
+                side=self.toolbar.RIGHT,
+            )
 
 
 toolbar_pool.register(ModerationToolbar)

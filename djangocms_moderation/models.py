@@ -334,9 +334,8 @@ class ModerationCollection(models.Model):
         """
         Add object to the ModerationRequest in this collection.
         Requires validation from .forms.CollectionItemForm
-        :return: <ModerationRequest|None>
+        :return: <ModerationRequest>
         """
-
         content_type = ContentType.objects.get_for_model(content_object)
         return self.moderation_requests.create(
             content_type=content_type,
