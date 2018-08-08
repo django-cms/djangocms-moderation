@@ -46,7 +46,7 @@ class CollectionItemView(FormView):
 
     def get_form(self, **kwargs):
         form = super(CollectionItemView, self).get_form(**kwargs)
-        form.set_collection_id_widget(self.request)
+        form.set_collection_widget(self.request)
         return form
 
     def get_context_data(self, **kwargs):
@@ -59,23 +59,14 @@ class CollectionItemView(FormView):
 
         context = super(CollectionItemView, self).get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
-        collection_list = ModerationCollection.objects.filter(is_locked=False)
         collection_id = self.request.GET.get('collection_id', 0)
         content_object_list = []
 
-        if collection_list:
-            if collection_id:
-                collection = ModerationCollection.objects.get(pk=collection_id)
-            else:
-                collection = collection_list[0]
-                collection_id = collection.pk
-
+        if collection_id:
+            collection = ModerationCollection.objects.get(pk=collection_id)
             content_object_list = collection.moderation_requests.all()
 
-
         context.update({
-            'collection_id': int(collection_id),
-            'collection_list': collection_list,
             'content_object_list':  content_object_list,
             'opts': opts_meta,
             'title': _('Add to collection'),

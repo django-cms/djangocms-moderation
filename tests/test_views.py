@@ -38,35 +38,6 @@ class CollectionItemViewTest(BaseViewTestCase):
 
         self.assertEqual(response.context_data['title'], _('Add to collection'))
 
-    def test_no_collections(self):
-        ModerationCollection.objects.all().delete()
-        self.client.force_login(self.user)
-        response = self.client.get(
-            get_admin_url(
-                name='cms_moderation_item_to_collection',
-                language='en',
-                args=()
-            )
-        )
-
-        self._assert_render(response)
-        self.assertEqual(list(response.context_data['collection_list']), [])
-
-    def test_collections(self):
-        self.client.force_login(self.user)
-        response = self.client.get(
-            get_admin_url(
-                name='cms_moderation_item_to_collection',
-                language='en',
-                args=()
-            )
-        )
-
-        self._assert_render(response)
-        self.assertTrue(self.collection_1 in response.context_data['collection_list'])
-        self.assertTrue(self.collection_2 in response.context_data['collection_list'])
-        self.assertTrue(2, len(response.context_data['collection_list']))
-
     def test_add_object_to_collections(self):
         ModerationRequest.objects.all().delete()
         self.client.force_login(self.user)
@@ -75,7 +46,7 @@ class CollectionItemViewTest(BaseViewTestCase):
                 name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
-            ), {'collection':  self.collection_1, 'content_object_id': self.pg1.pk})
+            ), {'collection':  self.collection_1.pk, 'content_object_id': self.pg1.pk})
 
         self.assertEqual(response.status_code, 200)
         # self.assertContains(response, 'reloadBrowser')
@@ -136,31 +107,11 @@ class CollectionItemViewTest(BaseViewTestCase):
                 args=()
             ), {'collection': self.collection_1.pk, 'content_object_id': self.pg1.pk})
 
+        # locked collection are not part of the list
         self.assertEqual(
-            "Can't add the object to the collection, because it is locked",
+            "Select a valid choice. That choice is not one of the available choices.",
             response.context_data['form'].errors['collection'][0]
         )
-
-    def test_list_content_objects_from_first_collection(self):
-        ModerationRequest.objects.all().delete()
-
-        collections = ModerationCollection.objects.filter(is_locked=False)
-        collections[0]._add_object(self.pg1)
-        collections[1]._add_object(self.pg2)
-
-        self.client.force_login(self.user)
-        response = self.client.get(
-            get_admin_url(
-                name='cms_moderation_item_to_collection',
-                language='en',
-                args=()
-            )
-        )
-
-        moderation_requests = ModerationRequest.objects.filter(collection=collections[0])
-        # moderation request is content_object
-        for mod_request in moderation_requests:
-            self.assertTrue(mod_request in response.context_data['content_object_list'])
 
     def test_list_content_objects_from_collection_id_param(self):
         ModerationRequest.objects.all().delete()

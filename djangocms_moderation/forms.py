@@ -106,12 +106,12 @@ class UpdateModerationRequestForm(forms.Form):
 class CollectionItemForm(forms.Form):
 
     collection = forms.ModelChoiceField(
-        queryset=ModerationCollection.objects.all(),
+        queryset=ModerationCollection.objects.filter(is_locked=False),
         required=True
     )
     content_object_id = forms.IntegerField()
 
-    def set_collection_id_widget(self, request):
+    def set_collection_widget(self, request):
         related_modeladmin = admin.site._registry.get(ModerationCollection)
         dbfield = ModerationRequest._meta.get_field('collection')
         formfield = self.fields['collection']
@@ -129,13 +129,12 @@ class CollectionItemForm(forms.Form):
         Validated collection_id, ensure it is not locked.
         :return:
         """
-
         if self.cleaned_data['collection'].is_locked:
             raise forms.ValidationError(
                 _("Can't add the object to the collection, because it is locked")
             )
 
-        # self.cleaned_data['collection'] = collection
+        return self.cleaned_data['collection']
 
     def clean_content_object_id(self):
         """
@@ -162,6 +161,8 @@ class CollectionItemForm(forms.Form):
             ))
 
         self.cleaned_data['content_object'] = content_object
+
+        return self.cleaned_data['content_object_id']
 
 
 class SubmitCollectionForModerationForm(forms.Form):
