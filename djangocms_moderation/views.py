@@ -22,12 +22,6 @@ class CollectionItemView(FormView):
     form_class = CollectionItemForm
     success_template_name = 'djangocms_moderation/request_finalized.html'
 
-    # class Media:
-    #     css = {
-    #         'all':('/media/css/widgets.css',),
-    #     }
-    #     js = ('/admin/jsi18n/',)
-
     def get_form_kwargs(self):
         collection_id = self.request.GET.get('collection_id')
         kwargs = super(CollectionItemView, self).get_form_kwargs()
