@@ -118,12 +118,12 @@ class SubmitCollectionForModerationForm(forms.Form):
         self.fields['moderator'].queryset = users
 
     def clean(self):
-        if not self.collection.allow_submit_for_moderation:
+        if not self.collection.allow_submit_for_review:
             self.add_error(None, _("This collection can't be submitted for a review"))
         return super(SubmitCollectionForModerationForm, self).clean()
 
     def save(self):
-        self.collection.submit_for_moderation(
+        self.collection.submit_for_review(
             by_user=self.user,
             to_user=self.cleaned_data.get('moderator'),
         )

@@ -250,6 +250,14 @@ class WorkflowStep(models.Model):
 
 
 class ModerationCollection(models.Model):
+    COLLECTING = 'CO'
+    INREVIEW = 'IR'
+    ARCHIVED = 'AR'
+    STATUS_CHOICES = (
+        (COLLECTING, 'Collecting'),
+        (INREVIEW, 'In Review'),
+        (ARCHIVED, 'Archived'),
+    )
     name = models.CharField(verbose_name=_('name'), max_length=128)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
@@ -262,8 +270,11 @@ class ModerationCollection(models.Model):
         verbose_name=_('workflow'),
         related_name='moderation_collections',
     )
-    # TODO: proper implementations and handlers coming later for is_locked
-    is_locked = models.BooleanField(verbose_name=_('is locked'), default=False)
+    status = models.CharField(
+        max_length=2,
+        choices=STATUS_CHOICES,
+        default=COLLECTING,
+    )
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
@@ -274,10 +285,10 @@ class ModerationCollection(models.Model):
     def author_name(self):
         return self.author.get_full_name() or self.author.get_username()
 
-    def submit_for_moderation(self, by_user, to_user=None):
+    def submit_for_review(self, by_user, to_user=None):
         """
         Submit all the moderation requests belonging to this collection for
-        moderation and mark the collection as locked
+        review and mark the collection as locked
         """
         for moderation_request in self.moderation_requests.all():
             action = moderation_request.actions.create(
@@ -286,29 +297,28 @@ class ModerationCollection(models.Model):
                 action=constants.ACTION_STARTED,
             )
         # Lock the collection as it has been now submitted for moderation
-        self.is_locked = True
-        self.save(update_fields=['is_locked'])
+        self.status = self.INREVIEW
+        self.save(update_fields=['status'])
         # It is fine to pass any `action` from any moderation_request.actions
         # above as it will have the same moderators
         notify_collection_moderators(collection=self, action=action)
 
     @property
-    def allow_submit_for_moderation(self):
+    def allow_submit_for_review(self):
         """
-        Can this collection submitted for moderation?
+        Can this collection submitted for review?
         :return: <bool>
         """
-        # TODO limited check for now, consider makings this a model field
-        return not self.is_locked and self.moderation_requests.exists()
+        return self.status == self.COLLECTING and self.moderation_requests.exists()
 
     def add_object(self, content_object):
         """
         Add object to the ModerationRequest in this collection.
         :return: <ModerationRequest|None>
         """
-        if self.is_locked:
+        if self.status != self.COLLECTING:
             raise CollectionIsLocked(
-                "Can't add the object to the collection, because it is locked"
+                "Can't add the object to the collection, because it is In Review"
             )
 
         content_type = ContentType.objects.get_for_model(content_object)
