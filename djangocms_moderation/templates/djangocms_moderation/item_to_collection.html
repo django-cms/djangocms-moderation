@@ -2,16 +2,13 @@
 {% load i18n %}
 {% load static %}
 {% block content %}
-{% if errors %}
-    <p class="errornote">
-        {% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
-    </p>
-    {{ form.non_field_errors }}
-{% endif %}
 <form action="{{ request.get_full_path }}" method="post">
 {% csrf_token %}
 <div>
     <h2>{% trans "Add to existing collection" %}</h2>
+    {% if form.non_field_errors %}
+        <span>{{ form.non_field_errors }}</span>
+    {% endif %}
     <div class="form-row">
         <div class="related-widget-wrapper widget-wrapper-links-2">
             {{ form.content_type.as_hidden }}
