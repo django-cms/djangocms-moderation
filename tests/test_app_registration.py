@@ -60,8 +60,11 @@ class CMSConfigIntegrationTest(CMSTestCase):
     def setUp(self):
         app_registration.get_cms_extension_apps.cache_clear()
         app_registration.get_cms_config_apps.cache_clear()
-        self.moderated_models = (App2PostContent, App2TitleContent,
-                                 App1PostContent, App1TitleContent)
+
+        self.moderated_models = (
+            App2PostContent, App2TitleContent,
+            App1PostContent, App1TitleContent
+        )
 
     def test_config_with_two_apps(self):
         setup_cms_apps()

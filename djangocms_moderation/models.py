@@ -330,6 +330,19 @@ class ModerationCollection(models.Model):
                 "of another active collection".format(content_object)
             )
 
+    def _add_object(self, content_object):
+        """
+        Add object to the ModerationRequest in this collection.
+        Requires validation from .forms.CollectionItemForm
+        :return: <ModerationRequest>
+        """
+        content_type = ContentType.objects.get_for_model(content_object)
+        return self.moderation_requests.create(
+            content_type=content_type,
+            object_id=content_object.pk,
+            collection=self,
+        )
+
 
 @python_2_unicode_compatible
 class ModerationRequest(models.Model):

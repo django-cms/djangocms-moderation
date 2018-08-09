@@ -1,0 +1,73 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+{% load static %}
+{% block content %}
+<form action="{{ request.get_full_path }}" method="post">
+{% csrf_token %}
+<div>
+    <h2>{% trans "Add to existing collection" %}</h2>
+    {% if form.non_field_errors %}
+        <span>{{ form.non_field_errors }}</span>
+    {% endif %}
+    <div class="form-row">
+        <div class="related-widget-wrapper widget-wrapper-links-2">
+            {{ form.content_type.as_hidden }}
+            {{ form.content_type.errors }}
+            {{ form.content_object_id.as_hidden }}
+            {{ form.content_object_id.errors }}
+            {{ form.collection }}
+        </div>
+    </div>
+    <!-- List of collection objects -->
+    <div class="results">
+     <table>
+        <thead>
+            <tr>
+                <th>{% trans "Content Type" %}</th>
+                <th>{% trans "Identifier" %}</th>
+                <th>{% trans "Author" %}</th>
+                <th>{% trans "Edit Date" %}</th>
+                <th>{% trans "Version" %}</th>
+                <th>{% trans "Status" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for content_object in content_object_list %}
+            <tr class="row1 djangocms_moderation_collections_1">
+                <td>{{ content_object.content_type }}</td>
+                <td>{{ content_object.content_object }}</td>
+                <td>Stub Author [versioning]</td>
+                <td>Stub Date [versioning]</td>
+                <td>Stub VNumber [versioning]</td>
+                <td>Stub Published [versioning] </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <div class="submit-row">
+        <input type="submit" value="{% trans 'Submit' %}" class="default" name="_save">
+    </div>
+</div>
+</form>
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script type="text/javascript">
+ $(function() {
+
+   var collection_sel = $('#id_collection')
+   collection_sel.data('prev', collection_sel.val());
+   collection_sel.change(function() {
+       jqThis = $(this)
+
+       if(location.href.indexOf('collection_id') == -1){
+            new_url = location.href + '&collection_id=' + jqThis.val()
+       } else {
+            new_url = location.href.replace("collection_id="+jqThis.data("prev"),
+                                            "collection_id="+jqThis.val())
+       }
+
+       location.href = new_url
+   });
+});
+</script>
+{% endblock %}

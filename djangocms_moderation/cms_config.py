@@ -17,7 +17,6 @@ class ModerationExtension(CMSAppExtension):
             raise ImproperlyConfigured('Versioning needs to be enabled for Moderation')
 
         versioning_extension = apps.get_app_config('djangocms_versioning').cms_extension
-
         for model in moderated_models:
             # @todo replace this with a to be provided func from versioning_extensions
             if model not in versioning_extension.versionables_by_content:
