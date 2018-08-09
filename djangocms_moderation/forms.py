@@ -1,13 +1,17 @@
 from __future__ import unicode_literals
 
 from django import forms
+from django.contrib import admin
+from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from adminsortable2.admin import CustomInlineFormSet
 
 from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
+from .models import ModerationCollection, ModerationRequest
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
@@ -96,6 +100,71 @@ class UpdateModerationRequestForm(forms.Form):
             to_user=self.cleaned_data.get('moderator'),
             message=self.cleaned_data['message'],
         )
+
+
+class CollectionItemForm(forms.Form):
+
+    collection = forms.ModelChoiceField(
+        queryset=ModerationCollection.objects.filter(is_locked=False),
+        required=True
+    )
+    content_type = forms.ModelChoiceField(
+        queryset=ContentType.objects.filter(app_label="cms", model="page"),
+        required=True,
+        widget=forms.HiddenInput(),
+    )
+    content_object_id = forms.IntegerField()
+
+    def set_collection_widget(self, request):
+        related_modeladmin = admin.site._registry.get(ModerationCollection)
+        dbfield = ModerationRequest._meta.get_field('collection')
+        formfield = self.fields['collection']
+        formfield.widget = RelatedFieldWidgetWrapper(
+            formfield.widget,
+            dbfield.rel,
+            admin_site=admin.site,
+            can_add_related=related_modeladmin.has_add_permission(request),
+            can_change_related=related_modeladmin.has_change_permission(request),
+            can_delete_related=related_modeladmin.has_delete_permission(request),
+        )
+
+    def clean(self):
+        """
+        Validates content_object_id: Checks that a given content_object_id has
+        a content_object and it is not currently part of any ModerationRequest
+
+        :return:
+        """
+        if self.errors:
+            return self.cleaned_data
+
+        content_type = self.cleaned_data['content_type']
+
+        try:
+            content_object = content_type.get_object_for_this_type(
+                pk=self.cleaned_data['content_object_id'],
+                is_page_type=False,
+                publisher_is_draft=True,
+            )
+        except content_type.model_class().DoesNotExist:
+            content_object = None
+
+        if not content_object:
+            raise forms.ValidationError(_('Invalid content_object_id, does not exist'))
+
+        request_with_object_exists = ModerationRequest.objects.filter(
+            content_type=content_type,
+            object_id=content_object.pk,
+        ).exists()
+
+        if request_with_object_exists:
+            raise forms.ValidationError(_(
+                "{} is already part of existing moderation request which is part "
+                "of another active collection".format(content_object)
+            ))
+
+        self.cleaned_data['content_object'] = content_object
+        return self.cleaned_data
 
 
 class SubmitCollectionForModerationForm(forms.Form):
