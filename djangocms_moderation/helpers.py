@@ -44,21 +44,6 @@ def get_page_or_404(obj_id, language):
     )
 
 
-def get_content_object(obj_id):
-    """ @todo: add app_label, and model args
-    """
-    content_type = ContentType.objects.get(app_label="cms", model="page")  # how do we get this
-
-    try:
-        return content_type.get_object_for_this_type(
-            pk=obj_id,
-            is_page_type=False,
-            publisher_is_draft=True,
-        )
-    except content_type.model_class().DoesNotExist:
-        return None
-
-
 def get_form_submission_for_step(active_request, current_step):
     lookup = (
         ConfirmationFormSubmission

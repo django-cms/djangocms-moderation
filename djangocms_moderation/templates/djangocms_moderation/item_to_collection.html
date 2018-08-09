@@ -14,6 +14,8 @@
     <h2>{% trans "Add to existing collection" %}</h2>
     <div class="form-row">
         <div class="related-widget-wrapper widget-wrapper-links-2">
+            {{ form.content_type.as_hidden }}
+            {{ form.content_type.errors }}
             {{ form.content_object_id.as_hidden }}
             {{ form.content_object_id.errors }}
             {{ form.collection }}

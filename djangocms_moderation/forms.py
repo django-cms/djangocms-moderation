@@ -11,7 +11,6 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from adminsortable2.admin import CustomInlineFormSet
 
 from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
-from .helpers import get_content_object
 from .models import ModerationCollection, ModerationRequest
 
 
@@ -109,6 +108,11 @@ class CollectionItemForm(forms.Form):
         queryset=ModerationCollection.objects.filter(is_locked=False),
         required=True
     )
+    content_type = forms.ModelChoiceField(
+        queryset=ContentType.objects.filter(app_label="cms", model="page"),
+        required=True,
+        widget=forms.HiddenInput(),
+    )
     content_object_id = forms.IntegerField()
 
     def set_collection_widget(self, request):
@@ -124,31 +128,30 @@ class CollectionItemForm(forms.Form):
             can_delete_related=related_modeladmin.has_delete_permission(request),
         )
 
-    def clean_collection(self):
-        """
-        Validated collection_id, ensure it is not locked.
-        :return:
-        """
-        if self.cleaned_data['collection'].is_locked:
-            raise forms.ValidationError(
-                _("Can't add the object to the collection, because it is locked")
-            )
-
-        return self.cleaned_data['collection']
-
-    def clean_content_object_id(self):
+    def clean(self):
         """
         Validates content_object_id: Checks that a given content_object_id has
         a content_object and it is not currently part of any ModerationRequest
 
         :return:
         """
-        content_object = get_content_object(self.cleaned_data['content_object_id'])
+        if self.errors:
+            return self.cleaned_data
+
+        content_type = self.cleaned_data['content_type']
+
+        try:
+            content_object = content_type.get_object_for_this_type(
+                pk=self.cleaned_data['content_object_id'],
+                is_page_type=False,
+                publisher_is_draft=True,
+            )
+        except content_type.model_class().DoesNotExist:
+            content_object = None
 
         if not content_object:
             raise forms.ValidationError(_('Invalid content_object_id, does not exist'))
 
-        content_type = ContentType.objects.get_for_model(content_object)
         request_with_object_exists = ModerationRequest.objects.filter(
             content_type=content_type,
             object_id=content_object.pk,
@@ -161,8 +164,7 @@ class CollectionItemForm(forms.Form):
             ))
 
         self.cleaned_data['content_object'] = content_object
-
-        return self.cleaned_data['content_object_id']
+        return self.cleaned_data
 
 
 class SubmitCollectionForModerationForm(forms.Form):

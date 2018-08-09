@@ -1,12 +1,14 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin, messages
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
+from cms.models import Page
 from cms.utils.urlutils import add_url_parameters
 
 from .forms import CollectionItemForm, SubmitCollectionForModerationForm
@@ -23,31 +25,27 @@ class CollectionItemView(FormView):
     success_template_name = 'djangocms_moderation/request_finalized.html'
 
     def get_form_kwargs(self):
-        collection_id = self.request.GET.get('collection_id')
         kwargs = super(CollectionItemView, self).get_form_kwargs()
         kwargs['initial'].update({
             'content_object_id': self.request.GET.get('content_object_id'),
+            'content_type': ContentType.objects.get_for_model(Page).pk,
         })
+        collection_id = self.request.GET.get('collection_id')
 
         if collection_id:
-            kwargs['initial'].update({
-                'collection': collection_id
-            })
-
+            kwargs['initial']['collection'] = collection_id
         return kwargs
 
     def form_valid(self, form):
-        collection = form.cleaned_data['collection']
         content_object = form.cleaned_data['content_object']
+        collection = form.cleaned_data['collection']
         collection.add_object(content_object)
-
         messages.success(self.request, _('Item successfully added to moderation collection'))
         return render(self.request, self.success_template_name, {})
 
     def get_form(self, **kwargs):
         form = super(CollectionItemView, self).get_form(**kwargs)
         form.set_collection_widget(self.request)
-
         return form
 
     def get_context_data(self, **kwargs):
@@ -57,17 +55,17 @@ class CollectionItemView(FormView):
 
         Always gets content_object_list from a collection at a time
         """
-
         context = super(CollectionItemView, self).get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
-        collection_id = self.request.GET.get('collection_id', 0)
-        content_object_list = []
+        collection_id = self.request.GET.get('collection_id')
 
         if collection_id:
             collection = ModerationCollection.objects.get(pk=collection_id)
             content_object_list = collection.moderation_requests.all()
+        else:
+            content_object_list = []
 
-        model_admin = admin.site._registry.get(ModerationCollection)
+        model_admin = admin.site._registry[ModerationCollection]
         context.update({
             'content_object_list':  content_object_list,
             'opts': opts_meta,

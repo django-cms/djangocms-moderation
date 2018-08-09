@@ -23,21 +23,24 @@ class ModerationToolbar(CMSToolbar):
         """
         super(ModerationToolbar, self).post_template_populate()
         page = get_page_draft(self.request.current_page)
-        if page:
-            url = add_url_parameters(
-                get_admin_url(
-                    name='cms_moderation_item_to_collection',
-                    language=self.current_lang,
-                    args=()
-                ),
-                content_object_id=page.pk
-            )
 
-            self.toolbar.add_modal_button(
-                name=_('Submit for moderation'),
-                url=url,
-                side=self.toolbar.RIGHT,
-            )
+        if not page:
+            return None
+
+        url = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_item_to_collection',
+                language=self.current_lang,
+                args=()
+            ),
+            content_object_id=page.pk
+        )
+
+        self.toolbar.add_modal_button(
+            name=_('Submit for moderation'),
+            url=url,
+            side=self.toolbar.RIGHT,
+        )
 
 
 toolbar_pool.register(ModerationToolbar)

@@ -29,6 +29,8 @@ class CollectionItemViewTest(BaseViewTestCase):
             author=self.user, name='My collection 2', workflow=self.wf1
         )
 
+        self.content_type = ContentType.objects.get_for_model(self.pg1)
+
     def _assert_render(self, response):
         form = response.context_data['form']
 
@@ -46,7 +48,11 @@ class CollectionItemViewTest(BaseViewTestCase):
                 name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
-            ), {'collection':  self.collection_1.pk, 'content_object_id': self.pg1.pk})
+            ), {'collection':  self.collection_1.pk,
+                'content_type': self.content_type.pk,
+                'content_object_id': self.pg1.pk
+                }
+            )
 
         self.assertEqual(response.status_code, 200)
         # self.assertContains(response, 'reloadBrowser')
@@ -64,34 +70,38 @@ class CollectionItemViewTest(BaseViewTestCase):
         self.collection_1._add_object(self.pg1)
 
         self.client.force_login(self.user)
+
         response = self.client.post(
             get_admin_url(
                 name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
-            ), {'collection': self.collection_1.pk, 'content_object_id': self.pg1.pk})
+            ), {'collection': self.collection_1.pk,
+                'content_type': self.content_type.pk,
+                'content_object_id': self.pg1.pk})
 
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('content_object_id' in response.context_data['form'].errors.keys())
         self.assertIn(
               "is already part of existing moderation request which is part",
-              response.context_data['form'].errors['content_object_id'][0]
+              response.context_data['form'].errors['__all__'][0]
         )
 
     def test_non_existing_content_object(self):
         self.client.force_login(self.user)
+        content_type = ContentType.objects.get_for_model(self.pg1)
         response = self.client.post(
             get_admin_url(
                 name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
-            ), {'collection': self.collection_1.pk, 'content_object_id': 9000})
+            ), {'collection': self.collection_1.pk,
+                'content_type': content_type.pk,
+                'content_object_id': 9000})
 
         self.assertEqual(response.status_code, 200)
-
-        self.assertEqual(
-            _('Invalid content_object_id, does not exist'),
-            response.context_data['form'].errors['content_object_id'][0]
+        self.assertIn(
+            'Invalid content_object_id, does not exist',
+            response.context_data['form'].errors['__all__'][0]
         )
 
     def test_exclude_locked_collections(self):
