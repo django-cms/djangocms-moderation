@@ -50,24 +50,24 @@
     </div>
 </div>
 </form>
-<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
 <script type="text/javascript">
- $(function() {
+    (function($) {
+        $(function() {
+            var collection_sel = $('#id_collection')
+            collection_sel.data('prev', collection_sel.val());
+            collection_sel.on('change', function() {
+                jqThis = $(this)
 
-   var collection_sel = $('#id_collection')
-   collection_sel.data('prev', collection_sel.val());
-   collection_sel.change(function() {
-       jqThis = $(this)
+                if(location.href.indexOf('collection_id') == -1){
+                        new_url = location.href + '&collection_id=' + jqThis.val()
+                } else {
+                        new_url = location.href.replace("collection_id="+jqThis.data("prev"),
+                                                        "collection_id="+jqThis.val())
+                }
 
-       if(location.href.indexOf('collection_id') == -1){
-            new_url = location.href + '&collection_id=' + jqThis.val()
-       } else {
-            new_url = location.href.replace("collection_id="+jqThis.data("prev"),
-                                            "collection_id="+jqThis.val())
-       }
-
-       location.href = new_url
-   });
-});
+                location.href = new_url
+            });
+        });
+    })(django.jQuery);
 </script>
 {% endblock %}
