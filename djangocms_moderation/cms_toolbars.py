@@ -7,8 +7,8 @@ from cms.toolbar_base import CMSToolbar
 from cms.toolbar_pool import toolbar_pool
 from cms.utils.urlutils import add_url_parameters
 
-from .utils import get_admin_url
 from .models import ModerationRequest
+from .utils import get_admin_url
 
 
 class ModerationToolbar(CMSToolbar):
@@ -36,7 +36,7 @@ class ModerationToolbar(CMSToolbar):
                 object_id=page.pk,
             )
             self.toolbar.add_modal_button(
-                name=_('In Moderation Collection "%s"' % moderation_request.collection.name),
+                name=_('In Moderation "%s"' % moderation_request.collection.name),
                 url='#',
                 disabled=True,
                 side=self.toolbar.RIGHT,
