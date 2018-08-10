@@ -104,9 +104,9 @@ class CollectionItemViewTest(BaseViewTestCase):
             response.context_data['form'].errors['__all__'][0]
         )
 
-    def test_exclude_locked_collections(self):
+    def test_prevent_locked_collections_from_being_selected_when_adding_to_collection(self):
         ModerationRequest.objects.all().delete()
-        self.collection_1.is_locked = True
+        self.collection_1.status = self.collection_1.INREVIEW 
         self.collection_1.save()
 
         self.client.force_login(self.user)
@@ -185,7 +185,7 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
             self.collection2.pk
         )
 
-    @mock.patch.object(ModerationCollection, 'submit_for_moderation')
+    @mock.patch.object(ModerationCollection, 'submit_for_review')
     def test_submit_collection_for_moderation(self, submit_mock):
         response = self.client.get(self.url)
         self.assertEqual(200, response.status_code)
@@ -217,16 +217,16 @@ class ModerationRequestChangeListView(BaseViewTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(response.context['collection'], self.collection2)
 
-    @mock.patch.object(ModerationCollection, 'allow_submit_for_moderation')
+    @mock.patch.object(ModerationCollection, 'allow_submit_for_review')
     def test_change_list_view_should_contain_submit_collection_url(self, allow_submit_mock):
         response = self.client.get(self.url)
         self.assertEqual(200, response.status_code)
-        self.assertNotIn('submit_for_moderation_url', response.context)
+        self.assertNotIn('submit_for_review_url', response.context)
 
         allow_submit_mock.__get__ = mock.Mock(return_value=False)
         response = self.client.get(self.url_with_filter)
-        self.assertNotIn('submit_for_moderation_url', response.context)
+        self.assertNotIn('submit_for_review_url', response.context)
 
         allow_submit_mock.__get__ = mock.Mock(return_value=True)
         response = self.client.get(self.url_with_filter)
-        self.assertIn('submit_for_moderation_url', response.context)
+        self.assertIn('submit_for_review_url', response.context)

@@ -105,7 +105,7 @@ class UpdateModerationRequestForm(forms.Form):
 class CollectionItemForm(forms.Form):
 
     collection = forms.ModelChoiceField(
-        queryset=ModerationCollection.objects.filter(is_locked=False),
+        queryset=ModerationCollection.objects.filter(status=ModerationCollection.COLLECTING),
         required=True
     )
     content_type = forms.ModelChoiceField(
@@ -169,7 +169,7 @@ class CollectionItemForm(forms.Form):
 
 class SubmitCollectionForModerationForm(forms.Form):
     moderator = forms.ModelChoiceField(
-        label=_('moderator'),
+        label=_('Select review group'),
         queryset=get_user_model().objects.none(),
         required=False,
     )

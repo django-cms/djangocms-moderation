@@ -98,7 +98,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 extra_context = dict(collection=collection)
                 if collection.allow_submit_for_review:
                     submit_for_review_url = reverse(
-                        'admin:cms_moderation_submit_collection_for_review',
+                        'admin:cms_moderation_submit_collection_for_moderation',
                         args=(collection_id,)
                     )
                     extra_context['submit_for_review_url'] = submit_for_review_url

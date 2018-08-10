@@ -306,7 +306,7 @@ class ModerationCollection(models.Model):
     @property
     def allow_submit_for_review(self):
         """
-        Can this collection submitted for review?
+        Can this collection be submitted for review?
         :return: <bool>
         """
         return self.status == self.COLLECTING and self.moderation_requests.exists()

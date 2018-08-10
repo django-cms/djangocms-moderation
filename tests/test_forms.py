@@ -85,7 +85,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
 
 
 class SubmitCollectionForModerationFormTest(BaseTestCase):
-    @mock.patch.object(ModerationCollection, 'allow_submit_for_moderation')
+    @mock.patch.object(ModerationCollection, 'allow_submit_for_review')
     def test_form_is_invalid_if_collection_cant_be_submitted_for_review(self, allow_submit_mock):
         data = {
             'moderator': None,
