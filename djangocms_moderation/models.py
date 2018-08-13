@@ -251,11 +251,11 @@ class WorkflowStep(models.Model):
 
 class ModerationCollection(models.Model):
     COLLECTING = 'CO'
-    INREVIEW = 'IR'
+    IN_REVIEW = 'IR'
     ARCHIVED = 'AR'
     STATUS_CHOICES = (
         (COLLECTING, 'Collecting'),
-        (INREVIEW, 'In Review'),
+        (IN_REVIEW, 'In Review'),
         (ARCHIVED, 'Archived'),
     )
     name = models.CharField(verbose_name=_('name'), max_length=128)
@@ -297,7 +297,7 @@ class ModerationCollection(models.Model):
                 action=constants.ACTION_STARTED,
             )
         # Lock the collection as it has been now submitted for moderation
-        self.status = self.INREVIEW
+        self.status = self.IN_REVIEW
         self.save(update_fields=['status'])
         # It is fine to pass any `action` from any moderation_request.actions
         # above as it will have the same moderators
@@ -312,35 +312,6 @@ class ModerationCollection(models.Model):
         return self.status == self.COLLECTING and self.moderation_requests.exists()
 
     def add_object(self, content_object):
-        """
-        Add object to the ModerationRequest in this collection.
-        :return: <ModerationRequest|None>
-        """
-        if self.status != self.COLLECTING:
-            raise CollectionIsLocked(
-                "Can't add the object to the collection, because it is In Review"
-            )
-
-        content_type = ContentType.objects.get_for_model(content_object)
-        # Object can ever be part of only one collection
-        existing_request_exists = ModerationRequest.objects.filter(
-            content_type=content_type,
-            object_id=content_object.pk,
-        ).exists()
-
-        if not existing_request_exists:
-            return self.moderation_requests.create(
-                content_type=content_type,
-                object_id=content_object.pk,
-                collection=self,
-            )
-        else:
-            raise ObjectAlreadyInCollection(
-                "{} is already part of existing moderation request which is part "
-                "of another active collection".format(content_object)
-            )
-
-    def _add_object(self, content_object):
         """
         Add object to the ModerationRequest in this collection.
         Requires validation from .forms.CollectionItemForm

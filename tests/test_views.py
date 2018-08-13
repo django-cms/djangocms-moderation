@@ -67,7 +67,7 @@ class CollectionItemViewTest(BaseViewTestCase):
 
     def test_invalid_content_already_in_collection(self):
         # add object
-        self.collection_1._add_object(self.pg1)
+        self.collection_1.add_object(self.pg1)
 
         self.client.force_login(self.user)
 
@@ -106,7 +106,7 @@ class CollectionItemViewTest(BaseViewTestCase):
 
     def test_prevent_locked_collections_from_being_selected_when_adding_to_collection(self):
         ModerationRequest.objects.all().delete()
-        self.collection_1.status = self.collection_1.INREVIEW 
+        self.collection_1.status = self.collection_1.IN_REVIEW 
         self.collection_1.save()
 
         self.client.force_login(self.user)
@@ -126,8 +126,8 @@ class CollectionItemViewTest(BaseViewTestCase):
     def test_list_content_objects_from_collection_id_param(self):
         ModerationRequest.objects.all().delete()
 
-        self.collection_1._add_object(self.pg1)
-        self.collection_2._add_object(self.pg2)
+        self.collection_1.add_object(self.pg1)
+        self.collection_2.add_object(self.pg2)
 
         self.client.force_login(self.user)
         response = self.client.get(
