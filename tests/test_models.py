@@ -9,10 +9,6 @@ from django.core.urlresolvers import reverse
 from cms.api import create_page
 
 from djangocms_moderation import constants
-from djangocms_moderation.exceptions import (
-    CollectionIsLocked,
-    ObjectAlreadyInCollection,
-)
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
