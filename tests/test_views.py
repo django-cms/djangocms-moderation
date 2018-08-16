@@ -10,6 +10,7 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_moderation.forms import CollectionItemForm
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
+from djangocms_moderation import constants
 
 from .utils.base import BaseViewTestCase
 
@@ -109,7 +110,7 @@ class CollectionItemViewTest(BaseViewTestCase):
         from being selected when adding to collection
         """
         ModerationRequest.objects.all().delete()
-        self.collection_1.status = self.collection_1.IN_REVIEW
+        self.collection_1.status = constants.IN_REVIEW
         self.collection_1.save()
         self.client.force_login(self.user)
         response = self.client.post(

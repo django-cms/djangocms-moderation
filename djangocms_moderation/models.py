@@ -289,7 +289,7 @@ class ModerationCollection(models.Model):
                 action=constants.ACTION_STARTED,
             )
         # Lock the collection as it has been now submitted for moderation
-        self.status = self.IN_REVIEW
+        self.status = constants.IN_REVIEW
         self.save(update_fields=['status'])
         # It is fine to pass any `action` from any moderation_request.actions
         # above as it will have the same moderators
@@ -301,7 +301,7 @@ class ModerationCollection(models.Model):
         Can this collection be submitted for review?
         :return: <bool>
         """
-        return self.status == self.COLLECTING and self.moderation_requests.exists()
+        return self.status == constants.COLLECTING and self.moderation_requests.exists()
 
     def add_object(self, content_object):
         """
