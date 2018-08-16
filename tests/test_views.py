@@ -104,7 +104,10 @@ class CollectionItemViewTest(BaseViewTestCase):
             response.context_data['form'].errors['__all__'][0]
         )
 
-    def test_prevent_locked_collections_from_being_selected_when_adding_to_collection(self):
+    def test_prevent_locked_collections(self):
+        """
+        from being selected when adding to collection
+        """
         ModerationRequest.objects.all().delete()
         self.collection_1.status = self.collection_1.IN_REVIEW
         self.collection_1.save()
