@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50, verbose_name='name')),
                 ('content_type', models.CharField(choices=[('plain', 'Plain'), ('form', 'Form')], default='form', max_length=50, verbose_name='Content Type')),
-                ('template', models.CharField(choices=[('djangocms_moderation/moderation_confirmation.html', 'Default')], default='djangocms_moderation/moderation_confirmation.html', max_length=100, verbose_name='Template')),
+                ('template', models.CharField(choices=conf.CONFIRMATION_PAGE_TEMPLATES, default=conf.DEFAULT_CONFIRMATION_PAGE_TEMPLATE, max_length=100, verbose_name='Template')),
                 ('content', cms.models.fields.PlaceholderField(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE, slotname='confirmation_content', to='cms.Placeholder')),
             ],
             options={

@@ -270,7 +270,7 @@ class ModerationCollection(models.Model):
         related_name='moderation_collections',
     )
     status = models.CharField(
-        max_length=2,
+        max_length=10,
         choices=STATUS_CHOICES,
         default=COLLECTING,
         db_index=True,
