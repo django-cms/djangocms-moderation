@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 from django.conf.urls import url
 from django.contrib import admin
+from django.contrib.messages import SUCCESS
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -37,9 +39,6 @@ class ModerationRequestActionInline(admin.TabularInline):
     def has_add_permission(self, request):
         return False
 
-    def has_delete_permission(self, request, obj=None):
-        return False
-
     def show_user(self, obj):
         _name = obj.get_by_user_name()
         return ugettext('By {user}').format(user=_name)
@@ -65,13 +64,30 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
-    actions = None  # remove `delete_selected` for now, it will be handled later
+    actions = ['delete_selected']
     inlines = [ModerationRequestActionInline]
     list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
     list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+
+    def delete_selected(self, request, queryset):
+        if not self.has_delete_permission(request):
+            raise PermissionDenied
+
+        for moderation_request in queryset.all():
+            if moderation_request.collection.author != request.user:
+                raise PermissionDenied
+
+        for obj in queryset:
+            obj.delete()
+
+        self.message_user(
+            request,
+            '%s requests successfully deleted' % queryset.count(),
+            SUCCESS
+        )
 
     def get_title(self, obj):
         return obj.content_object
