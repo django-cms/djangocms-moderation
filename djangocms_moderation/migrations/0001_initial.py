@@ -7,6 +7,9 @@ from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 
+from djangocms_moderation import conf   
+from djangocms_moderation.constants import ACTION_CHOICES, STATUS_CHOICES
+
 
 class Migration(migrations.Migration):
 

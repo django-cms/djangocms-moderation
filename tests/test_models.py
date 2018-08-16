@@ -486,7 +486,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.page2 = create_page(title='My page 2', template='page.html', language='en',)
 
     def test_allow_submit_for_review(self):
-        self.collection1.status = self.collection1.COLLECTING
+        self.collection1.status = constants.COLLECTING
         self.collection1.save()
         # This is false, as we don't have any moderation requests in this collection
         self.assertFalse(self.collection1.allow_submit_for_review)
@@ -496,7 +496,7 @@ class ModerationCollectionTest(BaseTestCase):
         )
         self.assertTrue(self.collection1.allow_submit_for_review)
 
-        self.collection1.status = self.collection1.IN_REVIEW
+        self.collection1.status = constants.IN_REVIEW
         self.collection1.save()
         self.assertFalse(self.collection1.allow_submit_for_review)
 
@@ -515,7 +515,7 @@ class ModerationCollectionTest(BaseTestCase):
             ).exists()
         )
 
-        self.collection1.status = self.collection1.COLLECTING
+        self.collection1.status = constants.COLLECTING
         self.collection1.save()
 
         self.collection1.submit_for_review(self.user, None)
@@ -523,7 +523,7 @@ class ModerationCollectionTest(BaseTestCase):
 
         self.collection1.refresh_from_db()
         # Collection should lock itself
-        self.assertEquals(self.collection1.status, self.collection1.IN_REVIEW)
+        self.assertEquals(self.collection1.status, constants.IN_REVIEW)
         # We will now have 2 actions with status STARTED.
         self.assertEqual(
             2, ModerationRequestAction.objects.filter(

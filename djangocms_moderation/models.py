@@ -249,14 +249,6 @@ class WorkflowStep(models.Model):
 
 
 class ModerationCollection(models.Model):
-    COLLECTING = 'COLLECTING'
-    IN_REVIEW = 'IN_REVIEW'
-    ARCHIVED = 'ARCHIVED'
-    STATUS_CHOICES = (
-        (COLLECTING, _('Collecting')),
-        (IN_REVIEW, _('In Review')),
-        (ARCHIVED, _('Archived')),
-    )
     name = models.CharField(verbose_name=_('name'), max_length=128)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
@@ -271,8 +263,8 @@ class ModerationCollection(models.Model):
     )
     status = models.CharField(
         max_length=10,
-        choices=STATUS_CHOICES,
-        default=COLLECTING,
+        choices=constants.STATUS_CHOICES,
+        default=constants.COLLECTING,
         db_index=True,
     )
     date_created = models.DateTimeField(auto_now_add=True)

@@ -10,7 +10,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from adminsortable2.admin import CustomInlineFormSet
 
-from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
+from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED, COLLECTING
 from .models import ModerationCollection, ModerationRequest
 
 
@@ -105,7 +105,7 @@ class UpdateModerationRequestForm(forms.Form):
 class CollectionItemForm(forms.Form):
 
     collection = forms.ModelChoiceField(
-        queryset=ModerationCollection.objects.filter(status=ModerationCollection.COLLECTING),
+        queryset=ModerationCollection.objects.filter(status=COLLECTING) ,
         required=True
     )
     content_type = forms.ModelChoiceField(
