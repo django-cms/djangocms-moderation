@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=128, verbose_name='name')),
-                ('status', models.CharField(choices=STATUS_CHOICES, db_index=True, default='COLLECTING', max_length=2)),
+                ('status', models.CharField(choices=STATUS_CHOICES, db_index=True, default='COLLECTING', max_length=10)),
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='author')),
