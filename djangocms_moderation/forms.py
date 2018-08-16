@@ -105,7 +105,7 @@ class UpdateModerationRequestForm(forms.Form):
 class CollectionItemForm(forms.Form):
 
     collection = forms.ModelChoiceField(
-        queryset=ModerationCollection.objects.filter(status=COLLECTING) ,
+        queryset=ModerationCollection.objects.filter(status=COLLECTING),
         required=True
     )
     content_type = forms.ModelChoiceField(
