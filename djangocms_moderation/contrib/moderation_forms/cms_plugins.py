@@ -3,7 +3,6 @@ from django.utils.translation import ugettext_lazy as _
 from cms.plugin_pool import plugin_pool
 
 from aldryn_forms.cms_plugins import FormPlugin
-
 from djangocms_moderation.helpers import get_page_or_404
 from djangocms_moderation.signals import confirmation_form_submission
 
