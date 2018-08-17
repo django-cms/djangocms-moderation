@@ -500,6 +500,28 @@ class ModerationCollectionTest(BaseTestCase):
         self.collection1.save()
         self.assertFalse(self.collection1.allow_submit_for_review)
 
+    def allow_pre_flight(self):
+        self.collection4.status = constants.COLLECTING
+        self.collection4.save()
+        # This is false, as we don't have any moderation requests in this collection
+        self.assertFalse(self.collection4.allow_pre_flight)
+
+        ModerationRequest.objects.create(
+            content_object=self.pg5, collection=self.collection4, is_active=True
+        )
+        self.assertFalse(self.collection4.allow_pre_flight)
+
+        self.collection4.status = constants.IN_REVIEW
+        self.collection4.save()
+
+        self.moderation_request4.update_status(
+            action=constants.ACTION_APPROVED,
+            by_user=self.user,
+            message='Approved',
+        )
+
+        self.assertTrue(self.collection4.allow_pre_flight)
+
     @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_submit_for_review(self, mock_ncm):
         ModerationRequest.objects.create(

@@ -212,8 +212,11 @@ class ModerationRequestChangeListView(BaseViewTestCase):
         )
 
     def test_change_list_view_should_contain_collection_object(self):
+        """
+        @todo: this won't work now because we set a 404 if there's no id. So should test both with and without id's and get differing responses.
+        """
         response = self.client.get(self.url)
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(404, response.status_code)
         self.assertNotIn('collection', response.context)
 
         response = self.client.get(self.url_with_filter)
@@ -222,9 +225,12 @@ class ModerationRequestChangeListView(BaseViewTestCase):
 
     @mock.patch.object(ModerationCollection, 'allow_submit_for_review')
     def test_change_list_view_should_contain_submit_collection_url(self, allow_submit_mock):
+        """
+        @todo: what does this do? - I.e. why should list view contain submit collection url?
+        """
         response = self.client.get(self.url)
-        self.assertEqual(200, response.status_code)
-        self.assertNotIn('submit_for_review_url', response.context)
+        self.assertEqual(404, response.status_code)
+        self.assertNotIn('submit_for_review_url', response.context) 
 
         allow_submit_mock.__get__ = mock.Mock(return_value=False)
         response = self.client.get(self.url_with_filter)
