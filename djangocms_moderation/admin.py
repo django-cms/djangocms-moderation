@@ -1,12 +1,11 @@
 from __future__ import unicode_literals
 
 from django.conf.urls import url
-from django.contrib import admin
-from django.contrib.messages import SUCCESS
+from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.utils.html import format_html, format_html_join
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
@@ -76,17 +75,22 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         if not self.has_delete_permission(request):
             raise PermissionDenied
 
-        for moderation_request in queryset.all():
-            if moderation_request.collection.author != request.user:
-                raise PermissionDenied
+        if queryset.exclude(collection__author=request.user).exists():
+            raise PermissionDenied
 
-        for obj in queryset:
-            obj.delete()
+        num_deleted_requests = queryset.count()
+        queryset.delete()
 
         self.message_user(
             request,
-            '%s requests successfully deleted' % queryset.count(),
-            SUCCESS
+            ungettext(
+                '%(count)d request successfully deleted',
+                '%(count)d requests successfully deleted',
+                num_deleted_requests
+            ) % {
+                'count': num_deleted_requests
+            },
+            messages.SUCCESS
         )
 
     def get_title(self, obj):
