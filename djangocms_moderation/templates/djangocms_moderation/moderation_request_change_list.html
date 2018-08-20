@@ -3,7 +3,6 @@
 
 {% block object-tools-items %}
 {{ block.super }}
-{{ is_preflight }}
 {% if submit_for_review_url %}
     <li>
         <a href="{{ submit_for_review_url }}">{% trans 'Submit for review' %}</a>

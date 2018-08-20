@@ -107,16 +107,17 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 pass
             else:
                 is_preflight = request.GET.get('preflight')
-                extra_context = dict(
-                    collection=collection,
-                    is_preflight=is_preflight,
-                )
+                extra_context = {
+                    'collection': collection,
+                    'is_preflight': is_preflight,
+                }
                 if collection.allow_submit_for_review:
                     submit_for_review_url = reverse(
                         'admin:cms_moderation_submit_collection_for_moderation',
                         args=(collection_id,)
                     )
                     extra_context['submit_for_review_url'] = submit_for_review_url
+
                 if collection.allow_pre_flight(request.user):
                     pre_flight_view_url = format_html('{}?collection__id__exact={}',
                         reverse('admin:djangocms_moderation_moderationrequest_changelist'),
@@ -124,7 +125,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                     )
                     extra_context['pre_flight_view_url'] = pre_flight_view_url
         else: 
+            # If no collection id, then don't show all requests 
+            # as each collection's actions, buttons and privileges may differ
             raise Http404
+
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
     def get_status(self, obj):
