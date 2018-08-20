@@ -96,12 +96,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 pass
             else:
                 extra_context = dict(collection=collection)
-                if collection.allow_submit_for_moderation:
-                    submit_for_moderation_url = reverse(
+                if collection.allow_submit_for_review:
+                    submit_for_review_url = reverse(
                         'admin:cms_moderation_submit_collection_for_moderation',
                         args=(collection_id,)
                     )
-                    extra_context['submit_for_moderation_url'] = submit_for_moderation_url
+                    extra_context['submit_for_review_url'] = submit_for_review_url
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
     def get_status(self, obj):
@@ -162,7 +162,6 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         'get_moderator',
         'workflow',
         'status',
-        'is_locked',
         'date_created',
     ]
 
@@ -182,14 +181,6 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     def get_moderator(self, obj):
         return obj.author
     get_moderator.short_description = _('Moderator')
-
-    def status(self, obj):
-        # TODO more statuses to come in the future, once implemented.
-        # It will very likely be a ModerationCollection.status field
-        if obj.is_locked:
-            return _("In review")
-        return _("Collection")
-    status.short_description = _('Status')
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):

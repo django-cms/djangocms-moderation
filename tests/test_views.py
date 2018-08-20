@@ -10,6 +10,7 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_moderation.forms import CollectionItemForm
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
+from djangocms_moderation import constants
 
 from .utils.base import BaseViewTestCase
 
@@ -67,7 +68,7 @@ class CollectionItemViewTest(BaseViewTestCase):
 
     def test_invalid_content_already_in_collection(self):
         # add object
-        self.collection_1._add_object(self.pg1)
+        self.collection_1.add_object(self.pg1)
 
         self.client.force_login(self.user)
 
@@ -104,11 +105,13 @@ class CollectionItemViewTest(BaseViewTestCase):
             response.context_data['form'].errors['__all__'][0]
         )
 
-    def test_exclude_locked_collections(self):
+    def test_prevent_locked_collections(self):
+        """
+        from being selected when adding to collection
+        """
         ModerationRequest.objects.all().delete()
-        self.collection_1.is_locked = True
+        self.collection_1.status = constants.IN_REVIEW
         self.collection_1.save()
-
         self.client.force_login(self.user)
         response = self.client.post(
             get_admin_url(
@@ -126,8 +129,8 @@ class CollectionItemViewTest(BaseViewTestCase):
     def test_list_content_objects_from_collection_id_param(self):
         ModerationRequest.objects.all().delete()
 
-        self.collection_1._add_object(self.pg1)
-        self.collection_2._add_object(self.pg2)
+        self.collection_1.add_object(self.pg1)
+        self.collection_2.add_object(self.pg2)
 
         self.client.force_login(self.user)
         response = self.client.get(
@@ -185,7 +188,7 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
             self.collection2.pk
         )
 
-    @mock.patch.object(ModerationCollection, 'submit_for_moderation')
+    @mock.patch.object(ModerationCollection, 'submit_for_review')
     def test_submit_collection_for_moderation(self, submit_mock):
         response = self.client.get(self.url)
         self.assertEqual(200, response.status_code)
@@ -217,16 +220,16 @@ class ModerationRequestChangeListView(BaseViewTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(response.context['collection'], self.collection2)
 
-    @mock.patch.object(ModerationCollection, 'allow_submit_for_moderation')
+    @mock.patch.object(ModerationCollection, 'allow_submit_for_review')
     def test_change_list_view_should_contain_submit_collection_url(self, allow_submit_mock):
         response = self.client.get(self.url)
         self.assertEqual(200, response.status_code)
-        self.assertNotIn('submit_for_moderation_url', response.context)
+        self.assertNotIn('submit_for_review_url', response.context)
 
         allow_submit_mock.__get__ = mock.Mock(return_value=False)
         response = self.client.get(self.url_with_filter)
-        self.assertNotIn('submit_for_moderation_url', response.context)
+        self.assertNotIn('submit_for_review_url', response.context)
 
         allow_submit_mock.__get__ = mock.Mock(return_value=True)
         response = self.client.get(self.url_with_filter)
-        self.assertIn('submit_for_moderation_url', response.context)
+        self.assertIn('submit_for_review_url', response.context)
