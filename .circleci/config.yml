@@ -106,7 +106,7 @@ jobs:
          docker_layer_caching: true
      - checkout
      - restore_cache:
-         key: py35-v2-{{ .Environment.CIRCLE_SHA1 }}
+         keys: py35-v2-{{ .Environment.CIRCLE_SHA1 }}
      - run: docker load -i caches/py35.tar || true
      - run: docker run py35 gulp lint
   py34-dj111-sqlite-cms4:
