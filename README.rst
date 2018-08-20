@@ -9,7 +9,7 @@ Installation
 Requirements
 ============
 
-django CMS Moderation requires that you have a django CMS 3.4.3 (or higher) project already running and set up.
+django CMS Moderation requires that you have a django CMS 4.0 (or higher) project already running and set up.
 
 
 To install
