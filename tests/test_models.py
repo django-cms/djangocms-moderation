@@ -500,16 +500,16 @@ class ModerationCollectionTest(BaseTestCase):
         self.collection1.save()
         self.assertFalse(self.collection1.allow_submit_for_review)
 
-    def allow_pre_flight(self):
+    def test_allow_pre_flight(self):
         self.collection4.status = constants.COLLECTING
         self.collection4.save()
         # This is false, as we don't have any moderation requests in this collection
-        self.assertFalse(self.collection4.allow_pre_flight)
+        self.assertFalse(self.collection4.allow_pre_flight(self.user))
 
         ModerationRequest.objects.create(
             content_object=self.pg5, collection=self.collection4, is_active=True
         )
-        self.assertFalse(self.collection4.allow_pre_flight)
+        self.assertFalse(self.collection4.allow_pre_flight(self.user))
 
         self.collection4.status = constants.IN_REVIEW
         self.collection4.save()
