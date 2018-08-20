@@ -3,9 +3,9 @@
 
 {% block object-tools-items %}
 {{ block.super }}
-{% if submit_for_moderation_url %}
+{% if submit_for_review_url %}
     <li>
-        <a href="{{ submit_for_moderation_url }}">{% trans 'Submit for review' %}</a>
+        <a href="{{ submit_for_review_url }}">{% trans 'Submit for review' %}</a>
     </li>
 {% endif %}
 {% endblock %}

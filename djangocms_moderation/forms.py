@@ -10,7 +10,12 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from adminsortable2.admin import CustomInlineFormSet
 
-from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED
+from .constants import (
+    ACTION_CANCELLED,
+    ACTION_REJECTED,
+    ACTION_RESUBMITTED,
+    COLLECTING,
+)
 from .models import ModerationCollection, ModerationRequest
 
 
@@ -105,7 +110,7 @@ class UpdateModerationRequestForm(forms.Form):
 class CollectionItemForm(forms.Form):
 
     collection = forms.ModelChoiceField(
-        queryset=ModerationCollection.objects.filter(is_locked=False),
+        queryset=ModerationCollection.objects.filter(status=COLLECTING),
         required=True
     )
     content_type = forms.ModelChoiceField(
@@ -169,7 +174,7 @@ class CollectionItemForm(forms.Form):
 
 class SubmitCollectionForModerationForm(forms.Form):
     moderator = forms.ModelChoiceField(
-        label=_('moderator'),
+        label=_('Select review group'),
         queryset=get_user_model().objects.none(),
         required=False,
     )
@@ -187,12 +192,12 @@ class SubmitCollectionForModerationForm(forms.Form):
         self.fields['moderator'].queryset = users
 
     def clean(self):
-        if not self.collection.allow_submit_for_moderation:
+        if not self.collection.allow_submit_for_review:
             self.add_error(None, _("This collection can't be submitted for a review"))
         return super(SubmitCollectionForModerationForm, self).clean()
 
     def save(self):
-        self.collection.submit_for_moderation(
+        self.collection.submit_for_review(
             by_user=self.user,
             to_user=self.cleaned_data.get('moderator'),
         )
