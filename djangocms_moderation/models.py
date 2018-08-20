@@ -302,14 +302,14 @@ class ModerationCollection(models.Model):
         :return: <bool>
         """
         return self.status == constants.COLLECTING and self.moderation_requests.exists()
-    def allow_pre_flight(self):
+
+    def allow_pre_flight(self, user):
         """
         Is this collection ready for pre-flight?
         :return: <bool>
         """
-        if self.status != constants.IN_REVIEW:
+        if self.status != constants.IN_REVIEW or user != self.author:
             return False
-
         moderation_requests = self.moderation_requests.filter(is_active=True)
         for moderation_request in moderation_requests:
             if moderation_request.is_approved():

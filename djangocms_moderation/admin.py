@@ -26,6 +26,7 @@ from .models import (
 
 
 from . import views  # isort:skip
+from . import actions  # isort:skip
 
 
 class ModerationRequestActionInline(admin.TabularInline):
@@ -66,13 +67,14 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
-    actions = None  # remove `delete_selected` for now, it will be handled later
+    actions = [actions.publish_selected]
     inlines = [ModerationRequestActionInline]
     list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
     list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+    collection = None
 
     def get_title(self, obj):
         return obj.content_object
@@ -86,6 +88,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not self.collection or not self.collection.allow_pre_flight(request.user):
+            if 'publish_selected' in actions:
+                del actions['publish_selected']
+        return actions
+
     def changelist_view(self, request, extra_context=None):
         # If we filter by a specific collection, we want to add this collection
         # to the context
@@ -93,17 +102,22 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
+                self.collection = collection
             except (ValueError, ModerationCollection.DoesNotExist):
                 pass
             else:
-                extra_context = dict(collection=collection)
+                is_preflight = request.GET.get('preflight')
+                extra_context = dict(
+                    collection=collection,
+                    is_preflight=is_preflight,
+                )
                 if collection.allow_submit_for_review:
                     submit_for_review_url = reverse(
                         'admin:cms_moderation_submit_collection_for_moderation',
                         args=(collection_id,)
                     )
                     extra_context['submit_for_review_url'] = submit_for_review_url
-                if collection.allow_pre_flight():
+                if collection.allow_pre_flight(request.user):
                     pre_flight_view_url = format_html('{}?collection__id__exact={}',
                         reverse('admin:djangocms_moderation_moderationrequest_changelist'),
                         collection_id
