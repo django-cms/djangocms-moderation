@@ -135,6 +135,11 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         last_action = obj.get_last_action()
         if obj.is_approved():
             status = ugettext('Ready for publishing')
+            
+        # TODO: consider published status for version e.g.:
+        # elif obj.content_object.is_published():
+        #     status = ugettext('Published')
+
         elif obj.is_active and obj.has_pending_step():
             next_step = obj.get_next_required()
             role = next_step.role.name
