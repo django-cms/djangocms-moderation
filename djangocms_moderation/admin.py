@@ -11,6 +11,7 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
+from .admin_actions import publish_selected
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_form_submission_for_step
 from .models import (
@@ -26,7 +27,6 @@ from .models import (
 
 
 from . import views  # isort:skip
-from . import actions  # isort:skip
 
 
 class ModerationRequestActionInline(admin.TabularInline):
@@ -67,7 +67,7 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
-    actions = [actions.publish_selected]
+    actions = [publish_selected]
     inlines = [ModerationRequestActionInline]
     list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
     list_filter = ['collection']
@@ -135,7 +135,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         last_action = obj.get_last_action()
         if obj.is_approved():
             status = ugettext('Ready for publishing')
-            
+
         # TODO: consider published status for version e.g.:
         # elif obj.content_object.is_published():
         #     status = ugettext('Published')
