@@ -103,6 +103,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                         args=(collection_id,)
                     )
                     extra_context['submit_for_review_url'] = submit_for_review_url
+                if collection.allow_pre_flight():
+                    pre_flight_view_url = format_html('{}?collection__id__exact={}',
+                        reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+                        collection_id
+                    )
+                    extra_context['pre_flight_view_url'] = pre_flight_view_url
         else: 
             raise Http404
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)

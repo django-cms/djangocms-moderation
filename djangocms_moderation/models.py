@@ -310,8 +310,10 @@ class ModerationCollection(models.Model):
         if self.status != constants.IN_REVIEW:
             return False
 
-        if list(self.moderation_requests.filter(is_approved=True)):
-            return True
+        moderation_requests = self.moderation_requests.filter(is_active=True)
+        for moderation_request in moderation_requests:
+            if moderation_request.is_approved():
+                return True
 
         return False
 
