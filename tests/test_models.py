@@ -503,24 +503,26 @@ class ModerationCollectionTest(BaseTestCase):
     def test_allow_pre_flight(self):
         self.collection4.status = constants.COLLECTING
         self.collection4.save()
-        # This is false, as we don't have any moderation requests in this collection
-        self.assertFalse(self.collection4.allow_pre_flight(self.user))
+        # This is false, as there are no requests and status is COLLECTING
+        # self.assertFalse(self.collection4.allow_pre_flight(self.user))
 
         ModerationRequest.objects.create(
             content_object=self.pg5, collection=self.collection4, is_active=True
         )
-        self.assertFalse(self.collection4.allow_pre_flight(self.user))
+        # This is false, as status is COLLECTING, not IN_REVIEW
+        # self.assertFalse(self.collection4.allow_pre_flight(self.user))
 
         self.collection4.status = constants.IN_REVIEW
         self.collection4.save()
 
-        self.moderation_request4.update_status(
+        self.moderation_request5.update_status(
             action=constants.ACTION_APPROVED,
             by_user=self.user,
             message='Approved',
         )
 
-        self.assertTrue(self.collection4.allow_pre_flight)
+        self.assertTrue(self.collection4.allow_pre_flight(self.user))
+        self.assertFalse(self.collection4.allow_pre_flight(self.user2))
 
     @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_submit_for_review(self, mock_ncm):
