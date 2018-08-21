@@ -6,7 +6,6 @@ from django.urls import reverse
 from cms.api import create_page
 
 from djangocms_moderation import constants
-from djangocms_moderation.admin import ModerationRequestAdmin
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
