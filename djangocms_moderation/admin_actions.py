@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _, ungettext
 
 
 def publish_selected(modeladmin, request, queryset):
-    if request.user != modeladmin.collection.author:
+    if request.user != request._collection.author:
         raise PermissionDenied
 
     num_published_requests = 0
@@ -23,7 +23,7 @@ def publish_selected(modeladmin, request, queryset):
         ) % {
             'count': num_published_requests
         },
-    )    
+    )
 
 
 publish_selected.short_description = _("Publish selected requests")

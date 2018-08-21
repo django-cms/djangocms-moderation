@@ -74,7 +74,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
-    collection = None
 
     def get_title(self, obj):
         return obj.content_object
@@ -90,7 +89,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        if not self.collection or not self.collection.allow_pre_flight(request.user):
+        if not hasattr(request, '_collection') or not request._collection.allow_pre_flight(request.user):
             if 'publish_selected' in actions:
                 del actions['publish_selected']
         return actions
@@ -102,7 +101,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
-                self.collection = collection
+                request._collection = collection
             except (ValueError, ModerationCollection.DoesNotExist):
                 pass
             else:
