@@ -89,9 +89,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        if not hasattr(request, '_collection') or not request._collection.allow_pre_flight(request.user):
-            if 'publish_selected' in actions:
-                del actions['publish_selected']
+        # If there is nothing to publish, then remove `publish_selected` action
+        if 'publish_selected' in actions and (
+          not hasattr(request, '_collection') or
+          not request._collection.allow_pre_flight(request.user)
+        ):
+            del actions['publish_selected']
         return actions
 
     def changelist_view(self, request, extra_context=None):
@@ -192,13 +195,9 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         Override to provide editonly_fields and addonly_fields functionality
         """
         if obj:  # Editing an existing object
-            if hasattr(self, 'addonly_fields'):
-                return self.readonly_fields + self.addonly_fields
-            return self.readonly_fields
+            return self.readonly_fields + self.addonly_fields
         else:  # Adding a new object
-            if hasattr(self, 'editonly_fields'):
-                return self.readonly_fields + self.editonly_fields
-            return self.readonly_fields
+            return self.readonly_fields + self.editonly_fields
 
     def get_name_with_requests_link(self, obj):
         """

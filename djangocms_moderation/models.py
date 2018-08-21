@@ -314,7 +314,6 @@ class ModerationCollection(models.Model):
         for moderation_request in moderation_requests:
             if moderation_request.is_approved():
                 return True
-
         return False
 
     def add_object(self, content_object):
