@@ -1,18 +1,17 @@
 from __future__ import unicode_literals
 
 from django.conf.urls import url
-from django.contrib import admin, messages
-from django.core.exceptions import PermissionDenied
+from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.utils.html import format_html, format_html_join
-from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from .admin_actions import publish_selected
+from .admin_actions import publish_selected, delete_selected
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_form_submission_for_step
 from .models import (
@@ -65,35 +64,13 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
-    actions = ['delete_selected', publish_selected]
+    actions = [delete_selected, publish_selected]
     inlines = [ModerationRequestActionInline]
     list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
     list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
-
-    def delete_selected(self, request, queryset):
-        if not self.has_delete_permission(request):
-            raise PermissionDenied
-
-        if queryset.exclude(collection__author=request.user).exists():
-            raise PermissionDenied
-
-        num_deleted_requests = queryset.count()
-        queryset.delete()
-
-        self.message_user(
-            request,
-            ungettext(
-                '%(count)d request successfully deleted',
-                '%(count)d requests successfully deleted',
-                num_deleted_requests
-            ) % {
-                'count': num_deleted_requests
-            },
-            messages.SUCCESS
-        )
 
     def get_title(self, obj):
         return obj.content_object
