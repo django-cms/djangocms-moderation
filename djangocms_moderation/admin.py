@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
+from django.http import Http404
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
-from django.http import Http404
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
@@ -106,24 +106,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             except (ValueError, ModerationCollection.DoesNotExist):
                 pass
             else:
-                is_preflight = request.GET.get('preflight')
-                extra_context = {
-                    'collection': collection,
-                    'is_preflight': is_preflight,
-                }
+                extra_context = dict(collection=collection)
                 if collection.allow_submit_for_review:
                     submit_for_review_url = reverse(
                         'admin:cms_moderation_submit_collection_for_moderation',
                         args=(collection_id,)
                     )
                     extra_context['submit_for_review_url'] = submit_for_review_url
-
-                if collection.allow_pre_flight(request.user):
-                    pre_flight_view_url = format_html('{}?collection__id__exact={}',
-                        reverse('admin:djangocms_moderation_moderationrequest_changelist'),
-                        collection_id
-                    )
-                    extra_context['pre_flight_view_url'] = pre_flight_view_url
         else: 
             # If no collection id, then don't show all requests 
             # as each collection's actions, buttons and privileges may differ
@@ -196,18 +185,18 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         'status',
         'date_created',
     ]
-    editonly_fields = ('status',) # fields editable only on EDIT
-    addonly_fields = ('workflow',) # fields editable only on CREATE
+    editonly_fields = ('status',)  # fields editable only on EDIT
+    addonly_fields = ('workflow',)  # fields editable only on CREATE
 
     def get_readonly_fields(self, request, obj=None):
         """
-        override to provide editonly_fields and addonly_fields functionality
+        Override to provide editonly_fields and addonly_fields functionality
         """
-        if obj: #editing an existing object
+        if obj:  # Editing an existing object
             if hasattr(self, 'addonly_fields'):
                 return self.readonly_fields + self.addonly_fields
             return self.readonly_fields
-        else:   #adding a new object
+        else:  # Adding a new object
             if hasattr(self, 'editonly_fields'):
                 return self.readonly_fields + self.editonly_fields
             return self.readonly_fields

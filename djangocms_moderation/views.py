@@ -83,7 +83,7 @@ add_item_to_collection = CollectionItemView.as_view()
 
 def moderation_confirmation_page(request, confirmation_id):
     """
-    i.e aldryn-forms
+    This is an implementation of Aldryn-forms to provide a review confirmation page
     """
     confirmation_page_instance = get_object_or_404(ConfirmationPage, pk=confirmation_id)
     content_view = bool(request.GET.get('content_view'))

@@ -308,7 +308,6 @@ class ModerationCollection(models.Model):
         Is this collection ready for pre-flight?
         :return: <bool>
         """
-        # import ipdb; ipdb.set_trace()
         if self.status != constants.IN_REVIEW or user != self.author:
             return False
         moderation_requests = self.moderation_requests.filter(is_active=True)
@@ -410,9 +409,7 @@ class ModerationRequest(models.Model):
             step_approved = self.user_get_step(by_user)
         else:
             step_approved = None
-
-        # import ipdb; ipdb.set_trace()
-        
+                    
         if is_rejected:
             # This workflow is now rejected, so it needs to be resubmitted by
             # the content author, so lets mark all the actions taken

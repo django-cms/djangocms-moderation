@@ -1,10 +1,9 @@
-from django.core.exceptions import PermissionDenied
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
 
 
 def publish_selected(modeladmin, request, queryset):
-
     if request.user != modeladmin.collection.author:
         raise PermissionDenied
 
@@ -32,3 +31,4 @@ publish_selected.short_description = _("Publish selected requests")
 def publish_content_object(content_object):
     # TODO: e.g.moderation_request.content_object.publish(request.user)
     return True
+    
