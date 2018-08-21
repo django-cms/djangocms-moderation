@@ -11,7 +11,7 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from .admin_actions import publish_selected, delete_selected
+from .admin_actions import delete_selected, publish_selected
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_form_submission_for_step
 from .models import (
