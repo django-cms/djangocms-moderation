@@ -211,21 +211,20 @@ class ModerationRequestChangeListView(BaseViewTestCase):
             self.url, self.collection2.pk
         )
 
-    def test_change_list_view_should_contain_collection_object(self):
+    def test_change_list_view_should_404_if_not_filtered(self):
         response = self.client.get(self.url)
-        self.assertEqual(200, response.status_code)
-        self.assertNotIn('collection', response.context)
+        self.assertEqual(404, response.status_code)
 
+        response = self.client.get(self.url_with_filter)
+        self.assertEqual(200, response.status_code)
+
+    def test_change_list_view_should_contain_collection_object(self):
         response = self.client.get(self.url_with_filter)
         self.assertEqual(200, response.status_code)
         self.assertEqual(response.context['collection'], self.collection2)
 
     @mock.patch.object(ModerationCollection, 'allow_submit_for_review')
     def test_change_list_view_should_contain_submit_collection_url(self, allow_submit_mock):
-        response = self.client.get(self.url)
-        self.assertEqual(200, response.status_code)
-        self.assertNotIn('submit_for_review_url', response.context)
-
         allow_submit_mock.__get__ = mock.Mock(return_value=False)
         response = self.client.get(self.url_with_filter)
         self.assertNotIn('submit_for_review_url', response.context)

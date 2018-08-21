@@ -20,13 +20,15 @@ class BaseTestCase(TestCase):
         cls.wf1 = Workflow.objects.create(pk=1, name='Workflow 1', is_default=True,)
         cls.wf2 = Workflow.objects.create(pk=2, name='Workflow 2',)
         cls.wf3 = Workflow.objects.create(pk=3, name='Workflow 3',)
+        cls.wf4 = Workflow.objects.create(pk=4, name='Workflow 4',)
 
         # create pages
         cls.pg1 = create_page(title='Page 1', template='page.html', language='en',)
         cls.pg2 = create_page(title='Page 2', template='page.html', language='en',)
         cls.pg3 = create_page(title='Page 3', template='page.html', language='en', published=True)
         cls.pg4 = create_page(title='Page 4', template='page.html', language='en',)
-        cls.pg5 = create_page(title='Page 4', template='page.html', language='en', published=True)
+        cls.pg5 = create_page(title='Page 5', template='page.html', language='en', published=True)
+        cls.pg6 = create_page(title='Page 5', template='page.html', language='en',)
 
         # create users, groups and roles
         cls.user = User.objects.create_superuser(
@@ -55,6 +57,8 @@ class BaseTestCase(TestCase):
         cls.wf3st1 = cls.wf3.steps.create(role=cls.role1, is_required=True, order=1,)
         cls.wf3st2 = cls.wf3.steps.create(role=cls.role3, is_required=False, order=2,)
 
+        cls.wf4st4 = cls.wf4.steps.create(role=cls.role1, is_required=True, order=1,)
+
         # create page moderation requests and actions
         cls.collection1 = ModerationCollection.objects.create(
             author=cls.user, name='Collection 1', workflow=cls.wf1
@@ -64,6 +68,9 @@ class BaseTestCase(TestCase):
         )
         cls.collection3 = ModerationCollection.objects.create(
             author=cls.user, name='Collection 3', workflow=cls.wf3
+        )
+        cls.collection4 = ModerationCollection.objects.create(
+            author=cls.user, name='Collection 4', workflow=cls.wf4
         )
 
         cls.moderation_request1 = ModerationRequest.objects.create(
@@ -98,6 +105,10 @@ class BaseTestCase(TestCase):
             content_object=cls.pg5, language='en', collection=cls.collection3, is_active=True,)
         cls.moderation_request4.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
         cls.moderation_request4.actions.create(by_user=cls.user2, action=constants.ACTION_REJECTED)
+
+        cls.moderation_request5 = ModerationRequest.objects.create(
+            content_object=cls.pg6, language='en', collection=cls.collection4, is_active=True,)
+        cls.moderation_request5.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
 
 
 class BaseViewTestCase(BaseTestCase):
