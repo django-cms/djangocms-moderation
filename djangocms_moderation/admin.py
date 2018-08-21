@@ -193,14 +193,10 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         Override to provide editonly_fields and addonly_fields functionality
         """
         if obj:  # Editing an existing object
-            if hasattr(self, 'addonly_fields'):
-                return self.readonly_fields + self.addonly_fields
-            return self.readonly_fields
+            return self.readonly_fields + self.addonly_fields
         else:  # Adding a new object
-            if hasattr(self, 'editonly_fields'):
-                return self.readonly_fields + self.editonly_fields
-            return self.readonly_fields
-
+            return self.readonly_fields + self.editonly_fields
+            
     def get_name_with_requests_link(self, obj):
         """
         Name of the collection should link to the list of associated
