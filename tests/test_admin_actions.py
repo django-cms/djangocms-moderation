@@ -6,7 +6,11 @@ from django.urls import reverse
 from cms.api import create_page
 
 from djangocms_moderation import constants
-from djangocms_moderation.models import ModerationCollection, ModerationRequest, Workflow
+from djangocms_moderation.models import (
+    ModerationCollection,
+    ModerationRequest,
+    Workflow,
+)
 
 from .utils.base import BaseTestCase
 
