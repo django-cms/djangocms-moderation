@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.utils.translation import ugettext as _ 
-from django.utils.translation import ungettext
+from django.utils.translation import ugettext_lazy as _, ungettext
 
 
 def publish_selected(modeladmin, request, queryset):
