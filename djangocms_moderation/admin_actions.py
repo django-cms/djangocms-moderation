@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
+from django.utils.translation import ugettext as _ 
+from django.utils.translation import ungettext
 
 
 def publish_selected(modeladmin, request, queryset):
@@ -12,10 +13,10 @@ def publish_selected(modeladmin, request, queryset):
         if moderation_request.is_approved():
             num_published_requests += 1
             publish_content_object(moderation_request.content_object)
-                
+
     # notify the UI of the action results
     messages.success(
-        request, 
+        request,
         ungettext(
             '%(count)d request successfully published',
             '%(count)d requests successfully published',
@@ -25,10 +26,10 @@ def publish_selected(modeladmin, request, queryset):
         },
     )    
 
+
 publish_selected.short_description = _("Publish selected requests")
 
 
 def publish_content_object(content_object):
     # TODO: e.g.moderation_request.content_object.publish(request.user)
     return True
-    

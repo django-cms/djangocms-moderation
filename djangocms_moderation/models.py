@@ -409,7 +409,7 @@ class ModerationRequest(models.Model):
             step_approved = self.user_get_step(by_user)
         else:
             step_approved = None
-                    
+        
         if is_rejected:
             # This workflow is now rejected, so it needs to be resubmitted by
             # the content author, so lets mark all the actions taken

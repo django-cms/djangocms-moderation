@@ -503,14 +503,14 @@ class ModerationCollectionTest(BaseTestCase):
     def test_allow_pre_flight(self):
         self.collection4.status = constants.COLLECTING
         self.collection4.save()
-        
+
         # This is false, as there are no approved requests and status is COLLECTING
         self.assertFalse(self.collection4.allow_pre_flight(self.user))
 
         self.collection4.status = constants.IN_REVIEW
         self.collection4.save()
 
-        # This is false, as there are no approved requests 
+        # This is false, as there are no approved requests
         self.assertFalse(self.collection4.allow_pre_flight(self.user))
 
         self.moderation_request5.update_status(

@@ -1,18 +1,12 @@
 import mock
 
 from django.contrib.admin import ACTION_CHECKBOX_NAME
-from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
-from django.utils.translation import ugettext_lazy as _
 
-from cms.utils.urlutils import add_url_parameters
 from cms.api import create_page
 
-from djangocms_moderation.forms import CollectionItemForm
-from djangocms_moderation.models import ModerationCollection, ModerationRequest, Workflow
-from djangocms_moderation.utils import get_admin_url
 from djangocms_moderation import constants
+from djangocms_moderation.models import ModerationCollection, ModerationRequest, Workflow
 
 from .utils.base import BaseTestCase
 
@@ -64,8 +58,7 @@ class AdminActionTest(BaseTestCase):
             'index': 0,
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
         }
-        response = self.client.post(self.url_with_filter, data, follow=True)
-
+        self.client.post(self.url_with_filter, data, follow=True)
         self.assertTrue(self.mr1.is_approved())
         self.assertFalse(self.mr2.is_approved())
 

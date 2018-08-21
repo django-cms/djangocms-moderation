@@ -113,8 +113,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                         args=(collection_id,)
                     )
                     extra_context['submit_for_review_url'] = submit_for_review_url
-        else: 
-            # If no collection id, then don't show all requests 
+        else:
+            # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
             raise Http404
 
