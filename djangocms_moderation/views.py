@@ -26,6 +26,7 @@ class CollectionItemView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(CollectionItemView, self).get_form_kwargs()
+        # TODO: replace page object with Version object
         kwargs['initial'].update({
             'content_object_id': self.request.GET.get('content_object_id'),
             'content_type': ContentType.objects.get_for_model(Page).pk,
@@ -81,6 +82,9 @@ add_item_to_collection = CollectionItemView.as_view()
 
 
 def moderation_confirmation_page(request, confirmation_id):
+    """
+    This is an implementation of Aldryn-forms to provide a review confirmation page
+    """
     confirmation_page_instance = get_object_or_404(ConfirmationPage, pk=confirmation_id)
     content_view = bool(request.GET.get('content_view'))
     page_id = request.GET.get('page')
