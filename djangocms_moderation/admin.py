@@ -90,9 +90,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        if not self.collection or not self.collection.allow_pre_flight(request.user):
-            if 'publish_selected' in actions:
-                del actions['publish_selected']
+        if (not self.collection or not self.collection.allow_pre_flight(request.user)) and 'publish_selected' in actions:
+            del actions['publish_selected']
         return actions
 
     def changelist_view(self, request, extra_context=None):
