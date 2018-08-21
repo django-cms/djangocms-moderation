@@ -3,6 +3,28 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext_lazy as _, ungettext
 
 
+def delete_selected(modeladmin, request, queryset):
+    if not modeladmin.has_delete_permission(request):
+        raise PermissionDenied
+
+    if queryset.exclude(collection__author=request.user).exists():
+        raise PermissionDenied
+
+    num_deleted_requests = queryset.count()
+    queryset.delete()
+
+    messages.success(
+        request,
+        ungettext(
+            '%(count)d request successfully deleted',
+            '%(count)d requests successfully deleted',
+            num_deleted_requests
+        ) % {
+            'count': num_deleted_requests
+        },
+    )
+
+
 def publish_selected(modeladmin, request, queryset):
     if request.user != request._collection.author:
         raise PermissionDenied

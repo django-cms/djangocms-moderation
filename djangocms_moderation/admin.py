@@ -11,7 +11,7 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from .admin_actions import publish_selected
+from .admin_actions import delete_selected, publish_selected
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_form_submission_for_step
 from .models import (
@@ -39,9 +39,6 @@ class ModerationRequestActionInline(admin.TabularInline):
     def has_add_permission(self, request):
         return False
 
-    def has_delete_permission(self, request, obj=None):
-        return False
-
     def show_user(self, obj):
         _name = obj.get_by_user_name()
         return ugettext('By {user}').format(user=_name)
@@ -67,7 +64,7 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
-    actions = [publish_selected]
+    actions = [delete_selected, publish_selected]
     inlines = [ModerationRequestActionInline]
     list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
     list_filter = ['collection']
