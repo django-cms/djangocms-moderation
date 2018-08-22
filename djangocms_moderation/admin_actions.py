@@ -28,6 +28,9 @@ def resubmit_selected(modeladmin, request, queryset):
     )
 
 
+resubmit_selected.short_description = _("Resubmit changes for review")
+
+
 def reject_selected(modeladmin, request, queryset):
     num_rejected = 0
 
@@ -42,13 +45,16 @@ def reject_selected(modeladmin, request, queryset):
     messages.success(
         request,
         ungettext(
-            '%(count)d request successfully rejected',
-            '%(count)d requests successfully rejected',
+            '%(count)d request successfully submitted for rework',
+            '%(count)d requests successfully submitted for rework',
             num_rejected
         ) % {
             'count': num_rejected
         },
     )
+
+
+reject_selected.short_description = _('Submit for rework')
 
 
 def approve_selected(modeladmin, request, queryset):
