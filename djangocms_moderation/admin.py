@@ -11,7 +11,7 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from .admin_actions import delete_selected, publish_selected
+from .admin_actions import delete_selected, publish_selected, approve_selected, reject_selected
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_form_submission_for_step
 from .models import (
@@ -64,7 +64,12 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
-    actions = [delete_selected, publish_selected]
+    actions = [
+        delete_selected,
+        publish_selected,
+        approve_selected,
+        reject_selected,
+    ]
     inlines = [ModerationRequestActionInline]
     list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
     list_filter = ['collection']
@@ -92,6 +97,17 @@ class ModerationRequestAdmin(admin.ModelAdmin):
           not request._collection.allow_pre_flight(request.user)
         ):
             del actions['publish_selected']
+
+        # We need to check if they have approve or reject permission
+        if ('approve_selected' in actions or 'reject_selected' in actions) and (
+            not hasattr(request, '_collection') or
+            not request._collection.allow_moderation_action(request.user)
+        ):
+            try:
+                del actions['approve_selected']
+                del actions['reject_selected']
+            except KeyError:
+                pass
         return actions
 
     def changelist_view(self, request, extra_context=None):
@@ -120,27 +136,29 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
 
     def get_status(self, obj):
+        # We can have moderation requests without any action (e.g. the
+        # ones not submitted for moderation yet)
         last_action = obj.get_last_action()
-        if obj.is_approved():
-            status = ugettext('Ready for publishing')
 
-        # TODO: consider published status for version e.g.:
-        # elif obj.content_object.is_published():
-        #     status = ugettext('Published')
-
-        elif obj.is_active and obj.has_pending_step():
-            next_step = obj.get_next_required()
-            role = next_step.role.name
-            status = ugettext('Pending %(role)s approval') % {'role': role}
-        elif last_action:
-            # We can have moderation requests without any action (e.g. the
-            # ones not submitted for moderation yet)
-            user_name = last_action.get_by_user_name()
-            message_data = {
-                'action': last_action.get_action_display(),
-                'name': user_name,
-            }
-            status = ugettext('%(action)s by %(name)s') % message_data
+        if last_action:
+            if obj.is_approved():
+                status = ugettext('Ready for publishing')
+            # TODO: consider published status for version e.g.:
+            # elif obj.content_object.is_published():
+            #     status = ugettext('Published')
+            elif  obj.is_rejected():  # If there is no last_action, is_rejected check will fail
+                status = ugettext('Pending author rework')
+            elif obj.is_active and obj.has_pending_step():
+                next_step = obj.get_next_required()
+                role = next_step.role.name
+                status = ugettext('Pending %(role)s approval') % {'role': role}
+            else:
+                user_name = last_action.get_by_user_name()
+                message_data = {
+                    'action': last_action.get_action_display(),
+                    'name': user_name,
+                }
+                status = ugettext('%(action)s by %(name)s') % message_data
         else:
             status = ugettext('Ready for submission')
         return status
@@ -286,6 +304,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
     form_data.short_description = _('Form Data')
 
 
+admin.site.register(ModerationRequestAction)  # TODO temporary
 admin.site.register(ModerationRequest, ModerationRequestAdmin)
 admin.site.register(ModerationCollection, ModerationCollectionAdmin)
 admin.site.register(Role, RoleAdmin)

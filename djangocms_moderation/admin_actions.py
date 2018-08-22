@@ -2,6 +2,54 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext_lazy as _, ungettext
 
+from djangocms_moderation.constants import ACTION_APPROVED, ACTION_REJECTED
+
+
+def reject_selected(modeladmin, request, queryset):
+    num_rejected = 0
+
+    for moderation_request in queryset.all():
+        if moderation_request.user_can_take_moderation_action(request.user):
+            num_rejected += 1
+            moderation_request.update_status(
+                action=ACTION_REJECTED,
+                by_user=request.user,
+            )
+
+    messages.success(
+        request,
+        ungettext(
+            '%(count)d request successfully rejected',
+            '%(count)d requests successfully rejected',
+            num_rejected
+        ) % {
+            'count': num_rejected
+        },
+    )
+
+
+def approve_selected(modeladmin, request, queryset):
+    num_approved = 0
+
+    for moderation_request in queryset.all():
+        if moderation_request.user_can_take_moderation_action(request.user):
+            num_approved += 1
+            moderation_request.update_status(
+                action=ACTION_APPROVED,
+                by_user=request.user,
+            )
+
+    messages.success(
+        request,
+        ungettext(
+            '%(count)d request successfully approved',
+            '%(count)d requests successfully approved',
+            num_approved
+        ) % {
+            'count': num_approved
+        },
+    )
+
 
 def delete_selected(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):

@@ -316,6 +316,16 @@ class ModerationCollection(models.Model):
                 return True
         return False
 
+    def allow_moderation_action(self, user):
+        if self.status != constants.IN_REVIEW:
+            return False
+
+        moderation_requests = self.moderation_requests.all()
+        for moderation_request in moderation_requests:
+            if moderation_request.user_can_take_moderation_action(user):
+                return True
+        return False
+
     def add_object(self, content_object):
         """
         Add object to the ModerationRequest in this collection.
@@ -496,7 +506,6 @@ class ModerationRequest(models.Model):
             return False
 
         pending_steps = self.get_pending_steps().select_related('role')
-
         for step in pending_steps.iterator():
             is_assigned = step.role.user_is_assigned(user)
 
