@@ -91,6 +91,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
+        # Only collection author can delete moderation requests
+        if 'delete_selected' in actions and (
+            not hasattr(request, '_collection') or
+            not request._collection.author == request.user
+        ):
+            del actions['delete_selected']
+
         # If there is nothing to publish, then remove `publish_selected` action
         if 'publish_selected' in actions and (
           not hasattr(request, '_collection') or
