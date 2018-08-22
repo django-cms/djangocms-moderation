@@ -65,8 +65,7 @@ class AdminActionTest(BaseTestCase):
         }
         # This user is not the collection author
         self.client.force_login(self.user2)
-        response = self.client.post(self.url_with_filter, data)
-        self.assertEqual(response.status_code, 403)
+        self.client.post(self.url_with_filter, data)
         # Nothing is deleted
         self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 2)
 
