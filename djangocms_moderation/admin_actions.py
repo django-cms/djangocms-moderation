@@ -2,7 +2,30 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext_lazy as _, ungettext
 
-from djangocms_moderation.constants import ACTION_APPROVED, ACTION_REJECTED
+from djangocms_moderation import constants
+
+
+def resubmit_selected(modeladmin, request, queryset):
+    num_resubmitted = 0
+
+    for moderation_request in queryset.all():
+        if moderation_request.user_can_resubmit(request.user):
+            num_resubmitted += 1
+            moderation_request.update_status(
+                action=constants.ACTION_RESUBMITTED,
+                by_user=request.user,
+            )
+
+    messages.success(
+        request,
+        ungettext(
+            '%(count)d request successfully resubmitted for review',
+            '%(count)d requests successfully resubmitted for review',
+            num_resubmitted
+        ) % {
+            'count': num_resubmitted
+        },
+    )
 
 
 def reject_selected(modeladmin, request, queryset):
@@ -12,7 +35,7 @@ def reject_selected(modeladmin, request, queryset):
         if moderation_request.user_can_take_moderation_action(request.user):
             num_rejected += 1
             moderation_request.update_status(
-                action=ACTION_REJECTED,
+                action=constants.ACTION_REJECTED,
                 by_user=request.user,
             )
 
@@ -35,7 +58,7 @@ def approve_selected(modeladmin, request, queryset):
         if moderation_request.user_can_take_moderation_action(request.user):
             num_approved += 1
             moderation_request.update_status(
-                action=ACTION_APPROVED,
+                action=constants.ACTION_APPROVED,
                 by_user=request.user,
             )
 

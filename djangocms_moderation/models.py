@@ -326,6 +326,16 @@ class ModerationCollection(models.Model):
                 return True
         return False
 
+    def allow_moderation_request_resbumit_action(self, user):
+        if self.status != constants.IN_REVIEW:
+            return False
+
+        moderation_requests = self.moderation_requests.all()
+        for moderation_request in moderation_requests:
+            if moderation_request.user_can_resubmit(user):
+                return True
+        return False
+
     def add_object(self, content_object):
         """
         Add object to the ModerationRequest in this collection.

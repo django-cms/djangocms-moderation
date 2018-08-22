@@ -11,7 +11,13 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from .admin_actions import delete_selected, publish_selected, approve_selected, reject_selected
+from .admin_actions import (
+    delete_selected,
+    publish_selected,
+    approve_selected,
+    reject_selected,
+    resubmit_selected,
+)
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_form_submission_for_step
 from .models import (
@@ -69,6 +75,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         publish_selected,
         approve_selected,
         reject_selected,
+        resubmit_selected,
     ]
     inlines = [ModerationRequestActionInline]
     list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
@@ -115,6 +122,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 del actions['reject_selected']
             except KeyError:
                 pass
+
+        # We need to check if they have re-submit permission
+        if 'resubmit_selected' in actions and (
+            not hasattr(request, '_collection') or
+            not request._collection.allow_moderation_request_resbumit_action(request.user)
+        ):
+            del actions['resubmit_selected']
         return actions
 
     def changelist_view(self, request, extra_context=None):
@@ -153,7 +167,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             # TODO: consider published status for version e.g.:
             # elif obj.content_object.is_published():
             #     status = ugettext('Published')
-            elif  obj.is_rejected():  # If there is no last_action, is_rejected check will fail
+            elif obj.is_rejected():
                 status = ugettext('Pending author rework')
             elif obj.is_active and obj.has_pending_step():
                 next_step = obj.get_next_required()
