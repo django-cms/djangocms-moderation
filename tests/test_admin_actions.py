@@ -7,6 +7,7 @@ from cms.api import create_page
 
 from djangocms_moderation import constants
 from djangocms_moderation.admin import ModerationRequestAdmin
+from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
@@ -92,9 +93,56 @@ class AdminActionTest(BaseTestCase):
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
         }
         self.client.post(self.url_with_filter, data, follow=True)
-        self.assertTrue(self.mr1.is_approved())
-        self.assertFalse(self.mr2.is_approved())
 
         assert mock_publish_content_object.called
         # check it has been called only once, i.e. with the approved mr1
         mock_publish_content_object.assert_called_once_with(self.mr1.content_object)
+
+    def test_approve_selected(self):
+        fixtures = [self.mr1, self.mr2]
+        data = {
+            'action': 'approve_selected',
+            ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
+        }
+        self.assertFalse(self.mr2.is_approved())
+        self.assertTrue(self.mr1.is_approved())
+
+        self.client.post(self.url_with_filter, data)
+
+        self.assertTrue(self.mr2.is_approved())
+        self.assertTrue(self.mr1.is_approved())
+
+    def test_reject_selected(self):
+        fixtures = [self.mr1, self.mr2]
+        data = {
+            'action': 'reject_selected',
+            ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
+        }
+        self.assertFalse(self.mr2.is_approved())
+        self.assertFalse(self.mr2.is_rejected())
+        self.assertTrue(self.mr1.is_approved())
+
+        self.client.post(self.url_with_filter, data)
+
+        self.assertFalse(self.mr2.is_approved())
+        self.assertTrue(self.mr2.is_rejected())
+        self.assertTrue(self.mr1.is_approved())
+
+    def test_resubmit_selected(self):
+        self.mr2.update_status(
+            action=ACTION_REJECTED,
+            by_user=self.user
+        )
+
+        fixtures = [self.mr1, self.mr2]
+        data = {
+            'action': 'resubmit_selected',
+            ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
+        }
+        self.assertTrue(self.mr2.is_rejected())
+        self.assertTrue(self.mr1.is_approved())
+
+        self.client.post(self.url_with_filter, data)
+
+        self.assertFalse(self.mr2.is_rejected())
+        self.assertTrue(self.mr1.is_approved())
