@@ -89,8 +89,6 @@ class AdminActionTest(BaseTestCase):
         fixtures = [self.mr1, self.mr2]
         data = {
             'action': 'publish_selected',
-            'select_across': 0,
-            'index': 0,
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
         }
         self.client.post(self.url_with_filter, data, follow=True)
