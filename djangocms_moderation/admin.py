@@ -11,6 +11,7 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
+from djangocms_moderation.constants import IN_REVIEW
 from .admin_actions import (
     delete_selected,
     publish_selected,
@@ -70,7 +71,7 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
-    actions = [
+    actions = [  # filtered out in `self.get_actions`
         delete_selected,
         publish_selected,
         approve_selected,
@@ -103,39 +104,41 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return False
 
     def get_actions(self, request):
+        try:
+            collection = request._collection
+        except AttributeError:
+            return None
+
         actions = super().get_actions(request)
+        actions_to_keep = []
+
         # Only collection author can delete moderation requests
-        if 'delete_selected' in actions and (
-            not hasattr(request, '_collection') or
-            not request._collection.author == request.user
-        ):
-            del actions['delete_selected']
+        if collection.author == request.user:
+            actions_to_keep.append('delete_selected')
 
-        # If there is nothing to publish, then remove `publish_selected` action
-        if 'publish_selected' in actions and (
-          not hasattr(request, '_collection') or
-          not request._collection.allow_pre_flight(request.user)
-        ):
-            del actions['publish_selected']
+        actions_kept = 0
+        if collection.status == IN_REVIEW:
+            for mr in collection.moderation_requests.all():
+                # We have found all the actions, so no need to loop anymore
+                if actions_kept == 3:
+                    break
+                if 'publish_selected' not in actions_to_keep:
+                    if mr.is_approved() and request.user == collection.author:
+                        actions_to_keep.append('publish_selected')
+                        actions_kept += 1
+                if 'approve_selected' not in actions_to_keep:
+                    if mr.user_can_take_moderation_action(request.user):
+                        actions_to_keep.append('approve_selected')
+                        actions_to_keep.append('reject_selected')
+                        actions_kept += 1
+                if 'resubmit_selected' not in actions_to_keep:
+                    if mr.user_can_resubmit(request.user):
+                        actions_to_keep.append('resubmit_selected')
+                        actions_kept += 1
 
-        # We need to check if they have approve or reject permission
-        if ('approve_selected' in actions or 'reject_selected' in actions) and (
-            not hasattr(request, '_collection') or
-            not request._collection.allow_moderation_action(request.user)
-        ):
-            try:
-                del actions['approve_selected']
-                del actions['reject_selected']
-            except KeyError:
-                pass
-
-        # We need to check if they have re-submit permission
-        if 'resubmit_selected' in actions and (
-            not hasattr(request, '_collection') or
-            not request._collection.allow_moderation_request_resbumit_action(request.user)
-        ):
-            del actions['resubmit_selected']
-        return actions
+        return {
+            key: value for key, value in actions.items() if key in actions_to_keep
+        }
 
     def changelist_view(self, request, extra_context=None):
         # If we filter by a specific collection, we want to add this collection
