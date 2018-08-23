@@ -83,6 +83,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
 
+    def has_module_permission(self, request):
+        """
+        Don't display Requests in the admin index as they should be accessed
+        and filtered through Collection list view
+        """
+        return False
+
     def get_title(self, obj):
         return obj.content_object
     get_title.short_description = _('Title')
