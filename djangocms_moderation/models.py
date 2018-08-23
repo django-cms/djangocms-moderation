@@ -295,13 +295,16 @@ class ModerationCollection(models.Model):
         # above as it will have the same moderators
         notify_collection_moderators(collection=self, action=action)
 
-    @property
-    def allow_submit_for_review(self):
+    def allow_submit_for_review(self, user):
         """
         Can this collection be submitted for review?
         :return: <bool>
         """
-        return self.status == constants.COLLECTING and self.moderation_requests.exists()
+        return all([
+            self.author == user,
+            self.status == constants.COLLECTING,
+            self.moderation_requests.exists(),
+        ])
 
     def allow_pre_flight(self, user):
         """
