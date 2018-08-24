@@ -3,27 +3,34 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext_lazy as _, ungettext
 
 from djangocms_moderation import constants
+from djangocms_moderation.emails import notify_collection_author, notify_collection_moderators
 
 
 def resubmit_selected(modeladmin, request, queryset):
-    num_resubmitted = 0
+    resubmitted_requests = []
 
-    for moderation_request in queryset.all():
-        if moderation_request.user_can_resubmit(request.user):
-            num_resubmitted += 1
-            moderation_request.update_status(
+    for mr in queryset.all():
+        if mr.user_can_resubmit(request.user):
+            resubmitted_requests.append(mr)
+            mr.update_status(
                 action=constants.ACTION_RESUBMITTED,
                 by_user=request.user,
             )
+            action = mr.get_last_action()
+
+    # Lets notify reviewers
+    notify_collection_moderators(
+        request._collection, resubmitted_requests, action
+    )
 
     messages.success(
         request,
         ungettext(
             '%(count)d request successfully resubmitted for review',
             '%(count)d requests successfully resubmitted for review',
-            num_resubmitted
+            len(resubmitted_requests)
         ) % {
-            'count': num_resubmitted
+            'count': len(resubmitted_requests)
         },
     )
 
@@ -32,24 +39,32 @@ resubmit_selected.short_description = _("Resubmit changes for review")
 
 
 def reject_selected(modeladmin, request, queryset):
-    num_rejected = 0
+    rejected_requests = []
 
     for moderation_request in queryset.all():
         if moderation_request.user_can_take_moderation_action(request.user):
-            num_rejected += 1
+            rejected_requests.append(moderation_request)
             moderation_request.update_status(
                 action=constants.ACTION_REJECTED,
                 by_user=request.user,
             )
+
+    # Now we need to notify collection reviewers and moderator
+    notify_collection_author(
+        collection=request._collection,
+        moderation_requests=rejected_requests,
+        action=constants.ACTION_REJECTED,
+        by_user=request.user,
+    )
 
     messages.success(
         request,
         ungettext(
             '%(count)d request successfully submitted for rework',
             '%(count)d requests successfully submitted for rework',
-            num_rejected
+            len(rejected_requests)
         ) % {
-            'count': num_rejected
+            'count': len(rejected_requests)
         },
     )
 
@@ -58,24 +73,59 @@ reject_selected.short_description = _('Submit for rework')
 
 
 def approve_selected(modeladmin, request, queryset):
-    num_approved = 0
-
+    approved_requests = []
     for moderation_request in queryset.all():
         if moderation_request.user_can_take_moderation_action(request.user):
-            num_approved += 1
+            approved_requests.append(moderation_request)
             moderation_request.update_status(
                 action=constants.ACTION_APPROVED,
                 by_user=request.user,
             )
+
+    # Lets notify the collection author about the approval
+    notify_collection_author(
+        collection=request._collection,
+        moderation_requests=approved_requests,
+        action=constants.ACTION_APPROVED,
+        by_user=request.user,
+    )
+
+    # Lets notify the next line of reviewers about moderation requests waiting
+    # for their moderation.
+    # We need to group the approved_requests by the action, so we notify
+    # the correct reviewers.
+    # For example, if some requests are in the first stage of approval,
+    # and some in the second, then the reviewers which we need to notify are
+    # different, depending on which stage the request is
+    mapping = dict()
+    for mr in approved_requests:
+        action = mr.get_last_action()
+        if not action.to_user_id and not action.to_role_id:
+            continue  # no-one in line to notify
+        step_approved_str = str(action.step_approved)
+        if step_approved_str not in mapping:
+            mapping[step_approved_str] = [mr]
+            mapping['action_' + step_approved_str] = action
+        else:
+            mapping[step_approved_str].append(mr)
+
+    if mapping:
+        for key, moderation_requests in mapping.items():
+            if not key.startswith('action_'):
+                notify_collection_moderators(
+                    request._collection,
+                    moderation_requests,
+                    mapping['action_' + key]
+                )
 
     messages.success(
         request,
         ungettext(
             '%(count)d request successfully approved',
             '%(count)d requests successfully approved',
-            num_approved
+            len(approved_requests)
         ) % {
-            'count': num_approved
+            'count': len(approved_requests)
         },
     )
 

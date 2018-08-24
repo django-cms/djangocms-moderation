@@ -293,7 +293,11 @@ class ModerationCollection(models.Model):
         self.save(update_fields=['status'])
         # It is fine to pass any `action` from any moderation_request.actions
         # above as it will have the same moderators
-        notify_collection_moderators(collection=self, action=action)
+        notify_collection_moderators(
+            collection=self,
+            moderation_requests=self.moderation_requests.all(),
+            action_obj=action,
+        )
 
     def allow_submit_for_review(self, user):
         """
