@@ -93,6 +93,6 @@ def notify_collection_moderators(collection, moderation_requests, action_obj):
         recipients=recipients,
         subject=_('Review requested'),
         template='request.txt',
-        by_user=action_obj.get_by_user_name()
+        by_user=action_obj.by_user
     )
     return status

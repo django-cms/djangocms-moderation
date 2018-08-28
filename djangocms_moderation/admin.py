@@ -87,7 +87,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         """
         Don't display Requests in the admin index as they should be accessed
-        and filtered through Collection list view
+        and filtered through the Collection list view
         """
         return False
 
@@ -107,6 +107,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         try:
             collection = request._collection
         except AttributeError:
+            # If we are not in the collection aware list, then don't
+            # offer any bulk actions
             return None
 
         actions = super().get_actions(request)
@@ -120,7 +122,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         if collection.status == IN_REVIEW:
             for mr in collection.moderation_requests.all():
                 # We have found all the actions, so no need to loop anymore
-                if actions_kept == 3:
+                if actions_kept == 4:
                     break
                 if 'publish_selected' not in actions_to_keep:
                     if mr.is_approved() and request.user == collection.author:
@@ -130,7 +132,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                     if mr.user_can_take_moderation_action(request.user):
                         actions_to_keep.append('approve_selected')
                         actions_to_keep.append('reject_selected')
-                        actions_kept += 1
+                        actions_kept += 2
                 if 'resubmit_selected' not in actions_to_keep:
                     if mr.user_can_resubmit(request.user):
                         actions_to_keep.append('resubmit_selected')

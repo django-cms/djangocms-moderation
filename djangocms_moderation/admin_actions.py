@@ -88,7 +88,7 @@ def approve_selected(modeladmin, request, queryset):
     # by the action.step_approved, so we notify the correct reviewers.
     # For example, if some requests are in the first stage of approval,
     # and some in the second, then the reviewers we need to notify are
-    # different per request, depending on which stage the request is
+    # different per request, depending on which stage the request is in
     request_action_mapping = dict()
 
     for mr in queryset.all():
@@ -120,9 +120,9 @@ def approve_selected(modeladmin, request, queryset):
         for key, moderation_requests in request_action_mapping.items():
             if not key.startswith('action_'):
                 notify_collection_moderators(
-                    request._collection,
-                    moderation_requests,
-                    request_action_mapping['action_' + key]
+                    collection=request._collection,
+                    moderation_requests=moderation_requests,
+                    action_obj=request_action_mapping['action_' + key]
                 )
 
     messages.success(
