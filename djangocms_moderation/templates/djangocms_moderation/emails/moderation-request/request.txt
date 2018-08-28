@@ -5,7 +5,7 @@ changes in the collection {{ collection_name }}.
 {% endblocktrans %}
 
 <p>
-{% trans 'Items included in this collection:' %}
+{% trans 'Items included in this request' %}:
 </p>
 <ul>
 {% for moderation_request in moderation_requests %}
