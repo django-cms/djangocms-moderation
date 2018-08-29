@@ -44,6 +44,7 @@ def _send_email(
         'moderation_requests': moderation_requests,
         'author_name': collection.author_name,
         'admin_url': get_absolute_url(admin_url),
+        'job_id': collection.job_id,
         'by_user': by_user,
     }
     template = 'djangocms_moderation/emails/moderation-request/{}'.format(template)

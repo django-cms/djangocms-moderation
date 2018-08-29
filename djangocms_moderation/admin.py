@@ -229,6 +229,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     list_display = [
         'id',
         'get_name_with_requests_link',
+        'job_id',
         'get_moderator',
         'workflow',
         'status',

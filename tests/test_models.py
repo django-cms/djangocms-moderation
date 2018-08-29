@@ -381,7 +381,6 @@ class ModerationRequestTest(BaseTestCase):
 
 
 class ModerationRequestActionTest(BaseTestCase):
-
     def test_get_by_user_name(self):
         action = self.moderation_request3.actions.last()
         self.assertEqual(action.get_by_user_name(), self.user.username)
@@ -484,6 +483,10 @@ class ModerationCollectionTest(BaseTestCase):
 
         self.page1 = create_page(title='My page 1', template='page.html', language='en',)
         self.page2 = create_page(title='My page 2', template='page.html', language='en',)
+
+    def test_job_id(self):
+        self.assertEqual(str(self.collection1.pk), self.collection1.job_id)
+        self.assertEqual(str(self.collection2.pk), self.collection2.job_id)
 
     def test_allow_submit_for_review(self):
         self.collection1.status = constants.COLLECTING

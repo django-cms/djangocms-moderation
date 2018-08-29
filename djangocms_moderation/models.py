@@ -274,6 +274,10 @@ class ModerationCollection(models.Model):
         return self.name
 
     @property
+    def job_id(self):
+        return "{}".format(self.pk)
+
+    @property
     def author_name(self):
         return self.author.get_full_name() or self.author.get_username()
 

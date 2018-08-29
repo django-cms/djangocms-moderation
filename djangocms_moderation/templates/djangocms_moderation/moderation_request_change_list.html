@@ -5,6 +5,7 @@
     {% if collection %}
     <h1>{{ collection.name }}</h1>
     <p>
+        <strong>{% trans 'Job ID' %}</strong>: {{ collection.job_id }}<br />
         <strong>{% trans 'Status' %}</strong>: {{ collection.get_status_display }}<br />
         <strong>{% trans 'Workflow' %}</strong>: {{ collection.workflow.name }}<br />
         <strong>{% trans 'Author' %}</strong>: {{ collection.author_name }}<br />

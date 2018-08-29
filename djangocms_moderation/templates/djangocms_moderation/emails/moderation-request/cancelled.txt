@@ -1,6 +1,7 @@
 {% load i18n %}
 {% blocktrans with collection.author_name as collection_author and collection.name as collection_name %}
-Hello {{ collection_author }}, the following moderation requests in collection {{ collection_name }} were cancelled
+Hello {{ collection_author }}, the following moderation requests in the collection
+{{ collection_name }} have been cancelled
 {% endblocktrans %}
 
 <p>
