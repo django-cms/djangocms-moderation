@@ -336,6 +336,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
     form_data.short_description = _('Form Data')
 
 
+admin.site.register(ModerationRequestAction)  # TODO temporary
 admin.site.register(ModerationRequest, ModerationRequestAdmin)
 admin.site.register(ModerationCollection, ModerationCollectionAdmin)
 admin.site.register(Role, RoleAdmin)

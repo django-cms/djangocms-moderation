@@ -52,7 +52,9 @@ class AdminActionTest(BaseTestCase):
         self.client.force_login(self.user)
 
     @mock.patch.object(ModerationRequestAdmin, 'has_delete_permission')
-    def test_delete_selected(self, mock_has_delete_permission):
+    @mock.patch('djangocms_moderation.admin_actions.notify_collection_moderators')
+    @mock.patch('djangocms_moderation.admin_actions.notify_collection_author')
+    def test_delete_selected(self, notify_author_mock, notify_moderators_mock, mock_has_delete_permission):
         mock_has_delete_permission.return_value = True
         self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 2)
 
@@ -80,6 +82,15 @@ class AdminActionTest(BaseTestCase):
         response = self.client.post(self.url_with_filter, data)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 0)
+
+        notify_author_mock.assert_called_once_with(
+            collection=self.collection,
+            moderation_requests=[self.mr2, self.mr1],
+            action=constants.ACTION_CANCELLED,
+            by_user=self.user,
+        )
+
+        self.assertFalse(notify_moderators_mock.called)
 
     @mock.patch('djangocms_moderation.admin_actions.publish_content_object')
     def test_publish_selected(self, mock_publish_content_object):

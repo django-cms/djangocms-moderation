@@ -10,6 +10,10 @@ from djangocms_moderation.emails import (
 
 
 def resubmit_selected(modeladmin, request, queryset):
+    """
+    Validate and re-submit all the selected moderation requests for
+    moderation and notify reviewers via email.
+    """
     resubmitted_requests = []
 
     for mr in queryset.all():
@@ -46,6 +50,10 @@ resubmit_selected.short_description = _("Resubmit changes for review")
 
 
 def reject_selected(modeladmin, request, queryset):
+    """
+    Validate and reject all the selected moderation requests and notify
+    the author about these requests
+    """
     rejected_requests = []
 
     for moderation_request in queryset.all():
@@ -81,14 +89,22 @@ reject_selected.short_description = _('Submit for rework')
 
 
 def approve_selected(modeladmin, request, queryset):
+    """
+    Validate and approve all the selected moderation requests and notify
+    the author and reviewers.
+
+    When bulk approving, we need to check for the next line of reviewers and
+    notify them about the pending moderation requests assigned to them.
+
+    Because this is a bulk action, we need to group the approved_requests
+    by the action.step_approved, so we notify the correct reviewers.
+
+    For example, if some requests are in the first stage of approval,
+    and some in the second, then the reviewers we need to notify are
+    different per request, depending on which stage the request is in
+    """
     approved_requests = []
-    # When approving, we need to check for the next line of approvals and
-    # notify them about the pending moderation requests assigned to them.
-    # Because this is a bulk action, we need to group the approved_requests
-    # by the action.step_approved, so we notify the correct reviewers.
-    # For example, if some requests are in the first stage of approval,
-    # and some in the second, then the reviewers we need to notify are
-    # different per request, depending on which stage the request is in
+    # Variable we are using to group the requests by action.step_approved
     request_action_mapping = dict()
 
     for mr in queryset.all():
@@ -145,8 +161,16 @@ def delete_selected(modeladmin, request, queryset):
         raise PermissionDenied
 
     num_deleted_requests = queryset.count()
-    queryset.delete()
 
+    if num_deleted_requests:
+        notify_collection_author(
+            collection=request._collection,
+            moderation_requests=[mr for mr in queryset],
+            action=constants.ACTION_CANCELLED,
+            by_user=request.user,
+        )
+
+    queryset.delete()
     messages.success(
         request,
         ungettext(
@@ -157,6 +181,9 @@ def delete_selected(modeladmin, request, queryset):
             'count': num_deleted_requests
         },
     )
+
+
+delete_selected.short_description = _('Cancel selected')
 
 
 def publish_selected(modeladmin, request, queryset):

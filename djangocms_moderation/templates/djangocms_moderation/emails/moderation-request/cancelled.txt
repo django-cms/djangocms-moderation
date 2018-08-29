@@ -1,0 +1,28 @@
+{% load i18n %}
+{% blocktrans with collection.author_name as collection_author and collection.name as collection_name %}
+Hello {{ collection_author }}, the following moderation requests in collection {{ collection_name }} were cancelled
+{% endblocktrans %}
+
+<p>
+{% trans 'Cancelled moderation requests' %}:
+</p>
+
+<ul>
+{% for moderation_request in moderation_requests %}
+    <li>
+        {{ moderation_request.pk }} - {{ moderation_request.content_object }} ({{ moderation_request.content_type }})
+    </li>
+{% endfor %}
+</ul>
+
+{% if comment %}
+{% trans 'Comment' %}: <br/>
+{{ comment }} <br/>
+{% endif %}
+
+{% trans 'Job ID' %}: {{ job_id }}<br/>
+
+{% if admin_url %}
+{% trans 'Admin Url' %}:<br/>
+{{ admin_url }}<br/>
+{% endif %}

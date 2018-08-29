@@ -21,6 +21,7 @@ except ImportError:
 email_subjects = {
     constants.ACTION_APPROVED: _('Approved moderation requests'),
     constants.ACTION_REJECTED: _('Rejected moderation requests'),
+    constants.ACTION_CANCELLED: _('Request for moderation deleted'),
 }
 
 
