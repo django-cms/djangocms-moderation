@@ -152,6 +152,8 @@ def approve_selected(modeladmin, request, queryset):
         },
     )
 
+    post_bulk_actions(request._collection)
+
 
 def delete_selected(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
@@ -182,6 +184,8 @@ def delete_selected(modeladmin, request, queryset):
         },
     )
 
+    post_bulk_actions(request._collection)
+
 
 delete_selected.short_description = _('Cancel selected')
 
@@ -210,6 +214,12 @@ def publish_selected(modeladmin, request, queryset):
 
 
 publish_selected.short_description = _("Publish selected requests")
+
+
+def post_bulk_actions(collection):
+    if collection.should_be_archived():
+        collection.status = constants.ARCHIVED
+        collection.save(update_fields=['status'])
 
 
 def publish_content_object(content_object):

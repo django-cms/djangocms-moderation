@@ -327,6 +327,19 @@ class ModerationCollection(models.Model):
                 return True
         return False
 
+    def should_be_archived(self):
+        """
+        Collection should be archived if all moderation requests are moderated
+        :return: <bool>
+        """
+        if self.status in [constants.COLLECTING, constants.ARCHIVED]:
+            return False
+        # TODO this is not efficient, is there a better way?
+        for mr in self.moderation_requests.all():
+            if not mr.is_approved():
+                return False
+        return True
+
     def add_object(self, content_object):
         """
         Add object to the ModerationRequest in this collection.

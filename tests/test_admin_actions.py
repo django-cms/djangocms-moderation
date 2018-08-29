@@ -22,7 +22,10 @@ class AdminActionTest(BaseTestCase):
     def setUp(self):
         self.wf = Workflow.objects.create(name='Workflow Test',)
         self.collection = ModerationCollection.objects.create(
-            author=self.user, name='Collection Admin Actions', workflow=self.wf, status=constants.IN_REVIEW
+            author=self.user,
+            name='Collection Admin Actions',
+            workflow=self.wf,
+            status=constants.IN_REVIEW,
         )
 
         pg1 = create_page(title='Page 1', template='page.html', language='en',)
@@ -77,6 +80,9 @@ class AdminActionTest(BaseTestCase):
         # Nothing is deleted
         self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 2)
 
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
         mock_has_delete_permission.return_value = True
         self.client.force_login(self.user)
         response = self.client.post(self.url_with_filter, data)
@@ -91,6 +97,10 @@ class AdminActionTest(BaseTestCase):
         )
 
         self.assertFalse(notify_moderators_mock.called)
+
+        # All moderation requests were deleted, so collection should be archived
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.ARCHIVED)
 
     @mock.patch('djangocms_moderation.admin_actions.publish_content_object')
     def test_publish_selected(self, mock_publish_content_object):
@@ -137,12 +147,16 @@ class AdminActionTest(BaseTestCase):
         # There are 2 steps so we need to approve both to get mr2 approved
         self.assertFalse(self.mr2.is_approved())
         self.assertTrue(self.mr1.is_approved())
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
 
         self.client.force_login(self.user2)
         self.client.post(self.url_with_filter, data)
 
         self.assertTrue(self.mr2.is_approved())
         self.assertTrue(self.mr1.is_approved())
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.ARCHIVED)
 
         notify_author_mock.assert_called_once_with(
             collection=self.collection,
@@ -179,6 +193,9 @@ class AdminActionTest(BaseTestCase):
             by_user=self.user,
         )
 
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
     @mock.patch('djangocms_moderation.admin_actions.notify_collection_moderators')
     @mock.patch('djangocms_moderation.admin_actions.notify_collection_author')
     def test_resubmit_selected(self, notify_author_mock, notify_moderators_mock):
@@ -206,6 +223,9 @@ class AdminActionTest(BaseTestCase):
             moderation_requests=[self.mr2],
             action_obj=self.mr2.get_last_action(),
         )
+
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
 
     @mock.patch('djangocms_moderation.admin_actions.notify_collection_moderators')
     def test_approve_selected_sends_correct_emails(self, notify_moderators_mock):
@@ -274,3 +294,7 @@ class AdminActionTest(BaseTestCase):
         )
 
         self.user.groups.remove(self.group)
+
+        # Not all request have been fully approved
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)

@@ -488,6 +488,29 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertEqual(str(self.collection1.pk), self.collection1.job_id)
         self.assertEqual(str(self.collection2.pk), self.collection2.job_id)
 
+    @patch.object(ModerationRequest, 'is_approved')
+    def test_should_be_archived(self, is_approved_mock):
+        self.collection1.status = constants.COLLECTING
+        self.collection1.save()
+        self.assertFalse(self.collection1.should_be_archived())
+
+        self.collection1.status = constants.ARCHIVED
+        self.collection1.save()
+        self.assertFalse(self.collection1.should_be_archived())
+
+        self.collection1.status = constants.IN_REVIEW
+        self.collection1.save()
+        self.assertTrue(self.collection1.should_be_archived())
+
+        ModerationRequest.objects.create(
+            content_object=self.pg1, collection=self.collection1, is_active=True
+        )
+        is_approved_mock.return_value = False
+        self.assertFalse(self.collection1.should_be_archived())
+
+        is_approved_mock.return_value = True
+        self.assertTrue(self.collection1.should_be_archived())
+
     def test_allow_submit_for_review(self):
         self.collection1.status = constants.COLLECTING
         self.collection1.save()
