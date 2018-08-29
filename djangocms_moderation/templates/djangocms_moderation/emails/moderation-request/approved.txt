@@ -22,7 +22,9 @@ requests in the collection {{ collection_name }}.
 {{ comment }} <br/>
 {% endif %}
 
+{% if job_id %}
 {% trans 'Job ID' %}: {{ job_id }}<br/>
+{% endif %}
 
 {% if admin_url %}
 {% trans 'Admin Url' %}:<br/>
