@@ -104,6 +104,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return False
 
     def get_actions(self, request):
+        """
+        By default, all actions are enabled. But we need to only keep the actions
+        which have a moderation requests ready for.
+        E.g. if there are no moderation requests ready to be published,
+        we don't need to keep the `publish_selected` action
+        """
         try:
             collection = request._collection
         except AttributeError:
@@ -118,25 +124,28 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         if collection.author == request.user:
             actions_to_keep.append('delete_selected')
 
-        actions_kept = 0
         if collection.status == IN_REVIEW:
-            for mr in collection.moderation_requests.all():
-                # We have found all the actions, so no need to loop anymore
-                if actions_kept == 4:
-                    break
-                if 'publish_selected' not in actions_to_keep:
-                    if mr.is_approved() and request.user == collection.author:
-                        actions_to_keep.append('publish_selected')
-                        actions_kept += 1
-                if 'approve_selected' not in actions_to_keep:
-                    if mr.user_can_take_moderation_action(request.user):
-                        actions_to_keep.append('approve_selected')
-                        actions_to_keep.append('reject_selected')
-                        actions_kept += 2
-                if 'resubmit_selected' not in actions_to_keep:
-                    if mr.user_can_resubmit(request.user):
-                        actions_to_keep.append('resubmit_selected')
-                        actions_kept += 1
+            # Keep track how many actions we've added in the below loop (_actions_kept).
+            # If we added all of them (_max_to_keep), we can exit the for loop
+            _actions_kept = 0
+            _max_to_keep = 4  # publish_selected, approve_selected, reject_selected, resubmit_selected
+            if collection.status == IN_REVIEW:
+                for mr in collection.moderation_requests.all():
+                    if _actions_kept == _max_to_keep:
+                        break  # We have found all the actions, so no need to loop anymore
+                    if 'publish_selected' not in actions_to_keep:
+                        if mr.is_approved() and request.user == collection.author:
+                            actions_to_keep.append('publish_selected')
+                            _actions_kept += 1
+                    if 'approve_selected' not in actions_to_keep:
+                        if mr.user_can_take_moderation_action(request.user):
+                            actions_to_keep.append('approve_selected')
+                            actions_to_keep.append('reject_selected')
+                            _actions_kept += 2
+                    if 'resubmit_selected' not in actions_to_keep:
+                        if mr.user_can_resubmit(request.user):
+                            actions_to_keep.append('resubmit_selected')
+                            _actions_kept += 1
 
         return {
             key: value for key, value in actions.items() if key in actions_to_keep
@@ -337,7 +346,6 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
     form_data.short_description = _('Form Data')
 
 
-admin.site.register(ModerationRequestAction)  # TODO temporary
 admin.site.register(ModerationRequest, ModerationRequestAdmin)
 admin.site.register(ModerationCollection, ModerationCollectionAdmin)
 admin.site.register(Role, RoleAdmin)

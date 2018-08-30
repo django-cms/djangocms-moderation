@@ -126,3 +126,19 @@ class ModerationRequestAdminTestCase(BaseTestCase):
         mock_request.user = self.user2
         actions = self.mra.get_actions(request=mock_request)
         self.assertNotIn('resubmit_selected', actions)
+
+    def test_in_review_status_is_considered(self):
+        mock_request = MockRequest()
+        mock_request.user = self.user
+        mock_request._collection = self.collection
+        self.collection.status = constants.ARCHIVED
+        self.collection.save()
+        actions = self.mra.get_actions(request=mock_request)
+        # mr1 request is approved, so user1 should see the publish selected option,
+        # but the collection is not in review
+        self.assertNotIn('publish_selected', actions)
+
+        self.collection.status = constants.IN_REVIEW
+        self.collection.save()
+        actions = self.mra.get_actions(request=mock_request)
+        self.assertIn('publish_selected', actions)
