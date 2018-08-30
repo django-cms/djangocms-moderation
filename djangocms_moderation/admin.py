@@ -179,7 +179,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             # as each collection's actions, buttons and privileges may differ
             raise Http404
 
-        return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
+        return super().changelist_view(request, extra_context)
 
     def get_status(self, obj):
         # We can have moderation requests without any action (e.g. the
@@ -294,7 +294,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
                 name='cms_moderation_item_to_collection',
             )
         ]
-        return url_patterns + super(ModerationCollectionAdmin, self).get_urls()
+        return url_patterns + super().get_urls()
 
 
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
@@ -311,7 +311,7 @@ class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
                 name='cms_moderation_confirmation_page',
             ),
         ]
-        return url_patterns + super(ConfirmationPageAdmin, self).get_urls()
+        return url_patterns + super().get_urls()
 
 
 class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
@@ -329,7 +329,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['show_save'] = False
         extra_context['show_save_and_continue'] = False
-        return super(ConfirmationFormSubmissionAdmin, self).change_view(
+        return super().change_view(
             request, object_id, form_url, extra_context=extra_context,
         )
 
