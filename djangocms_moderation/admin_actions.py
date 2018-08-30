@@ -212,6 +212,8 @@ def publish_selected(modeladmin, request, queryset):
         },
     )
 
+    post_bulk_actions(request._collection)
+
 
 publish_selected.short_description = _("Publish selected requests")
 
