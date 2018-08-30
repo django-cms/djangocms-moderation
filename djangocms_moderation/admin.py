@@ -11,7 +11,7 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from djangocms_moderation.constants import IN_REVIEW
+from djangocms_moderation.constants import IN_REVIEW, ARCHIVED
 from .admin_actions import (
     delete_selected,
     publish_selected,
@@ -124,11 +124,16 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         if collection.author == request.user:
             actions_to_keep.append('delete_selected')
 
-        if collection.status == IN_REVIEW:
+        if collection.status in [IN_REVIEW, ARCHIVED]:
             # Keep track how many actions we've added in the below loop (_actions_kept).
             # If we added all of them (_max_to_keep), we can exit the for loop
             _actions_kept = 0
-            _max_to_keep = 4  # publish_selected, approve_selected, reject_selected, resubmit_selected
+            if collection.status == IN_REVIEW:
+                _max_to_keep = 4  # publish_selected, approve_selected, reject_selected, resubmit_selected
+            else:
+                # If the collection is archived, then no other action than
+                # `publish_selected` is possible.
+                _max_to_keep = 1  # publish_selected
 
             for mr in collection.moderation_requests.all():
                 if _actions_kept == _max_to_keep:
@@ -137,12 +142,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                     if mr.is_approved() and request.user == collection.author:
                         actions_to_keep.append('publish_selected')
                         _actions_kept += 1
-                if 'approve_selected' not in actions_to_keep:
+                if collection.status == IN_REVIEW and 'approve_selected' not in actions_to_keep:
                     if mr.user_can_take_moderation_action(request.user):
                         actions_to_keep.append('approve_selected')
                         actions_to_keep.append('reject_selected')
                         _actions_kept += 2
-                if 'resubmit_selected' not in actions_to_keep:
+                if collection.status == IN_REVIEW and 'resubmit_selected' not in actions_to_keep:
                     if mr.user_can_resubmit(request.user):
                         actions_to_keep.append('resubmit_selected')
                         _actions_kept += 1
