@@ -15,12 +15,12 @@
 <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
 &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
 &rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationcollection_changelist' %}">Moderation collections</a>
-&rsaquo; Requests
+&rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationrequest_changelist' %}?collection__id__exact={{ collection.id | urlencode }}">Requests</a>
+&rsaquo; Comments
 </div>
 {% endblock %}
 
 {% block content %}
-{{ collection }}
 {{ block.super }}
 
 {% comment %}

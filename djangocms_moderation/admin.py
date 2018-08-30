@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -83,7 +84,6 @@ class ModerationRequestActionInline(admin.TabularInline):
 class ModerationRequestAdmin(admin.ModelAdmin):
     actions = [delete_selected, publish_selected]
     inlines = [ModerationRequestActionInline]
-    list_display = ['id', 'content_type', 'get_title', 'get_content_author', 'get_preview_link', 'get_status', 'get_comments_link']
     list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
@@ -94,6 +94,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         Hide the model from admin index as it leads to a 404
         """
         return False
+
+    def get_list_display(self, request): 
+        list_display = ['id', 'content_type', 'get_title', 'get_content_author', 'get_preview_link', 'get_status']
+        if not hasattr(settings, 'MODERATION_REQUEST_COMMENTS_ENABLED') or settings.MODERATION_REQUEST_COMMENTS_ENABLED == True:
+            list_display.append('get_comments_link')
+        return list_display
 
     def get_title(self, obj):
         return obj.content_object
@@ -223,9 +229,31 @@ class CollectionCommentAdmin(admin.ModelAdmin):
         """
         return False
 
+    def changelist_view(self, request, extra_context=None):
+        # If we filter by a specific collection, we want to add this collection
+        # to the context
+        collection_id = request.GET.get('collection__id__exact')
+        if collection_id:
+            try:
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
+                request._collection = collection
+            except (ValueError, ModerationCollection.DoesNotExist):
+                pass
+            else:
+                extra_context = dict(
+                    collection=collection, 
+                    title="Collection comments"
+                )
+        else:
+            # If no collection id, then don't show all requests
+            # as each collection's actions, buttons and privileges may differ
+            raise Http404
+
+        return super().changelist_view(request, extra_context)
+
 
 class RequestCommentAdmin(admin.ModelAdmin):
-    list_display = ['moderation_request', 'message', 'author', 'date_created']
+    list_display = [ 'message', 'get_request_link', 'author', 'date_created']
     fields = ['moderation_request', 'message', 'author']
     editonly_fields = ()  # fields editable only on EDIT
     addonly_fields = ()  # fields editable only on CREATE
@@ -246,6 +274,18 @@ class RequestCommentAdmin(admin.ModelAdmin):
         else:  # Adding a new object
             return self.readonly_fields + self.editonly_fields
 
+    def get_request_link(self, obj):
+        opts = ModerationRequest._meta
+        url = reverse(
+            'admin:{}_{}_change'.format(opts.app_label, opts.model_name),
+            args=[obj.pk],
+        )
+        return format_html(
+            '<a href="{}">View</a>',
+            url,
+        )
+    get_request_link.short_description = _('Request')
+
     def get_form(self, request, obj=None, **kwargs):
         return RequestCommentForm
 
@@ -254,6 +294,28 @@ class RequestCommentAdmin(admin.ModelAdmin):
         Hide the model from admin index as it depends on foreighKey
         """
         return False
+
+    def changelist_view(self, request, extra_context=None):
+        # If we filter by a specific collection, we want to add this collection
+        # to the context
+        collection_id = request.GET.get('moderation_request__id__exact')
+        if collection_id:
+            try:
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
+                request._collection = collection
+            except (ValueError, ModerationCollection.DoesNotExist):
+                pass
+            else:
+                extra_context = dict(
+                    collection=collection, 
+                    title="Request comments"
+                )
+        else:
+            # If no collection id, then don't show all requests
+            # as each collection's actions, buttons and privileges may differ
+            raise Http404
+
+        return super().changelist_view(request, extra_context)
 
 
 class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -280,15 +342,6 @@ class WorkflowAdmin(admin.ModelAdmin):
 
 class ModerationCollectionAdmin(admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
-    list_display = [
-        'id',
-        'get_name_with_requests_link',
-        'get_moderator',
-        'workflow',
-        'status',
-        'date_created',
-        'get_comments_link'
-    ]
     editonly_fields = ('status',)  # fields editable only on EDIT
     addonly_fields = ('workflow',)  # fields editable only on CREATE
 
@@ -301,18 +354,31 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         else:  # Adding a new object
             return self.readonly_fields + self.editonly_fields
 
-    def get_name_with_requests_link(self, obj):
+    def get_list_display(self, request): 
+        list_display = [
+            'id',
+            'name',
+            'get_moderator',
+            'workflow',
+            'status',
+            'date_created',
+            'get_requests_link'
+        ]
+        if not hasattr(settings, 'MODERATION_COLLECTION_COMMENTS_ENABLED') or settings.MODERATION_COLLECTION_COMMENTS_ENABLED == True:
+            list_display.append('get_comments_link')
+        return list_display
+
+    def get_requests_link(self, obj):
         """
         Name of the collection should link to the list of associated
         moderation requests
         """
         return format_html(
-            '<a href="{}?collection__id__exact={}">{}</a>',
+            '<a href="{}?collection__id__exact={}">View</a>',
             reverse('admin:djangocms_moderation_moderationrequest_changelist'),
             obj.pk,
-            obj.name,
         )
-    get_name_with_requests_link.short_description = _('Name')
+    get_requests_link.short_description = _('Requests')
 
     def get_comments_link(self, obj):
         return format_html(
