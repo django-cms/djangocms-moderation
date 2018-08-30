@@ -11,14 +11,14 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from djangocms_moderation.constants import IN_REVIEW, ARCHIVED
 from .admin_actions import (
+    approve_selected,
     delete_selected,
     publish_selected,
-    approve_selected,
     reject_selected,
     resubmit_selected,
 )
+from .constants import ARCHIVED, IN_REVIEW
 from .forms import WorkflowStepInlineFormSet
 from .helpers import get_form_submission_for_step
 from .models import (

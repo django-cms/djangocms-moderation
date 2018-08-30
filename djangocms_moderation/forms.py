@@ -149,7 +149,6 @@ class CollectionItemForm(forms.Form):
             content_object = content_type.get_object_for_this_type(
                 pk=self.cleaned_data['content_object_id'],
                 is_page_type=False,
-                publisher_is_draft=True,
             )
         except content_type.model_class().DoesNotExist:
             content_object = None

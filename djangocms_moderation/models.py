@@ -380,6 +380,7 @@ class ModerationRequest(models.Model):
         verbose_name = _('Request')
         verbose_name_plural = _('Requests')
         unique_together = ('collection', 'object_id', 'content_type')
+        ordering = ['id']
 
     def __str__(self):
         return "{} {}".format(

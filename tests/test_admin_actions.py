@@ -11,8 +11,9 @@ from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
+    Role,
     Workflow,
-    Role)
+)
 
 from .utils.base import BaseTestCase
 
@@ -91,7 +92,7 @@ class AdminActionTest(BaseTestCase):
 
         notify_author_mock.assert_called_once_with(
             collection=self.collection,
-            moderation_requests=[self.mr2, self.mr1],
+            moderation_requests=[self.mr1, self.mr2],
             action=constants.ACTION_CANCELLED,
             by_user=self.user,
         )
@@ -260,8 +261,8 @@ class AdminActionTest(BaseTestCase):
         self.assertEqual(
             notify_moderators_mock.call_args_list[0],
             mock.call(collection=self.collection,
-                      moderation_requests=[self.mr3, self.mr1],
-                      action_obj=self.mr3.get_last_action()
+                      moderation_requests=[self.mr1, self.mr3],
+                      action_obj=self.mr1.get_last_action()
                       )
         )
 
