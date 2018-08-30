@@ -25,7 +25,7 @@ def resubmit_selected(modeladmin, request, queryset):
             )
 
     if resubmitted_requests:
-        # Lets notify reviewers
+        # Lets notify reviewers. TODO task queue?
         notify_collection_moderators(
             collection=request._collection,
             moderation_requests=resubmitted_requests,
@@ -64,7 +64,7 @@ def reject_selected(modeladmin, request, queryset):
                 by_user=request.user,
             )
 
-    # Now we need to notify collection reviewers and moderator
+    # Now we need to notify collection reviewers and moderator. TODO task queue?
     if rejected_requests:
         notify_collection_author(
             collection=request._collection,
@@ -123,7 +123,7 @@ def approve_selected(modeladmin, request, queryset):
                 else:
                     request_action_mapping[step_approved_str].append(mr)
 
-    if approved_requests:
+    if approved_requests:  # TODO task queue?
         # Lets notify the collection author about the approval
         notify_collection_author(
             collection=request._collection,
@@ -164,7 +164,7 @@ def delete_selected(modeladmin, request, queryset):
 
     num_deleted_requests = queryset.count()
 
-    if num_deleted_requests:
+    if num_deleted_requests:  # TODO task queue?
         notify_collection_author(
             collection=request._collection,
             moderation_requests=[mr for mr in queryset],
