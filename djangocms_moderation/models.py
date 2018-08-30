@@ -13,6 +13,7 @@ from django.db import models, transaction
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.formats import localize
 
 from cms.models.fields import PlaceholderField
 
@@ -629,6 +630,46 @@ class ModerationRequestAction(models.Model):
         if next_step:
             self.to_role_id = next_step.role_id
         super(ModerationRequestAction, self).save(**kwargs)
+
+
+class AbstractComment(models.Model):
+    message = models.TextField(
+        blank=True,
+        verbose_name=_('message'),
+    )
+    author = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        verbose_name=_('author'),
+        on_delete=models.CASCADE,
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+
+class CollectionComment(AbstractComment):
+    collection = models.ForeignKey(
+        to=ModerationCollection,
+        on_delete=models.CASCADE,
+        null=True,
+    )
+
+
+class RequestComment(AbstractComment):
+    moderation_request = models.ForeignKey(
+        to=ModerationRequest,
+        on_delete=models.CASCADE,
+        null=True,
+    )
+
+
+class RequestActionComment(AbstractComment):
+    moderation_request_action = models.ForeignKey(
+        to=ModerationRequestAction,
+        on_delete=models.CASCADE,
+        null=True,
+    )
 
 
 class ConfirmationFormSubmission(models.Model):

@@ -145,7 +145,7 @@ class SubmitCollectionForModeration(FormView):
 
     def form_valid(self, form):
         form.save()
-        messages.success(self.request, _("Your collection has been submitted for a review"))
+        messages.success(self.request, _("Your collection has been submitted for review"))
         # Redirect back to the collection filtered moderation request change list
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         redirect_url = "{}?collection__id__exact={}".format(
@@ -165,3 +165,4 @@ class SubmitCollectionForModeration(FormView):
 
 
 submit_collection_for_moderation = SubmitCollectionForModeration.as_view()
+

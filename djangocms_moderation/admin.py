@@ -8,41 +8,58 @@ from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
+from cms.utils.urlutils import admin_reverse
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
 from .admin_actions import delete_selected, publish_selected
-from .forms import WorkflowStepInlineFormSet
+from .forms import(
+    WorkflowStepInlineFormSet,
+    CollectionCommentForm,
+    RequestCommentForm,
+)
 from .helpers import get_form_submission_for_step
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
     ModerationCollection,
     ModerationRequest,
+    CollectionComment,
+    RequestComment,
     ModerationRequestAction,
     Role,
     Workflow,
     WorkflowStep,
 )
-
-
+from . import utils
 from . import views  # isort:skip
 
 
 class ModerationRequestActionInline(admin.TabularInline):
     model = ModerationRequestAction
     fields = ['show_user', 'message', 'date_taken', 'form_submission']
-    readonly_fields = fields
+    readonly_fields = ['show_user', 'date_taken', 'form_submission']
     verbose_name = _('Action')
     verbose_name_plural = _('Actions')
 
     def has_add_permission(self, request):
         return False
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     def show_user(self, obj):
         _name = obj.get_by_user_name()
         return ugettext('By {user}').format(user=_name)
     show_user.short_description = _('Status')
+
+    def get_changeform_initial_data(self, request):
+        #  Extract the id from the URL 
+        moderationrequestaction = utils.get_encoded_parameter_from_request(request, '_changelist_filters', 'moderation_request_action__id__exact')
+        return {
+            'author': request.user,
+            'moderation_request_action': moderationrequestaction
+        }
 
     def form_submission(self, obj):
         instance = get_form_submission_for_step(obj.request, obj.step_approved)
@@ -66,11 +83,17 @@ class ModerationRequestActionInline(admin.TabularInline):
 class ModerationRequestAdmin(admin.ModelAdmin):
     actions = [delete_selected, publish_selected]
     inlines = [ModerationRequestActionInline]
-    list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
+    list_display = ['id', 'content_type', 'get_title', 'get_content_author', 'get_preview_link', 'get_status', 'get_comments_link']
     list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+
+    def has_module_permission(self, request):
+        """
+        Hide the model from admin index as it leads to a 404
+        """
+        return False
 
     def get_title(self, obj):
         return obj.content_object
@@ -80,6 +103,22 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         # TODO this will return Version object preview link once implemented
         return "Link placeholder"
     get_preview_link.short_description = _('Preview')
+
+    def get_comments_link(self, obj):
+        return format_html(
+            '<a href="{}?moderation_request__id__exact={}">View</a>',
+            reverse('admin:djangocms_moderation_requestcomment_changelist'),
+            obj.id,
+        )
+    get_comments_link.short_description = _('Comments')
+
+    def get_content_author(self, obj):
+        """
+        This is not necessarily the same person as the RequestAction author
+        """
+        #  TODO this should get the author from the version object e.g. obj.content_object.created_by
+        return "author placeholder"
+    get_content_author.short_description = _('Content author')
 
     def has_add_permission(self, request):
         return False
@@ -152,6 +191,71 @@ class RoleAdmin(admin.ModelAdmin):
     fields = ['name', 'user', 'group', 'confirmation_page']
 
 
+class CollectionCommentAdmin(admin.ModelAdmin):
+    list_display = ['message', 'author', 'date_created']
+    fields = ['collection', 'message', 'author']
+    editonly_fields = ()  # fields editable only on EDIT
+    addonly_fields = ()  # fields editable only on CREATE
+
+    def get_changeform_initial_data(self, request):
+        #  Extract the id from the URL
+        collection = utils.get_encoded_parameter_from_request(request, '_changelist_filters', 'collection__id__exact')
+        return {
+            'author': request.user,
+            'collection': collection
+        }
+
+    def get_readonly_fields(self, request, obj=None):
+        """
+        Override to provide editonly_fields and addonly_fields functionality
+        """
+        if obj:  # Editing an existing object
+            return self.readonly_fields + self.addonly_fields
+        else:  # Adding a new object
+            return self.readonly_fields + self.editonly_fields
+
+    def get_form(self, request, obj=None, **kwargs):
+        return CollectionCommentForm
+
+    def has_module_permission(self, request):
+        """
+        Hide the model from admin index as it depends on foreighKey
+        """
+        return False
+
+
+class RequestCommentAdmin(admin.ModelAdmin):
+    list_display = ['moderation_request', 'message', 'author', 'date_created']
+    fields = ['moderation_request', 'message', 'author']
+    editonly_fields = ()  # fields editable only on EDIT
+    addonly_fields = ()  # fields editable only on CREATE
+
+    def get_changeform_initial_data(self, request):
+        moderationrequest = utils.get_encoded_parameter_from_request(request, '_changelist_filters', 'moderation_request__id__exact')
+        return {
+            'author': request.user,
+            'moderation_request': moderationrequest
+        }
+
+    def get_readonly_fields(self, request, obj=None):
+        """
+        Override to provide editonly_fields and addonly_fields functionality
+        """
+        if obj:  # Editing an existing object
+            return self.readonly_fields + self.addonly_fields
+        else:  # Adding a new object
+            return self.readonly_fields + self.editonly_fields
+
+    def get_form(self, request, obj=None, **kwargs):
+        return RequestCommentForm
+
+    def has_module_permission(self, request):
+        """
+        Hide the model from admin index as it depends on foreighKey
+        """
+        return False
+
+
 class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
     formset = WorkflowStepInlineFormSet
     model = WorkflowStep
@@ -183,6 +287,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         'workflow',
         'status',
         'date_created',
+        'get_comments_link'
     ]
     editonly_fields = ('status',)  # fields editable only on EDIT
     addonly_fields = ('workflow',)  # fields editable only on CREATE
@@ -208,6 +313,14 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             obj.name,
         )
     get_name_with_requests_link.short_description = _('Name')
+
+    def get_comments_link(self, obj):
+        return format_html(
+            '<a href="{}?collection__id__exact={}">View</a>',
+            reverse('admin:djangocms_moderation_collectioncomment_changelist'),
+            obj.id,
+        )
+    get_comments_link.short_description = _('Comments')
 
     def get_moderator(self, obj):
         return obj.author
@@ -287,9 +400,10 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ModerationRequest, ModerationRequestAdmin)
+admin.site.register(CollectionComment, CollectionCommentAdmin)
+admin.site.register(RequestComment, RequestCommentAdmin)
 admin.site.register(ModerationCollection, ModerationCollectionAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
-
 admin.site.register(ConfirmationPage, ConfirmationPageAdmin)
 admin.site.register(ConfirmationFormSubmission, ConfirmationFormSubmissionAdmin)

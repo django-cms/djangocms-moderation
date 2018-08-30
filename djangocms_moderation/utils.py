@@ -35,3 +35,16 @@ def load_backend(path):
 def generate_compliance_number(path, **kwargs):
     backend = load_backend(path)
     return backend(**kwargs)
+
+
+def get_encoded_parameter_from_request(request, keyname, parametername):
+    """
+    Searches request.GET for a given key and decodes the value for a particular parameter
+    """
+    changelist_filters = request.GET.get(keyname)
+    if changelist_filters:
+        for key, value in [p.split('=') for p in changelist_filters.split('&')]:
+            if key == parametername:
+                return value
+    return False
+    
