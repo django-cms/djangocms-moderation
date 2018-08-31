@@ -115,7 +115,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         except AttributeError:
             # If we are not in the collection aware list, then don't
             # offer any bulk actions
-            return None
+            return {}
 
         actions = super().get_actions(request)
         actions_to_keep = []
