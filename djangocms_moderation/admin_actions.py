@@ -136,7 +136,7 @@ def approve_selected(modeladmin, request, queryset):
         )
 
         # Notify reviewers
-        for key, moderation_requests in request_action_mapping.items():
+        for key, moderation_requests in sorted(request_action_mapping.items(), key=lambda x: x[0]):
             if not key.startswith('action_'):
                 notify_collection_moderators(
                     collection=request._collection,
