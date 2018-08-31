@@ -120,14 +120,9 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         actions = super().get_actions(request)
         actions_to_keep = []
 
-        # Only collection author can delete moderation requests
-        if collection.author == request.user:
-            actions_to_keep.append('delete_selected')
-
         if collection.status in [IN_REVIEW, ARCHIVED]:
             # Keep track how many actions we've added in the below loop (_actions_kept).
             # If we added all of them (_max_to_keep), we can exit the for loop
-            _actions_kept = 0
             if collection.status == IN_REVIEW:
                 _max_to_keep = 4  # publish_selected, approve_selected, reject_selected, resubmit_selected
             else:
@@ -136,21 +131,22 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 _max_to_keep = 1  # publish_selected
 
             for mr in collection.moderation_requests.all():
-                if _actions_kept == _max_to_keep:
+                if len(actions_to_keep) == _max_to_keep:
                     break  # We have found all the actions, so no need to loop anymore
                 if 'publish_selected' not in actions_to_keep:
                     if mr.is_approved() and request.user == collection.author:
                         actions_to_keep.append('publish_selected')
-                        _actions_kept += 1
                 if collection.status == IN_REVIEW and 'approve_selected' not in actions_to_keep:
                     if mr.user_can_take_moderation_action(request.user):
                         actions_to_keep.append('approve_selected')
                         actions_to_keep.append('reject_selected')
-                        _actions_kept += 2
                 if collection.status == IN_REVIEW and 'resubmit_selected' not in actions_to_keep:
                     if mr.user_can_resubmit(request.user):
                         actions_to_keep.append('resubmit_selected')
-                        _actions_kept += 1
+
+        # Only collection author can delete moderation requests
+        if collection.author == request.user:
+            actions_to_keep.append('delete_selected')
 
         return {
             key: value for key, value in actions.items() if key in actions_to_keep

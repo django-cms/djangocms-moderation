@@ -188,8 +188,6 @@ def delete_selected(modeladmin, request, queryset):
     )
 
     post_bulk_actions(request._collection)
-
-
 delete_selected.short_description = _('Cancel selected')
 
 

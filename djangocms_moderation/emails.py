@@ -33,9 +33,8 @@ def _send_email(
     template,
     by_user
 ):
-    admin_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
     admin_url = "{}?collection__id__exact={}".format(
-        admin_url,
+        reverse('admin:djangocms_moderation_moderationrequest_changelist'),
         collection.id
     )
 
