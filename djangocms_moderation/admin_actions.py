@@ -116,12 +116,15 @@ def approve_selected(modeladmin, request, queryset):
             )
             action = mr.get_last_action()
             if action.to_user_id or action.to_role_id:
-                step_approved_str = str(action.step_approved)
-                if step_approved_str not in request_action_mapping:
-                    request_action_mapping[step_approved_str] = [mr]
-                    request_action_mapping['action_' + step_approved_str] = action
+                # We group the moderation requests by step_approved.pk.
+                # Sometimes it can be None, in which case they can be grouped
+                # together and we use "0" as a key
+                step_approved_key = str(action.step_approved.pk if action.step_approved else 0)
+                if step_approved_key not in request_action_mapping:
+                    request_action_mapping[step_approved_key] = [mr]
+                    request_action_mapping['action_' + step_approved_key] = action
                 else:
-                    request_action_mapping[step_approved_str].append(mr)
+                    request_action_mapping[step_approved_key].append(mr)
 
     if approved_requests:  # TODO task queue?
         # Lets notify the collection author about the approval
