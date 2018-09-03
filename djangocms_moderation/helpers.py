@@ -39,8 +39,7 @@ def get_page_or_404(obj_id, language):
     return content_type.get_object_for_this_type(
         pk=obj_id,
         is_page_type=False,
-        publisher_is_draft=True,
-        title_set__language=language,
+        pagecontent_set__language=language,
     )
 
 

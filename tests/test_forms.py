@@ -91,7 +91,7 @@ class SubmitCollectionForModerationFormTest(BaseTestCase):
             'moderator': None,
         }
 
-        allow_submit_mock.__get__ = mock.Mock(return_value=False)
+        allow_submit_mock.return_value = False
         form = SubmitCollectionForModerationForm(
             data,
             collection=self.collection1,
@@ -99,7 +99,7 @@ class SubmitCollectionForModerationFormTest(BaseTestCase):
         )
         self.assertFalse(form.is_valid())
 
-        allow_submit_mock.__get__ = mock.Mock(return_value=True)
+        allow_submit_mock.return_value = True
         form = SubmitCollectionForModerationForm(
             data,
             collection=self.collection1,

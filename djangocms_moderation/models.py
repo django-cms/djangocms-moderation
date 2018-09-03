@@ -274,6 +274,10 @@ class ModerationCollection(models.Model):
         return self.name
 
     @property
+    def job_id(self):
+        return "{}".format(self.pk)
+
+    @property
     def author_name(self):
         return self.author.get_full_name() or self.author.get_username()
 
@@ -293,28 +297,35 @@ class ModerationCollection(models.Model):
         self.save(update_fields=['status'])
         # It is fine to pass any `action` from any moderation_request.actions
         # above as it will have the same moderators
-        notify_collection_moderators(collection=self, action=action)
+        notify_collection_moderators(
+            collection=self,
+            moderation_requests=self.moderation_requests.all(),
+            action_obj=action,
+        )
 
-    @property
-    def allow_submit_for_review(self):
+    def allow_submit_for_review(self, user):
         """
         Can this collection be submitted for review?
         :return: <bool>
         """
-        return self.status == constants.COLLECTING and self.moderation_requests.exists()
+        return all([
+            self.author == user,
+            self.status == constants.COLLECTING,
+            self.moderation_requests.exists(),
+        ])
 
-    def allow_pre_flight(self, user):
+    def should_be_archived(self):
         """
-        Is this collection ready for pre-flight?
+        Collection should be archived if all moderation requests are moderated
         :return: <bool>
         """
-        if self.status != constants.IN_REVIEW or user != self.author:
+        if self.status in [constants.COLLECTING, constants.ARCHIVED]:
             return False
-        moderation_requests = self.moderation_requests.filter(is_active=True)
-        for moderation_request in moderation_requests:
-            if moderation_request.is_approved():
-                return True
-        return False
+        # TODO this is not efficient, is there a better way?
+        for mr in self.moderation_requests.all():
+            if not mr.is_approved():
+                return False
+        return True
 
     def add_object(self, content_object):
         """
@@ -369,6 +380,7 @@ class ModerationRequest(models.Model):
         verbose_name = _('Request')
         verbose_name_plural = _('Requests')
         unique_together = ('collection', 'object_id', 'content_type')
+        ordering = ['id']
 
     def __str__(self):
         return "{} {}".format(
@@ -496,7 +508,6 @@ class ModerationRequest(models.Model):
             return False
 
         pending_steps = self.get_pending_steps().select_related('role')
-
         for step in pending_steps.iterator():
             is_assigned = step.role.user_is_assigned(user)
 

@@ -2,7 +2,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
-from cms.api import get_page_draft
 from cms.toolbar_base import CMSToolbar
 from cms.toolbar_pool import toolbar_pool
 from cms.utils.urlutils import add_url_parameters
@@ -24,7 +23,7 @@ class ModerationToolbar(CMSToolbar):
         :return:
         """
         super(ModerationToolbar, self).post_template_populate()
-        page = get_page_draft(self.request.current_page)
+        page = self.request.current_page
 
         if not page:
             return None

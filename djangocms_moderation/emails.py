@@ -19,27 +19,32 @@ except ImportError:
 
 
 email_subjects = {
-    constants.ACTION_APPROVED: _('Changes Approved'),
-    constants.ACTION_CANCELLED: _('Request for moderation cancelled'),
-    constants.ACTION_REJECTED: _('Changes Rejected'),
+    constants.ACTION_APPROVED: _('Approved moderation requests'),
+    constants.ACTION_REJECTED: _('Rejected moderation requests'),
+    constants.ACTION_CANCELLED: _('Request for moderation deleted'),
 }
 
 
-def _send_email(collection, action, recipients, subject, template):
-    if action.to_user_id:
-        moderator_name = action.get_to_user_name()
-    elif action.to_role_id:
-        moderator_name = action.to_role.name
-    else:
-        moderator_name = ''
+def _send_email(
+    collection,
+    moderation_requests,
+    recipients,
+    subject,
+    template,
+    by_user
+):
+    admin_url = "{}?collection__id__exact={}".format(
+        reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+        collection.id
+    )
 
-    admin_url = reverse('admin:djangocms_moderation_moderationcollection_change', args=(collection.pk,))
     context = {
         'collection': collection,
+        'moderation_requests': moderation_requests,
         'author_name': collection.author_name,
-        'by_user_name': action.get_by_user_name(),
-        'moderator_name': moderator_name,
         'admin_url': get_absolute_url(admin_url),
+        'job_id': collection.job_id,
+        'by_user': by_user,
     }
     template = 'djangocms_moderation/emails/moderation-request/{}'.format(template)
 
@@ -56,32 +61,28 @@ def _send_email(collection, action, recipients, subject, template):
     return message.send()
 
 
-def notify_request_author(request, action):
-    if action.action not in email_subjects:
-        # TODO: FINISH THIS
-        return 0
-
-    if not request.author.email:
-        return 0
+def notify_collection_author(collection, moderation_requests, action, by_user):
+    if action not in email_subjects or not collection.author.email:
+        return
 
     status = _send_email(
-        request=request,
-        action=action,
-        recipients=[request.author.email],
-        subject=email_subjects[action.action],
-        template='{}.txt'.format(action.action),
+        collection=collection,
+        moderation_requests=moderation_requests,
+        recipients=[collection.author.email],
+        subject=email_subjects[action],
+        template='{}.txt'.format(action),
+        by_user=by_user,
     )
     return status
 
 
-def notify_collection_moderators(collection, action):
-    if action.to_user_id and not action.to_user.email:
+def notify_collection_moderators(collection, moderation_requests, action_obj):
+    if action_obj.to_user_id and not action_obj.to_user.email:
         return 0
-
     try:
-        recipients = [action.to_user.email]
+        recipients = [action_obj.to_user.email]
     except AttributeError:
-        users = action.to_role.get_users_queryset().exclude(email='')
+        users = action_obj.to_role.get_users_queryset().exclude(email='')
         recipients = users.values_list('email', flat=True)
 
     if not recipients:
@@ -89,9 +90,10 @@ def notify_collection_moderators(collection, action):
 
     status = _send_email(
         collection=collection,
-        action=action,
+        moderation_requests=moderation_requests,
         recipients=recipients,
         subject=_('Review requested'),
         template='request.txt',
+        by_user=action_obj.by_user
     )
     return status

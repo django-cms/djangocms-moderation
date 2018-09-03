@@ -1,21 +1,23 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
 
+{% block content_title %}
+    {% if collection %}
+    <h1>{{ collection.name }}</h1>
+    <p>
+        <strong>{% trans 'Job ID' %}</strong>: {{ collection.job_id }}<br />
+        <strong>{% trans 'Status' %}</strong>: {{ collection.get_status_display }}<br />
+        <strong>{% trans 'Workflow' %}</strong>: {{ collection.workflow.name }}<br />
+        <strong>{% trans 'Author' %}</strong>: {{ collection.author_name }}<br />
+    </p>
+    {% endif %}
+{% endblock %}
+
 {% block object-tools-items %}
 {{ block.super }}
 {% if submit_for_review_url %}
     <li>
-        <a href="{{ submit_for_review_url }}">{% trans 'Submit for review' %}</a>
+        <a href="{{ submit_for_review_url }}">{% trans 'Submit collection for review' %}</a>
     </li>
 {% endif %}
-{% endblock %}
-
-{% block content %}
-{{ block.super }}
-
-{% comment %}
-    TODO This template will be overridden to provide the required functionality.
-    For now, lets just output the selected collection
-{% endcomment %}
-Selected collection: {{ collection }}
 {% endblock %}

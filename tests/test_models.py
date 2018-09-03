@@ -381,7 +381,6 @@ class ModerationRequestTest(BaseTestCase):
 
 
 class ModerationRequestActionTest(BaseTestCase):
-
     def test_get_by_user_name(self):
         action = self.moderation_request3.actions.last()
         self.assertEqual(action.get_by_user_name(), self.user.username)
@@ -485,42 +484,49 @@ class ModerationCollectionTest(BaseTestCase):
         self.page1 = create_page(title='My page 1', template='page.html', language='en',)
         self.page2 = create_page(title='My page 2', template='page.html', language='en',)
 
-    def test_allow_submit_for_review(self):
+    def test_job_id(self):
+        self.assertEqual(str(self.collection1.pk), self.collection1.job_id)
+        self.assertEqual(str(self.collection2.pk), self.collection2.job_id)
+
+    @patch.object(ModerationRequest, 'is_approved')
+    def test_should_be_archived(self, is_approved_mock):
         self.collection1.status = constants.COLLECTING
         self.collection1.save()
-        # This is false, as we don't have any moderation requests in this collection
-        self.assertFalse(self.collection1.allow_submit_for_review)
+        self.assertFalse(self.collection1.should_be_archived())
+
+        self.collection1.status = constants.ARCHIVED
+        self.collection1.save()
+        self.assertFalse(self.collection1.should_be_archived())
+
+        self.collection1.status = constants.IN_REVIEW
+        self.collection1.save()
+        self.assertTrue(self.collection1.should_be_archived())
 
         ModerationRequest.objects.create(
             content_object=self.pg1, collection=self.collection1, is_active=True
         )
-        self.assertTrue(self.collection1.allow_submit_for_review)
+        is_approved_mock.return_value = False
+        self.assertFalse(self.collection1.should_be_archived())
+
+        is_approved_mock.return_value = True
+        self.assertTrue(self.collection1.should_be_archived())
+
+    def test_allow_submit_for_review(self):
+        self.collection1.status = constants.COLLECTING
+        self.collection1.save()
+        # This is false, as we don't have any moderation requests in this collection
+        self.assertFalse(self.collection1.allow_submit_for_review(user=self.user))
+
+        ModerationRequest.objects.create(
+            content_object=self.pg1, collection=self.collection1, is_active=True
+        )
+        self.assertTrue(self.collection1.allow_submit_for_review(user=self.user))
+        # Only collection author can submit
+        self.assertFalse(self.collection1.allow_submit_for_review(user=self.user2))
 
         self.collection1.status = constants.IN_REVIEW
         self.collection1.save()
-        self.assertFalse(self.collection1.allow_submit_for_review)
-
-    def test_allow_pre_flight(self):
-        self.collection4.status = constants.COLLECTING
-        self.collection4.save()
-
-        # This is false, as there are no approved requests and status is COLLECTING
-        self.assertFalse(self.collection4.allow_pre_flight(self.user))
-
-        self.collection4.status = constants.IN_REVIEW
-        self.collection4.save()
-
-        # This is false, as there are no approved requests
-        self.assertFalse(self.collection4.allow_pre_flight(self.user))
-
-        self.moderation_request5.update_status(
-            action=constants.ACTION_APPROVED,
-            by_user=self.user,
-            message='Approved',
-        )
-
-        self.assertTrue(self.collection4.allow_pre_flight(self.user))
-        self.assertFalse(self.collection4.allow_pre_flight(self.user2))
+        self.assertFalse(self.collection1.allow_submit_for_review(user=self.user))
 
     @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_submit_for_review(self, mock_ncm):

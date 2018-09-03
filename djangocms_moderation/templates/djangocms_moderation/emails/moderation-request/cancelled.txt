@@ -1,17 +1,31 @@
 {% load i18n %}
-{% blocktrans %}
-Hello {{ author_name }}, {{ by_user_name }} has cancelled your request for moderation on {{ page_url }}.
+{% blocktrans with collection.author_name as collection_author and collection.name as collection_name %}
+Hello {{ collection_author }}, the following moderation requests in the collection
+{{ collection_name }} have been cancelled
 {% endblocktrans %}
+
+<p>
+{% trans 'Cancelled moderation requests' %}:
+</p>
+
+<ul>
+{% for moderation_request in moderation_requests %}
+    <li>
+        {{ moderation_request.pk }} - {{ moderation_request.content_object }} ({{ moderation_request.content_type }})
+    </li>
+{% endfor %}
+</ul>
 
 {% if comment %}
 {% trans 'Comment' %}: <br/>
 {{ comment }} <br/>
 {% endif %}
 
+{% if job_id %}
 {% trans 'Job ID' %}: {{ job_id }}<br/>
+{% endif %}
 
 {% if admin_url %}
 {% trans 'Admin Url' %}:<br/>
 {{ admin_url }}<br/>
 {% endif %}
-
