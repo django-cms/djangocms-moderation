@@ -3,7 +3,7 @@ import mock
 from django.contrib.admin import ACTION_CHECKBOX_NAME
 from django.urls import reverse
 
-from cms.api import create_page
+from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
 from djangocms_moderation.admin import ModerationRequestAdmin
@@ -29,11 +29,11 @@ class AdminActionTest(BaseTestCase):
             status=constants.IN_REVIEW,
         )
 
-        pg1 = create_page(title='Page 1', template='page.html', language='en',)
-        pg2 = create_page(title='Page 2', template='page.html', language='en',)
+        pg1 = PageVersionFactory()
+        pg2 = PageVersionFactory()
 
         self.mr1 = ModerationRequest.objects.create(
-            content_object=pg1, language='en',  collection=self.collection, is_active=True,)
+            version=pg1, language='en',  collection=self.collection, is_active=True,)
 
         self.wfst1 = self.wf.steps.create(role=self.role1, is_required=True, order=1,)
         self.wfst2 = self.wf.steps.create(role=self.role2, is_required=True, order=1,)
@@ -45,7 +45,7 @@ class AdminActionTest(BaseTestCase):
 
         # this moderation request is not approved
         self.mr2 = ModerationRequest.objects.create(
-            content_object=pg2, language='en',  collection=self.collection, is_active=True,)
+            version=pg2, language='en',  collection=self.collection, is_active=True,)
         self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
         self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
@@ -103,9 +103,8 @@ class AdminActionTest(BaseTestCase):
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.ARCHIVED)
 
-    @mock.patch('djangocms_moderation.admin_actions.publish_content_object')
-    def test_publish_selected(self, mock_publish_content_object):
-
+    @mock.patch('djangocms_moderation.admin_actions.publish_version')
+    def test_publish_selected(self, mock_publish_version):
         fixtures = [self.mr1, self.mr2]
         data = {
             'action': 'publish_selected',
@@ -113,9 +112,9 @@ class AdminActionTest(BaseTestCase):
         }
         self.client.post(self.url_with_filter, data, follow=True)
 
-        assert mock_publish_content_object.called
+        assert mock_publish_version.called
         # check it has been called only once, i.e. with the approved mr1
-        mock_publish_content_object.assert_called_once_with(self.mr1.content_object)
+        mock_publish_version.assert_called_once_with(self.mr1.version)
 
     @mock.patch('djangocms_moderation.admin_actions.notify_collection_moderators')
     @mock.patch('djangocms_moderation.admin_actions.notify_collection_author')
@@ -237,9 +236,9 @@ class AdminActionTest(BaseTestCase):
         self.user.groups.add(self.group)
 
         # Add one more, partially approved request
-        pg3 = create_page(title='Page 3', template='page.html', language='en', )
+        pg3 = PageVersionFactory()
         self.mr3 = ModerationRequest.objects.create(
-            content_object=pg3, language='en',  collection=self.collection, is_active=True,)
+            version=pg3, language='en',  collection=self.collection, is_active=True,)
         self.mr3.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
         self.mr3.update_status(by_user=self.user, action=constants.ACTION_APPROVED,)
         self.mr3.update_status(by_user=self.user2, action=constants.ACTION_APPROVED,)

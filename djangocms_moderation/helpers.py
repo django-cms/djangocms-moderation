@@ -13,27 +13,11 @@ def get_default_workflow():
 
 def get_moderation_workflow():
     # TODO for now just return default, this would need to depend on the collection
-    # Might be as well not needed in 4.x, leaving it here for now
+    # Might be as well not needed in 1.0.x, leaving it here for now
     return get_default_workflow()
 
 
-def get_active_moderation_request(obj, language):
-    content_type = ContentType.objects.get_for_model(obj)
-    try:
-        return ModerationRequest.objects.get(
-            content_type=content_type,
-            object_id=obj.pk,
-            language=language,
-            is_active=True,
-        )
-    except ModerationRequest.DoesNotExist:
-        return None
-
-
 def get_page_or_404(obj_id, language):
-    """
-    TODO is this needed in 4.x?
-    """
     content_type = ContentType.objects.get(app_label="cms", model="page")  # how do we get this
 
     return content_type.get_object_for_this_type(

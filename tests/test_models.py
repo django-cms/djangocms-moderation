@@ -2,11 +2,8 @@ import json
 from mock import patch
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-
-from cms.api import create_page
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import (
@@ -334,7 +331,7 @@ class ModerationRequestTest(BaseTestCase):
         mock_uuid.return_value = 'abc123'
 
         request = ModerationRequest.objects.create(
-            content_object=self.pg4,
+            version=self.pg4,
             language='en',
             is_active=True,
             collection=self.collection1,
@@ -348,7 +345,7 @@ class ModerationRequestTest(BaseTestCase):
     def test_compliance_number_sequential_number_backend(self):
         self.wf2.compliance_number_backend = 'djangocms_moderation.backends.sequential_number_backend'
         request = ModerationRequest.objects.create(
-            content_object=self.pg1,
+            version=self.pg1,
             language='en',
             collection=self.collection2,
         )
@@ -367,7 +364,7 @@ class ModerationRequestTest(BaseTestCase):
         self.wf2.identifier = 'SSO'
 
         request = ModerationRequest.objects.create(
-            content_object=self.pg1,
+            version=self.pg1,
             language='en',
             collection=self.collection2,
         )
@@ -400,7 +397,7 @@ class ModerationRequestActionTest(BaseTestCase):
 
     def test_save_when_to_user_not_passed_and_action_started(self):
         new_request = ModerationRequest.objects.create(
-            content_object=self.pg2,
+            version=self.pg2,
             language='en',
             collection=self.collection1,
             is_active=True,
@@ -481,9 +478,6 @@ class ModerationCollectionTest(BaseTestCase):
             author=self.user, name='My collection 2', workflow=self.wf1
         )
 
-        self.page1 = create_page(title='My page 1', template='page.html', language='en',)
-        self.page2 = create_page(title='My page 2', template='page.html', language='en',)
-
     def test_job_id(self):
         self.assertEqual(str(self.collection1.pk), self.collection1.job_id)
         self.assertEqual(str(self.collection2.pk), self.collection2.job_id)
@@ -503,7 +497,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertTrue(self.collection1.should_be_archived())
 
         ModerationRequest.objects.create(
-            content_object=self.pg1, collection=self.collection1, is_active=True
+            version=self.pg1, collection=self.collection1, is_active=True
         )
         is_approved_mock.return_value = False
         self.assertFalse(self.collection1.should_be_archived())
@@ -518,7 +512,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertFalse(self.collection1.allow_submit_for_review(user=self.user))
 
         ModerationRequest.objects.create(
-            content_object=self.pg1, collection=self.collection1, is_active=True
+            version=self.pg1, collection=self.collection1, is_active=True
         )
         self.assertTrue(self.collection1.allow_submit_for_review(user=self.user))
         # Only collection author can submit
@@ -531,10 +525,10 @@ class ModerationCollectionTest(BaseTestCase):
     @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_submit_for_review(self, mock_ncm):
         ModerationRequest.objects.create(
-            content_object=self.pg1, language='en', collection=self.collection1
+            version=self.pg1, language='en', collection=self.collection1
         )
         ModerationRequest.objects.create(
-            content_object=self.pg3, language='en', collection=self.collection1
+            version=self.pg3, language='en', collection=self.collection1
         )
 
         self.assertFalse(
@@ -558,17 +552,3 @@ class ModerationCollectionTest(BaseTestCase):
                 request__collection=self.collection1, action=constants.ACTION_STARTED
             ).count()
         )
-
-    def _moderation_requests_count(self, obj, collection=None):
-        """
-        How many moderation requests are there [for a given collection]
-        :return: <bool>
-        """
-        content_type = ContentType.objects.get_for_model(obj)
-        queryset = ModerationRequest.objects.filter(
-            content_type=content_type,
-            object_id=obj.pk,
-        )
-        if collection:
-            queryset = queryset.filter(collection=collection)
-        return queryset.count()

@@ -16,6 +16,8 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.models.fields import PlaceholderField
 
+from djangocms_versioning.models import Version
+
 from .emails import notify_collection_moderators
 from .utils import generate_compliance_number
 
@@ -327,16 +329,14 @@ class ModerationCollection(models.Model):
                 return False
         return True
 
-    def add_object(self, content_object):
+    def add_version(self, version):
         """
-        Add object to the ModerationRequest in this collection.
+        Add version to the ModerationRequest in this collection.
         Requires validation from .forms.CollectionItemForm
         :return: <ModerationRequest>
         """
-        content_type = ContentType.objects.get_for_model(content_object)
         return self.moderation_requests.create(
-            content_type=content_type,
-            object_id=content_object.pk,
+            version=version,
             collection=self,
         )
 
@@ -348,18 +348,18 @@ class ModerationRequest(models.Model):
         related_name='moderation_requests',
         on_delete=models.CASCADE
     )
-    content_type = models.ForeignKey(
-        ContentType,
+    version = models.ForeignKey(
+        to=Version,
+        verbose_name=_('version'),
         on_delete=models.CASCADE,
     )
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
     language = models.CharField(
         verbose_name=_('language'),
         max_length=5,
         choices=settings.LANGUAGES,
     )
     is_active = models.BooleanField(
+        verbose_name=_('is_active'),
         default=False,
         db_index=True,
     )
@@ -379,7 +379,7 @@ class ModerationRequest(models.Model):
     class Meta:
         verbose_name = _('Request')
         verbose_name_plural = _('Requests')
-        unique_together = ('collection', 'object_id', 'content_type')
+        unique_together = ('collection', 'version',)
         ordering = ['id']
 
     def __str__(self):

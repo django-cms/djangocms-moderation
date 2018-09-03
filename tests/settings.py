@@ -9,6 +9,10 @@ HELPER_SETTINGS = {
         'aldryn_forms',
         'captcha',
         'emailit',
+        'djangocms_text_ckeditor',
+        'djangocms_versioning.test_utils.polls',
+        'djangocms_versioning.test_utils.blogpost',
+        'djangocms_versioning.test_utils.people',
     ],
 }
 

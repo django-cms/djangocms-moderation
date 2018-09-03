@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _
 
 from cms.toolbar_base import CMSToolbar
 from cms.toolbar_pool import toolbar_pool
 from cms.utils.urlutils import add_url_parameters
+
+from djangocms_versioning.models import Version
 
 from .models import ModerationRequest
 from .utils import get_admin_url
@@ -18,21 +19,18 @@ class ModerationToolbar(CMSToolbar):
         }
 
     def post_template_populate(self):
-        """
-        @TODO replace page object with generic content object
-        :return:
-        """
-        super(ModerationToolbar, self).post_template_populate()
+        super().post_template_populate()
+        # TODO replace page object with generic content object
         page = self.request.current_page
 
         if not page:
             return None
 
         try:
-            content_type = ContentType.objects.get_for_model(page)
+            # TODO in FIL-581 make this work with the right version
+            version = Version.objects.get(pk=9999)
             moderation_request = ModerationRequest.objects.get(
-                content_type=content_type,
-                object_id=page.pk,
+                version=version
             )
             self.toolbar.add_modal_button(
                 name=_('In Moderation "%s"' % moderation_request.collection.name),
@@ -40,7 +38,7 @@ class ModerationToolbar(CMSToolbar):
                 disabled=True,
                 side=self.toolbar.RIGHT,
             )
-        except ModerationRequest.DoesNotExist:
+        except Version.DoesNotExist:
             url = add_url_parameters(
                 get_admin_url(
                     name='cms_moderation_item_to_collection',

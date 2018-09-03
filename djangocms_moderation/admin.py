@@ -79,7 +79,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         resubmit_selected,
     ]
     inlines = [ModerationRequestActionInline]
-    list_display = ['id', 'content_type', 'get_title', 'collection', 'get_preview_link', 'get_status']
+    list_display = ['id', 'version', 'get_title', 'collection', 'get_preview_link', 'get_status']
+    list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
@@ -92,7 +93,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return False
 
     def get_title(self, obj):
-        return obj.content_object
+        return obj.version.content
     get_title.short_description = _('Title')
 
     def get_preview_link(self, obj):

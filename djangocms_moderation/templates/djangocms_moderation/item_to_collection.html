@@ -11,10 +11,8 @@
     {% endif %}
     <div class="form-row">
         <div class="related-widget-wrapper widget-wrapper-links-2">
-            {{ form.content_type.as_hidden }}
-            {{ form.content_type.errors }}
-            {{ form.content_object_id.as_hidden }}
-            {{ form.content_object_id.errors }}
+            {{ form.version.as_hidden }}
+            {{ form.version.errors }}
             {{ form.collection }}
         </div>
     </div>
@@ -23,8 +21,7 @@
      <table>
         <thead>
             <tr>
-                <th>{% trans "Content Type" %}</th>
-                <th>{% trans "Identifier" %}</th>
+                <th>{% trans "Version" %}</th>
                 <th>{% trans "Author" %}</th>
                 <th>{% trans "Edit Date" %}</th>
                 <th>{% trans "Version" %}</th>
@@ -34,8 +31,7 @@
         <tbody>
         {% for content_object in content_object_list %}
             <tr class="row1 djangocms_moderation_collections_1">
-                <td>{{ content_object.content_type }}</td>
-                <td>{{ content_object.content_object }}</td>
+                <td>{{ version }}</td>
                 <td>Stub Author [versioning]</td>
                 <td>Stub Date [versioning]</td>
                 <td>Stub VNumber [versioning]</td>

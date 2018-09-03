@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 
-from cms.api import create_page
+from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
 from djangocms_moderation.admin import ModerationRequestAdmin
@@ -26,11 +26,11 @@ class ModerationRequestAdminTestCase(BaseTestCase):
             author=self.user, name='Collection Admin Actions', workflow=self.wf, status=constants.IN_REVIEW
         )
 
-        pg1 = create_page(title='Page 1', template='page.html', language='en',)
-        pg2 = create_page(title='Page 2', template='page.html', language='en',)
+        pg1 = PageVersionFactory()
+        pg2 = PageVersionFactory()
 
         self.mr1 = ModerationRequest.objects.create(
-            content_object=pg1, language='en',  collection=self.collection, is_active=True,)
+            version=pg1, language='en',  collection=self.collection, is_active=True,)
 
         self.wfst = self.wf.steps.create(role=self.role2, is_required=True, order=1,)
 
@@ -45,7 +45,7 @@ class ModerationRequestAdminTestCase(BaseTestCase):
 
         # this moderation request is not approved
         self.mr2 = ModerationRequest.objects.create(
-            content_object=pg2, language='en',  collection=self.collection, is_active=True,)
+            version=pg2, language='en',  collection=self.collection, is_active=True,)
         self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
         self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')

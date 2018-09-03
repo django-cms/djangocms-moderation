@@ -1,3 +1,5 @@
+from unittest import skip
+
 from djangocms_moderation.contrib.moderation_forms.cms_plugins import (
     ModerationFormPlugin,
 )
@@ -12,6 +14,7 @@ from djangocms_moderation.models import (
 from .utils.base import BaseTestCase
 
 
+@skip("Confirmation page feature doesn't to support 1.0.x yet.")
 class ModerationConfirmationFormSubmissionTest(BaseTestCase):
 
     def setUp(self):
