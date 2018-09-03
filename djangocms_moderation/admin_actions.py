@@ -44,9 +44,7 @@ def resubmit_selected(modeladmin, request, queryset):
             'count': len(resubmitted_requests)
         },
     )
-
-
-resubmit_selected.short_description = _("Resubmit changes for review")
+resubmit_selected.short_description = _("Resubmit changes for review")  # noqa: E305
 
 
 def reject_selected(modeladmin, request, queryset):
@@ -83,9 +81,7 @@ def reject_selected(modeladmin, request, queryset):
             'count': len(rejected_requests)
         },
     )
-
-
-reject_selected.short_description = _('Submit for rework')
+reject_selected.short_description = _('Submit for rework')  # noqa: E305
 
 
 def approve_selected(modeladmin, request, queryset):
@@ -188,9 +184,7 @@ def delete_selected(modeladmin, request, queryset):
     )
 
     post_bulk_actions(request._collection)
-
-
-delete_selected.short_description = _('Cancel selected')
+delete_selected.short_description = _('Cancel selected')  # noqa: E305
 
 
 def publish_selected(modeladmin, request, queryset):
@@ -216,9 +210,7 @@ def publish_selected(modeladmin, request, queryset):
     )
 
     post_bulk_actions(request._collection)
-
-
-publish_selected.short_description = _("Publish selected requests")
+publish_selected.short_description = _("Publish selected requests")  # noqa: E305
 
 
 def post_bulk_actions(collection):
