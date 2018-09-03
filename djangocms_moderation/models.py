@@ -13,7 +13,6 @@ from django.db import models, transaction
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext, ugettext_lazy as _
-from django.utils.formats import localize
 
 from cms.models.fields import PlaceholderField
 
@@ -659,14 +658,6 @@ class CollectionComment(AbstractComment):
 class RequestComment(AbstractComment):
     moderation_request = models.ForeignKey(
         to=ModerationRequest,
-        on_delete=models.CASCADE,
-        null=True,
-    )
-
-
-class RequestActionComment(AbstractComment):
-    moderation_request_action = models.ForeignKey(
-        to=ModerationRequestAction,
         on_delete=models.CASCADE,
         null=True,
     )

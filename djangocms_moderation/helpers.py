@@ -1,7 +1,10 @@
+from importlib import import_module
+
 from django.contrib.contenttypes.models import ContentType
 
-from .models import ConfirmationFormSubmission, ModerationRequest, Workflow
+from .models import ConfirmationFormSubmission, ModerationRequest, Workflow, ModerationCollection
 
+from . import utils
 
 def get_default_workflow():
     try:
@@ -51,3 +54,14 @@ def get_form_submission_for_step(active_request, current_step):
         .filter(request=active_request, for_step=current_step)
     )
     return lookup.first()
+
+
+class EditAndAddOnlyFieldsMixin(object):
+    def get_readonly_fields(self, request, obj=None):
+        """
+        Override to provide editonly_fields and addonly_fields functionality
+        """
+        if obj:  # Editing an existing object
+            return self.readonly_fields + self.editonly_fields
+        else:  # Adding a new object
+            return self.readonly_fields + self.addonly_fields

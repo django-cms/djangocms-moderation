@@ -19,7 +19,7 @@ from .forms import(
     CollectionCommentForm,
     RequestCommentForm,
 )
-from .helpers import get_form_submission_for_step
+from .helpers import get_form_submission_for_step, EditAndAddOnlyFieldsMixin
 from .models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
@@ -55,11 +55,11 @@ class ModerationRequestActionInline(admin.TabularInline):
     show_user.short_description = _('Status')
 
     def get_changeform_initial_data(self, request):
-        #  Extract the id from the URL 
-        moderationrequestaction = utils.get_encoded_parameter_from_request(request, '_changelist_filters', 'moderation_request_action__id__exact')
+        #  Extract the id from the URL. The id is stored in _changelsit_filters by Django so that the request knows where to return to after form submission.
+        action_id = utils.extract_filter_param_from_changelist_url(request, '_changelist_filters', 'moderation_request_action__id__exact')
         return {
             'author': request.user,
-            'moderation_request_action': moderationrequestaction
+            'moderation_request_action': action_id
         }
 
     def form_submission(self, obj):
@@ -97,7 +97,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request): 
         list_display = ['id', 'content_type', 'get_title', 'get_content_author', 'get_preview_link', 'get_status']
-        if not hasattr(settings, 'MODERATION_REQUEST_COMMENTS_ENABLED') or settings.MODERATION_REQUEST_COMMENTS_ENABLED == True:
+        if getattr(settings, 'MODERATION_REQUEST_COMMENTS_ENABLED', False) or settings.MODERATION_REQUEST_COMMENTS_ENABLED == True:
             list_display.append('get_comments_link')
         return list_display
 
@@ -197,28 +197,19 @@ class RoleAdmin(admin.ModelAdmin):
     fields = ['name', 'user', 'group', 'confirmation_page']
 
 
-class CollectionCommentAdmin(admin.ModelAdmin):
+class CollectionCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     list_display = ['message', 'author', 'date_created']
     fields = ['collection', 'message', 'author']
     editonly_fields = ()  # fields editable only on EDIT
     addonly_fields = ()  # fields editable only on CREATE
 
     def get_changeform_initial_data(self, request):
-        #  Extract the id from the URL
-        collection = utils.get_encoded_parameter_from_request(request, '_changelist_filters', 'collection__id__exact')
+        #  Extract the id from the URL. The id is stored in _changelsit_filters by Django so that the request knows where to return to after form submission.
+        collection_id = utils.extract_filter_param_from_changelist_url(request, '_changelist_filters', 'collection__id__exact')
         return {
             'author': request.user,
-            'collection': collection
+            'collection': collection_id
         }
-
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Override to provide editonly_fields and addonly_fields functionality
-        """
-        if obj:  # Editing an existing object
-            return self.readonly_fields + self.addonly_fields
-        else:  # Adding a new object
-            return self.readonly_fields + self.editonly_fields
 
     def get_form(self, request, obj=None, **kwargs):
         return CollectionCommentForm
@@ -230,9 +221,10 @@ class CollectionCommentAdmin(admin.ModelAdmin):
         return False
 
     def changelist_view(self, request, extra_context=None):
+        # import ipdb; ipdb.set_trace()
         # If we filter by a specific collection, we want to add this collection
         # to the context
-        collection_id = request.GET.get('collection__id__exact')
+        collection_id = request.GET.get(camel_to_snake('collection__id__exact'))
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
@@ -242,37 +234,28 @@ class CollectionCommentAdmin(admin.ModelAdmin):
             else:
                 extra_context = dict(
                     collection=collection, 
-                    title="Collection comments"
+                    title='Collection comments'
                 )
         else:
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
             raise Http404
-
+        
         return super().changelist_view(request, extra_context)
 
 
-class RequestCommentAdmin(admin.ModelAdmin):
+class RequestCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     list_display = [ 'message', 'get_request_link', 'author', 'date_created']
     fields = ['moderation_request', 'message', 'author']
     editonly_fields = ()  # fields editable only on EDIT
     addonly_fields = ()  # fields editable only on CREATE
 
     def get_changeform_initial_data(self, request):
-        moderationrequest = utils.get_encoded_parameter_from_request(request, '_changelist_filters', 'moderation_request__id__exact')
+        moderation_request = utils.extract_filter_param_from_changelist_url(request, '_changelist_filters', 'moderation_request__id__exact')
         return {
             'author': request.user,
-            'moderation_request': moderationrequest
+            'moderation_request': moderation_request
         }
-
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Override to provide editonly_fields and addonly_fields functionality
-        """
-        if obj:  # Editing an existing object
-            return self.readonly_fields + self.addonly_fields
-        else:  # Adding a new object
-            return self.readonly_fields + self.editonly_fields
 
     def get_request_link(self, obj):
         opts = ModerationRequest._meta
@@ -298,10 +281,11 @@ class RequestCommentAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         # If we filter by a specific collection, we want to add this collection
         # to the context
-        collection_id = request.GET.get('moderation_request__id__exact')
-        if collection_id:
+        moderation_request_id = request.GET.get('moderation_request__id__exact')
+        if moderation_request_id:
             try:
-                collection = ModerationCollection.objects.get(pk=int(collection_id))
+                moderation_request = ModerationRequest.objects.get(pk=int(moderation_request_id))
+                collection = moderation_request.collection
                 request._collection = collection
             except (ValueError, ModerationCollection.DoesNotExist):
                 pass
@@ -340,19 +324,10 @@ class WorkflowAdmin(admin.ModelAdmin):
     ]
 
 
-class ModerationCollectionAdmin(admin.ModelAdmin):
+class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
     editonly_fields = ('status',)  # fields editable only on EDIT
     addonly_fields = ('workflow',)  # fields editable only on CREATE
-
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Override to provide editonly_fields and addonly_fields functionality
-        """
-        if obj:  # Editing an existing object
-            return self.readonly_fields + self.addonly_fields
-        else:  # Adding a new object
-            return self.readonly_fields + self.editonly_fields
 
     def get_list_display(self, request): 
         list_display = [
@@ -364,7 +339,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             'date_created',
             'get_requests_link'
         ]
-        if not hasattr(settings, 'MODERATION_COLLECTION_COMMENTS_ENABLED') or settings.MODERATION_COLLECTION_COMMENTS_ENABLED == True:
+        if getattr(settings, 'MODERATION_COLLECTION_COMMENTS_ENABLED', False) or settings.MODERATION_COLLECTION_COMMENTS_ENABLED == True:
             list_display.append('get_comments_link')
         return list_display
 
