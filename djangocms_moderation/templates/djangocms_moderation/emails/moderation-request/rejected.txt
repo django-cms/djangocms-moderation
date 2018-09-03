@@ -1,16 +1,32 @@
 {% load i18n %}
-{% blocktrans %}
-Hello {{ author_name }}, {{ by_user_name }} has rejected your changes in {{ page_url }}.
-
-You can resubmit the necessary changes for another review, or cancel the moderation request.
+{% blocktrans with collection.author_name as collection_author and collection.name as collection_name %}
+Hello {{ collection_author }}, {{ by_user }} has rejected some moderation
+requests in the collection {{ collection_name }}.
 {% endblocktrans %}
+<p>
+{% trans 'You can resubmit the necessary changes for another review, or remove the moderation requests from the collection.' %}
+
+</p>
+<p>
+{% trans 'Rejected moderation requests' %}:
+</p>
+
+<ul>
+{% for moderation_request in moderation_requests %}
+    <li>
+        {{ moderation_request.pk }} - {{ moderation_request.content_object }} ({{ moderation_request.content_type }})
+    </li>
+{% endfor %}
+</ul>
 
 {% if comment %}
 {% trans 'Comment' %}: <br/>
 {{ comment }} <br/>
 {% endif %}
 
+{% if job_id %}
 {% trans 'Job ID' %}: {{ job_id }}<br/>
+{% endif %}
 
 {% if admin_url %}
 {% trans 'Admin Url' %}:<br/>

@@ -13,7 +13,14 @@ from cms.utils.urlutils import admin_reverse
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
-from .admin_actions import delete_selected, publish_selected
+from .admin_actions import (
+    approve_selected,
+    delete_selected,
+    publish_selected,
+    reject_selected,
+    resubmit_selected,
+)
+from .constants import ARCHIVED, IN_REVIEW
 from .forms import(
     WorkflowStepInlineFormSet,
     CollectionCommentForm,
@@ -82,7 +89,13 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
-    actions = [delete_selected, publish_selected]
+    actions = [  # filtered out in `self.get_actions`
+        delete_selected,
+        publish_selected,
+        approve_selected,
+        reject_selected,
+        resubmit_selected,
+    ]
     inlines = [ModerationRequestActionInline]
     list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
@@ -91,7 +104,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         """
-        Hide the model from admin index as it leads to a 404
+        Don't display Requests in the admin index as they should be accessed
+        and filtered through the Collection list view
         """
         return False
 
@@ -130,14 +144,53 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return False
 
     def get_actions(self, request):
+        """
+        By default, all actions are enabled. But we need to only keep the actions
+        which have a moderation requests ready for.
+        E.g. if there are no moderation requests ready to be published,
+        we don't need to keep the `publish_selected` action
+        """
+        try:
+            collection = request._collection
+        except AttributeError:
+            # If we are not in the collection aware list, then don't
+            # offer any bulk actions
+            return {}
+
         actions = super().get_actions(request)
-        # If there is nothing to publish, then remove `publish_selected` action
-        if 'publish_selected' in actions and (
-          not hasattr(request, '_collection') or
-          not request._collection.allow_pre_flight(request.user)
-        ):
-            del actions['publish_selected']
-        return actions
+        actions_to_keep = []
+
+        if collection.status in [IN_REVIEW, ARCHIVED]:
+            # Keep track how many actions we've added in the below loop (_actions_kept).
+            # If we added all of them (_max_to_keep), we can exit the for loop
+            if collection.status == IN_REVIEW:
+                _max_to_keep = 4  # publish_selected, approve_selected, reject_selected, resubmit_selected
+            else:
+                # If the collection is archived, then no other action than
+                # `publish_selected` is possible.
+                _max_to_keep = 1  # publish_selected
+
+            for mr in collection.moderation_requests.all():
+                if len(actions_to_keep) == _max_to_keep:
+                    break  # We have found all the actions, so no need to loop anymore
+                if 'publish_selected' not in actions_to_keep:
+                    if mr.is_approved() and request.user == collection.author:
+                        actions_to_keep.append('publish_selected')
+                if collection.status == IN_REVIEW and 'approve_selected' not in actions_to_keep:
+                    if mr.user_can_take_moderation_action(request.user):
+                        actions_to_keep.append('approve_selected')
+                        actions_to_keep.append('reject_selected')
+                if collection.status == IN_REVIEW and 'resubmit_selected' not in actions_to_keep:
+                    if mr.user_can_resubmit(request.user):
+                        actions_to_keep.append('resubmit_selected')
+
+        # Only collection author can delete moderation requests
+        if collection.author == request.user:
+            actions_to_keep.append('delete_selected')
+
+        return {
+            key: value for key, value in actions.items() if key in actions_to_keep
+        }
 
     def changelist_view(self, request, extra_context=None):
         # If we filter by a specific collection, we want to add this collection
@@ -151,7 +204,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 pass
             else:
                 extra_context = dict(collection=collection)
-                if collection.allow_submit_for_review:
+                if collection.allow_submit_for_review(user=request.user):
                     submit_for_review_url = reverse(
                         'admin:cms_moderation_submit_collection_for_moderation',
                         args=(collection_id,)
@@ -162,30 +215,32 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             # as each collection's actions, buttons and privileges may differ
             raise Http404
 
-        return super(ModerationRequestAdmin, self).changelist_view(request, extra_context)
+        return super().changelist_view(request, extra_context)
 
     def get_status(self, obj):
+        # We can have moderation requests without any action (e.g. the
+        # ones not submitted for moderation yet)
         last_action = obj.get_last_action()
-        if obj.is_approved():
-            status = ugettext('Ready for publishing')
 
-        # TODO: consider published status for version e.g.:
-        # elif obj.content_object.is_published():
-        #     status = ugettext('Published')
-
-        elif obj.is_active and obj.has_pending_step():
-            next_step = obj.get_next_required()
-            role = next_step.role.name
-            status = ugettext('Pending %(role)s approval') % {'role': role}
-        elif last_action:
-            # We can have moderation requests without any action (e.g. the
-            # ones not submitted for moderation yet)
-            user_name = last_action.get_by_user_name()
-            message_data = {
-                'action': last_action.get_action_display(),
-                'name': user_name,
-            }
-            status = ugettext('%(action)s by %(name)s') % message_data
+        if last_action:
+            if obj.is_approved():
+                status = ugettext('Ready for publishing')
+            # TODO: consider published status for version e.g.:
+            # elif obj.content_object.is_published():
+            #     status = ugettext('Published')
+            elif obj.is_rejected():
+                status = ugettext('Pending author rework')
+            elif obj.is_active and obj.has_pending_step():
+                next_step = obj.get_next_required()
+                role = next_step.role.name
+                status = ugettext('Pending %(role)s approval') % {'role': role}
+            else:
+                user_name = last_action.get_by_user_name()
+                message_data = {
+                    'action': last_action.get_action_display(),
+                    'name': user_name,
+                }
+                status = ugettext('%(action)s by %(name)s') % message_data
         else:
             status = ugettext('Ready for submission')
         return status
@@ -224,7 +279,7 @@ class CollectionCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
         # import ipdb; ipdb.set_trace()
         # If we filter by a specific collection, we want to add this collection
         # to the context
-        collection_id = request.GET.get(camel_to_snake('collection__id__exact'))
+        collection_id = request.GET.get(utils.camel_to_snake('collection__id__exact'))
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
@@ -383,7 +438,7 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
                 name='cms_moderation_item_to_collection',
             )
         ]
-        return url_patterns + super(ModerationCollectionAdmin, self).get_urls()
+        return url_patterns + super().get_urls()
 
 
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
@@ -400,7 +455,7 @@ class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
                 name='cms_moderation_confirmation_page',
             ),
         ]
-        return url_patterns + super(ConfirmationPageAdmin, self).get_urls()
+        return url_patterns + super().get_urls()
 
 
 class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
@@ -418,7 +473,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['show_save'] = False
         extra_context['show_save_and_continue'] = False
-        return super(ConfirmationFormSubmissionAdmin, self).change_view(
+        return super().change_view(
             request, object_id, form_url, extra_context=extra_context,
         )
 

@@ -9,6 +9,8 @@ from django.utils.translation import override as force_language
 
 from cms.utils.urlutils import admin_reverse
 
+import re
+
 
 def get_absolute_url(location, site=None):
     if not site:

@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
+from django.test import ignore_warnings
 
 from cms import app_registration
 from cms.test_utils.testcases import CMSTestCase
@@ -55,6 +56,7 @@ class CMSConfigTest(CMSTestCase, TestCase):
             extension.configure_app(cms_config)
 
 
+@ignore_warnings(module='djangocms_versioning.helpers')
 class CMSConfigIntegrationTest(CMSTestCase):
 
     def setUp(self):
