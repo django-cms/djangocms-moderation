@@ -61,14 +61,6 @@ class ModerationRequestActionInline(admin.TabularInline):
         return ugettext('By {user}').format(user=_name)
     show_user.short_description = _('Status')
 
-    def get_changeform_initial_data(self, request):
-        #  Extract the id from the URL. The id is stored in _changelsit_filters by Django so that the request knows where to return to after form submission.
-        action_id = utils.extract_filter_param_from_changelist_url(request, '_changelist_filters', 'moderation_request_action__id__exact')
-        return {
-            'author': request.user,
-            'moderation_request_action': action_id
-        }
-
     def form_submission(self, obj):
         instance = get_form_submission_for_step(obj.request, obj.step_approved)
 
@@ -276,7 +268,6 @@ class CollectionCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
         return False
 
     def changelist_view(self, request, extra_context=None):
-        # import ipdb; ipdb.set_trace()
         # If we filter by a specific collection, we want to add this collection
         # to the context
         collection_id = request.GET.get(utils.camel_to_snake('collection__id__exact'))
