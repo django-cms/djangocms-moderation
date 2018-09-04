@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -24,7 +23,7 @@ from .constants import ARCHIVED, IN_REVIEW
 from .forms import(
     WorkflowStepInlineFormSet,
     CollectionCommentForm,
-    RequestCommentForm,
+    RequestCommentForm, 
 )
 from .helpers import get_form_submission_for_step, EditAndAddOnlyFieldsMixin
 from .models import (
@@ -39,6 +38,7 @@ from .models import (
     Workflow,
     WorkflowStep,
 )
+from . import conf
 from . import utils
 from . import views  # isort:skip
 
@@ -111,7 +111,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request): 
         list_display = ['id', 'content_type', 'get_title', 'get_content_author', 'get_preview_link', 'get_status']
-        if getattr(settings, 'MODERATION_REQUEST_COMMENTS_ENABLED', False) or settings.MODERATION_REQUEST_COMMENTS_ENABLED == True:
+        if conf.REQUEST_COMMENTS_ENABLED:
             list_display.append('get_comments_link')
         return list_display
 
@@ -394,7 +394,7 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
             'date_created',
             'get_requests_link'
         ]
-        if getattr(settings, 'MODERATION_COLLECTION_COMMENTS_ENABLED', False) or settings.MODERATION_COLLECTION_COMMENTS_ENABLED == True:
+        if conf.COLLECTION_COMMENTS_ENABLED:
             list_display.append('get_comments_link')
         return list_display
 
