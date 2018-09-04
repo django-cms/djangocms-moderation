@@ -14,9 +14,8 @@ def moderation_confirmation_form_submission(sender, page, language, user, form_d
         if not set(('label', 'value')).issubset(field_data):
             raise ValueError('Each field dict should contain label and value keys.')
 
-    # TODO to be amended in the release/1.0.x, confirmation pages
-    # are not used/working in 1.0.x yet
-    active_request = None  #  get_active_moderation_request(page, language)
+    # TODO Confirmation pages are not used/working in 1.0.x yet
+    active_request = None  # get_active_moderation_request(page, language)
     if active_request:
         next_step = active_request.user_get_step(user)
 
