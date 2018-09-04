@@ -26,11 +26,11 @@ class ModerationRequestAdminTestCase(BaseTestCase):
             author=self.user, name='Collection Admin Actions', workflow=self.wf, status=constants.IN_REVIEW
         )
 
-        pg1 = PageVersionFactory()
-        pg2 = PageVersionFactory()
+        pg1_version = PageVersionFactory()
+        pg2_version = PageVersionFactory()
 
         self.mr1 = ModerationRequest.objects.create(
-            version=pg1, language='en',  collection=self.collection, is_active=True,)
+            version=pg1_version, language='en',  collection=self.collection, is_active=True,)
 
         self.wfst = self.wf.steps.create(role=self.role2, is_required=True, order=1,)
 
@@ -45,7 +45,7 @@ class ModerationRequestAdminTestCase(BaseTestCase):
 
         # this moderation request is not approved
         self.mr2 = ModerationRequest.objects.create(
-            version=pg2, language='en',  collection=self.collection, is_active=True,)
+            version=pg2_version, language='en',  collection=self.collection, is_active=True,)
         self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
         self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')

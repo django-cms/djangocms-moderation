@@ -19,7 +19,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
         form = UpdateModerationRequestForm(
             action=constants.ACTION_APPROVED,
             language='en',
-            page=self.pg1,
+            page=self.pg1_version,
             user=self.user,
             workflow=self.wf1,
             active_request=self.moderation_request1,
@@ -37,7 +37,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
         form = UpdateModerationRequestForm(
             action=constants.ACTION_CANCELLED,
             language='en',
-            page=self.pg1,
+            page=self.pg1_version,
             user=self.user,
             workflow=self.wf1,
             active_request=self.moderation_request1,
@@ -50,7 +50,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
         form = UpdateModerationRequestForm(
             action=constants.ACTION_REJECTED,
             language='en',
-            page=self.pg1,
+            page=self.pg1_version,
             user=self.user,
             workflow=self.wf1,
             active_request=self.moderation_request1,
@@ -68,7 +68,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             data,
             action=constants.ACTION_APPROVED,
             language='en',
-            page=self.pg1,
+            page=self.pg1_version,
             user=self.user,
             workflow=self.wf1,
             active_request=self.moderation_request1,

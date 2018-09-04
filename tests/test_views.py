@@ -31,8 +31,8 @@ class CollectionItemViewTest(BaseViewTestCase):
             author=self.user, name='My collection 2', workflow=self.wf1
         )
 
-        self.content_type = ContentType.objects.get_for_model(self.pg1)
-        self.version = PageVersionFactory()
+        self.content_type = ContentType.objects.get_for_model(self.pg1_version)
+        self.pg_version = PageVersionFactory()
 
     def _assert_render(self, response):
         form = response.context_data['form']
@@ -52,7 +52,7 @@ class CollectionItemViewTest(BaseViewTestCase):
                 language='en',
                 args=()
             ), {'collection':  self.collection_1.pk,
-                'version': self.version.pk,
+                'version': self.pg_version.pk,
                 }
             )
 
@@ -60,14 +60,14 @@ class CollectionItemViewTest(BaseViewTestCase):
         # self.assertContains(response, 'reloadBrowser')
 
         moderation_request = ModerationRequest.objects.filter(
-            version=self.version,
+            version=self.pg_version,
         )[0]
 
         self.assertEqual(moderation_request.collection, self.collection_1)
 
     def test_invalid_version_already_in_collection(self):
         # add object
-        self.collection_1.add_version(self.version)
+        self.collection_1.add_version(self.pg_version)
 
         self.client.force_login(self.user)
 
@@ -77,7 +77,7 @@ class CollectionItemViewTest(BaseViewTestCase):
                 language='en',
                 args=()
             ), {'collection': self.collection_1.pk,
-                'version': self.version.pk})
+                'version': self.pg_version.pk})
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(
@@ -111,7 +111,7 @@ class CollectionItemViewTest(BaseViewTestCase):
                 name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
-            ), {'collection': self.collection_1.pk, 'version': self.version.pk})
+            ), {'collection': self.collection_1.pk, 'version': self.pg1_version.pk})
 
         # locked collection are not part of the list
         self.assertEqual(
@@ -121,10 +121,10 @@ class CollectionItemViewTest(BaseViewTestCase):
 
     def test_list_versions_from_collection_id_param(self):
         ModerationRequest.objects.all().delete()
-        version2 = PageVersionFactory()
+        pg2_version = PageVersionFactory()
 
-        self.collection_1.add_version(self.version)
-        self.collection_2.add_version(version2)
+        self.collection_1.add_version(self.pg_version)
+        self.collection_2.add_version(pg2_version)
 
         self.client.force_login(self.user)
         response = self.client.get(
@@ -150,12 +150,12 @@ class CollectionItemViewTest(BaseViewTestCase):
                     name='cms_moderation_item_to_collection',
                     language='en',
                     args=()
-                ), version_id=self.pg1.pk
+                ), version_id=self.pg1_version.pk
             )
         )
 
         form = response.context_data['form']
-        self.assertEqual(self.pg1.pk, int(form.initial['version_id']))
+        self.assertEqual(self.pg1_version.pk, int(form.initial['version_id']))
 
     def test_authenticated_users_only(self):
         response = self.client.get(

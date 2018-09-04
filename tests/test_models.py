@@ -331,7 +331,7 @@ class ModerationRequestTest(BaseTestCase):
         mock_uuid.return_value = 'abc123'
 
         request = ModerationRequest.objects.create(
-            version=self.pg4,
+            version=self.pg4_version,
             language='en',
             is_active=True,
             collection=self.collection1,
@@ -345,7 +345,7 @@ class ModerationRequestTest(BaseTestCase):
     def test_compliance_number_sequential_number_backend(self):
         self.wf2.compliance_number_backend = 'djangocms_moderation.backends.sequential_number_backend'
         request = ModerationRequest.objects.create(
-            version=self.pg1,
+            version=self.pg1_version,
             language='en',
             collection=self.collection2,
         )
@@ -364,7 +364,7 @@ class ModerationRequestTest(BaseTestCase):
         self.wf2.identifier = 'SSO'
 
         request = ModerationRequest.objects.create(
-            version=self.pg1,
+            version=self.pg1_version,
             language='en',
             collection=self.collection2,
         )
@@ -397,7 +397,7 @@ class ModerationRequestActionTest(BaseTestCase):
 
     def test_save_when_to_user_not_passed_and_action_started(self):
         new_request = ModerationRequest.objects.create(
-            version=self.pg2,
+            version=self.pg2_version,
             language='en',
             collection=self.collection1,
             is_active=True,
@@ -497,7 +497,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertTrue(self.collection1.should_be_archived())
 
         ModerationRequest.objects.create(
-            version=self.pg1, collection=self.collection1, is_active=True
+            version=self.pg1_version, collection=self.collection1, is_active=True
         )
         is_approved_mock.return_value = False
         self.assertFalse(self.collection1.should_be_archived())
@@ -512,7 +512,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertFalse(self.collection1.allow_submit_for_review(user=self.user))
 
         ModerationRequest.objects.create(
-            version=self.pg1, collection=self.collection1, is_active=True
+            version=self.pg1_version, collection=self.collection1, is_active=True
         )
         self.assertTrue(self.collection1.allow_submit_for_review(user=self.user))
         # Only collection author can submit
@@ -525,10 +525,10 @@ class ModerationCollectionTest(BaseTestCase):
     @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_submit_for_review(self, mock_ncm):
         ModerationRequest.objects.create(
-            version=self.pg1, language='en', collection=self.collection1
+            version=self.pg1_version, language='en', collection=self.collection1
         )
         ModerationRequest.objects.create(
-            version=self.pg3, language='en', collection=self.collection1
+            version=self.pg3_version, language='en', collection=self.collection1
         )
 
         self.assertFalse(

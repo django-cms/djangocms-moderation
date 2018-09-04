@@ -49,7 +49,7 @@ class TestCMSToolbars(BaseTestCase):
     def test_submit_for_moderation(self):
         ModerationRequest.objects.all().delete()
 
-        request = self.get_page_request(self.pg1, AnonymousUser(), '/')
+        request = self.get_page_request(self.pg1_version, AnonymousUser(), '/')
         toolbar = CMSToolbar(request)
         toolbar = ModerationToolbar(request, toolbar=toolbar, is_current_app=True, app_path='/')
         toolbar.populate()
@@ -61,7 +61,7 @@ class TestCMSToolbars(BaseTestCase):
         )
 
     def test_page_in_moderation(self):
-        request = self.get_page_request(self.pg1, AnonymousUser(), '/')
+        request = self.get_page_request(self.pg1_version, AnonymousUser(), '/')
         toolbar = CMSToolbar(request)
         toolbar = ModerationToolbar(request, toolbar=toolbar, is_current_app=True, app_path='/')
         toolbar.populate()

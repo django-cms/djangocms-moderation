@@ -29,11 +29,11 @@ class AdminActionTest(BaseTestCase):
             status=constants.IN_REVIEW,
         )
 
-        pg1 = PageVersionFactory()
-        pg2 = PageVersionFactory()
+        pg1_version = PageVersionFactory()
+        pg2_version = PageVersionFactory()
 
         self.mr1 = ModerationRequest.objects.create(
-            version=pg1, language='en',  collection=self.collection, is_active=True,)
+            version=pg1_version, language='en',  collection=self.collection, is_active=True,)
 
         self.wfst1 = self.wf.steps.create(role=self.role1, is_required=True, order=1,)
         self.wfst2 = self.wf.steps.create(role=self.role2, is_required=True, order=1,)
@@ -45,7 +45,7 @@ class AdminActionTest(BaseTestCase):
 
         # this moderation request is not approved
         self.mr2 = ModerationRequest.objects.create(
-            version=pg2, language='en',  collection=self.collection, is_active=True,)
+            version=pg2_version, language='en',  collection=self.collection, is_active=True,)
         self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
         self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
@@ -236,9 +236,9 @@ class AdminActionTest(BaseTestCase):
         self.user.groups.add(self.group)
 
         # Add one more, partially approved request
-        pg3 = PageVersionFactory()
+        pg3_version = PageVersionFactory()
         self.mr3 = ModerationRequest.objects.create(
-            version=pg3, language='en',  collection=self.collection, is_active=True,)
+            version=pg3_version, language='en',  collection=self.collection, is_active=True,)
         self.mr3.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
         self.mr3.update_status(by_user=self.user, action=constants.ACTION_APPROVED,)
         self.mr3.update_status(by_user=self.user2, action=constants.ACTION_APPROVED,)
