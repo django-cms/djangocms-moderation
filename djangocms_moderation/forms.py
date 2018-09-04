@@ -16,7 +16,12 @@ from .constants import (
     ACTION_RESUBMITTED,
     COLLECTING,
 )
-from .models import ModerationCollection, ModerationRequest, CollectionComment, RequestComment
+from .models import (
+    CollectionComment,
+    ModerationCollection,
+    ModerationRequest,
+    RequestComment,
+)
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
@@ -204,8 +209,8 @@ class SubmitCollectionForModerationForm(forms.Form):
 
 class CollectionCommentForm(forms.ModelForm):
     """
-    The author and moderation request should be pre-filled and non-editable. 
-    NB: Hidden fields seems to be the only reliable way to do this; 
+    The author and moderation request should be pre-filled and non-editable.
+    NB: Hidden fields seems to be the only reliable way to do this;
     readonly fields do not work for add, only for edit.
     """
     class Meta:
@@ -219,8 +224,8 @@ class CollectionCommentForm(forms.ModelForm):
 
 class RequestCommentForm(forms.ModelForm):
     """
-    The author and moderation request should be pre-filled and non-editable. 
-    NB: Hidden fields seems to be the only reliable way to do this; 
+    The author and moderation request should be pre-filled and non-editable.
+    NB: Hidden fields seems to be the only reliable way to do this;
     readonly fields do not work for add, only for edit.
     """
     class Meta:

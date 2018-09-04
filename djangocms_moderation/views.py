@@ -165,4 +165,3 @@ class SubmitCollectionForModeration(FormView):
 
 
 submit_collection_for_moderation = SubmitCollectionForModeration.as_view()
-

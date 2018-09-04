@@ -3,9 +3,11 @@ from django.urls import reverse
 
 from cms.api import create_page
 
-from djangocms_moderation import conf
-from djangocms_moderation import constants
-from djangocms_moderation.admin import ModerationRequestAdmin, ModerationCollectionAdmin
+from djangocms_moderation import conf, constants
+from djangocms_moderation.admin import (
+    ModerationCollectionAdmin,
+    ModerationRequestAdmin,
+)
 from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationCollection,
@@ -168,4 +170,3 @@ class ModerationAdminTestCase(BaseTestCase):
         conf.REQUEST_COMMENTS_ENABLED = True
         list_display = self.mra.get_list_display(mock_request)
         self.assertIn('get_comments_link', list_display)
-

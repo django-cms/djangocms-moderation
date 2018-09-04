@@ -8,7 +8,6 @@ from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
-from cms.utils.urlutils import admin_reverse
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
@@ -20,26 +19,28 @@ from .admin_actions import (
     resubmit_selected,
 )
 from .constants import ARCHIVED, IN_REVIEW
-from .forms import(
-    WorkflowStepInlineFormSet,
+from .forms import (
     CollectionCommentForm,
-    RequestCommentForm, 
+    RequestCommentForm,
+    WorkflowStepInlineFormSet,
 )
-from .helpers import get_form_submission_for_step, EditAndAddOnlyFieldsMixin
+from .helpers import EditAndAddOnlyFieldsMixin, get_form_submission_for_step
 from .models import (
+    CollectionComment,
     ConfirmationFormSubmission,
     ConfirmationPage,
     ModerationCollection,
     ModerationRequest,
-    CollectionComment,
-    RequestComment,
     ModerationRequestAction,
+    RequestComment,
     Role,
     Workflow,
     WorkflowStep,
 )
-from . import conf
-from . import utils
+
+
+from . import conf  # isort:skip
+from . import utils  # isort:skip
 from . import views  # isort:skip
 
 
@@ -101,7 +102,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         """
         return False
 
-    def get_list_display(self, request): 
+    def get_list_display(self, request):
         list_display = ['id', 'content_type', 'get_title', 'get_content_author', 'get_preview_link', 'get_status']
         if conf.REQUEST_COMMENTS_ENABLED:
             list_display.append('get_comments_link')
@@ -251,9 +252,11 @@ class CollectionCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     addonly_fields = ()  # fields editable only on CREATE
 
     def get_changeform_initial_data(self, request):
-        
-        #  Extract the id from the URL. The id is stored in _changelsit_filters by Django so that the request knows where to return to after form submission.
-        collection_id = utils.extract_filter_param_from_changelist_url(request, '_changelist_filters', 'collection__id__exact')
+        #  Extract the id from the URL. The id is stored in _changelsit_filters
+        #  by Django so that the request knows where to return to after form submission.
+        collection_id = utils.extract_filter_param_from_changelist_url(
+            request, '_changelist_filters', 'collection__id__exact'
+        )
         return {
             'author': request.user,
             'collection': collection_id
@@ -280,25 +283,27 @@ class CollectionCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
                 pass
             else:
                 extra_context = dict(
-                    collection=collection, 
+                    collection=collection,
                     title='Collection comments'
                 )
         else:
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
             raise Http404
-        
+
         return super().changelist_view(request, extra_context)
 
 
 class RequestCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
-    list_display = [ 'message', 'get_request_link', 'author', 'date_created']
+    list_display = ['message', 'get_request_link', 'author', 'date_created']
     fields = ['moderation_request', 'message', 'author']
     editonly_fields = ()  # fields editable only on EDIT
     addonly_fields = ()  # fields editable only on CREATE
 
     def get_changeform_initial_data(self, request):
-        moderation_request = utils.extract_filter_param_from_changelist_url(request, '_changelist_filters', 'moderation_request__id__exact')
+        moderation_request = utils.extract_filter_param_from_changelist_url(
+            request, '_changelist_filters', 'moderation_request__id__exact'
+        )
         return {
             'author': request.user,
             'moderation_request': moderation_request
@@ -338,7 +343,7 @@ class RequestCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
                 pass
             else:
                 extra_context = dict(
-                    collection=collection, 
+                    collection=collection,
                     title="Request comments"
                 )
         else:
@@ -376,7 +381,7 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     editonly_fields = ('status',)  # fields editable only on EDIT
     addonly_fields = ('workflow',)  # fields editable only on CREATE
 
-    def get_list_display(self, request): 
+    def get_list_display(self, request):
         list_display = [
             'id',
             'name',
