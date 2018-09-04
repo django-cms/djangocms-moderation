@@ -20,7 +20,7 @@ class MockRequest:
     GET = {}
 
 
-class ModerationRequestAdminTestCase(BaseTestCase):
+class ModerationAdminTestCase(BaseTestCase):
     def setUp(self):
         self.wf = Workflow.objects.create(name='Workflow Test',)
         self.collection = ModerationCollection.objects.create(
@@ -168,3 +168,4 @@ class ModerationRequestAdminTestCase(BaseTestCase):
         conf.REQUEST_COMMENTS_ENABLED = True
         list_display = self.mra.get_list_display(mock_request)
         self.assertIn('get_comments_link', list_display)
+
