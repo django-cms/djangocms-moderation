@@ -251,6 +251,7 @@ class CollectionCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     addonly_fields = ()  # fields editable only on CREATE
 
     def get_changeform_initial_data(self, request):
+        
         #  Extract the id from the URL. The id is stored in _changelsit_filters by Django so that the request knows where to return to after form submission.
         collection_id = utils.extract_filter_param_from_changelist_url(request, '_changelist_filters', 'collection__id__exact')
         return {
