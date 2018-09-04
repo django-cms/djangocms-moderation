@@ -27,7 +27,7 @@ class ModerationToolbar(CMSToolbar):
             return None
 
         try:
-            # TODO in FIL-581 make this work with the right version
+            # TODO Make this work with the correct version
             version = Version.objects.get(pk=9999)
             moderation_request = ModerationRequest.objects.get(
                 version=version
