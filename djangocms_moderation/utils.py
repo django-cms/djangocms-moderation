@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.lru_cache import lru_cache
 from django.utils.module_loading import import_string
-from django.utils.six.moves.urllib.parse import urljoin
+from django.utils.six.moves.urllib.parse import parse_qs, urljoin
 from django.utils.translation import override as force_language
 
 from cms.utils.urlutils import admin_reverse
@@ -42,8 +42,5 @@ def extract_filter_param_from_changelist_url(request, keyname, parametername):
     Searches request.GET for a given key and decodes the value for a particular parameter
     """
     changelist_filters = request.GET.get(keyname)
-    if changelist_filters:
-        for key, value in [p.split('=') for p in changelist_filters.split('&')]:
-            if key == parametername:
-                return value
-    return False
+    parameter_value = parse_qs(changelist_filters).get(parametername)
+    return parameter_value[0]
