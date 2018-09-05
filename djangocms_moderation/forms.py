@@ -16,7 +16,12 @@ from .constants import (
     ACTION_RESUBMITTED,
     COLLECTING,
 )
-from .models import ModerationCollection, ModerationRequest
+from .models import (
+    CollectionComment,
+    ModerationCollection,
+    ModerationRequest,
+    RequestComment,
+)
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
@@ -200,3 +205,33 @@ class SubmitCollectionForModerationForm(forms.Form):
             by_user=self.user,
             to_user=self.cleaned_data.get('moderator'),
         )
+
+
+class CollectionCommentForm(forms.ModelForm):
+    """
+    The author and moderation request should be pre-filled and non-editable.
+    NB: Hidden fields seems to be the only reliable way to do this;
+    readonly fields do not work for add, only for edit.
+    """
+    class Meta:
+        model = CollectionComment
+        fields = '__all__'
+        widgets = {
+            'author': forms.HiddenInput(),
+            'collection': forms.HiddenInput(),
+        }
+
+
+class RequestCommentForm(forms.ModelForm):
+    """
+    The author and moderation request should be pre-filled and non-editable.
+    NB: Hidden fields seems to be the only reliable way to do this;
+    readonly fields do not work for add, only for edit.
+    """
+    class Meta:
+        model = RequestComment
+        fields = '__all__'
+        widgets = {
+            'author': forms.HiddenInput(),
+            'moderation_request': forms.HiddenInput(),
+        }

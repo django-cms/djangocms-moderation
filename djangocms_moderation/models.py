@@ -642,6 +642,36 @@ class ModerationRequestAction(models.Model):
         super(ModerationRequestAction, self).save(**kwargs)
 
 
+class AbstractComment(models.Model):
+    message = models.TextField(
+        blank=True,
+        verbose_name=_('message'),
+    )
+    author = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        verbose_name=_('author'),
+        on_delete=models.CASCADE,
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+
+class CollectionComment(AbstractComment):
+    collection = models.ForeignKey(
+        to=ModerationCollection,
+        on_delete=models.CASCADE,
+    )
+
+
+class RequestComment(AbstractComment):
+    moderation_request = models.ForeignKey(
+        to=ModerationRequest,
+        on_delete=models.CASCADE,
+    )
+
+
 class ConfirmationFormSubmission(models.Model):
     request = models.ForeignKey(
         to=ModerationRequest,

@@ -3,8 +3,11 @@ from django.urls import reverse
 
 from cms.api import create_page
 
-from djangocms_moderation import constants
-from djangocms_moderation.admin import ModerationRequestAdmin
+from djangocms_moderation import conf, constants
+from djangocms_moderation.admin import (
+    ModerationCollectionAdmin,
+    ModerationRequestAdmin,
+)
 from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationCollection,
@@ -19,7 +22,7 @@ class MockRequest:
     GET = {}
 
 
-class ModerationRequestAdminTestCase(BaseTestCase):
+class ModerationAdminTestCase(BaseTestCase):
     def setUp(self):
         self.wf = Workflow.objects.create(name='Workflow Test',)
         self.collection = ModerationCollection.objects.create(
@@ -53,6 +56,7 @@ class ModerationRequestAdminTestCase(BaseTestCase):
             self.url, self.collection.pk
         )
         self.mra = ModerationRequestAdmin(ModerationRequest, admin.AdminSite())
+        self.mca = ModerationCollectionAdmin(ModerationCollection, admin.AdminSite())
 
     def test_delete_selected_action_visibility(self):
         mock_request = MockRequest()
@@ -149,3 +153,20 @@ class ModerationRequestAdminTestCase(BaseTestCase):
         self.collection.save()
         actions = self.mra.get_actions(request=mock_request)
         self.assertIn('approve_selected', actions)
+
+    def test_change_list_view_should_respect_conf(self):
+        mock_request = MockRequest()
+        mock_request.user = self.user
+        mock_request._collection = self.collection
+        conf.COLLECTION_COMMENTS_ENABLED = False
+        list_display = self.mca.get_list_display(mock_request)
+        self.assertNotIn('get_comments_link', list_display)
+        conf.COLLECTION_COMMENTS_ENABLED = True
+        list_display = self.mca.get_list_display(mock_request)
+        self.assertIn('get_comments_link', list_display)
+        conf.REQUEST_COMMENTS_ENABLED = False
+        list_display = self.mra.get_list_display(mock_request)
+        self.assertNotIn('get_comments_link', list_display)
+        conf.REQUEST_COMMENTS_ENABLED = True
+        list_display = self.mra.get_list_display(mock_request)
+        self.assertIn('get_comments_link', list_display)
