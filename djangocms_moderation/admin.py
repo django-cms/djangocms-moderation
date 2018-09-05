@@ -281,15 +281,13 @@ class CollectionCommentAdmin(admin.ModelAdmin):
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
                 request._collection = collection
             except (ValueError, ModerationCollection.DoesNotExist):
-                pass
+                raise Http404
             else:
                 extra_context = dict(
                     collection=collection,
                     title=_('Collection comments')
                 )
         else:
-            # If no collection id, then don't show all requests
-            # as each collection's actions, buttons and privileges may differ
             raise Http404
 
         return super().changelist_view(request, extra_context)
