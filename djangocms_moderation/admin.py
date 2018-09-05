@@ -339,8 +339,8 @@ class RequestCommentAdmin(admin.ModelAdmin):
                 moderation_request = ModerationRequest.objects.get(pk=int(moderation_request_id))
                 collection = moderation_request.collection
                 request._collection = collection
-            except (ValueError, ModerationCollection.DoesNotExist):
-                pass
+            except (ValueError, ModerationRequest.DoesNotExist):
+                raise Http404
             else:
                 extra_context = dict(
                     collection=collection,
