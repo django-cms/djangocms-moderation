@@ -19,31 +19,42 @@ from .admin_actions import (
     resubmit_selected,
 )
 from .constants import ARCHIVED, IN_REVIEW
-from .forms import WorkflowStepInlineFormSet
-from .helpers import get_form_submission_for_step
+from .forms import (
+    CollectionCommentForm,
+    RequestCommentForm,
+    WorkflowStepInlineFormSet,
+)
+from .helpers import EditAndAddOnlyFieldsMixin, get_form_submission_for_step
 from .models import (
+    CollectionComment,
     ConfirmationFormSubmission,
     ConfirmationPage,
     ModerationCollection,
     ModerationRequest,
     ModerationRequestAction,
+    RequestComment,
     Role,
     Workflow,
     WorkflowStep,
 )
 
 
+from . import conf  # isort:skip
+from . import utils  # isort:skip
 from . import views  # isort:skip
 
 
 class ModerationRequestActionInline(admin.TabularInline):
     model = ModerationRequestAction
     fields = ['show_user', 'message', 'date_taken', 'form_submission']
-    readonly_fields = fields
+    readonly_fields = ['show_user', 'date_taken', 'form_submission']
     verbose_name = _('Action')
     verbose_name_plural = _('Actions')
 
     def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
         return False
 
     def show_user(self, obj):
@@ -79,7 +90,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         resubmit_selected,
     ]
     inlines = [ModerationRequestActionInline]
-    list_display = ['id', 'version', 'get_title', 'collection', 'get_preview_link', 'get_status']
     list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
@@ -92,6 +102,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         """
         return False
 
+    def get_list_display(self, request):
+        list_display = ['id', 'version', 'get_title', 'get_content_author', 'get_preview_link', 'get_status']
+        if conf.REQUEST_COMMENTS_ENABLED:
+            list_display.append('get_comments_link')
+        return list_display
+
     def get_title(self, obj):
         return obj.version.content
     get_title.short_description = _('Title')
@@ -100,6 +116,23 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         # TODO this will return Version object preview link once implemented
         return "Link placeholder"
     get_preview_link.short_description = _('Preview')
+
+    def get_comments_link(self, obj):
+        return format_html(
+            '<a href="{}?moderation_request__id__exact={}">{}</a>',
+            reverse('admin:djangocms_moderation_requestcomment_changelist'),
+            obj.id,
+            _('View')
+        )
+    get_comments_link.short_description = _('Comments')
+
+    def get_content_author(self, obj):
+        """
+        This is not necessarily the same person as the RequestAction author
+        """
+        #  TODO this should get the author from the version object e.g. obj.content_object.created_by
+        return "author placeholder"
+    get_content_author.short_description = _('Content author')
 
     def has_add_permission(self, request):
         return False
@@ -213,6 +246,114 @@ class RoleAdmin(admin.ModelAdmin):
     fields = ['name', 'user', 'group', 'confirmation_page']
 
 
+class CollectionCommentAdmin(admin.ModelAdmin):
+    list_display = ['message', 'author', 'date_created']
+    fields = ['collection', 'message', 'author']
+
+    def get_changeform_initial_data(self, request):
+        #  Extract the id from the URL. The id is stored in _changelsit_filters
+        #  by Django so that the request knows where to return to after form submission.
+        data = {
+            'author': request.user,
+        }
+        collection_id = utils.extract_filter_param_from_changelist_url(
+            request, '_changelist_filters', 'collection__id__exact'
+        )
+        if collection_id:
+            data['collection'] = collection_id
+        return data
+
+    def get_form(self, request, obj=None, **kwargs):
+        return CollectionCommentForm
+
+    def has_module_permission(self, request):
+        """
+        Hide the model from admin index as it depends on foreighKey
+        """
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        # If we filter by a specific collection, we want to add this collection
+        # to the context
+        collection_id = request.GET.get('collection__id__exact')
+        if collection_id:
+            try:
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
+                request._collection = collection
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+            else:
+                extra_context = dict(
+                    collection=collection,
+                    title=_('Collection comments')
+                )
+        else:
+            raise Http404
+
+        return super().changelist_view(request, extra_context)
+
+
+class RequestCommentAdmin(admin.ModelAdmin):
+    list_display = ['message', 'get_request_link', 'author', 'date_created']
+    fields = ['moderation_request', 'message', 'author']
+
+    def get_changeform_initial_data(self, request):
+        data = {
+            'author': request.user,
+        }
+        moderation_request_id = utils.extract_filter_param_from_changelist_url(
+            request, '_changelist_filters', 'moderation_request__id__exact'
+        )
+        if moderation_request_id:
+            data['moderation_request'] = moderation_request_id
+        return data
+
+    def get_request_link(self, obj):
+        opts = ModerationRequest._meta
+        url = reverse(
+            'admin:{}_{}_change'.format(opts.app_label, opts.model_name),
+            args=[obj.pk],
+        )
+        return format_html(
+            '<a href="{}">{}</a>',
+            url,
+            _('View')
+        )
+    get_request_link.short_description = _('Request')
+
+    def get_form(self, request, obj=None, **kwargs):
+        return RequestCommentForm
+
+    def has_module_permission(self, request):
+        """
+        Hide the model from admin index as it depends on foreighKey
+        """
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        # If we filter by a specific collection, we want to add this collection
+        # to the context
+        moderation_request_id = request.GET.get('moderation_request__id__exact')
+        if moderation_request_id:
+            try:
+                moderation_request = ModerationRequest.objects.get(pk=int(moderation_request_id))
+                collection = moderation_request.collection
+                request._collection = collection
+            except (ValueError, ModerationRequest.DoesNotExist):
+                raise Http404
+            else:
+                extra_context = dict(
+                    collection=collection,
+                    title=_("Request comments")
+                )
+        else:
+            # If no collection id, then don't show all requests
+            # as each collection's actions, buttons and privileges may differ
+            raise Http404
+
+        return super().changelist_view(request, extra_context)
+
+
 class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
     formset = WorkflowStepInlineFormSet
     model = WorkflowStep
@@ -235,30 +376,26 @@ class WorkflowAdmin(admin.ModelAdmin):
     ]
 
 
-class ModerationCollectionAdmin(admin.ModelAdmin):
+class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
-    list_display = [
-        'id',
-        'get_name_with_requests_link',
-        'job_id',
-        'get_moderator',
-        'workflow',
-        'status',
-        'date_created',
-    ]
     editonly_fields = ('status',)  # fields editable only on EDIT
     addonly_fields = ('workflow',)  # fields editable only on CREATE
 
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Override to provide editonly_fields and addonly_fields functionality
-        """
-        if obj:  # Editing an existing object
-            return self.readonly_fields + self.addonly_fields
-        else:  # Adding a new object
-            return self.readonly_fields + self.editonly_fields
+    def get_list_display(self, request):
+        list_display = [
+            'id',
+            'name',
+            'get_moderator',
+            'workflow',
+            'status',
+            'date_created',
+            'get_requests_link'
+        ]
+        if conf.COLLECTION_COMMENTS_ENABLED:
+            list_display.append('get_comments_link')
+        return list_display
 
-    def get_name_with_requests_link(self, obj):
+    def get_requests_link(self, obj):
         """
         Name of the collection should link to the list of associated
         moderation requests
@@ -267,9 +404,18 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             '<a href="{}?collection__id__exact={}">{}</a>',
             reverse('admin:djangocms_moderation_moderationrequest_changelist'),
             obj.pk,
-            obj.name,
+            _('View')
         )
-    get_name_with_requests_link.short_description = _('Name')
+    get_requests_link.short_description = _('Requests')
+
+    def get_comments_link(self, obj):
+        return format_html(
+            '<a href="{}?collection__id__exact={}">{}</a>',
+            reverse('admin:djangocms_moderation_collectioncomment_changelist'),
+            obj.id,
+            _('View')
+        )
+    get_comments_link.short_description = _('Comments')
 
     def get_moderator(self, obj):
         return obj.author
@@ -349,9 +495,10 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ModerationRequest, ModerationRequestAdmin)
+admin.site.register(CollectionComment, CollectionCommentAdmin)
+admin.site.register(RequestComment, RequestCommentAdmin)
 admin.site.register(ModerationCollection, ModerationCollectionAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
-
 admin.site.register(ConfirmationPage, ConfirmationPageAdmin)
 admin.site.register(ConfirmationFormSubmission, ConfirmationFormSubmissionAdmin)

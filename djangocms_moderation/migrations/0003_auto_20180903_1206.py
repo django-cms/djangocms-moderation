@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('djangocms_versioning', '0010_version_proxies'),
-        ('djangocms_moderation', '0001_initial'),
+        ('djangocms_moderation', '0002_auto_20180905_1152'),
     ]
 
     operations = [

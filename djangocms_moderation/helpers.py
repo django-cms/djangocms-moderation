@@ -34,3 +34,17 @@ def get_form_submission_for_step(active_request, current_step):
         .filter(request=active_request, for_step=current_step)
     )
     return lookup.first()
+
+
+class EditAndAddOnlyFieldsMixin(object):
+    editonly_fields = ()
+    addonly_fields = ()
+
+    def get_readonly_fields(self, request, obj=None):
+        """
+        Override to provide editonly_fields and addonly_fields functionality
+        """
+        if obj:  # Editing an existing object
+            return self.readonly_fields + self.editonly_fields
+        else:  # Adding a new object
+            return self.readonly_fields + self.addonly_fields
