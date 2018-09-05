@@ -662,7 +662,6 @@ class CollectionComment(AbstractComment):
     collection = models.ForeignKey(
         to=ModerationCollection,
         on_delete=models.CASCADE,
-        null=True,
     )
 
 
@@ -670,7 +669,6 @@ class RequestComment(AbstractComment):
     moderation_request = models.ForeignKey(
         to=ModerationRequest,
         on_delete=models.CASCADE,
-        null=True,
     )
 
 

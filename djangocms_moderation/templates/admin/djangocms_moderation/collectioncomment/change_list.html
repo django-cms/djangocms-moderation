@@ -14,7 +14,7 @@
 <div class="breadcrumbs">
 <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
 &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
-&rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationcollection_changelist' %}">Moderation collections</a>
+&rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationcollection_changelist' %}">{% trans "Moderation collections" %}</a>
 &rsaquo; {% trans "Comments" %}
 </div>
 {% endblock %}
