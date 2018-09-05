@@ -90,7 +90,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         resubmit_selected,
     ]
     inlines = [ModerationRequestActionInline]
-    list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
