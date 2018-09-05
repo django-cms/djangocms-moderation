@@ -119,9 +119,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_comments_link(self, obj):
         return format_html(
-            '<a href="{}?moderation_request__id__exact={}">View</a>',
+            '<a href="{}?moderation_request__id__exact={}">{}</a>',
             reverse('admin:djangocms_moderation_requestcomment_changelist'),
             obj.id,
+            _('View')
         )
     get_comments_link.short_description = _('Comments')
 
@@ -245,22 +246,22 @@ class RoleAdmin(admin.ModelAdmin):
     fields = ['name', 'user', 'group', 'confirmation_page']
 
 
-class CollectionCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
+class CollectionCommentAdmin(admin.ModelAdmin):
     list_display = ['message', 'author', 'date_created']
     fields = ['collection', 'message', 'author']
-    editonly_fields = ()  # fields editable only on EDIT
-    addonly_fields = ()  # fields editable only on CREATE
 
     def get_changeform_initial_data(self, request):
         #  Extract the id from the URL. The id is stored in _changelsit_filters
         #  by Django so that the request knows where to return to after form submission.
+        data = {
+            'author': request.user,
+        }
         collection_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'collection__id__exact'
         )
-        return {
-            'author': request.user,
-            'collection': collection_id
-        }
+        if collection_id:
+            data['collection'] = collection_id
+        return data
 
     def get_form(self, request, obj=None, **kwargs):
         return CollectionCommentForm
@@ -274,7 +275,7 @@ class CollectionCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         # If we filter by a specific collection, we want to add this collection
         # to the context
-        collection_id = request.GET.get(utils.camel_to_snake('collection__id__exact'))
+        collection_id = request.GET.get('collection__id__exact')
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
@@ -284,7 +285,7 @@ class CollectionCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
             else:
                 extra_context = dict(
                     collection=collection,
-                    title='Collection comments'
+                    title=_('Collection comments')
                 )
         else:
             # If no collection id, then don't show all requests
@@ -294,20 +295,20 @@ class CollectionCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
         return super().changelist_view(request, extra_context)
 
 
-class RequestCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
+class RequestCommentAdmin(admin.ModelAdmin):
     list_display = ['message', 'get_request_link', 'author', 'date_created']
     fields = ['moderation_request', 'message', 'author']
-    editonly_fields = ()  # fields editable only on EDIT
-    addonly_fields = ()  # fields editable only on CREATE
 
     def get_changeform_initial_data(self, request):
-        moderation_request = utils.extract_filter_param_from_changelist_url(
+        data = {
+            'author': request.user,
+        }
+        moderation_request_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'moderation_request__id__exact'
         )
-        return {
-            'author': request.user,
-            'moderation_request': moderation_request
-        }
+        if moderation_request_id:
+            data['moderation_request'] = moderation_request_id
+        return data
 
     def get_request_link(self, obj):
         opts = ModerationRequest._meta
@@ -316,8 +317,9 @@ class RequestCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
             args=[obj.pk],
         )
         return format_html(
-            '<a href="{}">View</a>',
+            '<a href="{}">{}</a>',
             url,
+            _('View')
         )
     get_request_link.short_description = _('Request')
 
@@ -344,7 +346,7 @@ class RequestCommentAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
             else:
                 extra_context = dict(
                     collection=collection,
-                    title="Request comments"
+                    title=_("Request comments")
                 )
         else:
             # If no collection id, then don't show all requests
@@ -401,17 +403,19 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
         moderation requests
         """
         return format_html(
-            '<a href="{}?collection__id__exact={}">View</a>',
+            '<a href="{}?collection__id__exact={}">{}</a>',
             reverse('admin:djangocms_moderation_moderationrequest_changelist'),
             obj.pk,
+            _('View')
         )
     get_requests_link.short_description = _('Requests')
 
     def get_comments_link(self, obj):
         return format_html(
-            '<a href="{}?collection__id__exact={}">View</a>',
+            '<a href="{}?collection__id__exact={}">{}</a>',
             reverse('admin:djangocms_moderation_collectioncomment_changelist'),
             obj.id,
+            _('View')
         )
     get_comments_link.short_description = _('Comments')
 

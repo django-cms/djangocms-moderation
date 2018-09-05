@@ -1,7 +1,5 @@
 from __future__ import unicode_literals
 
-import re
-
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.lru_cache import lru_cache
@@ -49,8 +47,3 @@ def extract_filter_param_from_changelist_url(request, keyname, parametername):
             if key == parametername:
                 return value
     return False
-
-
-def camel_to_snake(name):
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()

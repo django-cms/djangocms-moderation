@@ -1,5 +1,6 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
+{% load l10n %}
 
 {% block object-tools-items %}
 {{ block.super }}
@@ -15,7 +16,7 @@
 <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
 &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
 &rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationcollection_changelist' %}">Moderation collections</a>
-&rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationrequest_changelist' %}?collection__id__exact={{ collection.id | urlencode }}">Requests</a>
+&rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationrequest_changelist' %}?collection__id__exact={{ collection.id | unlocalize }}">{% trans "Requests" %}</a>
 &rsaquo; Comments
 </div>
 {% endblock %}

@@ -53,6 +53,9 @@ def get_form_submission_for_step(active_request, current_step):
 
 
 class EditAndAddOnlyFieldsMixin(object):
+    editonly_fields = ()
+    addonly_fields = ()
+
     def get_readonly_fields(self, request, obj=None):
         """
         Override to provide editonly_fields and addonly_fields functionality
