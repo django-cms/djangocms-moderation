@@ -207,7 +207,7 @@ def publish_selected(modeladmin, request, queryset):
                 # TODO provide some feedback back to the user?
                 pass
 
-    # notify the UI of the action results
+    # notify the UI ofdjangocms_moderation/cms_toolbars.py the action results
     messages.success(
         request,
         ungettext(
