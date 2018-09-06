@@ -102,13 +102,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return False
 
     def get_list_display(self, request):
-        list_display = ['id', 'content_type', 'get_title', 'get_content_author', 'get_preview_link', 'get_status']
+        list_display = ['id', 'version', 'get_title', 'get_content_author', 'get_preview_link', 'get_status']
         if conf.REQUEST_COMMENTS_ENABLED:
             list_display.append('get_comments_link')
         return list_display
 
     def get_title(self, obj):
-        return obj.content_object
+        return obj.version.content
     get_title.short_description = _('Title')
 
     def get_preview_link(self, obj):

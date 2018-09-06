@@ -1,14 +1,12 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin, messages
-from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
-from cms.models import Page
 from cms.utils.urlutils import add_url_parameters
 
 from .forms import CollectionItemForm, SubmitCollectionForModerationForm
@@ -26,10 +24,8 @@ class CollectionItemView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(CollectionItemView, self).get_form_kwargs()
-        # TODO: replace page object with Version object
         kwargs['initial'].update({
-            'content_object_id': self.request.GET.get('content_object_id'),
-            'content_type': ContentType.objects.get_for_model(Page).pk,
+            'version': self.request.GET.get('version_id'),
         })
         collection_id = self.request.GET.get('collection_id')
 
@@ -38,9 +34,9 @@ class CollectionItemView(FormView):
         return kwargs
 
     def form_valid(self, form):
-        content_object = form.cleaned_data['content_object']
+        version = form.cleaned_data['version']
         collection = form.cleaned_data['collection']
-        collection.add_object(content_object)
+        collection.add_version(version)
         messages.success(self.request, _('Item successfully added to moderation collection'))
         return render(self.request, self.success_template_name, {})
 

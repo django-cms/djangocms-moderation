@@ -195,7 +195,7 @@ def publish_selected(modeladmin, request, queryset):
     for moderation_request in queryset.all():
         if moderation_request.is_approved():
             num_published_requests += 1
-            publish_content_object(moderation_request.content_object)
+            publish_version(moderation_request.version)
 
     # notify the UI of the action results
     messages.success(
@@ -219,6 +219,6 @@ def post_bulk_actions(collection):
         collection.save(update_fields=['status'])
 
 
-def publish_content_object(content_object):
-    # TODO: e.g.moderation_request.content_object.publish(request.user)
+def publish_version(version):
+    # TODO: e.g.moderation_request.version.publish(request.user)
     return True
