@@ -311,7 +311,7 @@ class RequestCommentAdmin(admin.ModelAdmin):
         opts = ModerationRequest._meta
         url = reverse(
             'admin:{}_{}_change'.format(opts.app_label, opts.model_name),
-            args=[obj.pk],
+            args=[obj.moderation_request.pk],
         )
         return format_html(
             '<a href="{}">{}</a>',
