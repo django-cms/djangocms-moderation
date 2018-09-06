@@ -90,7 +90,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         resubmit_selected,
     ]
     inlines = [ModerationRequestActionInline]
-    list_filter = ['collection']
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
@@ -312,7 +311,7 @@ class RequestCommentAdmin(admin.ModelAdmin):
         opts = ModerationRequest._meta
         url = reverse(
             'admin:{}_{}_change'.format(opts.app_label, opts.model_name),
-            args=[obj.pk],
+            args=[obj.moderation_request.pk],
         )
         return format_html(
             '<a href="{}">{}</a>',
