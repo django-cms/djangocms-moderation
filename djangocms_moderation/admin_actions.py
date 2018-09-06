@@ -234,5 +234,4 @@ def publish_version(version, user):
         version.publish(user)
     except TransitionNotAllowed:
         return False
-
     return True

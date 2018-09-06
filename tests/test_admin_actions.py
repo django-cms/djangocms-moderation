@@ -107,6 +107,7 @@ class AdminActionTest(BaseTestCase):
 
     def test_publish_selected(self):
         fixtures = [self.mr1, self.mr2]
+
         # Pre-checks
         version1 = self.mr1.version
         version2 = self.mr2.version
@@ -120,6 +121,7 @@ class AdminActionTest(BaseTestCase):
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
         }
         self.client.post(self.url_with_filter, data, follow=True)
+
         # After-checks
         # We can't do refresh_from_db() for Version, as it complains about
         # `state` field being changed directly

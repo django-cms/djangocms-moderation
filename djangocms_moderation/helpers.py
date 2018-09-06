@@ -44,7 +44,7 @@ class EditAndAddOnlyFieldsMixin(object):
         """
         Override to provide editonly_fields and addonly_fields functionality
         """
-        if obj:  # Editing an existing object
-            return self.readonly_fields + self.editonly_fields
-        else:  # Adding a new object
+        if obj:  # Editing an existing object, so `addonly_fields` should be readonly
             return self.readonly_fields + self.addonly_fields
+        else:  # Adding a new object
+            return self.readonly_fields + self.editonly_fields

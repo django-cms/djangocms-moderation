@@ -9,9 +9,9 @@ Hello {{ collection_author }}, the following moderation requests in the collecti
 </p>
 
 <ul>
-{% for moderation_request in moderation_requests %}
+{% for mr in moderation_requests %}
     <li>
-        {{ moderation_request.pk }} - {{ moderation_request.content_object }} ({{ moderation_request.content_type }})
+        {{ mr.pk }} - {{ mr.version.content }} ({{ mr.version.content_type }})
     </li>
 {% endfor %}
 </ul>

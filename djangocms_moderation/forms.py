@@ -156,7 +156,7 @@ class CollectionItemForm(forms.Form):
         if request_with_version_exists:
             raise forms.ValidationError(_(
                 "{} is already part of existing moderation request which is part "
-                "of another active collection".format(version)
+                "of another active collection".format(version.content)
             ))
 
         self.cleaned_data['version'] = version

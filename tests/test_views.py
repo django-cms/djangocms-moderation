@@ -156,7 +156,7 @@ class CollectionItemViewTest(BaseViewTestCase):
         )
 
         form = response.context_data['form']
-        self.assertEqual(self.pg1_version.pk, int(form.initial['version_id']))
+        self.assertEqual(self.pg1_version.pk, int(form.initial['version']))
 
     def test_authenticated_users_only(self):
         response = self.client.get(
