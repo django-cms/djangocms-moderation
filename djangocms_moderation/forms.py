@@ -4,11 +4,11 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
-from django.contrib.contenttypes.models import ContentType
 from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from adminsortable2.admin import CustomInlineFormSet
+from djangocms_versioning.models import Version
 
 from .constants import (
     ACTION_CANCELLED,
@@ -118,12 +118,11 @@ class CollectionItemForm(forms.Form):
         queryset=ModerationCollection.objects.filter(status=COLLECTING),
         required=True
     )
-    content_type = forms.ModelChoiceField(
-        queryset=ContentType.objects.filter(app_label="cms", model="page"),
+    version = forms.ModelChoiceField(
+        queryset=Version.objects.all(),
         required=True,
         widget=forms.HiddenInput(),
     )
-    content_object_id = forms.IntegerField()
 
     def set_collection_widget(self, request):
         related_modeladmin = admin.site._registry.get(ModerationCollection)
@@ -148,31 +147,19 @@ class CollectionItemForm(forms.Form):
         if self.errors:
             return self.cleaned_data
 
-        content_type = self.cleaned_data['content_type']
+        version = self.cleaned_data['version']
 
-        try:
-            content_object = content_type.get_object_for_this_type(
-                pk=self.cleaned_data['content_object_id'],
-                is_page_type=False,
-            )
-        except content_type.model_class().DoesNotExist:
-            content_object = None
-
-        if not content_object:
-            raise forms.ValidationError(_('Invalid content_object_id, does not exist'))
-
-        request_with_object_exists = ModerationRequest.objects.filter(
-            content_type=content_type,
-            object_id=content_object.pk,
+        request_with_version_exists = ModerationRequest.objects.filter(
+            version=version
         ).exists()
 
-        if request_with_object_exists:
+        if request_with_version_exists:
             raise forms.ValidationError(_(
                 "{} is already part of existing moderation request which is part "
-                "of another active collection".format(content_object)
+                "of another active collection".format(version.content)
             ))
 
-        self.cleaned_data['content_object'] = content_object
+        self.cleaned_data['version'] = version
         return self.cleaned_data
 
 

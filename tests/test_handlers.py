@@ -1,3 +1,5 @@
+from unittest import skip
+
 from djangocms_moderation.contrib.moderation_forms.cms_plugins import (
     ModerationFormPlugin,
 )
@@ -12,6 +14,7 @@ from djangocms_moderation.models import (
 from .utils.base import BaseTestCase
 
 
+@skip("Confirmation page feature doesn't to support 1.0.x yet.")
 class ModerationConfirmationFormSubmissionTest(BaseTestCase):
 
     def setUp(self):
@@ -25,7 +28,7 @@ class ModerationConfirmationFormSubmissionTest(BaseTestCase):
         with self.assertRaises(ValueError) as context:
             moderation_confirmation_form_submission(
                 sender=ModerationFormPlugin,
-                page=self.pg1,
+                page=self.pg1_version,
                 language='en',
                 user=self.user,
                 form_data=[{'label': 'Question 1', 'answer': 'Yes'}]
@@ -35,7 +38,7 @@ class ModerationConfirmationFormSubmissionTest(BaseTestCase):
     def test_creates_new_form_submission_when_form_data_is_valid(self):
         moderation_confirmation_form_submission(
             sender=ModerationFormPlugin,
-            page=self.pg1,
+            page=self.pg1_version,
             language='en',
             user=self.user,
             form_data=[{'label': 'Question 1', 'value': 'Yes'}],
