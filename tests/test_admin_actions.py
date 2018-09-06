@@ -2,6 +2,8 @@ import mock
 
 from django.contrib.admin import ACTION_CHECKBOX_NAME
 from django.urls import reverse
+from djangocms_versioning.constants import DRAFT, PUBLISHED
+from djangocms_versioning.models import Version
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
@@ -103,18 +105,33 @@ class AdminActionTest(BaseTestCase):
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.ARCHIVED)
 
-    @mock.patch('djangocms_moderation.admin_actions.publish_version')
-    def test_publish_selected(self, mock_publish_version):
+    def test_publish_selected(self):
         fixtures = [self.mr1, self.mr2]
+        # Pre-checks
+        version1 = self.mr1.version
+        version2 = self.mr2.version
+        self.assertTrue(self.mr1.is_active)
+        self.assertTrue(self.mr2.is_active)
+        self.assertEqual(version1.state, DRAFT)
+        self.assertEqual(version2.state, DRAFT)
+
         data = {
             'action': 'publish_selected',
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
         }
         self.client.post(self.url_with_filter, data, follow=True)
+        # After-checks
+        # We can't do refresh_from_db() for Version, as it complains about
+        # `state` field being changed directly
+        version1 = Version.objects.get(pk=version1.pk)
+        version2 = Version.objects.get(pk=version2.pk)
+        self.mr1.refresh_from_db()
+        self.mr2.refresh_from_db()
 
-        assert mock_publish_version.called
-        # check it has been called only once, i.e. with the approved mr1
-        mock_publish_version.assert_called_once_with(self.mr1.version)
+        self.assertEqual(version1.state, PUBLISHED)
+        self.assertEqual(version2.state, DRAFT)
+        self.assertFalse(self.mr1.is_active)
+        self.assertTrue(self.mr2.is_active)
 
     @mock.patch('djangocms_moderation.admin_actions.notify_collection_moderators')
     @mock.patch('djangocms_moderation.admin_actions.notify_collection_author')

@@ -10,6 +10,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
+from djangocms_versioning.constants import DRAFT
 
 from .admin_actions import (
     approve_selected,
@@ -164,11 +165,15 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 # `publish_selected` is possible.
                 _max_to_keep = 1  # publish_selected
 
-            for mr in collection.moderation_requests.all():
+            for mr in collection.moderation_requests.all().select_related('version'):
                 if len(actions_to_keep) == _max_to_keep:
                     break  # We have found all the actions, so no need to loop anymore
                 if 'publish_selected' not in actions_to_keep:
-                    if mr.is_approved() and request.user == collection.author:
+                    if all([
+                        request.user == collection.author,
+                        mr.version.state == DRAFT,
+                        mr.is_approved(),
+                    ]):
                         actions_to_keep.append('publish_selected')
                 if collection.status == IN_REVIEW and 'approve_selected' not in actions_to_keep:
                     if mr.user_can_take_moderation_action(request.user):
@@ -217,11 +222,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         last_action = obj.get_last_action()
 
         if last_action:
-            if obj.is_approved():
+            if obj.version.state != DRAFT:
+                status = obj.version.get_state_display()
+            elif obj.is_approved():
                 status = ugettext('Ready for publishing')
-            # TODO: consider published status for version e.g.:
-            # elif obj.content_object.is_published():
-            #     status = ugettext('Published')
             elif obj.is_rejected():
                 status = ugettext('Pending author rework')
             elif obj.is_active and obj.has_pending_step():
