@@ -24,9 +24,8 @@ class CollectionItemView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(CollectionItemView, self).get_form_kwargs()
-        # TODO: replace page object with Version object
         kwargs['initial'].update({
-            'version_id': self.request.GET.get('version_id'),
+            'version': self.request.GET.get('version_id'),
         })
         collection_id = self.request.GET.get('collection_id')
 

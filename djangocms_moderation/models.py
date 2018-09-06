@@ -357,7 +357,7 @@ class ModerationRequest(models.Model):
         choices=settings.LANGUAGES,
     )
     is_active = models.BooleanField(
-        verbose_name=_('is_active'),
+        verbose_name=_('is active'),
         default=False,
         db_index=True,
     )
