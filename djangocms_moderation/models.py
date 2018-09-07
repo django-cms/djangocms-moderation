@@ -383,7 +383,7 @@ class ModerationRequest(models.Model):
     def __str__(self):
         return "{} {}".format(
             self.pk,
-            self.content_object.pk
+            self.version.pk
         )
 
     @cached_property

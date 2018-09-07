@@ -103,10 +103,14 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return False
 
     def get_list_display(self, request):
-        list_display = ['id', 'version', 'get_title', 'get_content_author', 'get_preview_link', 'get_status']
+        list_display = ['id', 'get_content_type', 'get_title', 'get_content_author', 'get_preview_link', 'get_status']
         if conf.REQUEST_COMMENTS_ENABLED:
             list_display.append('get_comments_link')
         return list_display
+
+    def get_content_type(self, obj):
+        return obj.version.content_type
+    get_content_type.short_description = _('Content type')
 
     def get_title(self, obj):
         return obj.version.content
@@ -221,9 +225,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         last_action = obj.get_last_action()
 
         if last_action:
-            if obj.version.state != DRAFT:
-                status = obj.version.get_state_display()
-            elif obj.is_approved():
+            if obj.is_approved():
                 status = ugettext('Ready for publishing')
             elif obj.is_rejected():
                 status = ugettext('Pending author rework')
@@ -231,6 +233,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 next_step = obj.get_next_required()
                 role = next_step.role.name
                 status = ugettext('Pending %(role)s approval') % {'role': role}
+            elif obj.version.state != DRAFT:
+                status = obj.version.get_state_display()
             else:
                 user_name = last_action.get_by_user_name()
                 message_data = {
