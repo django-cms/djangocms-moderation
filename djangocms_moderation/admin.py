@@ -225,7 +225,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         last_action = obj.get_last_action()
 
         if last_action:
-            if obj.is_approved():
+            if obj.is_approved() and obj.version.state == DRAFT:
                 status = ugettext('Ready for publishing')
             elif obj.is_rejected():
                 status = ugettext('Pending author rework')
