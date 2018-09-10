@@ -125,9 +125,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_preview_link(self, obj):
         return format_html(
-            '<a href="{}">{}</a>',
+            '<a href="{}"><span class="cms-icon cms-icon-eye"></span></a>',
             get_object_preview_url(obj.version.content),
-            _('View')
         )
     get_preview_link.short_description = _('Preview')
 
