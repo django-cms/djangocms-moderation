@@ -18,8 +18,24 @@ class ModerationToolbar(CMSToolbar):
             'all': ('djangocms_moderation/css/moderation.css',)
         }
 
+    def _remove_publish_button(self):
+        """
+        Remove Publish button added by djangocms_versioning
+        """
+        for toolbar_item in self.toolbar.right_items:
+            button_item = getattr(toolbar_item, 'buttons', [])
+            try:
+                if button_item[0].name == _('Publish'):
+                    self.toolbar.remove_item(
+                        toolbar_item
+                    )
+            except IndexError:
+                pass
+
     def post_template_populate(self):
         super().post_template_populate()
+        self._remove_publish_button()
+
         # TODO replace page object with generic content object
         page = self.request.current_page
 
