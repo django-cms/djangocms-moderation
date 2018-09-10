@@ -2,9 +2,9 @@ import mock
 
 from django.contrib.admin import ACTION_CHECKBOX_NAME
 from django.urls import reverse
+
 from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.models import Version
-
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants

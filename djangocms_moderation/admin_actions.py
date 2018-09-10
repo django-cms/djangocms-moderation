@@ -1,8 +1,8 @@
-from django_fsm import TransitionNotAllowed
-
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext_lazy as _, ungettext
+
+from django_fsm import TransitionNotAllowed
 from djangocms_versioning.constants import DRAFT
 
 from djangocms_moderation import constants
