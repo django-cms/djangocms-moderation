@@ -43,7 +43,7 @@ class CollectionItemViewTest(BaseViewTestCase):
 
         self.assertEqual(response.context_data['title'], _('Add to collection'))
 
-    def test_add_object_to_collections(self):
+    def test_version_object_to_collections(self):
         ModerationRequest.objects.all().delete()
         self.client.force_login(self.user)
         response = self.client.post(
