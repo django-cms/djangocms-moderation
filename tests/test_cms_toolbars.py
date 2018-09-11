@@ -13,7 +13,6 @@ from djangocms_moderation.models import ModerationRequest
 from .utils.base import BaseTestCase
 
 
-@skip("To be fixed in the upcoming ticket")
 class TestCMSToolbars(BaseTestCase):
     def get_page_request(self, page, user, path=None, edit=False,
                          preview=False, structure=False, lang_code='en', disable=False):

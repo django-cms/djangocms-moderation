@@ -27,39 +27,33 @@ class ModerationToolbar(VersioningToolbar):
     def post_template_populate(self):
         super().post_template_populate()
 
-        # TODO replace page object with generic content object
-        page = self.request.current_page
+        if self._is_versioned():
+            version = Version.objects.get_for_content(self.toolbar.obj)
+            try:
+                moderation_request = ModerationRequest.objects.get(
+                    version=version
+                )
+                self.toolbar.add_modal_button(
+                    name=_('In Moderation "%s"' % moderation_request.collection.name),
+                    url='#',
+                    disabled=True,
+                    side=self.toolbar.RIGHT,
+                )
+            except ModerationRequest.DoesNotExist:
+                url = add_url_parameters(
+                    get_admin_url(
+                        name='cms_moderation_item_to_collection',
+                        language=self.current_lang,
+                        args=()
+                    ),
+                    version_id=version.pk
+                )
 
-        if not page:
-            return None
-
-        try:
-            # TODO Make this work with the correct version
-            version = Version.objects.get(pk=9999)
-            moderation_request = ModerationRequest.objects.get(
-                version=version
-            )
-            self.toolbar.add_modal_button(
-                name=_('In Moderation "%s"' % moderation_request.collection.name),
-                url='#',
-                disabled=True,
-                side=self.toolbar.RIGHT,
-            )
-        except Version.DoesNotExist:
-            url = add_url_parameters(
-                get_admin_url(
-                    name='cms_moderation_item_to_collection',
-                    language=self.current_lang,
-                    args=()
-                ),
-                content_object_id=page.pk
-            )
-
-            self.toolbar.add_modal_button(
-                name=_('Submit for moderation'),
-                url=url,
-                side=self.toolbar.RIGHT,
-            )
+                self.toolbar.add_modal_button(
+                    name=_('Submit for moderation'),
+                    url=url,
+                    side=self.toolbar.RIGHT,
+                )
 
 
 toolbar_pool.unregister(VersioningToolbar)
