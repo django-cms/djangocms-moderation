@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group, User
 from django.test import TestCase
-from djangocms_versioning.constants import PUBLISHED
 
+from djangocms_versioning.constants import PUBLISHED
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
