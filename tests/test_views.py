@@ -7,11 +7,13 @@ from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
 
+from djangocms_versioning.test_utils.factories import PageVersionFactory
+
 from djangocms_moderation import constants
 from djangocms_moderation.forms import CollectionItemForm
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
-from djangocms_versioning.test_utils.factories import PageVersionFactory
+
 
 from .utils.base import BaseViewTestCase
 

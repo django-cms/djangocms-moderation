@@ -1,6 +1,8 @@
 from django.contrib.auth.models import Group, User
 from django.test import TestCase
 
+from djangocms_versioning.test_utils.factories import PageVersionFactory
+
 from djangocms_moderation import constants
 from djangocms_moderation.models import (
     ModerationCollection,
@@ -8,7 +10,6 @@ from djangocms_moderation.models import (
     Role,
     Workflow,
 )
-from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 
 class BaseTestCase(TestCase):
