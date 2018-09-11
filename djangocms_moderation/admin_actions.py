@@ -3,7 +3,6 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext_lazy as _, ungettext
 
 from django_fsm import TransitionNotAllowed
-from djangocms_versioning.constants import DRAFT
 
 from djangocms_moderation import constants
 from djangocms_moderation.emails import (
@@ -196,7 +195,7 @@ def publish_selected(modeladmin, request, queryset):
 
     num_published_requests = 0
     for mr in queryset.all():
-        if mr.is_approved() and mr.version.state == DRAFT:
+        if mr.is_approved() and mr.version.can_be_published():
             if publish_version(mr.version, request.user):
                 num_published_requests += 1
                 mr.update_status(

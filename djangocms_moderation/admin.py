@@ -10,7 +10,6 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 
 from adminsortable2.admin import SortableInlineAdminMixin
-from djangocms_versioning.constants import DRAFT
 
 from .admin_actions import (
     approve_selected,
@@ -174,7 +173,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 if 'publish_selected' not in actions_to_keep:
                     if all([
                         request.user == collection.author,
-                        mr.version.state == DRAFT,
+                        mr.version.can_be_published(),
                         mr.is_approved(),
                     ]):
                         actions_to_keep.append('publish_selected')
@@ -225,7 +224,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         last_action = obj.get_last_action()
 
         if last_action:
-            if obj.is_approved() and obj.version.state == DRAFT:
+            if obj.is_approved() and obj.version.can_be_published():
                 status = ugettext('Ready for publishing')
             elif obj.is_rejected():
                 status = ugettext('Pending author rework')
@@ -233,7 +232,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 next_step = obj.get_next_required()
                 role = next_step.role.name
                 status = ugettext('Pending %(role)s approval') % {'role': role}
-            elif obj.version.state != DRAFT:
+            elif not obj.version.can_be_published():
                 status = obj.version.get_state_display()
             else:
                 user_name = last_action.get_by_user_name()
