@@ -2,6 +2,8 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext_lazy as _, ungettext
 
+from django_fsm import TransitionNotAllowed
+
 from djangocms_moderation import constants
 from djangocms_moderation.emails import (
     notify_collection_author,
@@ -192,12 +194,18 @@ def publish_selected(modeladmin, request, queryset):
         raise PermissionDenied
 
     num_published_requests = 0
-    for moderation_request in queryset.all():
-        if moderation_request.is_approved():
-            num_published_requests += 1
-            publish_version(moderation_request.version)
+    for mr in queryset.all():
+        if mr.version_can_be_published():
+            if publish_version(mr.version, request.user):
+                num_published_requests += 1
+                mr.update_status(
+                    action=constants.ACTION_FINISHED,
+                    by_user=request.user,
+                )
+            else:
+                # TODO provide some feedback back to the user?
+                pass
 
-    # notify the UI of the action results
     messages.success(
         request,
         ungettext(
@@ -219,6 +227,9 @@ def post_bulk_actions(collection):
         collection.save(update_fields=['status'])
 
 
-def publish_version(version):
-    # TODO: e.g.moderation_request.version.publish(request.user)
+def publish_version(version, user):
+    try:
+        version.publish(user)
+    except TransitionNotAllowed:
+        return False
     return True

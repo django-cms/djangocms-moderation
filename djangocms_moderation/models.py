@@ -383,7 +383,7 @@ class ModerationRequest(models.Model):
     def __str__(self):
         return "{} {}".format(
             self.pk,
-            self.content_object.pk
+            self.version.pk
         )
 
     @cached_property
@@ -405,6 +405,9 @@ class ModerationRequest(models.Model):
 
     def is_approved(self):
         return self.is_active and not self.has_required_pending_steps()
+
+    def version_can_be_published(self):
+        return self.is_approved() and self.version.can_be_published()
 
     def is_rejected(self):
         return self.get_last_action().action == constants.ACTION_REJECTED

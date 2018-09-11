@@ -71,6 +71,21 @@ class ModerationAdminTestCase(BaseTestCase):
         actions = self.mra.get_actions(request=mock_request)
         self.assertNotIn('delete_selected', actions)
 
+    def test_publish_selected_action_visibility_when_version_is_published(self):
+        mock_request = MockRequest()
+        mock_request.user = self.user
+        mock_request._collection = self.collection
+
+        actions = self.mra.get_actions(request=mock_request)
+        # mr1 request is approved so user can see the publish_selected action
+        self.assertIn('publish_selected', actions)
+
+        # Now, when version becomes published, they shouldn't see it
+        self.mr1.version._set_publish(self.user)
+        self.mr1.version.save()
+        actions = self.mra.get_actions(request=mock_request)
+        self.assertNotIn('publish_selected', actions)
+
     def test_publish_selected_action_visibility(self):
         mock_request = MockRequest()
         mock_request.user = self.user

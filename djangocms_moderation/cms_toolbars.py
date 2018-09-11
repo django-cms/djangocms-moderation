@@ -38,7 +38,7 @@ class ModerationToolbar(CMSToolbar):
                 disabled=True,
                 side=self.toolbar.RIGHT,
             )
-        except Version.DoesNotExist:
+        except (ModerationRequest.DoesNotExist, Version.DoesNotExist):
             url = add_url_parameters(
                 get_admin_url(
                     name='cms_moderation_item_to_collection',
