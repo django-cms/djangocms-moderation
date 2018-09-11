@@ -8,6 +8,7 @@ from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from adminsortable2.admin import CustomInlineFormSet
+
 from djangocms_versioning.models import Version
 
 from .constants import (

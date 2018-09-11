@@ -4,8 +4,8 @@ from django.utils.translation import ugettext_lazy as _
 from cms.toolbar_pool import toolbar_pool
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_versioning.models import Version
 from djangocms_versioning.cms_toolbars import VersioningToolbar
+from djangocms_versioning.models import Version
 
 from .models import ModerationRequest
 from .utils import get_admin_url
@@ -19,6 +19,9 @@ class ModerationToolbar(VersioningToolbar):
         }
 
     def _add_publish_button(self):
+        """
+        Override djangocms_versioning publish button
+        """
         pass
 
     def post_template_populate(self):
@@ -57,6 +60,7 @@ class ModerationToolbar(VersioningToolbar):
                 url=url,
                 side=self.toolbar.RIGHT,
             )
+
 
 toolbar_pool.unregister(VersioningToolbar)
 toolbar_pool.register(ModerationToolbar)
