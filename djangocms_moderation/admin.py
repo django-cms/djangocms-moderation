@@ -8,6 +8,7 @@ from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
+from cms.toolbar.utils import get_object_preview_url
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
@@ -102,18 +103,31 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return False
 
     def get_list_display(self, request):
-        list_display = ['id', 'version', 'get_title', 'get_content_author', 'get_preview_link', 'get_status']
+        list_display = [
+            'id',
+            'get_content_type',
+            'get_title',
+            'get_content_author',
+            'get_preview_link',
+            'get_status',
+        ]
         if conf.REQUEST_COMMENTS_ENABLED:
             list_display.append('get_comments_link')
         return list_display
+
+    def get_content_type(self, obj):
+        return obj.version.content_type
+    get_content_type.short_description = _('Content type')
 
     def get_title(self, obj):
         return obj.version.content
     get_title.short_description = _('Title')
 
     def get_preview_link(self, obj):
-        # TODO this will return Version object preview link once implemented
-        return "Link placeholder"
+        return format_html(
+            '<a href="{}"><span class="cms-icon cms-icon-eye"></span></a>',
+            get_object_preview_url(obj.version.content),
+        )
     get_preview_link.short_description = _('Preview')
 
     def get_comments_link(self, obj):
