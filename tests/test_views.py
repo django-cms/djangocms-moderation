@@ -140,7 +140,7 @@ class CollectionItemViewTest(BaseViewTestCase):
         moderation_requests = ModerationRequest.objects.filter(collection=self.collection_2)
         # moderation request is content_object
         for mod_request in moderation_requests:
-            self.assertTrue(mod_request in response.context_data['content_object_list'])
+            self.assertTrue(mod_request in response.context_data['moderation_request_list'])
 
     def test_version_id_from_params(self):
         self.client.force_login(self.user)

@@ -21,7 +21,8 @@
      <table>
         <thead>
             <tr>
-                <th>{% trans "Version" %}</th>
+                <th>{% trans "Content Type" %}</th>
+                <th>{% trans "Identifier" %}</th>
                 <th>{% trans "Author" %}</th>
                 <th>{% trans "Edit Date" %}</th>
                 <th>{% trans "Version" %}</th>
@@ -29,13 +30,14 @@
             </tr>
         </thead>
         <tbody>
-        {% for content_object in content_object_list %}
+        {% for mrl in moderation_request_list %}
             <tr class="row1 djangocms_moderation_collections_1">
-                <td>{{ version }}</td>
-                <td>Stub Author [versioning]</td>
-                <td>Stub Date [versioning]</td>
+                <td>{{ mrl.version.content_type|title }}</td>
+                <td>{{ mrl.version.content }}</td>
+                <td>{{ mrl.version.created_by }}</td>
+                <td>{{ mrl.version.created }}</td>
                 <td>Stub VNumber [versioning]</td>
-                <td>Stub Published [versioning] </td>
+                <td>{{ mrl.version.state|title }} </td>
             </tr>
         {% endfor %}
         </tbody>

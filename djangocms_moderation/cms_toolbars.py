@@ -13,7 +13,8 @@ from .utils import get_admin_url
 
 class ModerationToolbar(VersioningToolbar):
     class Media:
-        js = ('djangocms_moderation/js/dist/bundle.moderation.min.js',)
+        js = ('djangocms_moderation/js/dist/bundle.moderation.min.js',
+              'djangocms_versioning/js/actions.js',)
         css = {
             'all': ('djangocms_moderation/css/moderation.css',)
         }
