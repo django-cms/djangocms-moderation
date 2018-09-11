@@ -195,7 +195,7 @@ def publish_selected(modeladmin, request, queryset):
 
     num_published_requests = 0
     for mr in queryset.all():
-        if mr.is_approved() and mr.version.can_be_published():
+        if mr.version_can_be_published():
             if publish_version(mr.version, request.user):
                 num_published_requests += 1
                 mr.update_status(

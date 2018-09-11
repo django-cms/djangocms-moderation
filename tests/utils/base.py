@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group, User
 from django.test import TestCase
+from djangocms_versioning.constants import PUBLISHED
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
@@ -26,7 +27,7 @@ class BaseTestCase(TestCase):
         cls.pg1_version = PageVersionFactory()
         cls.pg2_version = PageVersionFactory()
         cls.pg3_version = PageVersionFactory()
-        cls.pg4_version = PageVersionFactory()
+        cls.pg4_version = PageVersionFactory(state=PUBLISHED)
         cls.pg5_version = PageVersionFactory()
         cls.pg6_version = PageVersionFactory()
 

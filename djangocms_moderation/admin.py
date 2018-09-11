@@ -171,11 +171,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 if len(actions_to_keep) == _max_to_keep:
                     break  # We have found all the actions, so no need to loop anymore
                 if 'publish_selected' not in actions_to_keep:
-                    if all([
-                        request.user == collection.author,
-                        mr.version.can_be_published(),
-                        mr.is_approved(),
-                    ]):
+                    if request.user == collection.author and mr.version_can_be_published():
                         actions_to_keep.append('publish_selected')
                 if collection.status == IN_REVIEW and 'approve_selected' not in actions_to_keep:
                     if mr.user_can_take_moderation_action(request.user):
@@ -224,7 +220,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         last_action = obj.get_last_action()
 
         if last_action:
-            if obj.is_approved() and obj.version.can_be_published():
+            if obj.version_can_be_published():
                 status = ugettext('Ready for publishing')
             elif obj.is_rejected():
                 status = ugettext('Pending author rework')
