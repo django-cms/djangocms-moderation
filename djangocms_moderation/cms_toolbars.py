@@ -13,15 +13,17 @@ from .utils import get_admin_url
 
 class ModerationToolbar(VersioningToolbar):
     class Media:
-        js = ('djangocms_moderation/js/dist/bundle.moderation.min.js',
-              'djangocms_versioning/js/actions.js',)
+        js = (
+            'djangocms_moderation/js/dist/bundle.moderation.min.js',
+            'djangocms_versioning/js/actions.js',
+        )
         css = {
             'all': ('djangocms_moderation/css/moderation.css',)
         }
 
     def _add_publish_button(self):
         """
-        Override djangocms_versioning publish button
+        Disable djangocms_versioning publish button
         """
         pass
 
@@ -35,7 +37,7 @@ class ModerationToolbar(VersioningToolbar):
                     version=version
                 )
                 self.toolbar.add_modal_button(
-                    name=_('In Moderation "%s"' % moderation_request.collection.name),
+                    name="%s %s" % (_('In Moderation'), moderation_request.collection.name),
                     url='#',
                     disabled=True,
                     side=self.toolbar.RIGHT,

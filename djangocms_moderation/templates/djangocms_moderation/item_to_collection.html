@@ -37,7 +37,7 @@
                 <td>{{ mrl.version.created_by }}</td>
                 <td>{{ mrl.version.created }}</td>
                 <td>Stub VNumber [versioning]</td>
-                <td>{{ mrl.version.state|title }} </td>
+                <td>{{ mrl.version.get_state_display }} </td>
             </tr>
         {% endfor %}
         </tbody>

@@ -96,5 +96,5 @@ class TestCMSToolbars(BaseTestCase):
 
         self.assertEquals(
             toolbar.toolbar.get_right_items()[0].buttons[0].name,
-            'In Moderation "%s"' % self.collection1.name
+            'In Moderation %s' % self.collection1.name
         )
