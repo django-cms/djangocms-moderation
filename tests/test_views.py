@@ -14,7 +14,6 @@ from djangocms_moderation.forms import CollectionItemForm
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
 
-
 from .utils.base import BaseViewTestCase
 
 

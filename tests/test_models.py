@@ -94,6 +94,12 @@ class ModerationRequestTest(BaseTestCase):
         self.assertTrue(self.moderation_request2.is_approved())
         self.assertTrue(self.moderation_request3.is_approved())
 
+    def test_version_can_be_published(self):
+        self.assertFalse(self.moderation_request1.version_can_be_published())
+        self.assertTrue(self.moderation_request2.version_can_be_published())
+        # moderation_request3.version is already in published state
+        self.assertFalse(self.moderation_request3.version_can_be_published())
+
     def test_is_rejected(self):
         self.assertFalse(self.moderation_request1.is_rejected())
         self.assertFalse(self.moderation_request2.is_rejected())
