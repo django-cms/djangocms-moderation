@@ -391,7 +391,8 @@ class ModerationRequest(models.Model):
         """
         Author of this request is the user who created the first action
         """
-        return self.get_first_action().by_user
+        first_action = self.get_first_action()
+        return first_action.by_user if first_action else None
 
     @cached_property
     def workflow(self):
@@ -410,7 +411,8 @@ class ModerationRequest(models.Model):
         return self.is_approved() and self.version.can_be_published()
 
     def is_rejected(self):
-        return self.get_last_action().action == constants.ACTION_REJECTED
+        last_action = self.get_last_action()
+        return last_action and last_action.action == constants.ACTION_REJECTED
 
     @transaction.atomic
     def update_status(self, action, by_user, message='', to_user=None):

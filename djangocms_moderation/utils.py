@@ -7,6 +7,8 @@ from django.utils.module_loading import import_string
 from django.utils.six.moves.urllib.parse import parse_qs, urljoin
 from django.utils.translation import override as force_language
 
+from djangocms_versioning.models import Version
+
 from cms.utils.urlutils import admin_reverse
 
 
@@ -44,3 +46,28 @@ def extract_filter_param_from_changelist_url(request, keyname, parametername):
     changelist_filters = request.GET.get(keyname)
     parameter_value = parse_qs(changelist_filters).get(parametername)
     return parameter_value[0]
+
+
+def is_obj_review_locked(obj, user):
+    """
+    Util function which determines if the obj is review locked
+    or not. It is the same question as, Can `user` edit version of an `obj`?
+    """
+    version = Version.objects.get_for_content(obj)
+
+    try:
+        from djangocms_moderation.models import ModerationRequest  # noqa
+        moderation_request = ModerationRequest.objects.get(
+            version=version
+        )
+    except ModerationRequest.DoesNotExist:
+        # If there is no moderation request with this version yet, then
+        # the item is not Review locked
+        return False
+
+    # If `user` can resubmit the moderation request, it means they can edit
+    # the version to submit the changes. Review lock should be lifted for them
+    if moderation_request.user_can_resubmit(user):
+        return False
+
+    return True
