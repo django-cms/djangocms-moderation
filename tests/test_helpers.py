@@ -13,7 +13,7 @@ from djangocms_moderation.models import (
 from .utils.base import BaseTestCase
 
 
-@skip("Confirmation page feature doesn't to support 1.0.x yet.")
+@skip("Confirmation page feature doesn't support 1.0.x yet")
 class GetPageOr404Test(BaseTestCase):
     def test_returns_page(self):
         self.assertEqual(get_page_or_404(self.pg1_version.pk, 'en'), self.pg1_version)
