@@ -1,21 +1,19 @@
 from django.contrib import admin
 from django.urls import reverse
 
+from djangocms_versioning.test_utils.factories import PageVersionFactory
+
 from djangocms_moderation import conf, constants
 from djangocms_moderation.admin import (
     ModerationCollectionAdmin,
     ModerationRequestAdmin,
 )
-
-from djangocms_versioning.test_utils.factories import PageVersionFactory
-
 from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
     Workflow,
 )
-
 
 from .utils.base import BaseTestCase
 

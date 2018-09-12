@@ -4,12 +4,13 @@ from cms.middleware.toolbar import ToolbarMiddleware
 from cms.toolbar.toolbar import CMSToolbar
 from cms.utils.conf import get_cms_setting
 
-from djangocms_moderation.cms_toolbars import ModerationToolbar
-from djangocms_moderation.models import ModerationRequest
 from djangocms_versioning.test_utils.factories import (
     PageVersionFactory,
     UserFactory,
 )
+
+from djangocms_moderation.cms_toolbars import ModerationToolbar
+from djangocms_moderation.models import ModerationRequest
 
 from .utils.base import BaseTestCase
 
