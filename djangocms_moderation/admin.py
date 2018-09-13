@@ -396,7 +396,11 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
     editonly_fields = ('status',)  # fields editable only on EDIT
     addonly_fields = ('workflow',)  # fields editable only on CREATE
-    list_filter = [('author',  custom_titled_filter(_('Moderator'))), 'status', 'date_created']
+    list_filter = [
+        ('author',  custom_titled_filter(_('Moderator'))),
+        'status',
+        'date_created'
+    ]
 
     def get_list_display(self, request):
         list_display = [
