@@ -25,11 +25,7 @@ from .forms import (
     RequestCommentForm,
     WorkflowStepInlineFormSet,
 )
-from .helpers import (
-    EditAndAddOnlyFieldsMixin,
-    custom_titled_filter,
-    get_form_submission_for_step,
-)
+from .helpers import EditAndAddOnlyFieldsMixin, get_form_submission_for_step
 from .models import (
     CollectionComment,
     ConfirmationFormSubmission,
@@ -397,7 +393,7 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     editonly_fields = ('status',)  # fields editable only on EDIT
     addonly_fields = ('workflow',)  # fields editable only on CREATE
     list_filter = [
-        ('author',  custom_titled_filter(_('Moderator'))),
+        'author',
         'status',
         'date_created'
     ]
@@ -406,7 +402,7 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
         list_display = [
             'id',
             'name',
-            'get_moderator',
+            'author',
             'workflow',
             'status',
             'date_created',
@@ -437,10 +433,6 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
             _('View')
         )
     get_comments_link.short_description = _('Comments')
-
-    def get_moderator(self, obj):
-        return obj.author
-    get_moderator.short_description = _('Moderator')
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):

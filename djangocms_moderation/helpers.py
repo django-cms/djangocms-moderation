@@ -49,16 +49,3 @@ class EditAndAddOnlyFieldsMixin(object):
             return self.readonly_fields + self.addonly_fields
         else:  # Adding a new object
             return self.readonly_fields + self.editonly_fields
-
-
-def custom_titled_filter(title):
-    """
-    Helper method to provide custom title for admin.list_filter's field in admin listing UI
-    e.g list_filter = [(field_name, custom_titled_filter(_('CUSTOM TITLE')), other_field ]
-    """
-    class Wrapper(admin.FieldListFilter):
-        def __new__(cls, *args, **kwargs):
-            instance = admin.FieldListFilter.create(*args, **kwargs)
-            instance.title = title
-            return instance
-    return Wrapper
