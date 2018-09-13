@@ -1,4 +1,3 @@
-from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 
 from .models import ConfirmationFormSubmission, Workflow
