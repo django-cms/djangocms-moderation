@@ -395,7 +395,7 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     list_filter = [
         'author',
         'status',
-        'date_created'
+        'date_created',
     ]
 
     def get_list_display(self, request):
