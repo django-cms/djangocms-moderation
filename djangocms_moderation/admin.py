@@ -25,7 +25,11 @@ from .forms import (
     RequestCommentForm,
     WorkflowStepInlineFormSet,
 )
-from .helpers import EditAndAddOnlyFieldsMixin, get_form_submission_for_step
+from .helpers import (
+    EditAndAddOnlyFieldsMixin,
+    custom_titled_filter,
+    get_form_submission_for_step,
+)
 from .models import (
     CollectionComment,
     ConfirmationFormSubmission,
@@ -392,6 +396,7 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
     editonly_fields = ('status',)  # fields editable only on EDIT
     addonly_fields = ('workflow',)  # fields editable only on CREATE
+    list_filter = [('author',  custom_titled_filter('Moderator')), 'status', 'date_created']
 
     def get_list_display(self, request):
         list_display = [

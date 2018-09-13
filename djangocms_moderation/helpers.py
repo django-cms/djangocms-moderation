@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 
 from .models import ConfirmationFormSubmission, Workflow
@@ -48,3 +49,12 @@ class EditAndAddOnlyFieldsMixin(object):
             return self.readonly_fields + self.addonly_fields
         else:  # Adding a new object
             return self.readonly_fields + self.editonly_fields
+
+
+def custom_titled_filter(title):
+    class Wrapper(admin.FieldListFilter):
+        def __new__(cls, *args, **kwargs):
+            instance = admin.FieldListFilter.create(*args, **kwargs)
+            instance.title = title
+            return instance
+    return Wrapper
