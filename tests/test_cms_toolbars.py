@@ -1,11 +1,13 @@
-from unittest import skip
-
-from django.contrib.auth.models import AnonymousUser
 from django.test.client import RequestFactory
 
 from cms.middleware.toolbar import ToolbarMiddleware
 from cms.toolbar.toolbar import CMSToolbar
 from cms.utils.conf import get_cms_setting
+
+from djangocms_versioning.test_utils.factories import (
+    PageVersionFactory,
+    UserFactory,
+)
 
 from djangocms_moderation.cms_toolbars import ModerationToolbar
 from djangocms_moderation.models import ModerationRequest
@@ -13,8 +15,8 @@ from djangocms_moderation.models import ModerationRequest
 from .utils.base import BaseTestCase
 
 
-@skip("To be fixed in the upcoming ticket")
 class TestCMSToolbars(BaseTestCase):
+
     def get_page_request(self, page, user, path=None, edit=False,
                          preview=False, structure=False, lang_code='en', disable=False):
         if not path:
@@ -46,12 +48,34 @@ class TestCMSToolbars(BaseTestCase):
             request.toolbar.populate()
         return request
 
+    def _get_toolbar(self, content_obj, **kwargs):
+        """Helper method to set up the toolbar
+        """
+        request = RequestFactory().get('/')
+        request.user = UserFactory()
+        request.session = {}
+        cms_toolbar = CMSToolbar(request)
+        toolbar = ModerationToolbar(
+            request, toolbar=cms_toolbar, is_current_app=True, app_path='/')
+        toolbar.toolbar.obj = content_obj
+        if kwargs.get('edit_mode', False):
+            toolbar.toolbar.edit_mode_active = True
+            toolbar.toolbar.content_mode_active = False
+            toolbar.toolbar.structure_mode_active = False
+        elif kwargs.get('preview_mode', False):
+            toolbar.toolbar.edit_mode_active = False
+            toolbar.toolbar.content_mode_active = True
+            toolbar.toolbar.structure_mode_active = False
+        elif kwargs.get('structure_mode', False):
+            toolbar.toolbar.edit_mode_active = False
+            toolbar.toolbar.content_mode_active = False
+            toolbar.toolbar.structure_mode_active = True
+        return toolbar
+
     def test_submit_for_moderation(self):
         ModerationRequest.objects.all().delete()
-
-        request = self.get_page_request(self.pg1_version, AnonymousUser(), '/')
-        toolbar = CMSToolbar(request)
-        toolbar = ModerationToolbar(request, toolbar=toolbar, is_current_app=True, app_path='/')
+        version = PageVersionFactory()
+        toolbar = self._get_toolbar(version.content, edit_mode=True)
         toolbar.populate()
         toolbar.post_template_populate()
 
@@ -61,13 +85,16 @@ class TestCMSToolbars(BaseTestCase):
         )
 
     def test_page_in_moderation(self):
-        request = self.get_page_request(self.pg1_version, AnonymousUser(), '/')
-        toolbar = CMSToolbar(request)
-        toolbar = ModerationToolbar(request, toolbar=toolbar, is_current_app=True, app_path='/')
+        ModerationRequest.objects.all().delete()
+        version = PageVersionFactory()
+        self.collection1.add_version(
+            version=version
+        )
+        toolbar = self._get_toolbar(version.content, edit_mode=True)
         toolbar.populate()
         toolbar.post_template_populate()
 
         self.assertEquals(
             toolbar.toolbar.get_right_items()[0].buttons[0].name,
-            'In Moderation "%s"' % self.collection1.name
+            'In Moderation %s' % self.collection1.name
         )

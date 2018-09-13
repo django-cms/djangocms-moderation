@@ -58,13 +58,13 @@ class CollectionItemView(FormView):
 
         if collection_id:
             collection = ModerationCollection.objects.get(pk=collection_id)
-            content_object_list = collection.moderation_requests.all()
+            moderation_request_list = collection.moderation_requests.all()
         else:
-            content_object_list = []
+            moderation_request_list = []
 
         model_admin = admin.site._registry[ModerationCollection]
         context.update({
-            'content_object_list':  content_object_list,
+            'moderation_request_list': moderation_request_list,
             'opts': opts_meta,
             'title': _('Add to collection'),
             'form': self.get_form(),
