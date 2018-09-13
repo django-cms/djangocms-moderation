@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from cms.toolbar.items import ButtonList
 from django.utils.translation import ugettext_lazy as _
 
 from cms.toolbar_pool import toolbar_pool
@@ -37,7 +38,15 @@ class ModerationToolbar(VersioningToolbar):
         """
         if is_obj_review_locked(self.toolbar.obj, self.request.user):
             # Don't display edit button as the item is Review locked
-            return
+            # TODO alternatively we could add the edit button using super
+            # and mark it as disabled, instead of adding another one
+            item = ButtonList(side=self.toolbar.RIGHT)
+            item.add_button(
+                _('Edit'),
+                url='#',
+                disabled=True,
+            )
+            self.toolbar.add_item(item)
         return super()._add_edit_button()
 
     def _add_moderation_buttons(self):

@@ -92,9 +92,8 @@ class TestCMSToolbars(BaseTestCase):
         toolbar = self._get_toolbar(version.content, edit_mode=True)
         toolbar.populate()
         toolbar.post_template_populate()
-
         self.assertEquals(
-            toolbar.toolbar.get_right_items()[0].buttons[0].name,
+            toolbar.toolbar.get_right_items()[1].buttons[0].name,
             'In Moderation "%s"' % self.collection1.name
         )
 
@@ -110,13 +109,22 @@ class TestCMSToolbars(BaseTestCase):
             toolbar.toolbar.get_right_items()[0].buttons[0].name,
             'Edit',
         )
+        self.assertFalse(
+            toolbar.toolbar.get_right_items()[0].buttons[0].disabled
+        )
 
         # Lets add the version to moderation, the Edit should no longer be
-        # available
+        # clickable
         self.collection1.add_version(
             version=version
         )
         toolbar = self._get_toolbar(version.content)
         toolbar.populate()
         toolbar.post_template_populate()
-        self.assertEqual(0, len(toolbar.toolbar.get_right_items()))
+        self.assertEquals(
+            toolbar.toolbar.get_right_items()[0].buttons[0].name,
+            'Edit',
+        )
+        self.assertTrue(
+            toolbar.toolbar.get_right_items()[0].buttons[0].disabled
+        )
