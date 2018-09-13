@@ -51,9 +51,8 @@ class TestCMSToolbars(BaseTestCase):
     def _get_toolbar(self, content_obj, **kwargs):
         """Helper method to set up the toolbar
         """
-        request = RequestFactory().get('/')
-        request.user = UserFactory()
-        request.session = {}
+        page = PageVersionFactory().content.page
+        request = self.get_page_request(page=page, user=UserFactory(is_staff=True))
         cms_toolbar = CMSToolbar(request)
         toolbar = ModerationToolbar(
             request, toolbar=cms_toolbar, is_current_app=True, app_path='/')
@@ -96,5 +95,28 @@ class TestCMSToolbars(BaseTestCase):
 
         self.assertEquals(
             toolbar.toolbar.get_right_items()[0].buttons[0].name,
-            'In Moderation %s' % self.collection1.name
+            'In Moderation "%s"' % self.collection1.name
         )
+
+    def test_add_edit_button(self):
+        ModerationRequest.objects.all().delete()
+        version = PageVersionFactory()
+        toolbar = self._get_toolbar(version.content)
+        toolbar.populate()
+        toolbar.post_template_populate()
+        # We can see the Edit button, as the version hasn't been submitted
+        # to the moderation (collection) yet
+        self.assertEquals(
+            toolbar.toolbar.get_right_items()[0].buttons[0].name,
+            'Edit',
+        )
+
+        # Lets add the version to moderation, the Edit should no longer be
+        # available
+        self.collection1.add_version(
+            version=version
+        )
+        toolbar = self._get_toolbar(version.content)
+        toolbar.populate()
+        toolbar.post_template_populate()
+        self.assertEqual(0, len(toolbar.toolbar.get_right_items()))
