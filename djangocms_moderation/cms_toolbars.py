@@ -39,14 +39,13 @@ class ModerationToolbar(VersioningToolbar):
         if is_obj_review_locked(self.toolbar.obj, self.request.user):
             # Don't display edit button as the item is Review locked
             # TODO alternatively we could add the edit button using super
-            # and mark it as disabled, instead of adding another one
-            item = ButtonList(side=self.toolbar.RIGHT)
-            item.add_button(
+            # and mark it as disabled, instead of adding another -disabled one
+            self.toolbar.add_modal_button(
                 _('Edit'),
                 url='#',
                 disabled=True,
+                side=self.toolbar.RIGHT,
             )
-            self.toolbar.add_item(item)
         return super()._add_edit_button()
 
     def _add_moderation_buttons(self):
