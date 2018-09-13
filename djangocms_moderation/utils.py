@@ -50,8 +50,8 @@ def extract_filter_param_from_changelist_url(request, keyname, parametername):
 
 def is_obj_review_locked(obj, user):
     """
-    Util function which determines if the obj is review locked
-    or not. It is the same question as, Can `user` edit version of an `obj`?
+    Util function which determines if the `obj` is Review locked.
+    It is the equivalent of "Can `user` edit the version of object `obj`"?
     """
     version = Version.objects.get_for_content(obj)
 
@@ -62,7 +62,7 @@ def is_obj_review_locked(obj, user):
         )
     except ModerationRequest.DoesNotExist:
         # If there is no moderation request with this version yet, then
-        # the item is not Review locked
+        # the `obj` is not Review locked
         return False
 
     # If `user` can resubmit the moderation request, it means they can edit

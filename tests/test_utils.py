@@ -53,18 +53,18 @@ class TestReviewLock(BaseTestCase):
         page_version = PageVersionFactory()
 
         page_content = page_version.content
-        assert not is_obj_review_locked(page_content, self.user)
-        assert not is_obj_review_locked(page_content, self.user2)
-        assert not is_obj_review_locked(page_content, self.user3)
+        self.assertFalse(is_obj_review_locked(page_content, self.user))
+        self.assertFalse(is_obj_review_locked(page_content, self.user2))
+        self.assertFalse(is_obj_review_locked(page_content, self.user3))
 
         collection = ModerationCollection.objects.create(
             author=self.user, name='My collection 1', workflow=self.wf1
         )
         collection.add_version(page_version)
         # Now the version is part of the collection so it is review locked
-        assert is_obj_review_locked(page_content, self.user)
-        assert is_obj_review_locked(page_content, self.user2)
-        assert is_obj_review_locked(page_content, self.user3)
+        self.assertTrue(is_obj_review_locked(page_content, self.user))
+        self.assertTrue(is_obj_review_locked(page_content, self.user2))
+        self.assertTrue(is_obj_review_locked(page_content, self.user3))
 
         mr = ModerationRequest.objects.get(collection=collection)
         mr.actions.create(by_user=self.user, action=ACTION_STARTED,)
@@ -72,6 +72,6 @@ class TestReviewLock(BaseTestCase):
         # Now we reject the moderation request, which means that `user` can
         # resubmit the changes, the review lock is lifted for them
         mr.actions.create(by_user=self.user2, action=ACTION_REJECTED)
-        assert not is_obj_review_locked(page_content, self.user)
-        assert is_obj_review_locked(page_content, self.user2)
-        assert is_obj_review_locked(page_content, self.user3)
+        self.assertFalse(is_obj_review_locked(page_content, self.user))
+        self.assertTrue(is_obj_review_locked(page_content, self.user2))
+        self.assertTrue(is_obj_review_locked(page_content, self.user3))
