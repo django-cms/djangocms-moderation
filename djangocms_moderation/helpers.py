@@ -52,6 +52,10 @@ class EditAndAddOnlyFieldsMixin(object):
 
 
 def custom_titled_filter(title):
+    """
+    Helper method to provide custom title for list_filter field in admin listing UI
+    e.g list_filter = [(field_name, custom_titled_filter(_('CUSTOM TITLE')), other_field ]
+    """
     class Wrapper(admin.FieldListFilter):
         def __new__(cls, *args, **kwargs):
             instance = admin.FieldListFilter.create(*args, **kwargs)
