@@ -313,7 +313,6 @@ class CollectionCommentAdmin(admin.ModelAdmin):
         collection_object = CollectionComment.objects.get(pk=int(object_id))
         if not is_author(request, collection_object):
             extra_context['readonly'] = True
-
         return super(CollectionCommentAdmin, self).change_view(request, object_id,
                                                                form_url, extra_context=extra_context)
 
