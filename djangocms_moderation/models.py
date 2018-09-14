@@ -252,7 +252,7 @@ class ModerationCollection(models.Model):
     name = models.CharField(verbose_name=_('name'), max_length=128)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        verbose_name=_('author'),
+        verbose_name=_('moderator'),
         related_name='+',
         on_delete=models.CASCADE,
     )

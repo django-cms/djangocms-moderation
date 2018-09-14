@@ -392,12 +392,17 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
     editonly_fields = ('status',)  # fields editable only on EDIT
     addonly_fields = ('workflow',)  # fields editable only on CREATE
+    list_filter = [
+        'author',
+        'status',
+        'date_created',
+    ]
 
     def get_list_display(self, request):
         list_display = [
             'id',
             'name',
-            'get_moderator',
+            'author',
             'workflow',
             'status',
             'date_created',
@@ -428,10 +433,6 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
             _('View')
         )
     get_comments_link.short_description = _('Comments')
-
-    def get_moderator(self, obj):
-        return obj.author
-    get_moderator.short_description = _('Moderator')
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):

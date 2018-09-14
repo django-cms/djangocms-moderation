@@ -25,7 +25,7 @@
                 <th>{% trans "Identifier" %}</th>
                 <th>{% trans "Author" %}</th>
                 <th>{% trans "Edit Date" %}</th>
-                <th>{% trans "Version" %}</th>
+                <th>{% trans "Version #" %}</th>
                 <th>{% trans "Status" %}</th>
             </tr>
         </thead>
@@ -36,7 +36,7 @@
                 <td>{{ mrl.version.content }}</td>
                 <td>{{ mrl.version.created_by }}</td>
                 <td>{{ mrl.version.created }}</td>
-                <td>Stub VNumber [versioning]</td>
+                <td>{{ mrl.version.number }}</td>
                 <td>{{ mrl.version.get_state_display }} </td>
             </tr>
         {% endfor %}
