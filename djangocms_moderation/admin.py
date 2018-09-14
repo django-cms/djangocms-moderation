@@ -301,8 +301,20 @@ class CollectionCommentAdmin(admin.ModelAdmin):
                 )
         else:
             raise Http404
-
         return super().changelist_view(request, extra_context)
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        # get the collection for the breadcrumb trail
+        collection_id = utils.extract_filter_param_from_changelist_url(
+            request, '_changelist_filters', 'collection__id__exact'
+        )
+        extra_context = dict(
+            show_save_and_add_another=False,
+            show_save_and_continue=False,
+        )
+        if collection_id:
+            extra_context['collection_id'] = collection_id
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
 
 class RequestCommentAdmin(admin.ModelAdmin):
