@@ -55,7 +55,9 @@ class ModerationToolbar(VersioningToolbar):
                     version=version
                 )
                 self.toolbar.add_modal_button(
-                    name='%s "%s"' % (_('In Moderation'), moderation_request.collection.name),
+                    name=_('In Moderation "%(collection_name)s"') % {
+                        'collection_name': moderation_request.collection.name
+                    },
                     url='#',
                     disabled=True,
                     side=self.toolbar.RIGHT,
