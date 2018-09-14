@@ -3,7 +3,7 @@ from django.test.client import RequestFactory
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import utils
-from djangocms_moderation.constants import ACTION_STARTED, ACTION_REJECTED
+from djangocms_moderation.constants import ACTION_REJECTED, ACTION_STARTED
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import is_obj_review_locked
 

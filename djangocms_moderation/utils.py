@@ -7,9 +7,9 @@ from django.utils.module_loading import import_string
 from django.utils.six.moves.urllib.parse import parse_qs, urljoin
 from django.utils.translation import override as force_language
 
-from djangocms_versioning.models import Version
-
 from cms.utils.urlutils import admin_reverse
+
+from djangocms_versioning.models import Version
 
 
 def get_absolute_url(location, site=None):
