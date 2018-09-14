@@ -48,3 +48,9 @@ class EditAndAddOnlyFieldsMixin(object):
             return self.readonly_fields + self.addonly_fields
         else:  # Adding a new object
             return self.readonly_fields + self.editonly_fields
+
+
+def is_author(request, object):
+    if object and object.author:
+        return request.user == object.author
+    return False
