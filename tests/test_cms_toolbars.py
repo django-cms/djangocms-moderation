@@ -107,5 +107,5 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
         # We shouldnt see Edit button when there is no toolbar object set.
-        # Some of the custome views in some apps dont have toolbar.obj
+        # Some of the custom views in some apps dont have toolbar.obj
         self.assertEquals(toolbar.toolbar.get_right_items(), [])
