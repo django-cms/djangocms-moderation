@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from django import forms
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -25,7 +26,7 @@ from .forms import (
     RequestCommentForm,
     WorkflowStepInlineFormSet,
 )
-from .helpers import EditAndAddOnlyFieldsMixin, get_form_submission_for_step
+from .helpers import get_form_submission_for_step
 from .models import (
     CollectionComment,
     ConfirmationFormSubmission,
@@ -388,10 +389,8 @@ class WorkflowAdmin(admin.ModelAdmin):
     ]
 
 
-class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
+class ModerationCollectionAdmin(admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
-    editonly_fields = ('status',)  # fields editable only on EDIT
-    addonly_fields = ('workflow',)  # fields editable only on CREATE
     list_filter = [
         'author',
         'status',
@@ -451,6 +450,30 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
             )
         ]
         return url_patterns + super().get_urls()
+
+    def get_changeform_initial_data(self, request):
+        #  Extract the id from the URL. The id is stored in _changelsit_filters
+        #  by Django so that the request knows where to return to after form submission.
+        data = {
+            'author': request.user,
+        }
+        return data
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # Editing an existing object, so `addonly_fields` should be readonly
+            return ['author', 'workflow']
+        else:  # Adding a new object
+            return ['status']
+        pass
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # import ipdb; ipdb.set_trace()
+        if obj and (('author',) not in self.readonly_fields):
+            pass
+        else:
+            form.base_fields['author'].widget = forms.HiddenInput()
+        return form
 
 
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
