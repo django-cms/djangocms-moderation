@@ -310,9 +310,13 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
-        collection_comment = CollectionComment.objects.get(pk=int(object_id))
-        if not (request.user == collection_comment.author):
-            extra_context['readonly'] = True
+        try:
+            collection_comment = CollectionComment.objects.get(pk=int(object_id))
+        except (ValueError, CollectionComment.DoesNotExist):
+            return Http404
+        else:
+            if request.user != collection_comment.author:
+                extra_context['readonly'] = True
         return super().change_view(request, object_id,
                                    form_url, extra_context=extra_context)
 
@@ -320,7 +324,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
         return request.user == getattr(obj, 'author', None)
 
     def get_readonly_fields(self, request, obj=None):
-        if obj and not (request.user == obj.author):
+        if obj and (request.user != obj.author):
             return self.list_display
 
 
@@ -381,14 +385,17 @@ class RequestCommentAdmin(admin.ModelAdmin):
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
             raise Http404
-
         return super().changelist_view(request, extra_context)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
-        request_comment = RequestComment.objects.get(pk=int(object_id))
-        if not (request.user == request_comment.author):
-            extra_context['readonly'] = True
+        try:
+            request_comment = RequestComment.objects.get(pk=int(object_id))
+        except (ValueError, RequestComment.DoesNotExist):
+            return Http404
+        else:
+            if request.user != request_comment.author:
+                extra_context['readonly'] = True
         return super().change_view(request, object_id,
                                    form_url, extra_context=extra_context)
 
@@ -396,7 +403,7 @@ class RequestCommentAdmin(admin.ModelAdmin):
         return request.user == getattr(obj, 'author', None)
 
     def get_readonly_fields(self, request, obj=None):
-        if obj and not (request.user == obj.author):
+        if obj and (request.user != obj.author):
             return self.list_display
 
 
