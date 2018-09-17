@@ -35,7 +35,7 @@ class ModerationToolbar(VersioningToolbar):
         We need to check if the object is not 'Review locked', and only allow
         Edit button if it isn't
         """
-        if is_obj_review_locked(self.toolbar.obj, self.request.user):
+        if self.toolbar.obj and is_obj_review_locked(self.toolbar.obj, self.request.user):
             # Don't display edit button as the item is Review locked
             # TODO alternatively we could add the edit button using super
             # and mark it as disabled, instead of adding another -disabled one
