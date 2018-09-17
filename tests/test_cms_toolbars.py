@@ -100,3 +100,12 @@ class TestCMSToolbars(BaseTestCase):
         self.assertTrue(
             toolbar.toolbar.get_right_items()[0].buttons[0].disabled
         )
+
+    def test_add_edit_button_without_toolbar_object(self):
+        ModerationRequest.objects.all().delete()
+        toolbar = self._get_toolbar(None)
+        toolbar.populate()
+        toolbar.post_template_populate()
+        # We shouldnt see Edit button when there is no toolbar object set.
+        # Some of the custome views in some apps dont have toolbar.obj
+        self.assertEquals(toolbar.toolbar.get_right_items(), [])
