@@ -322,7 +322,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         if obj and not is_comment_author(request.user, obj):
             return self.list_display
-        return
+
 
 class RequestCommentAdmin(admin.ModelAdmin):
     list_display = ['message', 'get_request_link', 'author', 'date_created']
@@ -398,7 +398,6 @@ class RequestCommentAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         if obj and not is_comment_author(request.user, obj):
             return self.list_display
-        return
 
 
 class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
