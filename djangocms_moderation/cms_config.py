@@ -1,7 +1,9 @@
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 
-from cms.app_base import CMSAppExtension
+from cms.app_base import CMSAppConfig, CMSAppExtension
+
+from .admin_actions import add_items_to_collection
 
 
 class ModerationExtension(CMSAppExtension):
@@ -26,3 +28,10 @@ class ModerationExtension(CMSAppExtension):
                 )
 
         self.moderated_models.extend(moderated_models)
+
+
+class CoreCMSAppConfig(CMSAppConfig):
+    djangocms_internalsearch_enabled = True
+    internalsearch_config_list = []
+    internalsearch_actions = [(add_items_to_collection, 'djangocms_moderation_add_items_to_collection',
+                               add_items_to_collection.short_description)]
