@@ -48,7 +48,6 @@ from . import views  # isort:skip
 class ModerationRequestActionInline(admin.TabularInline):
     model = ModerationRequestAction
     fields = ['show_user', 'message', 'date_taken', 'form_submission']
-    readonly_fields = ['show_user', 'date_taken', 'form_submission']
     verbose_name = _('Action')
     verbose_name_plural = _('Actions')
 
@@ -80,6 +79,11 @@ class ModerationRequestActionInline(admin.TabularInline):
             obj.step_approved.role.name
         )
     form_submission.short_description = _('Form Submission')
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and request.user == obj.author:
+            return ['show_user', 'date_taken', 'form_submission']
+        return self.fields
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
