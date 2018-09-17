@@ -4,6 +4,7 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -48,7 +49,6 @@ from . import views  # isort:skip
 class ModerationRequestActionInline(admin.TabularInline):
     model = ModerationRequestAction
     fields = ['show_user', 'message', 'date_taken', 'form_submission']
-    readonly_fields = ['show_user', 'date_taken', 'form_submission']
     verbose_name = _('Action')
     verbose_name_plural = _('Actions')
 
@@ -80,6 +80,11 @@ class ModerationRequestActionInline(admin.TabularInline):
             obj.step_approved.role.name
         )
     form_submission.short_description = _('Form Submission')
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and request.user == obj.author:
+            return ['show_user', 'date_taken', 'form_submission']
+        return self.fields
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
@@ -304,6 +309,21 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
         return super().changelist_view(request, extra_context)
 
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        collection_comment = get_object_or_404(CollectionComment, pk=int(object_id))
+        if request.user != collection_comment.author:
+            extra_context['readonly'] = True
+        return super().change_view(request, object_id,
+                                   form_url, extra_context=extra_context)
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user == getattr(obj, 'author', None)
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and request.user != obj.author:
+            return self.list_display
+
 
 class RequestCommentAdmin(admin.ModelAdmin):
     list_display = ['message', 'get_request_link', 'author', 'date_created']
@@ -362,8 +382,22 @@ class RequestCommentAdmin(admin.ModelAdmin):
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
             raise Http404
-
         return super().changelist_view(request, extra_context)
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        request_comment = get_object_or_404(RequestComment, pk=int(object_id))
+        if request.user != request_comment.author:
+            extra_context['readonly'] = True
+        return super().change_view(request, object_id,
+                                   form_url, extra_context=extra_context)
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user == getattr(obj, 'author', None)
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and request.user != obj.author:
+            return self.list_display
 
 
 class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
