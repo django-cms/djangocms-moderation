@@ -313,7 +313,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
                                    form_url, extra_context=extra_context)
 
     def has_delete_permission(self, request, obj=None):
-        return request.user == obj.author
+        return request.user == getattr(obj, 'author', None)
 
     def get_readonly_fields(self, request, obj=None):
         if obj and not (request.user == obj.author):
@@ -389,7 +389,7 @@ class RequestCommentAdmin(admin.ModelAdmin):
                                    form_url, extra_context=extra_context)
 
     def has_delete_permission(self, request, obj=None):
-        return request.user == obj.author
+        return request.user == getattr(obj, 'author', None)
 
     def get_readonly_fields(self, request, obj=None):
         if obj and not (request.user == obj.author):
