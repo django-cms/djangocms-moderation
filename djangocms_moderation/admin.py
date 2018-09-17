@@ -307,16 +307,16 @@ class CollectionCommentAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         collection_comment = CollectionComment.objects.get(pk=int(object_id))
-        if not (request.user == getattr(collection_comment, 'author', None)):
+        if not (request.user == collection_comment.author):
             extra_context['readonly'] = True
         return super().change_view(request, object_id,
                                    form_url, extra_context=extra_context)
 
     def has_delete_permission(self, request, obj=None):
-        return request.user == getattr(obj, 'author', None)
+        return request.user == obj.author
 
     def get_readonly_fields(self, request, obj=None):
-        if obj and not (request.user == getattr(obj, 'author', None)):
+        if obj and not (request.user == obj.author):
             return self.list_display
 
 
@@ -383,16 +383,16 @@ class RequestCommentAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         request_comment = RequestComment.objects.get(pk=int(object_id))
-        if not (request.user == getattr(request_comment, 'author', None)):
+        if not (request.user == request_comment.author):
             extra_context['readonly'] = True
         return super().change_view(request, object_id,
                                    form_url, extra_context=extra_context)
 
     def has_delete_permission(self, request, obj=None):
-        return request.user == getattr(obj, 'author', None)
+        return request.user == obj.author
 
     def get_readonly_fields(self, request, obj=None):
-        if obj and not (request.user == getattr(obj, 'author', None)):
+        if obj and not (request.user == obj.author):
             return self.list_display
 
 
