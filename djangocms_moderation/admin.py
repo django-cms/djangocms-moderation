@@ -25,11 +25,7 @@ from .forms import (
     RequestCommentForm,
     WorkflowStepInlineFormSet,
 )
-from .helpers import (
-    EditAndAddOnlyFieldsMixin,
-    get_form_submission_for_step,
-    is_comment_author,
-)
+from .helpers import EditAndAddOnlyFieldsMixin, get_form_submission_for_step
 from .models import (
     CollectionComment,
     ConfirmationFormSubmission,
@@ -311,16 +307,16 @@ class CollectionCommentAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         collection_comment = CollectionComment.objects.get(pk=int(object_id))
-        if collection_comment and not is_comment_author(request.user, collection_comment):
+        if not (request.user == getattr(collection_comment, 'author', None)):
             extra_context['readonly'] = True
         return super().change_view(request, object_id,
                                    form_url, extra_context=extra_context)
 
     def has_delete_permission(self, request, obj=None):
-        return obj and is_comment_author(request.user, obj)
+        return request.user == getattr(obj, 'author', None)
 
     def get_readonly_fields(self, request, obj=None):
-        if obj and not is_comment_author(request.user, obj):
+        if obj and not (request.user == getattr(obj, 'author', None)):
             return self.list_display
 
 
@@ -387,16 +383,16 @@ class RequestCommentAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         request_comment = RequestComment.objects.get(pk=int(object_id))
-        if request_comment and not is_comment_author(request.user, request_comment):
+        if not (request.user == getattr(request_comment, 'author', None)):
             extra_context['readonly'] = True
         return super().change_view(request, object_id,
                                    form_url, extra_context=extra_context)
 
     def has_delete_permission(self, request, obj=None):
-        return obj and is_comment_author(request.user, obj)
+        return request.user == getattr(obj, 'author', None)
 
     def get_readonly_fields(self, request, obj=None):
-        if obj and not is_comment_author(request.user, obj):
+        if obj and not (request.user == getattr(obj, 'author', None)):
             return self.list_display
 
 

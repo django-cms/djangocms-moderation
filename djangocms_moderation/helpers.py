@@ -48,13 +48,3 @@ class EditAndAddOnlyFieldsMixin(object):
             return self.readonly_fields + self.addonly_fields
         else:  # Adding a new object
             return self.readonly_fields + self.editonly_fields
-
-
-def is_comment_author(user, obj):
-    """
-    helper method to check if current user is author of object
-    @param user: Current User
-    @param object: model object
-    @return: boolean
-    """
-    return user == getattr(obj, 'author')
