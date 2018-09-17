@@ -50,13 +50,13 @@ class EditAndAddOnlyFieldsMixin(object):
             return self.readonly_fields + self.editonly_fields
 
 
-def is_author(request, object):
+def is_comment_author(user, obj):
     """
     helper method to check if current user is author of object
-    @param request: WSGI Request object
+    @param user: Current User
     @param object: model object
     @return: boolean
     """
-    if object and hasattr(object, 'author'):
-        return request.user == object.author
+    if obj and hasattr(obj, 'author'):
+        return user == obj.author
     return False
