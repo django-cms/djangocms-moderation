@@ -386,8 +386,8 @@ class RequestCommentAdmin(admin.ModelAdmin):
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
-        request_comment_object = RequestComment.objects.get(pk=int(object_id))
-        if not is_comment_author(request.user, request_comment_object):
+        request_comment = RequestComment.objects.get(pk=int(object_id))
+        if not is_comment_author(request.user, request_comment):
             extra_context['readonly'] = True
         return super().change_view(request, object_id,
                                    form_url, extra_context=extra_context)
