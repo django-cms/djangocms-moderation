@@ -7,7 +7,7 @@ from django.contrib.admin.templatetags.admin_modify import (
 @register.inclusion_tag('admin/submit_line.html', takes_context=True)
 def submit_row(context):
     """
-    Displays the row of buttons for delete and save.
+    Hide the row of buttons for delete and save if readonly otherwise display.
     """
     if context.get('readonly'):
         return dict()
