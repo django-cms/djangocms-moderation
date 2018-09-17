@@ -57,6 +57,4 @@ def is_comment_author(user, obj):
     @param object: model object
     @return: boolean
     """
-    if obj and hasattr(obj, 'author'):
-        return user == obj.author
-    return False
+    return user == getattr(obj, 'author')
