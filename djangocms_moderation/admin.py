@@ -264,11 +264,11 @@ class CollectionCommentAdmin(admin.ModelAdmin):
     fields = ['collection', 'message', 'author']
 
     def get_changeform_initial_data(self, request):
-        #  Extract the id from the URL. The id is stored in _changelsit_filters
-        #  by Django so that the request knows where to return to after form submission.
         data = {
             'author': request.user,
         }
+        #  Extract the id from the URL. The id is stored in _changelsit_filters
+        #  by Django so that the request knows where to return to after form submission.
         collection_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'collection__id__exact'
         )
@@ -452,15 +452,10 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return url_patterns + super().get_urls()
 
     def get_changeform_initial_data(self, request):
-        #  Extract the id from the URL. The id is stored in _changelsit_filters
-        #  by Django so that the request knows where to return to after form submission.
-        data = {
-            'author': request.user,
-        }
-        return data
+        return {'author': request.user}
 
     def get_readonly_fields(self, request, obj=None):
-        if obj:  # Editing an existing object, so `addonly_fields` should be readonly
+        if obj:  # Editing an existing object
             return ['author', 'workflow']
         else:  # Adding a new object
             return ['status']
@@ -468,8 +463,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        # import ipdb; ipdb.set_trace()
-        if obj and (('author',) not in self.readonly_fields):
+        if obj and 'author' not in self.readonly_fields:
             pass
         else:
             form.base_fields['author'].widget = forms.HiddenInput()
