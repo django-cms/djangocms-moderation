@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 
 from .models import ConfirmationFormSubmission, Workflow
@@ -48,3 +49,13 @@ class EditAndAddOnlyFieldsMixin(object):
             return self.readonly_fields + self.addonly_fields
         else:  # Adding a new object
             return self.readonly_fields + self.editonly_fields
+
+def is_moderated(model):
+    """
+    Helper method to check if model is registered to moderated
+    @param model: model class
+    @return: bool
+    """
+    moderation_config = apps.get_app_config('djangocms_moderations')
+    moderated_models = moderation_config.cms_extension.moderated_models
+    return model in moderated_models
