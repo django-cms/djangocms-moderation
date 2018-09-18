@@ -1,4 +1,3 @@
-from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 
 from .models import ConfirmationFormSubmission, Workflow
@@ -35,27 +34,3 @@ def get_form_submission_for_step(active_request, current_step):
         .filter(request=active_request, for_step=current_step)
     )
     return lookup.first()
-
-
-class EditAndAddOnlyFieldsMixin(object):
-    editonly_fields = ()
-    addonly_fields = ()
-
-    def get_readonly_fields(self, request, obj=None):
-        """
-        Override to provide editonly_fields and addonly_fields functionality
-        """
-        if obj:  # Editing an existing object, so `addonly_fields` should be readonly
-            return self.readonly_fields + self.addonly_fields
-        else:  # Adding a new object
-            return self.readonly_fields + self.editonly_fields
-
-def is_moderated(model):
-    """
-    Helper method to check if model is registered to moderated
-    @param model: model class
-    @return: bool
-    """
-    moderation_config = apps.get_app_config('djangocms_moderations')
-    moderated_models = moderation_config.cms_extension.moderated_models
-    return model in moderated_models
