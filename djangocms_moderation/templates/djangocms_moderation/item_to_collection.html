@@ -21,21 +21,23 @@
      <table>
         <thead>
             <tr>
-                <th>{% trans "Version" %}</th>
+                <th>{% trans "Content Type" %}</th>
+                <th>{% trans "Identifier" %}</th>
                 <th>{% trans "Author" %}</th>
                 <th>{% trans "Edit Date" %}</th>
-                <th>{% trans "Version" %}</th>
+                <th>{% trans "Version #" %}</th>
                 <th>{% trans "Status" %}</th>
             </tr>
         </thead>
         <tbody>
-        {% for content_object in content_object_list %}
+        {% for mrl in moderation_request_list %}
             <tr class="row1 djangocms_moderation_collections_1">
-                <td>{{ version }}</td>
-                <td>Stub Author [versioning]</td>
-                <td>Stub Date [versioning]</td>
-                <td>Stub VNumber [versioning]</td>
-                <td>Stub Published [versioning] </td>
+                <td>{{ mrl.version.content_type|title }}</td>
+                <td>{{ mrl.version.content }}</td>
+                <td>{{ mrl.version.created_by }}</td>
+                <td>{{ mrl.version.created }}</td>
+                <td>{{ mrl.version.number }}</td>
+                <td>{{ mrl.version.get_state_display }} </td>
             </tr>
         {% endfor %}
         </tbody>

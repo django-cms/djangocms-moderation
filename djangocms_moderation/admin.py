@@ -4,6 +4,7 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -48,7 +49,6 @@ from . import views  # isort:skip
 class ModerationRequestActionInline(admin.TabularInline):
     model = ModerationRequestAction
     fields = ['show_user', 'message', 'date_taken', 'form_submission']
-    readonly_fields = ['show_user', 'date_taken', 'form_submission']
     verbose_name = _('Action')
     verbose_name_plural = _('Actions')
 
@@ -80,6 +80,11 @@ class ModerationRequestActionInline(admin.TabularInline):
             obj.step_approved.role.name
         )
     form_submission.short_description = _('Form Submission')
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and request.user == obj.author:
+            return ['show_user', 'date_taken', 'form_submission']
+        return self.fields
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
@@ -303,18 +308,33 @@ class CollectionCommentAdmin(admin.ModelAdmin):
             raise Http404
         return super().changelist_view(request, extra_context)
 
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        
+        # hide these buttons as they are not relevant for comments
+        extra_context['show_save_and_add_another'] = False
+        extra_context['show_save_and_continue'] = False
+
+        collection_comment = get_object_or_404(CollectionComment, pk=int(object_id))
+        if request.user != collection_comment.author:
+            extra_context['readonly'] = True
+            
         # get the collection for the breadcrumb trail
         collection_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'collection__id__exact'
         )
-        extra_context = dict(
-            show_save_and_add_another=False,
-            show_save_and_continue=False,
-        )
         if collection_id:
             extra_context['collection_id'] = collection_id
-        return super().changeform_view(request, object_id, form_url, extra_context)
+
+        return super().change_view(request, object_id,
+                                   form_url, extra_context=extra_context)
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user == getattr(obj, 'author', None)
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and request.user != obj.author:
+            return self.list_display
 
 
 class RequestCommentAdmin(admin.ModelAdmin):
@@ -374,21 +394,35 @@ class RequestCommentAdmin(admin.ModelAdmin):
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
             raise Http404
-
         return super().changelist_view(request, extra_context)
 
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
-        # get the collection for the breadcrumb trail
-        extra_context = dict(
-            show_save_and_add_another=False,
-            show_save_and_continue=False,
-        )
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+
+        # hide these buttons as they are not relevant for comments
+        extra_context['show_save_and_add_another'] = False
+        extra_context['show_save_and_continue'] = False
+
+        request_comment = get_object_or_404(RequestComment, pk=int(object_id))
+        if request.user != request_comment.author:
+            extra_context['readonly'] = True
+
+        # for breadcrumb trail
         moderation_request_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'moderation_request__id__exact'
         )
         if moderation_request_id:
             extra_context['moderation_request_id'] = moderation_request_id
-        return super().changeform_view(request, object_id, form_url, extra_context)
+
+        return super().change_view(request, object_id,
+                                   form_url, extra_context=extra_context)
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user == getattr(obj, 'author', None)
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and request.user != obj.author:
+            return self.list_display
 
 
 class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -417,12 +451,17 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
     editonly_fields = ('status',)  # fields editable only on EDIT
     addonly_fields = ('workflow',)  # fields editable only on CREATE
+    list_filter = [
+        'author',
+        'status',
+        'date_created',
+    ]
 
     def get_list_display(self, request):
         list_display = [
             'id',
             'name',
-            'get_moderator',
+            'author',
             'workflow',
             'status',
             'date_created',
@@ -453,10 +492,6 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
             _('View')
         )
     get_comments_link.short_description = _('Comments')
-
-    def get_moderator(self, obj):
-        return obj.author
-    get_moderator.short_description = _('Moderator')
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):
