@@ -489,17 +489,14 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return {'author': request.user}
 
     def get_readonly_fields(self, request, obj=None):
-        if obj:  # Editing an existing object
+        if obj:
             return ['author', 'workflow']
-        else:  # Adding a new object
+        else:
             return ['status']
-        pass
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        if obj and 'author' not in self.readonly_fields:
-            pass
-        else:
+        if obj and 'author' in self.readonly_fields:
             form.base_fields['author'].widget = forms.HiddenInput()
         return form
 
