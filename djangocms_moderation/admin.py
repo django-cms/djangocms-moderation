@@ -310,7 +310,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
-        
+
         # hide these buttons as they are not relevant for comments
         extra_context['show_save_and_add_another'] = False
         extra_context['show_save_and_continue'] = False
@@ -318,7 +318,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
         collection_comment = get_object_or_404(CollectionComment, pk=int(object_id))
         if request.user != collection_comment.author:
             extra_context['readonly'] = True
-            
+
         # get the collection for the breadcrumb trail
         collection_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'collection__id__exact'

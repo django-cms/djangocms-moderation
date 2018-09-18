@@ -1,9 +1,5 @@
 from django import template
-from django.template.context import Context
-from django.contrib.admin.templatetags.admin_modify import (
-    prepopulated_fields_js as original_prepopulated_fields_js,
-    submit_row as original_submit_row,
-)
+from django.contrib.admin.templatetags.admin_modify import submit_row as original_submit_row
 
 register = template.Library()
 
