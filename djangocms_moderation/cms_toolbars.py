@@ -45,7 +45,8 @@ class ModerationToolbar(VersioningToolbar):
                 disabled=True,
                 side=self.toolbar.RIGHT,
             )
-        return super()._add_edit_button()
+        else:
+            return super()._add_edit_button()
 
     def _add_moderation_buttons(self):
         if self._is_versioned() and self.toolbar.edit_mode_active:
