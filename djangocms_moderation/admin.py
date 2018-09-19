@@ -112,7 +112,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             'id',
             'get_content_type',
             'get_title',
-            'get_content_author',
+            'get_version_author',
             'get_preview_link',
             'get_status',
         ]
@@ -144,13 +144,9 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         )
     get_comments_link.short_description = _('Comments')
 
-    def get_content_author(self, obj):
-        """
-        This is not necessarily the same person as the RequestAction author
-        """
-        #  TODO this should get the author from the version object e.g. obj.content_object.created_by
-        return "author placeholder"
-    get_content_author.short_description = _('Content author')
+    def get_version_author(self, obj):
+        return obj.version.created_by
+    get_version_author.short_description = _('Version author')
 
     def has_add_permission(self, request):
         return False
