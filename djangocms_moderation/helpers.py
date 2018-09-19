@@ -50,6 +50,7 @@ class EditAndAddOnlyFieldsMixin(object):
         else:  # Adding a new object
             return self.readonly_fields + self.editonly_fields
 
+
 def is_moderated(model):
     """
     Helper method to check if model is registered to moderated

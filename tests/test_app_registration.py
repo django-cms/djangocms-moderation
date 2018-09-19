@@ -76,4 +76,4 @@ class CMSConfigIntegrationTest(CMSTestCase):
         for model in self.moderated_models:
             self.assertIn(model, registered_model)
 
-        self.assertEqual(len(registered_model), 4)
+        self.assertEqual(len(registered_model), 5)
