@@ -10,3 +10,5 @@ build/
 *.sqlite
 .coverage
 .python-version
+node_modules/
+yarn.lock

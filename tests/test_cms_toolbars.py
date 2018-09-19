@@ -93,6 +93,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar = self._get_toolbar(version.content)
         toolbar.populate()
         toolbar.post_template_populate()
+        self.assertEqual(1, len(toolbar.toolbar.get_right_items()))
         self.assertEquals(
             toolbar.toolbar.get_right_items()[0].buttons[0].name,
             'Edit',
