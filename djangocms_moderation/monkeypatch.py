@@ -17,8 +17,8 @@ def get_state_actions(func):
     as we don't want publishing in moderation.
     Add moderation link
     """
-    def inner(self, request):
-        links = func(self, request)
+    def inner(self):
+        links = func(self)
         links = [link for link in links if link != self._get_publish_link]
         return links + [self._get_moderation_link]
     return inner
@@ -41,6 +41,7 @@ def _get_moderation_link(self, version, request):
             ),
             version_id=version.pk
         )
+        # TODO use a fancy icon as for the rest of the actions?
         return format_html(
             '<a href="{}">{}</a>',
             url,
