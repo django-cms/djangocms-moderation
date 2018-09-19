@@ -40,15 +40,3 @@
 &rsaquo; {% trans "Requests" %}
 </div>
 {% endblock %}
-
-{% block content %}
-{{ collection }}
-{{ block.super }}
-
-{% comment %}
-    TODO This template will be overridden to provide the required functionality.
-    For now, lets just output the selected collection
-{% endcomment %}
-
-{% endblock %}
-
