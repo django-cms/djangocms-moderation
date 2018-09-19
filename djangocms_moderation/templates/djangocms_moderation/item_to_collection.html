@@ -48,6 +48,10 @@
     </div>
 </div>
 </form>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
 <script type="text/javascript">
     (function($) {
         $(function() {
@@ -56,7 +60,7 @@
             collection_sel.on('change', function() {
                 let jqThis = $(this);
                 let newUrl;
-                if (location.href.indexOf('collection_id') == -1) {
+                if (location.href.indexOf('collection_id') === -1) {
                     newUrl = location.href + '&collection_id=' + jqThis.val();
                 } else {
                     newUrl = location.href.replace(
