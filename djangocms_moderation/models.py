@@ -174,31 +174,6 @@ class Workflow(models.Model):
     def first_step(self):
         return self.steps.first()
 
-    def _lookup_active_request(self, page, language):
-        lookup = (
-            self
-            .requests
-            .filter(
-                page=page,
-                language=language,
-                is_active=True,
-            )
-        )
-        return lookup
-
-    def get_active_request(self, page, language):
-        lookup = self._lookup_active_request(page, language)
-
-        try:
-            active_request = lookup.get()
-        except ModerationRequest.DoesNotExist:
-            active_request = None
-        return active_request
-
-    def has_active_request(self, page, language):
-        lookup = self._lookup_active_request(page, language)
-        return lookup.exists()
-
 
 @python_2_unicode_compatible
 class WorkflowStep(models.Model):
