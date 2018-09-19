@@ -306,16 +306,28 @@ class CollectionCommentAdmin(admin.ModelAdmin):
                 )
         else:
             raise Http404
-
         return super().changelist_view(request, extra_context)
 
-    def change_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = extra_context or {}
-        collection_comment = get_object_or_404(CollectionComment, pk=int(object_id))
-        if request.user != collection_comment.author:
-            extra_context['readonly'] = True
-        return super().change_view(request, object_id,
-                                   form_url, extra_context=extra_context)
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        # get the collection for the breadcrumb trail
+        collection_id = utils.extract_filter_param_from_changelist_url(
+            request, '_changelist_filters', 'collection__id__exact'
+        )
+        extra_context = extra_context or dict(
+            show_save_and_add_another=False,
+            show_save_and_continue=False,
+        )
+        if object_id:
+            try:
+                collection_comment = get_object_or_404(CollectionComment, pk=int(object_id))
+            except ValueError:
+                raise Http404
+            if request.user != collection_comment.author:
+                extra_context['readonly'] = True
+
+        if collection_id:
+            extra_context['collection_id'] = collection_id
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_delete_permission(self, request, obj=None):
         return request.user == getattr(obj, 'author', None)
@@ -384,13 +396,27 @@ class RequestCommentAdmin(admin.ModelAdmin):
             raise Http404
         return super().changelist_view(request, extra_context)
 
-    def change_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = extra_context or {}
-        request_comment = get_object_or_404(RequestComment, pk=int(object_id))
-        if request.user != request_comment.author:
-            extra_context['readonly'] = True
-        return super().change_view(request, object_id,
-                                   form_url, extra_context=extra_context)
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or dict(
+            show_save_and_add_another=False,
+            show_save_and_continue=False,
+        )
+        if object_id:
+            try:
+                request_comment = get_object_or_404(RequestComment, pk=int(object_id))
+            except ValueError:
+                raise Http404
+            if request.user != request_comment.author:
+                extra_context['readonly'] = True
+
+        # for breadcrumb trail
+        moderation_request_id = utils.extract_filter_param_from_changelist_url(
+            request, '_changelist_filters', 'moderation_request__id__exact'
+        )
+        if moderation_request_id:
+            extra_context['moderation_request_id'] = moderation_request_id
+
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_delete_permission(self, request, obj=None):
         return request.user == getattr(obj, 'author', None)
