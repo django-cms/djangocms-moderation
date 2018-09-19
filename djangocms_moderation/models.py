@@ -358,7 +358,7 @@ class ModerationRequest(models.Model):
     )
     is_active = models.BooleanField(
         verbose_name=_('is active'),
-        default=False,
+        default=True,
         db_index=True,
     )
     date_sent = models.DateTimeField(

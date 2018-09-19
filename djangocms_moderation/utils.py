@@ -74,7 +74,7 @@ def get_active_moderation_request(obj):
 
     try:
         return ModerationRequest.objects.get(
-            version=version
+            version=version, is_active=True
         )
     except ModerationRequest.DoesNotExist:
         return None
