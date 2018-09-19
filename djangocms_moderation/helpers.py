@@ -57,6 +57,6 @@ def is_moderated(model):
     @param model: model class
     @return: bool
     """
-    moderation_config = apps.get_app_config('djangocms_moderations')
+    moderation_config = apps.get_app_config('djangocms_moderation')
     moderated_models = moderation_config.cms_extension.moderated_models
     return model in moderated_models
