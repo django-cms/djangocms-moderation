@@ -317,9 +317,12 @@ class CollectionCommentAdmin(admin.ModelAdmin):
             show_save_and_add_another=False,
             show_save_and_continue=False,
         )
-        if object_id:
+        try:
             collection_comment = get_object_or_404(CollectionComment, pk=int(object_id))
-            if request.user != collection_comment.author:
+        except ValueError:
+                raise Http404
+
+        if request.user != collection_comment.author:
                 extra_context['readonly'] = True
 
         if collection_id:
@@ -398,9 +401,13 @@ class RequestCommentAdmin(admin.ModelAdmin):
             show_save_and_add_another=False,
             show_save_and_continue=False,
         )
-        if object_id:
+
+        try:
             request_comment = get_object_or_404(RequestComment, pk=int(object_id))
-            if request.user != request_comment.author:
+        except ValueError:
+            raise Http404
+
+        if request.user != request_comment.author:
                 extra_context['readonly'] = True
 
         # for breadcrumb trail
