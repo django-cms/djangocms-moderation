@@ -54,7 +54,7 @@ class CollectionItemViewTest(BaseViewTestCase):
                 language='en',
                 args=()
             ),
-            modal=1,
+            _modal=1,
         )
         response = self.client.post(
             path=url,

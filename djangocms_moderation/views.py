@@ -43,7 +43,7 @@ class CollectionItemView(FormView):
         messages.success(self.request, _('Item successfully added to moderation collection'))
 
         # Return different response if we opened the view as a modal
-        if self.request.GET.get('modal'):
+        if self.request.GET.get('_modal'):
             return render(self.request, self.success_template_name, {})
         else:
             # Otherwise redirect to the grouper changelist as this is likely
