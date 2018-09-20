@@ -230,7 +230,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return super().changelist_view(request, extra_context)
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
-        extra_context = dict()
+        extra_context = extra_context or dict()
 
         # get the collection for the breadcrumb trail
         collection_id = utils.extract_filter_param_from_changelist_url(
