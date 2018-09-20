@@ -81,12 +81,13 @@ class CollectionItemView(FormView):
         else:
             moderation_request_list = []
 
-        version = None
         if version_id:
             try:
                 version = Version.objects.get(pk=int(version_id))
             except (TypeError, Version.DoesNotExist):
                 raise Http404
+        else:
+            version = None
 
         model_admin = admin.site._registry[ModerationCollection]
         context.update({
