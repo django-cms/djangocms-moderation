@@ -163,6 +163,56 @@ class CollectionItemForm(forms.Form):
         return self.cleaned_data
 
 
+class CollectionItemsForm(forms.Form):
+    collection = forms.ModelChoiceField(
+        queryset=ModerationCollection.objects.filter(status=COLLECTING),
+        required=True
+    )
+    version = forms.ModelMultipleChoiceField(
+        queryset=Version.objects.all(),
+        required=True,
+        widget=forms.HiddenInput(),
+    )
+
+    def set_collection_widget(self, request):
+        related_modeladmin = admin.site._registry.get(ModerationCollection)
+        dbfield = ModerationRequest._meta.get_field('collection')
+        formfield = self.fields['collection']
+        formfield.widget = RelatedFieldWidgetWrapper(
+            formfield.widget,
+            dbfield.rel,
+            admin_site=admin.site,
+            can_add_related=related_modeladmin.has_add_permission(request),
+            can_change_related=related_modeladmin.has_change_permission(request),
+            can_delete_related=related_modeladmin.has_delete_permission(request),
+        )
+
+    def clean(self):
+        """
+        Validates content_object_id: Checks that a given content_object_id has
+        a content_object and it is not currently part of any ModerationRequest
+
+        :return:
+        """
+        if self.errors:
+            return self.cleaned_data
+
+        version = self.cleaned_data['version']
+
+        request_with_version_exists = ModerationRequest.objects.filter(
+            version=version
+        ).exists()
+
+        if request_with_version_exists:
+            raise forms.ValidationError(_(
+                "{} is already part of existing moderation request which is part "
+                "of another active collection".format(version.content)
+            ))
+
+        self.cleaned_data['version'] = version
+        return self.cleaned_data
+
+
 class SubmitCollectionForModerationForm(forms.Form):
     moderator = forms.ModelChoiceField(
         label=_('Select review group'),
@@ -192,6 +242,7 @@ class SubmitCollectionForModerationForm(forms.Form):
             by_user=self.user,
             to_user=self.cleaned_data.get('moderator'),
         )
+
 
 
 class CollectionCommentForm(forms.ModelForm):

@@ -6,13 +6,12 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
-
+from djangocms_versioning.models import Version
 from cms.utils.urlutils import add_url_parameters
 
-from .forms import CollectionItemForm, SubmitCollectionForModerationForm
+from .forms import CollectionItemForm, CollectionItemsForm, SubmitCollectionForModerationForm
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
-
 
 from . import constants  # isort:skip
 
@@ -75,6 +74,71 @@ class CollectionItemView(FormView):
 
 
 add_item_to_collection = CollectionItemView.as_view()
+
+
+class CollectionItemsView(FormView):
+    template_name = 'djangocms_moderation/item_to_collection.html'
+    form_class = CollectionItemsForm
+    success_template_name = 'djangocms_moderation/request_finalized.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(CollectionItemsView, self).get_form_kwargs()
+
+        ids = self.request.GET.get('version_ids')
+        vids = Version.objects.filter(pk__in=list(map(int, ids.split(','))))
+
+        kwargs['initial'].update({
+            #'version': self.request.GET.get('version_ids'),
+            'version': vids,
+        })
+        collection_id = self.request.GET.get('collection_id')
+
+        if collection_id:
+            kwargs['initial']['collection'] = collection_id
+        return kwargs
+
+    def form_valid(self, form):
+        version = form.cleaned_data['version']
+        collection = form.cleaned_data['collection']
+        collection.add_version(version)
+        messages.success(self.request, _('Item successfully added to moderation collection'))
+        return render(self.request, self.success_template_name, {})
+
+    def get_form(self, **kwargs):
+        form = super(CollectionItemsView, self).get_form(**kwargs)
+        form.set_collection_widget(self.request)
+        return form
+
+    def get_context_data(self, **kwargs):
+        """
+        Gets collection_id from params or from the first collection in the list
+        when no ?collection_id is not supplied
+
+        Always gets content_object_list from a collection at a time
+        """
+        context = super(CollectionItemsView, self).get_context_data(**kwargs)
+        opts_meta = ModerationCollection._meta
+        collection_id = self.request.GET.get('collection_id')
+
+        if collection_id:
+            collection = ModerationCollection.objects.get(pk=collection_id)
+            moderation_request_list = collection.moderation_requests.all()
+        else:
+            moderation_request_list = []
+
+        model_admin = admin.site._registry[ModerationCollection]
+        context.update({
+            'moderation_request_list': moderation_request_list,
+            'opts': opts_meta,
+            'title': _('Add to collection'),
+            'form': self.get_form(),
+            'media': model_admin.media,
+        })
+
+        return context
+
+
+add_items_to_collection = CollectionItemsView.as_view()
 
 
 def moderation_confirmation_page(request, confirmation_id):
