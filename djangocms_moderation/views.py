@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
+
 from djangocms_versioning.admin import GROUPER_PARAM
 
 from .forms import CollectionItemForm, SubmitCollectionForModerationForm
