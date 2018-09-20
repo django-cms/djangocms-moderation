@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
+from djangocms_versioning.admin import GROUPER_PARAM
 
 from .forms import CollectionItemForm, SubmitCollectionForModerationForm
 from .models import ConfirmationPage, ModerationCollection
@@ -38,7 +39,22 @@ class CollectionItemView(FormView):
         collection = form.cleaned_data['collection']
         collection.add_version(version)
         messages.success(self.request, _('Item successfully added to moderation collection'))
-        return render(self.request, self.success_template_name, {})
+
+        # Return different response if we opened the view as a modal
+        if self.request.GET.get('modal'):
+            return render(self.request, self.success_template_name, {})
+        else:
+            # Otherwise redirect to the grouper changelist as this is likely
+            # the place this view was called from
+            url = "{url}?{grouper_param}={grouper_id}".format(
+                url=reverse('admin:{app}_{model}version_changelist'.format(
+                    app=version._meta.app_label,
+                    model=version.content._meta.model_name,
+                )),
+                grouper_param=GROUPER_PARAM,
+                grouper_id=version.grouper.id,
+            )
+            return HttpResponseRedirect(url)
 
     def get_form(self, **kwargs):
         form = super(CollectionItemView, self).get_form(**kwargs)
