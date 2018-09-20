@@ -5,7 +5,11 @@
 <form action="{{ request.get_full_path }}" method="post">
 {% csrf_token %}
 <div>
-    <h2>{% trans "Add to existing collection" %}</h2>
+    <h2>
+        {% blocktrans with version.content as content_name %}
+           Add '{{ content_name }}' to collection
+        {% endblocktrans %}
+    </h2>
     {% if form.non_field_errors %}
         <span>{{ form.non_field_errors }}</span>
     {% endif %}
@@ -13,6 +17,8 @@
         <div class="related-widget-wrapper widget-wrapper-links-2">
             {{ form.version.as_hidden }}
             {{ form.version.errors }}
+            {{ form.collection.label_tag }}
+            {{ form.collection.errors }}
             {{ form.collection }}
         </div>
     </div>
