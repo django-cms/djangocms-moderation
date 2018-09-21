@@ -45,8 +45,11 @@ def extract_filter_param_from_changelist_url(request, keyname, parametername):
     """
     changelist_filters = request.GET.get(keyname)
     parameter_value = parse_qs(changelist_filters).get(parametername)
-    return parameter_value[0]
-
+    try:
+        value = parameter_value[0]
+    except IndexError:
+        return None
+    return value
 
 def is_obj_review_locked(obj, user):
     """
