@@ -171,7 +171,7 @@ class CollectionItemsForm(forms.Form):
     version = forms.ModelMultipleChoiceField(
         queryset=Version.objects.all(),
         required=True,
-        widget=forms.HiddenInput(),
+        widget=forms.MultipleHiddenInput(),
     )
 
     def set_collection_widget(self, request):
