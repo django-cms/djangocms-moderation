@@ -91,11 +91,14 @@ class CollectionItemViewTest(BaseViewTestCase):
 
         # Check we redirect back to the grouper changelist
         self.assertEqual(response.status_code, 302)
-        redirect_url = "{url}?{grouper_param}={grouper_id}".format(
-            url=reverse('admin:{app}_{model}version_changelist'.format(
+        changelist_url = reverse(
+            'admin:{app}_{model}version_changelist'.format(
                 app=self.pg_version._meta.app_label,
                 model=self.pg_version.content._meta.model_name,
-            )),
+            )
+        )
+        redirect_url = "{changelist_url}?{grouper_param}={grouper_id}".format(
+            changelist_url=changelist_url,
             grouper_param=GROUPER_PARAM,
             grouper_id=self.pg_version.grouper.id,
         )
