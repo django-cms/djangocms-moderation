@@ -16,8 +16,8 @@ from .utils import (
 def get_state_actions(func):
     """
     Monkey patch VersionAdmin's get_state_actions to remove publish link,
-    as we don't want publishing in moderation.
-    Add moderation link
+    as we don't want publishing CMSToolbar button in moderation.
+    + Add moderation link
     """
     def inner(self):
         links = func(self)
