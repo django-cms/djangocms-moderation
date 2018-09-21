@@ -76,15 +76,19 @@ class CollectionItemView(FormView):
         version_id = self.request.GET.get('version_id')
 
         if collection_id:
-            collection = ModerationCollection.objects.get(pk=collection_id)
-            moderation_request_list = collection.moderation_requests.all()
+            try:
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+            else:
+                moderation_request_list = collection.moderation_requests.all()
         else:
             moderation_request_list = []
 
         if version_id:
             try:
                 version = Version.objects.get(pk=int(version_id))
-            except (TypeError, Version.DoesNotExist):
+            except (ValueError, Version.DoesNotExist):
                 raise Http404
         else:
             version = None
