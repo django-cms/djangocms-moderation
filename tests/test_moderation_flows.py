@@ -23,7 +23,6 @@ class ModerationFlowsTestCase(TestCase):
             name='Workflow 1', is_default=True, requires_compliance_number=True
         )
 
-
         # create users, groups and roles
         cls.author = User.objects.create_superuser(
             username='test1', email='test1@test1.com', password='test1',
