@@ -23,7 +23,6 @@ class ModerationFlowsTestCase(TestCase):
             name='Workflow 1', is_default=True, requires_compliance_number=True
         )
 
-        cls.page = create_page(title='Page 1', template='page.html', language='en', )
 
         # create users, groups and roles
         cls.author = User.objects.create_superuser(
@@ -35,6 +34,8 @@ class ModerationFlowsTestCase(TestCase):
         cls.moderator_2 = User.objects.create_superuser(
             username='test3', email='test3@test.com', password='test3',
         )
+
+        cls.page = create_page(title='Page 1', template='page.html', language='en', created_by=cls.author)
 
         cls.role1 = Role.objects.create(name='Role 1', user=cls.moderator_1)
         cls.role2 = Role.objects.create(name='Role 2', user=cls.moderator_2)
