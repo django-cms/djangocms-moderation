@@ -1,13 +1,15 @@
-from cms.utils.urlutils import add_url_parameters
 from django.utils.html import format_html
-from djangocms_versioning.admin import VersionAdmin
 from django.utils.translation import ugettext_lazy as _
+
+from cms.utils.urlutils import add_url_parameters
+
+from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT
 
-from djangocms_moderation.utils import (
+from .utils import (
+    get_active_moderation_request,
     get_admin_url,
     is_obj_review_locked,
-    get_active_moderation_request,
 )
 
 
