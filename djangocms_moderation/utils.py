@@ -50,6 +50,7 @@ def extract_filter_param_from_changelist_url(request, keyname, parametername):
     except IndexError:
         return None
 
+
 def is_obj_review_locked(obj, user):
     """
     Util function which determines if the `obj` is Review locked.
