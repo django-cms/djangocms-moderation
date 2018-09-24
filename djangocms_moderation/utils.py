@@ -73,8 +73,6 @@ def get_active_moderation_request(content_object):
     version = Version.objects.get_for_content(content_object)
 
     try:
-        return ModerationRequest.objects.get(
-            version=version, is_active=True
-        )
+        return ModerationRequest.objects.get(version=version, is_active=True)
     except ModerationRequest.DoesNotExist:
         return None
