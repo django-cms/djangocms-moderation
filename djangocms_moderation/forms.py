@@ -113,7 +113,6 @@ class UpdateModerationRequestForm(forms.Form):
 
 
 class CollectionItemForm(forms.Form):
-
     collection = forms.ModelChoiceField(
         queryset=ModerationCollection.objects.filter(status=COLLECTING),
         required=True
@@ -199,17 +198,23 @@ class CollectionItemsForm(forms.Form):
 
         version = self.cleaned_data['version']
 
-        request_with_version_exists = ModerationRequest.objects.filter(
-            version=version
-        ).exists()
+        version_with_no_request = []
+        for v in version:
 
-        if request_with_version_exists:
+            request_with_version_exists = ModerationRequest.objects.filter(
+                version=version
+            ).exists()
+
+            if not request_with_version_exists:
+                version_with_no_request.append(v)
+
+        if len(version_with_no_request) == 0:
             raise forms.ValidationError(_(
-                "{} is already part of existing moderation request which is part "
-                "of another active collection".format(version.content)
+                "All items are already part of an existing moderation request which is part "
+                "of another active collection"
             ))
 
-        self.cleaned_data['version'] = version
+        self.cleaned_data['version'] = version_with_no_request
         return self.cleaned_data
 
 
@@ -244,13 +249,13 @@ class SubmitCollectionForModerationForm(forms.Form):
         )
 
 
-
 class CollectionCommentForm(forms.ModelForm):
     """
     The author and moderation request should be pre-filled and non-editable.
     NB: Hidden fields seems to be the only reliable way to do this;
     readonly fields do not work for add, only for edit.
     """
+
     class Meta:
         model = CollectionComment
         fields = '__all__'
@@ -266,6 +271,7 @@ class RequestCommentForm(forms.ModelForm):
     NB: Hidden fields seems to be the only reliable way to do this;
     readonly fields do not work for add, only for edit.
     """
+
     class Meta:
         model = RequestComment
         fields = '__all__'

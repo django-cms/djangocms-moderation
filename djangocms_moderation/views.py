@@ -88,7 +88,6 @@ class CollectionItemsView(FormView):
         vids = Version.objects.filter(pk__in=list(map(int, ids.split(','))))
 
         kwargs['initial'].update({
-            #'version': self.request.GET.get('version_ids'),
             'version': vids,
         })
         collection_id = self.request.GET.get('collection_id')
@@ -100,8 +99,9 @@ class CollectionItemsView(FormView):
     def form_valid(self, form):
         version = form.cleaned_data['version']
         collection = form.cleaned_data['collection']
-        collection.add_version(version)
-        messages.success(self.request, _('Item successfully added to moderation collection'))
+        for v in version:
+            collection.add_version(v)
+        messages.success(self.request, _('{} items successfully added to moderation collection'.format(len(version))))
         return render(self.request, self.success_template_name, {})
 
     def get_form(self, **kwargs):
