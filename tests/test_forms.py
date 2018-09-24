@@ -7,7 +7,8 @@ from djangocms_moderation import constants
 from djangocms_moderation.forms import (
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
-    CancelCollectionForm)
+    CancelCollectionForm,
+)
 from djangocms_moderation.models import ModerationCollection
 
 from .utils.base import BaseTestCase

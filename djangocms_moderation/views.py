@@ -193,14 +193,7 @@ class CancelCollection(FormView):
         return HttpResponseRedirect(redirect_url)
 
     def get_context_data(self, **kwargs):
-        """
-        Gets collection_id from params or from the first collection in the list
-        when no ?collection_id is not supplied
-
-        Always gets content_object_list from a collection at a time
-        """
         context = super().get_context_data(**kwargs)
-        #opts_meta = CancelCollectionForm._meta
         collection_id = self.request.GET.get('collection_id')
 
         collection = None
@@ -212,13 +205,10 @@ class CancelCollection(FormView):
 
         context.update({
             'collection': collection,
-            #'opts': opts_meta,
             'title': _('Cancel collection'),
-            'form': self.get_form(),
         })
 
         return context
-
 
 
 cancel_collection = CancelCollection.as_view()
