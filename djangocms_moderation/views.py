@@ -2,14 +2,18 @@ from __future__ import unicode_literals
 
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
 
-from .forms import CollectionItemForm, SubmitCollectionForModerationForm
+from .forms import (
+    CollectionItemForm,
+    SubmitCollectionForModerationForm,
+    CancelCollectionForm,
+)
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
@@ -41,7 +45,7 @@ class CollectionItemView(FormView):
         return render(self.request, self.success_template_name, {})
 
     def get_form(self, **kwargs):
-        form = super(CollectionItemView, self).get_form(**kwargs)
+        form = super().get_form(**kwargs)
         form.set_collection_widget(self.request)
         return form
 
@@ -52,7 +56,7 @@ class CollectionItemView(FormView):
 
         Always gets content_object_list from a collection at a time
         """
-        context = super(CollectionItemView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
         collection_id = self.request.GET.get('collection_id')
 
@@ -131,10 +135,10 @@ class SubmitCollectionForModeration(FormView):
             ModerationCollection,
             pk=self.kwargs['collection_id'],
         )
-        return super(SubmitCollectionForModeration, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
-        kwargs = super(SubmitCollectionForModeration, self).get_form_kwargs()
+        kwargs = super().get_form_kwargs()
         kwargs['collection'] = self.collection
         kwargs['user'] = self.request.user
         return kwargs
@@ -151,7 +155,7 @@ class SubmitCollectionForModeration(FormView):
         return HttpResponseRedirect(redirect_url)
 
     def get_context_data(self, **kwargs):
-        context = super(SubmitCollectionForModeration, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context.update({
             'opts': ModerationCollection._meta,
             'title': _('Submit collection for review'),
@@ -161,3 +165,60 @@ class SubmitCollectionForModeration(FormView):
 
 
 submit_collection_for_moderation = SubmitCollectionForModeration.as_view()
+
+
+class CancelCollection(FormView):
+    template_name = 'djangocms_moderation/cancel_collection.html'
+    form_class = CancelCollectionForm
+    collection = None  # Populated in dispatch method
+
+    def dispatch(self, request, *args, **kwargs):
+        self.collection = get_object_or_404(
+            ModerationCollection,
+            pk=self.kwargs['collection_id'],
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['collection'] = self.collection
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, _("Your collection has been cancelled"))
+        # Redirect back to the collection filtered moderation request change list
+        redirect_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+        return HttpResponseRedirect(redirect_url)
+
+    def get_context_data(self, **kwargs):
+        """
+        Gets collection_id from params or from the first collection in the list
+        when no ?collection_id is not supplied
+
+        Always gets content_object_list from a collection at a time
+        """
+        context = super().get_context_data(**kwargs)
+        #opts_meta = CancelCollectionForm._meta
+        collection_id = self.request.GET.get('collection_id')
+
+        collection = None
+        try:
+            if collection_id:
+                collection = ModerationCollection.objects.get(pk=collection_id)
+        except (ValueError, ModerationCollection.DoesNotExist):
+            raise Http404
+
+        context.update({
+            'collection': collection,
+            #'opts': opts_meta,
+            'title': _('Cancel collection'),
+            'form': self.get_form(),
+        })
+
+        return context
+
+
+
+cancel_collection = CancelCollection.as_view()

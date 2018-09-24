@@ -47,9 +47,11 @@ CONTENT_TYPE_FORM = 'form'
 COLLECTING = 'COLLECTING'
 IN_REVIEW = 'IN_REVIEW'
 ARCHIVED = 'ARCHIVED'
+CANCELLED = 'CANCELLED'
 
 STATUS_CHOICES = (
     (COLLECTING, _('Collecting')),
     (IN_REVIEW, _('In Review')),
     (ARCHIVED, _('Archived')),
+    (CANCELLED, _('Cancelled')),
 )

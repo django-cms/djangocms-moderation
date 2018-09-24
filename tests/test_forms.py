@@ -7,7 +7,7 @@ from djangocms_moderation import constants
 from djangocms_moderation.forms import (
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
-)
+    CancelCollectionForm)
 from djangocms_moderation.models import ModerationCollection
 
 from .utils.base import BaseTestCase
@@ -105,4 +105,17 @@ class SubmitCollectionForModerationFormTest(BaseTestCase):
             collection=self.collection1,
             user=self.user,
         )
+        self.assertTrue(form.is_valid())
+
+
+class CancelCollectionFormTest(BaseTestCase):
+    @mock.patch.object(ModerationCollection, 'is_cancelable')
+    def test_form_is_invalid_if_collection_cant_be_cancelled(self, is_cancelable_mock):
+        is_cancelable_mock.return_value = False
+        form = CancelCollectionForm(data={}, collection=self.collection1, user=self.user)
+        # Not cancelable
+        self.assertFalse(form.is_valid())
+
+        is_cancelable_mock.return_value = True
+        form = CancelCollectionForm(data={}, collection=self.collection1, user=self.user)
         self.assertTrue(form.is_valid())

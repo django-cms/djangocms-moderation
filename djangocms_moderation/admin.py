@@ -221,12 +221,20 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 pass
             else:
                 extra_context = dict(collection=collection)
+                if collection.is_cancelable(request.user):
+                    cancel_collection_url = reverse(
+                        'admin:cms_moderation_cancel_collection',
+                        args=(collection_id,)
+                    )
+                    extra_context['cancel_collection_url'] = cancel_collection_url
+
                 if collection.allow_submit_for_review(user=request.user):
                     submit_for_review_url = reverse(
                         'admin:cms_moderation_submit_collection_for_moderation',
                         args=(collection_id,)
                     )
                     extra_context['submit_for_review_url'] = submit_for_review_url
+
         else:
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
@@ -508,6 +516,11 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
                 '^(?P<collection_id>\d+)/submit-for-review/$',
                 views.submit_collection_for_moderation,
                 name="cms_moderation_submit_collection_for_moderation",
+            ),
+            _url(
+                '^(?P<collection_id>\d+)/cancel-collection/$',
+                views.cancel_collection,
+                name="cms_moderation_cancel_collection",
             ),
             _url(
                 r'^item/add-item/$',
