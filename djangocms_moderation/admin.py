@@ -362,7 +362,7 @@ class RequestCommentAdmin(admin.ModelAdmin):
             args=[obj.moderation_request.pk],
         )
         return format_html(
-            '<a href="{}" class="js-moderation-close-sideframe">{}</a>',
+            '<a href="{}">{}</a>',
             url,
             _('View')
         )
