@@ -61,11 +61,11 @@
 <script type="text/javascript">
     (function($) {
         $(function() {
-            let collection_sel = $('#id_collection');
+            var collection_sel = $('#id_collection');
             collection_sel.data('prev', collection_sel.val());
             collection_sel.on('change', function() {
-                let jqThis = $(this);
-                let newUrl;
+                var jqThis = $(this);
+                var newUrl;
                 if (location.href.indexOf('collection_id') === -1) {
                     newUrl = location.href + '&collection_id=' + jqThis.val();
                 } else {
