@@ -237,8 +237,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             request, '_changelist_filters', 'collection__id__exact'
         )
 
-        if collection_id:
-            extra_context['collection_id'] = collection_id
+        extra_context['collection_id'] = collection_id
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def get_status(self, obj):
