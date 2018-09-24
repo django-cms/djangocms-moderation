@@ -16,6 +16,7 @@ from djangocms_moderation.models import (
 from djangocms_moderation.utils import get_admin_url
 
 
+@skip('1.0.x rework TBC')
 class ModerationFlowsTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -32,6 +33,10 @@ class ModerationFlowsTestCase(TestCase):
         )
         cls.moderator_2 = User.objects.create_superuser(
             username='test3', email='test3@test.com', password='test3',
+        )
+
+        cls.page = create_page(
+            title='Page 1', template='page.html', language='en', created_by=cls.author
         )
 
         cls.role1 = Role.objects.create(name='Role 1', user=cls.moderator_1)
@@ -69,7 +74,6 @@ class ModerationFlowsTestCase(TestCase):
     def _cancel_moderation_request(self, user, message='Test message - cancel'):
         return self._process_moderation_request(user, 'cancel', message)
 
-    @skip('1.0.x rework TBC')
     def test_approve_moderation_workflow(self):
         """
         This case tests the following workflow:
@@ -129,7 +133,6 @@ class ModerationFlowsTestCase(TestCase):
         self.assertTrue(last_action.action, constants.ACTION_FINISHED)
         self.assertEqual(moderation_request.compliance_number, compliance_number)
 
-    @skip('1.0.x rework TBC')
     def test_reject_moderation_workflow(self):
         """
         This case tests the following workflow:

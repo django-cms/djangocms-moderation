@@ -8,6 +8,7 @@ module.exports = {
     },
     "globals": {
         "CMS": true,
+        "django": true,
         "Promise": true
     },
     "root": true,

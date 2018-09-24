@@ -88,6 +88,9 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
+    class Media:
+        js = ('djangocms_moderation/js/actions.js',)
+
     actions = [  # filtered out in `self.get_actions`
         delete_selected,
         publish_selected,
@@ -130,7 +133,9 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_preview_link(self, obj):
         return format_html(
-            '<a href="{}"><span class="cms-icon cms-icon-eye"></span></a>',
+            '<a href="{}" class="js-moderation-close-sideframe" target="_top">'
+            '<span class="cms-icon cms-icon-eye"></span>'
+            '</a>',
             get_object_preview_url(obj.version.content),
         )
     get_preview_link.short_description = _('Preview')
