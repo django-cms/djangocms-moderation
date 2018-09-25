@@ -2,12 +2,15 @@ from __future__ import unicode_literals
 
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
+
+from djangocms_versioning.admin import GROUPER_PARAM
+from djangocms_versioning.models import Version
 
 from .forms import CollectionItemForm, SubmitCollectionForModerationForm
 from .models import ConfirmationPage, ModerationCollection
@@ -38,7 +41,25 @@ class CollectionItemView(FormView):
         collection = form.cleaned_data['collection']
         collection.add_version(version)
         messages.success(self.request, _('Item successfully added to moderation collection'))
-        return render(self.request, self.success_template_name, {})
+
+        # Return different response if we opened the view as a modal
+        if self.request.GET.get('_modal'):
+            return render(self.request, self.success_template_name, {})
+        else:
+            # Otherwise redirect to the grouper changelist as this is likely
+            # the place this view was called from
+            changelist_url = reverse(
+                'admin:{app}_{model}version_changelist'.format(
+                    app=version._meta.app_label,
+                    model=version.content._meta.model_name,
+                )
+            )
+            url = "{changelist_url}?{grouper_param}={grouper_id}".format(
+                changelist_url=changelist_url,
+                grouper_param=GROUPER_PARAM,
+                grouper_id=version.grouper.id,
+            )
+            return HttpResponseRedirect(url)
 
     def get_form(self, **kwargs):
         form = super(CollectionItemView, self).get_form(**kwargs)
@@ -55,12 +76,25 @@ class CollectionItemView(FormView):
         context = super(CollectionItemView, self).get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
         collection_id = self.request.GET.get('collection_id')
+        version_id = self.request.GET.get('version_id')
 
         if collection_id:
-            collection = ModerationCollection.objects.get(pk=collection_id)
-            moderation_request_list = collection.moderation_requests.all()
+            try:
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+            else:
+                moderation_request_list = collection.moderation_requests.all()
         else:
             moderation_request_list = []
+
+        if version_id:
+            try:
+                version = Version.objects.get(pk=int(version_id))
+            except (ValueError, Version.DoesNotExist):
+                raise Http404
+        else:
+            version = None
 
         model_admin = admin.site._registry[ModerationCollection]
         context.update({
@@ -68,6 +102,7 @@ class CollectionItemView(FormView):
             'opts': opts_meta,
             'title': _('Add to collection'),
             'form': self.get_form(),
+            'version': version,
             'media': model_admin.media,
         })
 

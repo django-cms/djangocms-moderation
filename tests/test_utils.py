@@ -5,7 +5,10 @@ from djangocms_versioning.test_utils.factories import PageVersionFactory
 from djangocms_moderation import utils
 from djangocms_moderation.constants import ACTION_REJECTED, ACTION_STARTED
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
-from djangocms_moderation.utils import is_obj_review_locked
+from djangocms_moderation.utils import (
+    get_active_moderation_request,
+    is_obj_review_locked,
+)
 
 from .utils.base import BaseTestCase
 
@@ -46,6 +49,20 @@ class UtilsTestCase(BaseTestCase):
             mock_request, '_changelist_filters', 'moderation_request__id__exact'
         )
         self.assertEquals(action_id, '2')
+
+    def test_get_active_moderation_request(self):
+        self.assertEqual(
+            self.moderation_request1,
+            get_active_moderation_request(self.pg1_version.content)
+        )
+        version = PageVersionFactory()
+        # Inactive request with this version
+        ModerationRequest.objects.create(
+            version=version, collection=self.collection1, is_active=False
+        )
+        self.assertIsNone(
+            get_active_moderation_request(version.content)
+        )
 
 
 class TestReviewLock(BaseTestCase):
