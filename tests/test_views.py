@@ -113,6 +113,7 @@ class CollectionItemViewTest(BaseViewTestCase):
     def test_invalid_version_already_in_collection(self):
         # add object
         self.collection_1.add_version(self.pg_version)
+        self.assertEqual(1, ModerationRequest.objects.filter(version=self.pg_version).count())
 
         self.client.force_login(self.user)
 
@@ -121,7 +122,7 @@ class CollectionItemViewTest(BaseViewTestCase):
                 name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
-            ), {'collection': self.collection_1.pk,
+            ), {'collection': self.collection_2.pk,
                 'version': self.pg_version.pk})
 
         self.assertEqual(response.status_code, 200)
@@ -129,6 +130,21 @@ class CollectionItemViewTest(BaseViewTestCase):
               "is already part of existing moderation request which is part",
               response.context_data['form'].errors['__all__'][0]
         )
+        self.assertEqual(1, ModerationRequest.objects.filter(version=self.pg_version).count())
+
+        # make the moderation request inactive, we will be able to submit it
+        self.collection_1.moderation_requests.all().update(is_active=False)
+        response = self.client.post(
+            get_admin_url(
+                name='cms_moderation_item_to_collection',
+                language='en',
+                args=()
+            ), {'collection': self.collection_2.pk,
+                'version': self.pg_version.pk})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(2, ModerationRequest.objects.filter(version=self.pg_version).count())
+
 
     def test_non_existing_version(self):
         self.client.force_login(self.user)
