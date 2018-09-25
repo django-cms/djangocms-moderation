@@ -298,7 +298,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
         )
         if collection_id:
             data['collection'] = collection_id
-        else: 
+        else:
             raise Http404
 
         return data
@@ -336,6 +336,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
         collection_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'collection__id__exact'
         )
+
         extra_context = extra_context or dict(
             show_save_and_add_another=False,
             show_save_and_continue=False,
@@ -350,7 +351,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
         if collection_id:
             extra_context['collection_id'] = collection_id
-        else: 
+        else:
             raise Http404
 
         return super().changeform_view(request, object_id, form_url, extra_context)
