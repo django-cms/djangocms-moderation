@@ -21,3 +21,7 @@ class App1TitleContent(models.Model):
 
     def get_absolute_url(self):
         return '/'
+
+
+class App1NonModeratedModel(models.Model):
+    pass

@@ -7,6 +7,8 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_versioning.cms_toolbars import VersioningToolbar
 from djangocms_versioning.models import Version
 
+from .models import ModerationRequest
+from .helpers import is_moderated
 from .utils import (
     get_active_moderation_request,
     get_admin_url,
@@ -84,7 +86,8 @@ class ModerationToolbar(VersioningToolbar):
 
     def post_template_populate(self):
         super().post_template_populate()
-        self._add_moderation_buttons()
+        if is_moderated(type(self.toolbar.obj)):
+            self._add_moderation_buttons()
 
 
 toolbar_pool.unregister(VersioningToolbar)
