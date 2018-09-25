@@ -43,10 +43,14 @@ def extract_filter_param_from_changelist_url(request, keyname, parametername):
     """
     Searches request.GET for a given key and decodes the value for a particular parameter
     """
+    
+
     changelist_filters = request.GET.get(keyname)
     parameter_value = parse_qs(changelist_filters).get(parametername)
     try:
         return parameter_value[0]
+    except TypeError:
+        return None
     except IndexError:
         return None
 
