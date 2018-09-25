@@ -314,7 +314,7 @@ class ModerationCollection(models.Model):
             action_obj=action,
         )
 
-    def is_cancelable(self, user):
+    def is_cancellable(self, user):
         return all([
             self.author == user,
             self.status not in (constants.ARCHIVED, constants.CANCELLED),

@@ -221,7 +221,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 pass
             else:
                 extra_context = dict(collection=collection)
-                if collection.is_cancelable(request.user):
+                if collection.is_cancellable(request.user):
                     cancel_collection_url = reverse(
                         'admin:cms_moderation_cancel_collection',
                         args=(collection_id,)

@@ -199,7 +199,7 @@ class CancelCollection(FormView):
         collection = None
         try:
             if collection_id:
-                collection = ModerationCollection.objects.get(pk=collection_id)
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
         except (ValueError, ModerationCollection.DoesNotExist):
             raise Http404
 

@@ -203,7 +203,7 @@ class CancelCollectionForm(forms.Form):
         super().__init__(*args, **kwargs)
 
     def clean(self):
-        if not self.collection.is_cancelable(self.user):
+        if not self.collection.is_cancellable(self.user):
             self.add_error(None, _("This collection can't be cancelled"))
         return super().clean()
 

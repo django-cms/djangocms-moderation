@@ -488,7 +488,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertEqual(str(self.collection1.pk), self.collection1.job_id)
         self.assertEqual(str(self.collection2.pk), self.collection2.job_id)
 
-    def test_is_cancelable(self):
+    def test_is_cancellable(self):
         fixtures = (
             (constants.CANCELLED, False),
             (constants.COLLECTING, True),
@@ -499,13 +499,13 @@ class ModerationCollectionTest(BaseTestCase):
         for fixture in fixtures:
             self.collection1.status = fixture[0]
             self.collection1.save()
-            self.assertEqual(self.collection1.is_cancelable(self.user), fixture[1])
+            self.assertEqual(self.collection1.is_cancellable(self.user), fixture[1])
 
         # Run with different user, they should not be able to cancel
         for fixture in fixtures:
             self.collection1.status = fixture[0]
             self.collection1.save()
-            self.assertFalse(self.collection1.is_cancelable(self.user2))
+            self.assertFalse(self.collection1.is_cancellable(self.user2))
 
     @patch.object(ModerationRequest, 'is_approved')
     def test_should_be_archived(self, is_approved_mock):
