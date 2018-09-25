@@ -15,11 +15,7 @@ from djangocms_moderation.models import (
     Workflow,
 )
 
-from .utils.base import BaseTestCase
-
-
-class MockRequest:
-    GET = {}
+from .utils.base import BaseTestCase, MockRequest
 
 
 class ModerationAdminTestCase(BaseTestCase):

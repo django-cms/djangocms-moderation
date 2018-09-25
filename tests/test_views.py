@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
 
+from djangocms_versioning.admin import GROUPER_PARAM
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
@@ -44,21 +45,64 @@ class CollectionItemViewTest(BaseViewTestCase):
 
         self.assertEqual(response.context_data['title'], _('Add to collection'))
 
-    def test_version_object_to_collections(self):
+    def test_version_object_to_collections_from_modal(self):
         ModerationRequest.objects.all().delete()
         self.client.force_login(self.user)
-        response = self.client.post(
+        url = add_url_parameters(
             get_admin_url(
                 name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
-            ), {'collection':  self.collection_1.pk,
+            ),
+            _modal=1,
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection':  self.collection_1.pk,
                 'version': self.pg_version.pk,
-                }
-            )
+            }
+        )
 
         self.assertEqual(response.status_code, 200)
-        # self.assertContains(response, 'reloadBrowser')
+        self.assertContains(response, 'reloadBrowser')
+
+        moderation_request = ModerationRequest.objects.filter(
+            version=self.pg_version,
+        )[0]
+
+        self.assertEqual(moderation_request.collection, self.collection_1)
+
+    def test_version_object_to_collections_from_changelist(self):
+        ModerationRequest.objects.all().delete()
+        self.client.force_login(self.user)
+        url = get_admin_url(
+                name='cms_moderation_item_to_collection',
+                language='en',
+                args=()
+            )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection':  self.collection_1.pk,
+                'version': self.pg_version.pk,
+            }
+        )
+
+        # Check we redirect back to the grouper changelist
+        self.assertEqual(response.status_code, 302)
+        changelist_url = reverse(
+            'admin:{app}_{model}version_changelist'.format(
+                app=self.pg_version._meta.app_label,
+                model=self.pg_version.content._meta.model_name,
+            )
+        )
+        redirect_url = "{changelist_url}?{grouper_param}={grouper_id}".format(
+            changelist_url=changelist_url,
+            grouper_param=GROUPER_PARAM,
+            grouper_id=self.pg_version.grouper.id,
+        )
+        self.assertEqual(response.url, redirect_url)
 
         moderation_request = ModerationRequest.objects.filter(
             version=self.pg_version,
