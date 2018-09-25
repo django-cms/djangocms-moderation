@@ -27,7 +27,7 @@ def get_state_actions(func):
 
 
 def _get_moderation_link(self, version, request):
-    if not version.state == DRAFT:
+    if version.state != DRAFT:
         return ''
     moderation_request = get_active_moderation_request(version.content)
     if moderation_request:

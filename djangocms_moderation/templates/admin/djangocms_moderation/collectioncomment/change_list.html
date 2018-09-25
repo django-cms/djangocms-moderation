@@ -3,7 +3,11 @@
 
 {% block content_title %}
     {% if collection %}
-    <h1>{{ collection.name }} comments</h1>
+    <h1>
+        {% blocktrans with collection.name|capfirst as collection_name %}
+            {{ collection_name }} comments
+        {% endblocktrans %}
+    </h1>
     {% endif %}
 {% endblock %}
 
