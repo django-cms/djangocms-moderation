@@ -242,7 +242,11 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             request, '_changelist_filters', 'collection__id__exact'
         )
 
-        extra_context['collection_id'] = collection_id
+        if collection_id:
+            extra_context['collection_id'] = collection_id
+        else:
+            raise Http404
+
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def get_status(self, obj):
@@ -294,6 +298,9 @@ class CollectionCommentAdmin(admin.ModelAdmin):
         )
         if collection_id:
             data['collection'] = collection_id
+        else: 
+            raise Http404
+
         return data
 
     def get_form(self, request, obj=None, **kwargs):
@@ -343,6 +350,9 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
         if collection_id:
             extra_context['collection_id'] = collection_id
+        else: 
+            raise Http404
+
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_delete_permission(self, request, obj=None):
