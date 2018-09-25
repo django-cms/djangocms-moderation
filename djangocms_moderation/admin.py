@@ -277,8 +277,8 @@ class CollectionCommentAdmin(admin.ModelAdmin):
         data = {
             'author': request.user,
         }
-        #  Extract the id from the URL. The id is stored in _changelist_filters
-        #  by Django so that the request knows where to return to after form submission.
+        # Extract the id from the URL. The id is stored in _changelist_filters
+        # by Django so that the request knows where to return to after form submission.
         collection_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'collection__id__exact'
         )
