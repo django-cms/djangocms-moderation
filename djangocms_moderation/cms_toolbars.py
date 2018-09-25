@@ -9,7 +9,11 @@ from djangocms_versioning.models import Version
 
 from .models import ModerationRequest
 from .helpers import is_moderated
-from .utils import get_admin_url, is_obj_review_locked
+from .utils import (
+    get_active_moderation_request,
+    get_admin_url,
+    is_obj_review_locked,
+)
 
 
 class ModerationToolbar(VersioningToolbar):
@@ -51,11 +55,8 @@ class ModerationToolbar(VersioningToolbar):
 
     def _add_moderation_buttons(self):
         if self._is_versioned() and self.toolbar.edit_mode_active:
-            version = Version.objects.get_for_content(self.toolbar.obj)
-            try:
-                moderation_request = ModerationRequest.objects.get(
-                    version=version
-                )
+            moderation_request = get_active_moderation_request(self.toolbar.obj)
+            if moderation_request:
                 self.toolbar.add_modal_button(
                     name=_('In Moderation "%(collection_name)s"') % {
                         'collection_name': moderation_request.collection.name
@@ -64,14 +65,17 @@ class ModerationToolbar(VersioningToolbar):
                     disabled=True,
                     side=self.toolbar.RIGHT,
                 )
-            except ModerationRequest.DoesNotExist:
+            else:
+                version = Version.objects.get_for_content(self.toolbar.obj)
                 url = add_url_parameters(
                     get_admin_url(
                         name='cms_moderation_item_to_collection',
                         language=self.current_lang,
                         args=()
                     ),
-                    version_id=version.pk
+                    version_id=version.pk,
+                    # Indicate to the view that we opened the view as a modal
+                    _modal=1,
                 )
 
                 self.toolbar.add_modal_button(
