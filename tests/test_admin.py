@@ -169,15 +169,55 @@ class ModerationAdminTestCase(BaseTestCase):
         mock_request = MockRequest()
         mock_request.user = self.user
         mock_request._collection = self.collection
+
         conf.COLLECTION_COMMENTS_ENABLED = False
         list_display = self.mca.get_list_display(mock_request)
         self.assertNotIn('get_comments_link', list_display)
+
         conf.COLLECTION_COMMENTS_ENABLED = True
         list_display = self.mca.get_list_display(mock_request)
         self.assertIn('get_comments_link', list_display)
+
         conf.REQUEST_COMMENTS_ENABLED = False
         list_display = self.mra.get_list_display(mock_request)
         self.assertNotIn('get_comments_link', list_display)
+
         conf.REQUEST_COMMENTS_ENABLED = True
         list_display = self.mra.get_list_display(mock_request)
         self.assertIn('get_comments_link', list_display)
+
+    def test_get_readonly_fields_for_moderation_collection(self):
+        self.assertNotEqual(self.collection.author, self.user3)
+        self.collection.status = constants.COLLECTING
+        self.collection.save()
+
+        mock_request_author = MockRequest()
+        mock_request_author.user = self.collection.author
+
+        mock_request_non_author = MockRequest()
+        mock_request_non_author.user = self.user3
+
+        # We are creating a new collection, only `status` should be read_only
+        fields = self.mca.get_readonly_fields(mock_request_author)
+        self.assertEqual({'status'}, fields)
+
+        # Now we pass the object, `author` field should not be editable anymore.
+        # As the collection is still in `collecting` status and the request
+        # user is the author of the collection, they can change still
+        # change the `workflow`
+        fields = self.mca.get_readonly_fields(mock_request_author, self.collection)
+        self.assertSetEqual({'status', 'author'}, fields)
+
+        # Non-author can't edit the workflow
+        fields = self.mca.get_readonly_fields(mock_request_non_author, self.collection)
+        self.assertSetEqual({'status', 'author', 'workflow'}, fields)
+
+        # If the collection is not in `collecting` status, then the author
+        # can't edit the workflow anymore
+        self.collection.status = constants.IN_REVIEW
+        self.collection.save()
+        fields = self.mca.get_readonly_fields(mock_request_author, self.collection)
+        self.assertSetEqual({'status', 'author', 'workflow'}, fields)
+
+        fields = self.mca.get_readonly_fields(mock_request_non_author, self.collection)
+        self.assertSetEqual({'status', 'author', 'workflow'}, fields)
