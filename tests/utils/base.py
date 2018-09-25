@@ -13,6 +13,10 @@ from djangocms_moderation.models import (
 )
 
 
+class MockRequest:
+    GET = {}
+
+
 class BaseTestCase(TestCase):
 
     @classmethod

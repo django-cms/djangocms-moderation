@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from django import forms
 from django.conf.urls import url
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -26,7 +27,7 @@ from .forms import (
     RequestCommentForm,
     WorkflowStepInlineFormSet,
 )
-from .helpers import EditAndAddOnlyFieldsMixin, get_form_submission_for_step
+from .helpers import get_form_submission_for_step
 from .models import (
     CollectionComment,
     ConfirmationFormSubmission,
@@ -115,7 +116,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             'id',
             'get_content_type',
             'get_title',
-            'get_content_author',
+            'get_version_author',
             'get_preview_link',
             'get_status',
         ]
@@ -149,13 +150,9 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         )
     get_comments_link.short_description = _('Comments')
 
-    def get_content_author(self, obj):
-        """
-        This is not necessarily the same person as the RequestAction author
-        """
-        #  TODO this should get the author from the version object e.g. obj.content_object.created_by
-        return "author placeholder"
-    get_content_author.short_description = _('Content author')
+    def get_version_author(self, obj):
+        return obj.version.created_by
+    get_version_author.short_description = _('Version author')
 
     def has_add_permission(self, request):
         return False
@@ -234,6 +231,21 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
         return super().changelist_view(request, extra_context)
 
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or dict()
+
+        # get the collection for the breadcrumb trail
+        collection_id = utils.extract_filter_param_from_changelist_url(
+            request, '_changelist_filters', 'collection__id__exact'
+        )
+
+        if collection_id:
+            extra_context['collection_id'] = collection_id
+        else:
+            raise Http404
+
+        return super().changeform_view(request, object_id, form_url, extra_context)
+
     def get_status(self, obj):
         # We can have moderation requests without any action (e.g. the
         # ones not submitted for moderation yet)
@@ -273,16 +285,19 @@ class CollectionCommentAdmin(admin.ModelAdmin):
     fields = ['collection', 'message', 'author']
 
     def get_changeform_initial_data(self, request):
-        #  Extract the id from the URL. The id is stored in _changelsit_filters
-        #  by Django so that the request knows where to return to after form submission.
         data = {
             'author': request.user,
         }
+        # Extract the id from the URL. The id is stored in _changelist_filters
+        # by Django so that the request knows where to return to after form submission.
         collection_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'collection__id__exact'
         )
         if collection_id:
             data['collection'] = collection_id
+        else:
+            raise Http404
+
         return data
 
     def get_form(self, request, obj=None, **kwargs):
@@ -318,6 +333,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
         collection_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'collection__id__exact'
         )
+
         extra_context = extra_context or dict(
             show_save_and_add_another=False,
             show_save_and_continue=False,
@@ -332,6 +348,9 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
         if collection_id:
             extra_context['collection_id'] = collection_id
+        else:
+            raise Http404
+
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_delete_permission(self, request, obj=None):
@@ -453,10 +472,8 @@ class WorkflowAdmin(admin.ModelAdmin):
     ]
 
 
-class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
+class ModerationCollectionAdmin(admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
-    editonly_fields = ('status',)  # fields editable only on EDIT
-    addonly_fields = ('workflow',)  # fields editable only on CREATE
     list_filter = [
         'author',
         'status',
@@ -516,6 +533,21 @@ class ModerationCollectionAdmin(EditAndAddOnlyFieldsMixin, admin.ModelAdmin):
             )
         ]
         return url_patterns + super().get_urls()
+
+    def get_changeform_initial_data(self, request):
+        return {'author': request.user}
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ['author', 'workflow']
+        else:
+            return ['status']
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if obj and 'author' in self.readonly_fields:
+            form.base_fields['author'].widget = forms.HiddenInput()
+        return form
 
 
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
