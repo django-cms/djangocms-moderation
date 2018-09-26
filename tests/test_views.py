@@ -145,7 +145,6 @@ class CollectionItemViewTest(BaseViewTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(2, ModerationRequest.objects.filter(version=self.pg_version).count())
 
-
     def test_non_existing_version(self):
         self.client.force_login(self.user)
         response = self.client.post(

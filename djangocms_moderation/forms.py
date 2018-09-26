@@ -10,7 +10,6 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from adminsortable2.admin import CustomInlineFormSet
 from djangocms_versioning.models import Version
 
-from djangocms_moderation.utils import get_active_moderation_request
 from .constants import (
     ACTION_CANCELLED,
     ACTION_REJECTED,
@@ -23,6 +22,7 @@ from .models import (
     ModerationRequest,
     RequestComment,
 )
+from .utils import get_active_moderation_request
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
