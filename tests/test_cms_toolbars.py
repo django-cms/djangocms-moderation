@@ -36,7 +36,7 @@ class TestCMSToolbars(BaseTestCase):
         cms_toolbar = CMSToolbar(request)
         toolbar = ModerationToolbar(
             request, toolbar=cms_toolbar, is_current_app=True, app_path='/')
-        toolbar.toolbar.obj = content_obj
+        toolbar.toolbar.set_object(content_obj)
         if edit_mode:
             toolbar.toolbar.edit_mode_active = True
             toolbar.toolbar.content_mode_active = False
@@ -61,11 +61,13 @@ class TestCMSToolbars(BaseTestCase):
         self.collection1.add_version(
             version=version
         )
+
         toolbar = self._get_toolbar(version.content, edit_mode=True)
         toolbar.populate()
         toolbar.post_template_populate()
+
         self.assertEquals(
-            toolbar.toolbar.get_right_items()[1].buttons[0].name,
+            toolbar.toolbar.get_right_items()[0].buttons[0].name,
             'In Moderation "%s"' % self.collection1.name
         )
 

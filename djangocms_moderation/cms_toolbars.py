@@ -41,11 +41,16 @@ class ModerationToolbar(VersioningToolbar):
         Add edit button if we can moderate content object
         Or add a disabled edit button when object is in 'Review locked'
         """
+        # can we moderate content object?
         if not can_moderate(self.toolbar.obj):
-            return super()._add_edit_button(disabled=disabled)
+            return super()._add_edit_button()
 
+        # yes we can! but is it locked?
         if is_obj_review_locked(self.toolbar.obj, self.request.user):
-            return super()._add_edit_button(disabled=True)
+            disabled = True
+
+        # disabled if locked, else default to false
+        return super()._add_edit_button(disabled=disabled)
 
     def _add_moderation_buttons(self):
         """
