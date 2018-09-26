@@ -1,7 +1,8 @@
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 
-from cms.app_base import CMSAppExtension
+from cms.app_base import CMSAppConfig, CMSAppExtension
+from cms.models import PageContent
 
 
 class ModerationExtension(CMSAppExtension):
@@ -26,3 +27,12 @@ class ModerationExtension(CMSAppExtension):
                 )
 
         self.moderated_models.extend(moderated_models)
+
+
+class CoreCMSAppConfig(CMSAppConfig):
+    djangocms_moderation_enabled = True
+    djangocms_versioning_enabled = True
+    moderated_models = [
+        PageContent,
+    ]
+    versioning = []

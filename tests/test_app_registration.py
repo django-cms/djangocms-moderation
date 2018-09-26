@@ -11,12 +11,14 @@ from django.core.exceptions import ImproperlyConfigured
 from django.test import ignore_warnings
 
 from cms import app_registration
+from cms.models import PageContent
 from cms.test_utils.testcases import CMSTestCase
 from cms.utils.setup import setup_cms_apps
 
 from djangocms_moderation.cms_config import ModerationExtension
+from djangocms_moderation.helpers import can_moderate
 
-from .utils.app_1.models import App1PostContent, App1TitleContent
+from .utils.app_1.models import App1PostContent, App1TitleContent, App1NonModeratedModel
 from .utils.app_2.models import App2PostContent, App2TitleContent
 
 
@@ -76,4 +78,23 @@ class CMSConfigIntegrationTest(CMSTestCase):
         for model in self.moderated_models:
             self.assertIn(model, registered_model)
 
-        self.assertEqual(len(registered_model), 4)
+        self.assertEqual(len(registered_model), 5)
+
+
+class CMSConfigCheck(CMSTestCase):
+
+    def setUp(self):
+        app_registration.get_cms_extension_apps.cache_clear()
+        app_registration.get_cms_config_apps.cache_clear()
+
+        self.expected_moderated_models = (
+            App2PostContent, App2TitleContent,
+            App1PostContent, App1TitleContent, PageContent
+        )
+
+    def test_moderated_model(self):
+        for model in self.expected_moderated_models:
+            self.assertTrue(can_moderate(model))
+
+    def test_non_moderate_model(self):
+        self.assertFalse(can_moderate(App1NonModeratedModel))

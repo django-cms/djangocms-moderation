@@ -12,6 +12,7 @@ from cms.utils.urlutils import admin_reverse
 from djangocms_versioning.models import Version
 
 
+
 def get_absolute_url(location, site=None):
     if not site:
         site = Site.objects.get_current()
@@ -56,8 +57,17 @@ def is_obj_review_locked(obj, user):
     Util function which determines if the `obj` is Review locked.
     It is the equivalent of "Can `user` edit the version of object `obj`"?
     """
-    moderation_request = get_active_moderation_request(obj)
-    if not moderation_request:
+
+    version = Version.objects.get_for_content(obj)
+
+    try:
+        from djangocms_moderation.models import ModerationRequest  # noqa
+        moderation_request = ModerationRequest.objects.get(
+            version=version
+        )
+    except ModerationRequest.DoesNotExist:
+        # If there is no moderation request with this version yet, then
+        # the `obj` is not Review locked
         return False
 
     # If `user` can resubmit the moderation request, it means they can edit

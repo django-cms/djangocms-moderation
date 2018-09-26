@@ -23,6 +23,8 @@ from .models import (
     RequestComment,
 )
 
+from .helpers import can_moderate
+
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
 
@@ -148,6 +150,12 @@ class CollectionItemForm(forms.Form):
             return self.cleaned_data
 
         version = self.cleaned_data['version']
+
+        if not can_moderate(version.content):
+            raise forms.ValidationError(_(
+                "{} is not a moderate-able content type, please see configuration docs"
+                .format(version.content.__class__.__name__)
+            ))
 
         request_with_version_exists = ModerationRequest.objects.filter(
             version=version
