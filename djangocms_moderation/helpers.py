@@ -37,7 +37,7 @@ def get_form_submission_for_step(active_request, current_step):
     return lookup.first()
 
 
-def registered_for_moderation(content_object):
+def is_registered_for_moderation(content_object):
     """
     Helper method to check if model is registered to moderated
     @param model: model class

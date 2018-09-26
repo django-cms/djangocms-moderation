@@ -16,7 +16,7 @@ from cms.test_utils.testcases import CMSTestCase
 from cms.utils.setup import setup_cms_apps
 
 from djangocms_moderation.cms_config import ModerationExtension
-from djangocms_moderation.helpers import registered_for_moderation
+from djangocms_moderation.helpers import is_registered_for_moderation
 
 from .utils.app_1.models import (
     App1NonModeratedModel,
@@ -98,7 +98,7 @@ class CMSConfigCheck(CMSTestCase):
 
     def test_moderated_model(self):
         for model in self.expected_moderated_models:
-            self.assertTrue(registered_for_moderation(model()))
+            self.assertTrue(is_registered_for_moderation(model()))
 
     def test_non_moderate_model(self):
-        self.assertFalse(registered_for_moderation(App1NonModeratedModel))
+        self.assertFalse(is_registered_for_moderation(App1NonModeratedModel))
