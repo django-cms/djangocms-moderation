@@ -3,11 +3,11 @@
 {% load static %}
 
 {% block content_title %}
-    <h1>Cancel collection `{{ form.collection.name }}`</h1>
+    <h1>Cancel collection `{{ collection.name }}`</h1>
 {% endblock %}
 
 {% block content %}
-<form action="{{ request.get_full_path }}" method="post">
+<form action="" method="post">
     {% csrf_token %}
     {% trans "Are you sure you'd like to cancel this collection?" %}
     <div class="submit-row">
