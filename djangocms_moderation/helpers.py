@@ -36,7 +36,8 @@ def get_form_submission_for_step(active_request, current_step):
     )
     return lookup.first()
 
-def is_moderated(model):
+
+def can_moderate(content_object):
     """
     Helper method to check if model is registered to moderated
     @param model: model class
@@ -44,5 +45,5 @@ def is_moderated(model):
     """
     moderation_config = apps.get_app_config('djangocms_moderation')
     moderated_models = moderation_config.cms_extension.moderated_models
-    return model in moderated_models
+    return content_object.__class__ in moderated_models
 

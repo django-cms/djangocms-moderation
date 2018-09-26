@@ -7,8 +7,7 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_versioning.cms_toolbars import VersioningToolbar
 from djangocms_versioning.models import Version
 
-from .models import ModerationRequest
-from .helpers import is_moderated
+from .helpers import can_moderate
 from .utils import (
     get_active_moderation_request,
     get_admin_url,
@@ -30,30 +29,34 @@ class ModerationToolbar(VersioningToolbar):
 
     def _add_publish_button(self):
         """
-        Disable djangocms_versioning publish button as it needs to go through
-        the moderation first
+        Disable djangocms_versioning publish button if we can moderate object
         """
-        pass
-
-    def _add_edit_button(self):
-        """
-        We need to check if the object is not 'Review locked', and only allow
-        Edit button if it isn't
-        """
-        if self.toolbar.obj and is_obj_review_locked(self.toolbar.obj, self.request.user):
-            # Don't display edit button as the item is Review locked
-            # TODO alternatively we could add the edit button using super
-            # and mark it as disabled, instead of adding another -disabled one
-            self.toolbar.add_modal_button(
-                _('Edit'),
-                url='#',
-                disabled=True,
-                side=self.toolbar.RIGHT,
-            )
+        if can_moderate(self.toolbar.obj):
+            pass
         else:
-            return super()._add_edit_button()
+            return super()._add_publish_button()
+
+    def _add_edit_button(self, disabled=False):
+        """
+        Add edit button if we can moderate content object
+        Or add a disabled edit button when object is in 'Review locked'
+        """
+        if not can_moderate(self.toolbar.obj):
+            return super()._add_edit_button(disabled=disabled)
+
+        if is_obj_review_locked(self.toolbar.obj, self.request.user):
+            return super()._add_edit_button(disabled=True)
 
     def _add_moderation_buttons(self):
+        """
+        Add submit for moderation button if we can moderate content object
+        and toolbar is in edit mode
+
+        Display the collection name when object is in moderation
+        """
+        if not can_moderate(self.toolbar.obj):
+            return
+
         if self._is_versioned() and self.toolbar.edit_mode_active:
             moderation_request = get_active_moderation_request(self.toolbar.obj)
             if moderation_request:
@@ -86,8 +89,7 @@ class ModerationToolbar(VersioningToolbar):
 
     def post_template_populate(self):
         super().post_template_populate()
-        if is_moderated(type(self.toolbar.obj)):
-            self._add_moderation_buttons()
+        self._add_moderation_buttons()
 
 
 toolbar_pool.unregister(VersioningToolbar)
