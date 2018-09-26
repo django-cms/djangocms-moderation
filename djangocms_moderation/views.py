@@ -229,20 +229,10 @@ class CancelCollection(FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        collection_id = self.request.GET.get('collection_id')
-
-        collection = None
-        try:
-            if collection_id:
-                collection = ModerationCollection.objects.get(pk=int(collection_id))
-        except (ValueError, ModerationCollection.DoesNotExist):
-            raise Http404
-
         context.update({
-            'collection': collection,
+            'collection': self.collection,
             'title': _('Cancel collection'),
         })
-
         return context
 
 
