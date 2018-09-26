@@ -57,17 +57,8 @@ def is_obj_review_locked(obj, user):
     Util function which determines if the `obj` is Review locked.
     It is the equivalent of "Can `user` edit the version of object `obj`"?
     """
-
-    version = Version.objects.get_for_content(obj)
-
-    try:
-        from djangocms_moderation.models import ModerationRequest  # noqa
-        moderation_request = ModerationRequest.objects.get(
-            version=version
-        )
-    except ModerationRequest.DoesNotExist:
-        # If there is no moderation request with this version yet, then
-        # the `obj` is not Review locked
+    moderation_request = get_active_moderation_request(obj)
+    if not moderation_request:
         return False
 
     # If `user` can resubmit the moderation request, it means they can edit
