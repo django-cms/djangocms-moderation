@@ -15,8 +15,6 @@ from .constants import (
     ACTION_REJECTED,
     ACTION_RESUBMITTED,
     COLLECTING,
-    CANCELLED,
-    ARCHIVED,
 )
 from .models import (
     CollectionComment,

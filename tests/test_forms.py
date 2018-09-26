@@ -5,9 +5,9 @@ from django.forms import HiddenInput
 
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
+    CancelCollectionForm,
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
-    CancelCollectionForm,
 )
 from djangocms_moderation.models import ModerationCollection
 
