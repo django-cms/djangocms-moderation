@@ -253,6 +253,26 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
         self.assertEqual(self.request_change_list_url, response.url)
 
 
+class CancelCollectionViewTest(BaseViewTestCase):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse(
+            'admin:cms_moderation_cancel_collection',
+            args=(self.collection2.pk,)
+        )
+        self.collection_change_list_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+
+    @mock.patch.object(ModerationCollection, 'cancel')
+    def test_submit_collection_for_moderation(self, cancel_mock):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(self.url)
+        assert cancel_mock.called
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(self.collection_change_list_url, response.url)
+
+
 class ModerationRequestChangeListView(BaseViewTestCase):
     def setUp(self):
         super(ModerationRequestChangeListView, self).setUp()
