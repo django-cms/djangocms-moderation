@@ -1,8 +1,8 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
-
 from django.utils.translation import ugettext_lazy as _, ungettext
+
 from cms.utils.urlutils import add_url_parameters
 
 from django_fsm import TransitionNotAllowed
@@ -12,7 +12,6 @@ from djangocms_moderation.emails import (
     notify_collection_author,
     notify_collection_moderators,
 )
-
 from djangocms_versioning.models import Version
 
 from .utils import get_admin_url
@@ -255,7 +254,8 @@ def add_items_to_collection(modeladmin, request, queryset):
         name='cms_moderation_items_to_collection',
         language=request.GET.get('language'),
         args=()
-    ), version_ids=','.join(version_id_list))
+    ), version_ids=','.join(version_id_list),
+        next=request.META.get('HTTP_REFERER'))
     return HttpResponseRedirect(admin_url)
 
 

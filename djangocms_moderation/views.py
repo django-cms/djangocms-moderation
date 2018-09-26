@@ -6,10 +6,16 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
-from djangocms_versioning.models import Version
+
 from cms.utils.urlutils import add_url_parameters
 
-from .forms import CollectionItemForm, CollectionItemsForm, SubmitCollectionForModerationForm
+from djangocms_versioning.models import Version
+
+from .forms import (
+    CollectionItemForm,
+    CollectionItemsForm,
+    SubmitCollectionForModerationForm,
+)
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
@@ -102,7 +108,9 @@ class CollectionItemsView(FormView):
         for v in version:
             collection.add_version(v)
         messages.success(self.request, _('{} items successfully added to moderation collection'.format(len(version))))
-        return render(self.request, self.success_template_name, {})
+
+        next = self.request.GET.get('next')
+        return HttpResponseRedirect(next)
 
     def get_form(self, **kwargs):
         form = super(CollectionItemsView, self).get_form(**kwargs)
