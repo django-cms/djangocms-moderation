@@ -7,7 +7,7 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_versioning.cms_toolbars import VersioningToolbar
 from djangocms_versioning.models import Version
 
-from .helpers import can_moderate
+from .helpers import registered_for_moderation
 from .utils import (
     get_active_moderation_request,
     get_admin_url,
@@ -31,9 +31,7 @@ class ModerationToolbar(VersioningToolbar):
         """
         Disable djangocms_versioning publish button if we can moderate object
         """
-        if can_moderate(self.toolbar.obj):
-            pass
-        else:
+        if not registered_for_moderation(self.toolbar.obj):
             return super()._add_publish_button()
 
     def _add_edit_button(self, disabled=False):
@@ -42,7 +40,7 @@ class ModerationToolbar(VersioningToolbar):
         Or add a disabled edit button when object is in 'Review locked'
         """
         # can we moderate content object?
-        if not can_moderate(self.toolbar.obj):
+        if not registered_for_moderation(self.toolbar.obj):
             return super()._add_edit_button()
 
         # yes we can! but is it locked?
@@ -59,7 +57,7 @@ class ModerationToolbar(VersioningToolbar):
 
         Display the collection name when object is in moderation
         """
-        if not can_moderate(self.toolbar.obj):
+        if not registered_for_moderation(self.toolbar.obj):
             return
 
         if self._is_versioned() and self.toolbar.edit_mode_active:
