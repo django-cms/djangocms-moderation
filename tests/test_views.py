@@ -113,6 +113,7 @@ class CollectionItemViewTest(BaseViewTestCase):
     def test_invalid_version_already_in_collection(self):
         # add object
         self.collection_1.add_version(self.pg_version)
+        self.assertEqual(1, ModerationRequest.objects.filter(version=self.pg_version).count())
 
         self.client.force_login(self.user)
 
@@ -121,7 +122,7 @@ class CollectionItemViewTest(BaseViewTestCase):
                 name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
-            ), {'collection': self.collection_1.pk,
+            ), {'collection': self.collection_2.pk,
                 'version': self.pg_version.pk})
 
         self.assertEqual(response.status_code, 200)
@@ -129,6 +130,20 @@ class CollectionItemViewTest(BaseViewTestCase):
               "is already part of existing moderation request which is part",
               response.context_data['form'].errors['__all__'][0]
         )
+        self.assertEqual(1, ModerationRequest.objects.filter(version=self.pg_version).count())
+
+        # make the moderation request inactive, we will be able to submit it
+        self.collection_1.moderation_requests.all().update(is_active=False)
+        response = self.client.post(
+            get_admin_url(
+                name='cms_moderation_item_to_collection',
+                language='en',
+                args=()
+            ), {'collection': self.collection_2.pk,
+                'version': self.pg_version.pk})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(2, ModerationRequest.objects.filter(version=self.pg_version).count())
 
     def test_non_existing_version(self):
         self.client.force_login(self.user)
@@ -236,6 +251,26 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
         assert submit_mock.called
         self.assertEqual(302, response.status_code)
         self.assertEqual(self.request_change_list_url, response.url)
+
+
+class CancelCollectionViewTest(BaseViewTestCase):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse(
+            'admin:cms_moderation_cancel_collection',
+            args=(self.collection2.pk,)
+        )
+        self.collection_change_list_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+
+    @mock.patch.object(ModerationCollection, 'cancel')
+    def test_submit_collection_for_moderation(self, cancel_mock):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(self.url)
+        assert cancel_mock.called
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(self.collection_change_list_url, response.url)
 
 
 class ModerationRequestChangeListView(BaseViewTestCase):

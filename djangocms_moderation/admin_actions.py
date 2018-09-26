@@ -186,7 +186,7 @@ def delete_selected(modeladmin, request, queryset):
     )
 
     post_bulk_actions(request._collection)
-delete_selected.short_description = _('Cancel selected')  # noqa: E305
+delete_selected.short_description = _('Delete selected')  # noqa: E305
 
 
 def publish_selected(modeladmin, request, queryset):

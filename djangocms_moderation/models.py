@@ -256,6 +256,17 @@ class ModerationCollection(models.Model):
     def author_name(self):
         return self.author.get_full_name() or self.author.get_username()
 
+    def allow_submit_for_review(self, user):
+        """
+        Can this collection be submitted for review?
+        :return: <bool>
+        """
+        return all([
+            self.author == user,
+            self.status == constants.COLLECTING,
+            self.moderation_requests.exists(),
+        ])
+
     def submit_for_review(self, by_user, to_user=None):
         """
         Submit all the moderation requests belonging to this collection for
@@ -278,16 +289,24 @@ class ModerationCollection(models.Model):
             action_obj=action,
         )
 
-    def allow_submit_for_review(self, user):
-        """
-        Can this collection be submitted for review?
-        :return: <bool>
-        """
+    def is_cancellable(self, user):
         return all([
             self.author == user,
-            self.status == constants.COLLECTING,
-            self.moderation_requests.exists(),
+            self.status not in (constants.ARCHIVED, constants.CANCELLED),
         ])
+
+    def cancel(self, user):
+        """
+        Cancel all active moderation requests in this collection
+        """
+        for moderation_request in self.moderation_requests.filter(is_active=True):
+            moderation_request.update_status(
+                action=constants.ACTION_CANCELLED,
+                by_user=user,
+                message=_('Cancelled collection'),
+            )
+        self.status = constants.CANCELLED
+        self.save(update_fields=['status'])
 
     def should_be_archived(self):
         """

@@ -94,7 +94,7 @@ class CMSConfigCheck(CMSTestCase):
 
     def test_moderated_model(self):
         for model in self.expected_moderated_models:
-            self.assertTrue(can_moderate(model))
+            self.assertTrue(can_moderate(model()))
 
     def test_non_moderate_model(self):
         self.assertFalse(can_moderate(App1NonModeratedModel))
