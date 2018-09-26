@@ -21,7 +21,7 @@ from .admin_actions import (
     reject_selected,
     resubmit_selected,
 )
-from .constants import ARCHIVED, IN_REVIEW
+from .constants import ARCHIVED, COLLECTING, IN_REVIEW
 from .forms import (
     CollectionCommentForm,
     RequestCommentForm,
@@ -538,10 +538,14 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return {'author': request.user}
 
     def get_readonly_fields(self, request, obj=None):
+        read_only_fields = ['status']
         if obj:
-            return ['author', 'workflow']
-        else:
-            return ['status']
+            read_only_fields.append('author')
+            # Author of the collection can change the workflow if the collection
+            # is still in the `collecting` state
+            if obj.status != COLLECTING or obj.author != request.user:
+                read_only_fields.append('workflow')
+        return read_only_fields
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)

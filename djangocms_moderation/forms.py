@@ -22,6 +22,7 @@ from .models import (
     ModerationRequest,
     RequestComment,
 )
+from .utils import get_active_moderation_request
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
@@ -149,11 +150,8 @@ class CollectionItemForm(forms.Form):
 
         version = self.cleaned_data['version']
 
-        request_with_version_exists = ModerationRequest.objects.filter(
-            version=version
-        ).exists()
-
-        if request_with_version_exists:
+        active_moderation_request = get_active_moderation_request(version.content)
+        if active_moderation_request:
             raise forms.ValidationError(_(
                 "{} is already part of existing moderation request which is part "
                 "of another active collection".format(version.content)
