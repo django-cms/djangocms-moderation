@@ -18,7 +18,11 @@ from cms.utils.setup import setup_cms_apps
 from djangocms_moderation.cms_config import ModerationExtension
 from djangocms_moderation.helpers import registered_for_moderation
 
-from .utils.app_1.models import App1PostContent, App1TitleContent, App1NonModeratedModel
+from .utils.app_1.models import (
+  App1NonModeratedModel,
+  App1PostContent,
+  App1TitleContent,
+)
 from .utils.app_2.models import App2PostContent, App2TitleContent
 
 
