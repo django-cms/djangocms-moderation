@@ -29,7 +29,7 @@ class ModerationToolbar(VersioningToolbar):
 
     def _add_publish_button(self):
         """
-        Disable djangocms_versioning publish button if we can moderate object
+        Disable djangocms_versioning publish button if we can moderate content object
         """
         if not is_registered_for_moderation(self.toolbar.obj):
             return super()._add_publish_button()
@@ -37,7 +37,7 @@ class ModerationToolbar(VersioningToolbar):
     def _add_edit_button(self, disabled=False):
         """
         Add edit button if we can moderate content object
-        Or add a disabled edit button when object is in 'Review locked'
+        Or add a disabled edit button when object is 'Review locked'
         """
         # can we moderate content object?
         if not is_registered_for_moderation(self.toolbar.obj):

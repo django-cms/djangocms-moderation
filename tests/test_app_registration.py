@@ -91,14 +91,14 @@ class CMSConfigCheck(CMSTestCase):
         app_registration.get_cms_extension_apps.cache_clear()
         app_registration.get_cms_config_apps.cache_clear()
 
-        self.expected_moderated_models = (
+    def test_moderated_model(self):
+        expected_moderated_models = (
             App2PostContent, App2TitleContent,
             App1PostContent, App1TitleContent, PageContent
         )
 
-    def test_moderated_model(self):
-        for model in self.expected_moderated_models:
+        for model in expected_moderated_models:
             self.assertTrue(is_registered_for_moderation(model()))
 
     def test_non_moderate_model(self):
-        self.assertFalse(is_registered_for_moderation(App1NonModeratedModel))
+        self.assertFalse(is_registered_for_moderation(App1NonModeratedModel()))

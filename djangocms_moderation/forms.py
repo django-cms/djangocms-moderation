@@ -154,7 +154,7 @@ class CollectionItemForm(forms.Form):
 
         if not is_registered_for_moderation(version.content):
             raise forms.ValidationError(_(
-                "{} is not a moderate-able content type, please see configuration docs"
+                "{} is not registered for moderation, please see configuration docs for how to"
                 .format(version.content.__class__.__name__)
             ))
 
