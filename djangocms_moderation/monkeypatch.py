@@ -60,11 +60,9 @@ def _get_edit_link(func):
     Don't display edit link if the object is review locked
     """
     def inner(self, version, request):
-        if not is_registered_for_moderation(version.content):
-            return func(self, version, request)
-
-        if is_obj_review_locked(version.content, request.user):
-            return ''
+        if is_registered_for_moderation(version.content):
+            if is_obj_review_locked(version.content, request.user):
+                return ''
         return func(self, version, request)
 
     return inner
