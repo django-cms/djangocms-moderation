@@ -238,11 +238,6 @@ publish_selected.short_description = _("Publish selected requests")  # noqa: E30
 def queryset_version_ids(queryset):
     version_ids = []
     for obj in queryset:
-        # TODO dino
-        # queryset is a haystack so below we need obj.object
-        # moderation should not know about haystack
-        # InternalSearchModelAdminMixin.response_action should return
-        # a queryset of Version objects
         version = Version.objects.get_for_content(obj.object)
         version_ids.append(str(version.pk))
     return version_ids
