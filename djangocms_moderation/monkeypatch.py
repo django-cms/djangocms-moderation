@@ -6,12 +6,12 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT
 
+from .helpers import is_registered_for_moderation
 from .utils import (
     get_active_moderation_request,
     get_admin_url,
     is_obj_review_locked,
 )
-from .helpers import is_registered_for_moderation
 
 
 def get_state_actions(func):

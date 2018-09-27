@@ -1,4 +1,5 @@
 import mock
+
 from django.test.client import RequestFactory
 
 from cms.middleware.toolbar import ToolbarMiddleware
@@ -141,4 +142,3 @@ class TestCMSToolbars(BaseTestCase):
             toolbar.toolbar.get_right_items()[0].buttons[0].name,
             'Edit',
         )
-
