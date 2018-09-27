@@ -123,13 +123,10 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        button_names = []
-        for item in toolbar.toolbar.get_right_items():
-            for button in item.buttons:
-                button_names.append(button.name)
-
-        self.assertNotIn('Submit for moderation', button_names)
-        self.assertIn('Publish', button_names)
+        self.assertEquals(
+            toolbar.toolbar.get_right_items()[0].buttons[0].name,
+            'Publish',
+        )
 
     @mock.patch('djangocms_moderation.cms_toolbars.is_registered_for_moderation')
     def test_add_edit_buttons_when_unregistered(self, mock_is_registered_for_moderation):
@@ -140,12 +137,8 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        button_names = []
-        for item in toolbar.toolbar.get_right_items():
-            for button in item.buttons:
-                button_names.append(button.name.lower())
-
-        self.assertNotIn('moderation', button_names)
-        self.assertIn('edit', button_names)
-
+        self.assertEquals(
+            toolbar.toolbar.get_right_items()[0].buttons[0].name,
+            'Edit',
+        )
 
