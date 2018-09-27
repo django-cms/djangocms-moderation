@@ -2,15 +2,6 @@
 {% load i18n %}
 {% load l10n %}
 
-{% block object-tools-items %}
-{{ block.super }}
-{% if submit_for_review_url %}
-    <li>
-        <a href="{{ submit_for_review_url }}">{% trans 'Submit for review' %}</a>
-    </li>
-{% endif %}
-{% endblock %}
-
 {% block breadcrumbs %}
 <div class="breadcrumbs">
 <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
@@ -19,14 +10,4 @@
 &rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationrequest_changelist' %}?collection__id__exact={{ collection.id | unlocalize }}">{% trans "Requests" %}</a>
 &rsaquo; {% trans "Comments" %}
 </div>
-{% endblock %}
-
-{% block content %}
-{{ block.super }}
-
-{% comment %}
-    TODO This template will be overridden to provide the required functionality.
-    For now, lets just output the selected collection
-{% endcomment %}
-
 {% endblock %}

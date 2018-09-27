@@ -174,31 +174,6 @@ class Workflow(models.Model):
     def first_step(self):
         return self.steps.first()
 
-    def _lookup_active_request(self, page, language):
-        lookup = (
-            self
-            .requests
-            .filter(
-                page=page,
-                language=language,
-                is_active=True,
-            )
-        )
-        return lookup
-
-    def get_active_request(self, page, language):
-        lookup = self._lookup_active_request(page, language)
-
-        try:
-            active_request = lookup.get()
-        except ModerationRequest.DoesNotExist:
-            active_request = None
-        return active_request
-
-    def has_active_request(self, page, language):
-        lookup = self._lookup_active_request(page, language)
-        return lookup.exists()
-
 
 @python_2_unicode_compatible
 class WorkflowStep(models.Model):
@@ -281,6 +256,17 @@ class ModerationCollection(models.Model):
     def author_name(self):
         return self.author.get_full_name() or self.author.get_username()
 
+    def allow_submit_for_review(self, user):
+        """
+        Can this collection be submitted for review?
+        :return: <bool>
+        """
+        return all([
+            self.author == user,
+            self.status == constants.COLLECTING,
+            self.moderation_requests.exists(),
+        ])
+
     def submit_for_review(self, by_user, to_user=None):
         """
         Submit all the moderation requests belonging to this collection for
@@ -303,16 +289,24 @@ class ModerationCollection(models.Model):
             action_obj=action,
         )
 
-    def allow_submit_for_review(self, user):
-        """
-        Can this collection be submitted for review?
-        :return: <bool>
-        """
+    def is_cancellable(self, user):
         return all([
             self.author == user,
-            self.status == constants.COLLECTING,
-            self.moderation_requests.exists(),
+            self.status not in (constants.ARCHIVED, constants.CANCELLED),
         ])
+
+    def cancel(self, user):
+        """
+        Cancel all active moderation requests in this collection
+        """
+        for moderation_request in self.moderation_requests.filter(is_active=True):
+            moderation_request.update_status(
+                action=constants.ACTION_CANCELLED,
+                by_user=user,
+                message=_('Cancelled collection'),
+            )
+        self.status = constants.CANCELLED
+        self.save(update_fields=['status'])
 
     def should_be_archived(self):
         """
@@ -358,7 +352,7 @@ class ModerationRequest(models.Model):
     )
     is_active = models.BooleanField(
         verbose_name=_('is active'),
-        default=False,
+        default=True,
         db_index=True,
     )
     date_sent = models.DateTimeField(

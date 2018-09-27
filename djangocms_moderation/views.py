@@ -2,22 +2,25 @@ from __future__ import unicode_literals
 
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
 
+from djangocms_versioning.admin import GROUPER_PARAM
 from djangocms_versioning.models import Version
 
 from .forms import (
+    CancelCollectionForm,
     CollectionItemForm,
     CollectionItemsForm,
     SubmitCollectionForModerationForm,
 )
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
+
 
 from . import constants  # isort:skip
 
@@ -43,10 +46,28 @@ class CollectionItemView(FormView):
         collection = form.cleaned_data['collection']
         collection.add_version(version)
         messages.success(self.request, _('Item successfully added to moderation collection'))
-        return render(self.request, self.success_template_name, {})
+
+        # Return different response if we opened the view as a modal
+        if self.request.GET.get('_modal'):
+            return render(self.request, self.success_template_name, {})
+        else:
+            # Otherwise redirect to the grouper changelist as this is likely
+            # the place this view was called from
+            changelist_url = reverse(
+                'admin:{app}_{model}version_changelist'.format(
+                    app=version._meta.app_label,
+                    model=version.content._meta.model_name,
+                )
+            )
+            url = "{changelist_url}?{grouper_param}={grouper_id}".format(
+                changelist_url=changelist_url,
+                grouper_param=GROUPER_PARAM,
+                grouper_id=version.grouper.id,
+            )
+            return HttpResponseRedirect(url)
 
     def get_form(self, **kwargs):
-        form = super(CollectionItemView, self).get_form(**kwargs)
+        form = super().get_form(**kwargs)
         form.set_collection_widget(self.request)
         return form
 
@@ -57,15 +78,28 @@ class CollectionItemView(FormView):
 
         Always gets content_object_list from a collection at a time
         """
-        context = super(CollectionItemView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
         collection_id = self.request.GET.get('collection_id')
+        version_id = self.request.GET.get('version_id')
 
         if collection_id:
-            collection = ModerationCollection.objects.get(pk=collection_id)
-            moderation_request_list = collection.moderation_requests.all()
+            try:
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+            else:
+                moderation_request_list = collection.moderation_requests.all()
         else:
             moderation_request_list = []
+
+        if version_id:
+            try:
+                version = Version.objects.get(pk=int(version_id))
+            except (ValueError, Version.DoesNotExist):
+                raise Http404
+        else:
+            version = None
 
         model_admin = admin.site._registry[ModerationCollection]
         context.update({
@@ -73,6 +107,7 @@ class CollectionItemView(FormView):
             'opts': opts_meta,
             'title': _('Add to collection'),
             'form': self.get_form(),
+            'version': version,
             'media': model_admin.media,
         })
 
@@ -203,10 +238,10 @@ class SubmitCollectionForModeration(FormView):
             ModerationCollection,
             pk=self.kwargs['collection_id'],
         )
-        return super(SubmitCollectionForModeration, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
-        kwargs = super(SubmitCollectionForModeration, self).get_form_kwargs()
+        kwargs = super().get_form_kwargs()
         kwargs['collection'] = self.collection
         kwargs['user'] = self.request.user
         return kwargs
@@ -223,7 +258,7 @@ class SubmitCollectionForModeration(FormView):
         return HttpResponseRedirect(redirect_url)
 
     def get_context_data(self, **kwargs):
-        context = super(SubmitCollectionForModeration, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context.update({
             'opts': ModerationCollection._meta,
             'title': _('Submit collection for review'),
@@ -233,3 +268,40 @@ class SubmitCollectionForModeration(FormView):
 
 
 submit_collection_for_moderation = SubmitCollectionForModeration.as_view()
+
+
+class CancelCollection(FormView):
+    template_name = 'djangocms_moderation/cancel_collection.html'
+    form_class = CancelCollectionForm
+    collection = None  # Populated in dispatch method
+
+    def dispatch(self, request, *args, **kwargs):
+        self.collection = get_object_or_404(
+            ModerationCollection,
+            pk=self.kwargs['collection_id'],
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['collection'] = self.collection
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, _("Your collection has been cancelled"))
+        # Redirect back to the collection filtered moderation request change list
+        redirect_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+        return HttpResponseRedirect(redirect_url)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'collection': self.collection,
+            'title': _('Cancel collection'),
+        })
+        return context
+
+
+cancel_collection = CancelCollection.as_view()

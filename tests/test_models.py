@@ -488,6 +488,25 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertEqual(str(self.collection1.pk), self.collection1.job_id)
         self.assertEqual(str(self.collection2.pk), self.collection2.job_id)
 
+    def test_is_cancellable(self):
+        fixtures = (
+            (constants.CANCELLED, False),
+            (constants.COLLECTING, True),
+            (constants.IN_REVIEW, True),
+            (constants.ARCHIVED, False),
+        )
+        # Run these fixtures with collection author
+        for fixture in fixtures:
+            self.collection1.status = fixture[0]
+            self.collection1.save()
+            self.assertEqual(self.collection1.is_cancellable(self.user), fixture[1])
+
+        # Run with different user, they should not be able to cancel
+        for fixture in fixtures:
+            self.collection1.status = fixture[0]
+            self.collection1.save()
+            self.assertFalse(self.collection1.is_cancellable(self.user2))
+
     @patch.object(ModerationRequest, 'is_approved')
     def test_should_be_archived(self, is_approved_mock):
         self.collection1.status = constants.COLLECTING
@@ -558,3 +577,26 @@ class ModerationCollectionTest(BaseTestCase):
                 request__collection=self.collection1, action=constants.ACTION_STARTED
             ).count()
         )
+
+    def test_cancel(self):
+        active_request = ModerationRequest.objects.create(
+            version=self.pg1_version, collection=self.collection1, is_active=True
+        )
+        ModerationRequest.objects.create(
+            version=self.pg3_version, collection=self.collection1, is_active=False
+        )
+
+        self.collection1.status = constants.COLLECTING
+        self.collection1.save()
+
+        self.collection1.cancel(self.user)
+
+        self.collection1.refresh_from_db()
+        self.assertEquals(self.collection1.status, constants.CANCELLED)
+
+        # Only 1 active request will be cancelled
+        actions = ModerationRequestAction.objects.filter(
+            request__collection=self.collection1, action=constants.ACTION_CANCELLED
+        )
+        self.assertEqual(1, actions.count())
+        self.assertEqual(actions[0].request, active_request)

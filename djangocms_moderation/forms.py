@@ -22,12 +22,13 @@ from .models import (
     ModerationRequest,
     RequestComment,
 )
+from .utils import get_active_moderation_request
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
 
     def validate_unique(self):
-        super(WorkflowStepInlineFormSet, self).validate_unique()
+        super().validate_unique()
         # The following fixes a bug in Django where it doesn't validate unique constraint
         # when the parent model in inline relationship has not been saved
         errors = []
@@ -74,7 +75,7 @@ class UpdateModerationRequestForm(forms.Form):
         self.user = kwargs.pop('user')
         self.workflow = kwargs.pop('workflow')
         self.active_request = kwargs.pop('active_request')
-        super(UpdateModerationRequestForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.configure_moderator_field()
 
     def configure_moderator_field(self):
@@ -148,11 +149,8 @@ class CollectionItemForm(forms.Form):
 
         version = self.cleaned_data['version']
 
-        request_with_version_exists = ModerationRequest.objects.filter(
-            version=version
-        ).exists()
-
-        if request_with_version_exists:
+        active_moderation_request = get_active_moderation_request(version.content)
+        if active_moderation_request:
             raise forms.ValidationError(_(
                 "{} is already part of existing moderation request which is part "
                 "of another active collection".format(version.content)
@@ -228,7 +226,7 @@ class SubmitCollectionForModerationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.collection = kwargs.pop('collection')
         self.user = kwargs.pop('user')
-        super(SubmitCollectionForModerationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.configure_moderator_field()
 
     def configure_moderator_field(self):
@@ -240,13 +238,28 @@ class SubmitCollectionForModerationForm(forms.Form):
     def clean(self):
         if not self.collection.allow_submit_for_review(user=self.user):
             self.add_error(None, _("This collection can't be submitted for a review"))
-        return super(SubmitCollectionForModerationForm, self).clean()
+        return super().clean()
 
     def save(self):
         self.collection.submit_for_review(
             by_user=self.user,
             to_user=self.cleaned_data.get('moderator'),
         )
+
+
+class CancelCollectionForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        self.collection = kwargs.pop('collection')
+        self.user = kwargs.pop('user')
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        if not self.collection.is_cancellable(self.user):
+            self.add_error(None, _("This collection can't be cancelled"))
+        return super().clean()
+
+    def save(self):
+        self.collection.cancel(self.user)
 
 
 class CollectionCommentForm(forms.ModelForm):

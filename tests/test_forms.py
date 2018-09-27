@@ -5,6 +5,7 @@ from django.forms import HiddenInput
 
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
+    CancelCollectionForm,
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
 )
@@ -105,4 +106,17 @@ class SubmitCollectionForModerationFormTest(BaseTestCase):
             collection=self.collection1,
             user=self.user,
         )
+        self.assertTrue(form.is_valid())
+
+
+class CancelCollectionFormTest(BaseTestCase):
+    @mock.patch.object(ModerationCollection, 'is_cancellable')
+    def test_form_is_invalid_if_collection_cant_be_cancelled(self, is_cancellable_mock):
+        is_cancellable_mock.return_value = False
+        form = CancelCollectionForm(data={}, collection=self.collection1, user=self.user)
+        # Not cancellable
+        self.assertFalse(form.is_valid())
+
+        is_cancellable_mock.return_value = True
+        form = CancelCollectionForm(data={}, collection=self.collection1, user=self.user)
         self.assertTrue(form.is_valid())
