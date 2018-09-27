@@ -12,7 +12,6 @@ from cms.utils.urlutils import admin_reverse
 from djangocms_versioning.models import Version
 
 
-
 def get_absolute_url(location, site=None):
     if not site:
         site = Site.objects.get_current()

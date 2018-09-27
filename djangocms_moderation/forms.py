@@ -16,6 +16,7 @@ from .constants import (
     ACTION_RESUBMITTED,
     COLLECTING,
 )
+from .helpers import is_registered_for_moderation
 from .models import (
     CollectionComment,
     ModerationCollection,
@@ -23,8 +24,6 @@ from .models import (
     RequestComment,
 )
 from .utils import get_active_moderation_request
-
-from .helpers import is_registered_for_moderation
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
