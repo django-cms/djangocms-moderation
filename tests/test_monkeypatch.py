@@ -88,13 +88,4 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         link = self.version_admin._get_moderation_link(
             self.pg1_version, self.mock_request
         )
-        self.assertNotEqual(
-            'In Moderation "{}"'.format(self.collection1.name),
-            link
-        )
-
-        draft_version = PageVersionFactory()
-        link = self.version_admin._get_moderation_link(
-            draft_version, self.mock_request
-        )
-        self.assertNotIn('Submit for moderation', link)
+        self.assertEqual('', link)

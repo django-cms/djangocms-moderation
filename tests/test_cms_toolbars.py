@@ -1,3 +1,4 @@
+import mock
 from django.test.client import RequestFactory
 
 from cms.middleware.toolbar import ToolbarMiddleware
@@ -112,3 +113,39 @@ class TestCMSToolbars(BaseTestCase):
         # We shouldnt see Edit button when there is no toolbar object set.
         # Some of the custom views in some apps dont have toolbar.obj
         self.assertEquals(toolbar.toolbar.get_right_items(), [])
+
+    @mock.patch('djangocms_moderation.cms_toolbars.is_registered_for_moderation')
+    def test_publish_buttons_when_unregistered(self, mock_is_registered_for_moderation):
+        mock_is_registered_for_moderation.return_value = False
+        ModerationRequest.objects.all().delete()
+        version = PageVersionFactory()
+        toolbar = self._get_toolbar(version.content, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        button_names = []
+        for item in toolbar.toolbar.get_right_items():
+            for button in item.buttons:
+                button_names.append(button.name)
+
+        self.assertNotIn('Submit for moderation', button_names)
+        self.assertIn('Publish', button_names)
+
+    @mock.patch('djangocms_moderation.cms_toolbars.is_registered_for_moderation')
+    def test_add_edit_buttons_when_unregistered(self, mock_is_registered_for_moderation):
+        mock_is_registered_for_moderation.return_value = False
+        ModerationRequest.objects.all().delete()
+        version = PageVersionFactory()
+        toolbar = self._get_toolbar(version.content)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        button_names = []
+        for item in toolbar.toolbar.get_right_items():
+            for button in item.buttons:
+                button_names.append(button.name.lower())
+
+        self.assertNotIn('moderation', button_names)
+        self.assertIn('edit', button_names)
+
+
