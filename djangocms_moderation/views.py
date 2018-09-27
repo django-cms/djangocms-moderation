@@ -9,7 +9,7 @@ from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_versioning.admin import GROUPER_PARAM
+from djangocms_versioning.helpers import version_list_url
 from djangocms_versioning.models import Version
 
 from .forms import (
@@ -52,18 +52,7 @@ class CollectionItemView(FormView):
         else:
             # Otherwise redirect to the grouper changelist as this is likely
             # the place this view was called from
-            changelist_url = reverse(
-                'admin:{app}_{model}version_changelist'.format(
-                    app=version._meta.app_label,
-                    model=version.content._meta.model_name,
-                )
-            )
-            url = "{changelist_url}?{grouper_param}={grouper_id}".format(
-                changelist_url=changelist_url,
-                grouper_param=GROUPER_PARAM,
-                grouper_id=version.grouper.id,
-            )
-            return HttpResponseRedirect(url)
+            return HttpResponseRedirect(version_list_url(version.content))
 
     def get_form(self, **kwargs):
         form = super().get_form(**kwargs)
