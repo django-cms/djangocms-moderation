@@ -2,15 +2,15 @@ import mock
 
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
+
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
-from djangocms_moderation.constants import COLLECTING
 from djangocms_moderation.forms import (
     CancelCollectionForm,
+    CollectionItemForm,
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
-    CollectionItemForm,
 )
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 
@@ -127,7 +127,7 @@ class CancelCollectionFormTest(BaseTestCase):
 
 class CollectionItemFormTestCase(BaseTestCase):
     def test_cant_add_to_collection_when_version_lock_is_active(self):
-        self.collection1.status = COLLECTING
+        self.collection1.status = constants.COLLECTING
         self.collection1.save()
 
         version = PageVersionFactory(created_by=self.user)
@@ -149,7 +149,7 @@ class CollectionItemFormTestCase(BaseTestCase):
         self.assertIn('version', form.errors)
 
     def test_cant_add_version_which_is_in_moderation(self):
-        self.collection1.status = COLLECTING
+        self.collection1.status = constants.COLLECTING
         self.collection1.save()
 
         # Version is not a part of any moderation request yet

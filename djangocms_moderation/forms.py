@@ -16,10 +16,7 @@ from .constants import (
     ACTION_RESUBMITTED,
     COLLECTING,
 )
-from .helpers import (
-    get_active_moderation_request,
-    is_obj_version_unlocked,
-)
+from .helpers import get_active_moderation_request, is_obj_version_unlocked
 from .models import (
     CollectionComment,
     ModerationCollection,

@@ -8,8 +8,8 @@ from djangocms_versioning.constants import DRAFT
 
 from .helpers import (
     get_active_moderation_request,
-    is_obj_version_unlocked,
     is_obj_review_locked,
+    is_obj_version_unlocked,
 )
 from .utils import get_admin_url
 
