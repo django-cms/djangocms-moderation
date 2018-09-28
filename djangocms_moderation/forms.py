@@ -10,6 +10,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from adminsortable2.admin import CustomInlineFormSet
 from djangocms_versioning.models import Version
 
+from djangocms_moderation.helpers import is_content_obj_version_unlocked
 from .constants import (
     ACTION_CANCELLED,
     ACTION_REJECTED,
@@ -114,6 +115,9 @@ class UpdateModerationRequestForm(forms.Form):
 
 
 class CollectionItemForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+        super().__init__(*args, **kwargs)
 
     collection = forms.ModelChoiceField(
         queryset=ModerationCollection.objects.filter(status=COLLECTING),
@@ -138,16 +142,11 @@ class CollectionItemForm(forms.Form):
             can_delete_related=related_modeladmin.has_delete_permission(request),
         )
 
-    def clean(self):
+    def clean_version(self):
         """
-        Validates content_object_id: Checks that a given content_object_id has
-        a content_object and it is not currently part of any ModerationRequest
-
-        :return:
+        Make sure that version is not part of another active moderation request
+        or version locked to another user
         """
-        if self.errors:
-            return self.cleaned_data
-
         version = self.cleaned_data['version']
 
         active_moderation_request = get_active_moderation_request(version.content)
@@ -157,8 +156,12 @@ class CollectionItemForm(forms.Form):
                 "of another active collection".format(version.content)
             ))
 
-        self.cleaned_data['version'] = version
-        return self.cleaned_data
+        if not is_content_obj_version_unlocked(version.content, self.user):
+            raise forms.ValidationError(_(
+                "{} is version locked to another user".format(version.content)
+            ))
+
+        return version
 
 
 class SubmitCollectionForModerationForm(forms.Form):

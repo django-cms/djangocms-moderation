@@ -36,10 +36,10 @@ def get_form_submission_for_step(active_request, current_step):
     return lookup.first()
 
 
-def is_content_version_locked(content_obj, user):
+def is_content_obj_version_unlocked(content_obj, user):
     """
     If djangocms_version_locking is installed, we need to consider it,
-    otherwise, the content is never version-locked for an user
+    otherwise, the content object is never version-locked for an user
     :param content_obj: <obj>
     :param user: <obj>
     :return: <bool>

@@ -2,13 +2,15 @@ import mock
 
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
+from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
+from djangocms_moderation.constants import COLLECTING
 from djangocms_moderation.forms import (
     CancelCollectionForm,
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
-)
+    CollectionItemForm)
 from djangocms_moderation.models import ModerationCollection
 
 from .utils.base import BaseTestCase
@@ -120,3 +122,27 @@ class CancelCollectionFormTest(BaseTestCase):
         is_cancellable_mock.return_value = True
         form = CancelCollectionForm(data={}, collection=self.collection1, user=self.user)
         self.assertTrue(form.is_valid())
+
+
+class CollectionItemFormTestCase(BaseTestCase):
+    def test_cant_add_to_collection_when_version_lock_is_active(self):
+        self.collection1.status = COLLECTING
+        self.collection1.save()
+
+        version = PageVersionFactory(created_by=self.user)
+        data = {
+            'collection': self.collection1.pk,
+            'version': version.pk,
+        }
+        form = CollectionItemForm(data=data, user=version.created_by)
+        self.assertTrue(form.is_valid(), form.errors)
+
+        # now lets try to add version locked item
+        version = PageVersionFactory(created_by=self.user)
+        data = {
+            'collection': self.collection1.pk,
+            'version': version.pk,
+        }
+        form = CollectionItemForm(data=data, user=self.user3)
+        self.assertFalse(form.is_valid())
+        self.assertIn('version', form.errors)
