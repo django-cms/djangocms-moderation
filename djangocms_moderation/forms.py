@@ -200,7 +200,7 @@ class CollectionItemsForm(forms.Form):
         for v in version:
 
             request_with_version_exists = ModerationRequest.objects.filter(
-                version=version
+                version=v
             ).exists()
 
             if not request_with_version_exists:
