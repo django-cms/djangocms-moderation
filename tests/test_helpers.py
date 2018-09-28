@@ -50,13 +50,6 @@ class GetFormSubmissions(BaseTestCase):
 
 
 class VersionLockingTestCase(BaseTestCase):
-    def test_version_locking_content_is_unlocked_for_user_exists(self):
-        try:
-            from djangocms_version_locking.helpers import content_is_unlocked_for_user
-        except ImportError:
-            self.fail("is_content_unlocked_for_user doesn't exist in "
-                      "'djangocms_version_locking.helpers' anymore ")
-
     def test_is_content_unlocked_for_user(self):
         version = PageVersionFactory(created_by=self.user)
         self.assertTrue(is_content_unlocked_for_user(version.content, self.user))
@@ -64,6 +57,8 @@ class VersionLockingTestCase(BaseTestCase):
         version.publish(self.user)
         self.assertTrue(is_content_unlocked_for_user(version.content, self.user2))
 
+        # Make sure that we are actually calling the version-lock method and it
+        # still exists
         with mock.patch('djangocms_version_locking.helpers.content_is_unlocked_for_user') as _mock:
             is_content_unlocked_for_user(version.content, self.user2)
             self.assertTrue(_mock.called)
