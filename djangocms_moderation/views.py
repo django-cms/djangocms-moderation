@@ -129,8 +129,8 @@ class CollectionItemsView(FormView):
     def form_valid(self, form):
         versions = form.cleaned_data['versions']
         collection = form.cleaned_data['collection']
-        for v in versions:
-            collection.add_version(v)
+        for version in versions:
+            collection.add_version(version)
         messages.success(
             self.request,
             _('{} items successfully added to moderation collection'
@@ -138,8 +138,8 @@ class CollectionItemsView(FormView):
               )
         )
 
-        return_to = self.request.GET.get('return_to')
-        return HttpResponseRedirect(return_to)
+        return_to_url = self.request.GET.get('return_to_url')
+        return HttpResponseRedirect(return_to_url)
 
     def get_form(self, **kwargs):
         form = super().get_form(**kwargs)

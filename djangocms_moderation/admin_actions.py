@@ -251,7 +251,7 @@ def add_items_to_collection(modeladmin, request, queryset):
             language=request.GET.get('language'),
             args=()
         ), version_ids=','.join(version_id_list),
-        return_to=request.META.get('HTTP_REFERER'))
+        return_to_url=request.META.get('HTTP_REFERER'))
     return HttpResponseRedirect(admin_url)
 add_items_to_collection.short_description = _("Add to moderation collection")  # noqa: E305
 
