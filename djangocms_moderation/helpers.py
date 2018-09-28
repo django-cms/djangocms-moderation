@@ -1,5 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 
+from djangocms_versioning.models import Version
+
 from .models import ConfirmationFormSubmission, Workflow
 
 
@@ -50,3 +52,33 @@ def is_content_obj_version_unlocked(content_obj, user):
         return True
     else:
         return content_is_unlocked_for_user(content_obj, user)
+
+
+def is_obj_review_locked(obj, user):
+    """
+    Util function which determines if the `obj` is Review locked.
+    It is the equivalent of "Can `user` edit the version of object `obj`"?
+    """
+    moderation_request = get_active_moderation_request(obj)
+    if not moderation_request:
+        return False
+
+    # If `user` can resubmit the moderation request, it means they can edit
+    # the version to submit the changes. Review lock should be lifted for them
+    if moderation_request.user_can_resubmit(user):
+        return False
+    return True
+
+
+def get_active_moderation_request(content_object):
+    """
+    If this returns None, it means there is no active_moderation request for this
+    object, and it means it can be submitted for moderation
+    """
+    from djangocms_moderation.models import ModerationRequest  # noqa
+    version = Version.objects.get_for_content(content_object)
+
+    try:
+        return ModerationRequest.objects.get(version=version, is_active=True)
+    except ModerationRequest.DoesNotExist:
+        return None

@@ -10,12 +10,15 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from adminsortable2.admin import CustomInlineFormSet
 from djangocms_versioning.models import Version
 
-from djangocms_moderation.helpers import is_content_obj_version_unlocked
 from .constants import (
     ACTION_CANCELLED,
     ACTION_REJECTED,
     ACTION_RESUBMITTED,
     COLLECTING,
+)
+from .helpers import (
+    get_active_moderation_request,
+    is_content_obj_version_unlocked,
 )
 from .models import (
     CollectionComment,
@@ -23,7 +26,6 @@ from .models import (
     ModerationRequest,
     RequestComment,
 )
-from .utils import get_active_moderation_request
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
