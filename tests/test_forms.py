@@ -10,7 +10,8 @@ from djangocms_moderation.forms import (
     CancelCollectionForm,
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
-    CollectionItemForm)
+    CollectionItemForm,
+)
 from djangocms_moderation.models import ModerationCollection
 
 from .utils.base import BaseTestCase
