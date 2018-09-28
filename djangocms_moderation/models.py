@@ -245,6 +245,11 @@ class ModerationCollection(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        permissions = (
+            ("can_change_author", "Can change collection author"),
+        )
+
     def __str__(self):
         return self.name
 
