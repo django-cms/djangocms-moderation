@@ -22,7 +22,7 @@ from .admin_actions import (
     reject_selected,
     resubmit_selected,
 )
-from .constants import ARCHIVED, IN_REVIEW
+from .constants import ARCHIVED, COLLECTING, IN_REVIEW
 from .forms import (
     CollectionCommentForm,
     RequestCommentForm,
@@ -220,12 +220,20 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 pass
             else:
                 extra_context = dict(collection=collection)
+                if collection.is_cancellable(request.user):
+                    cancel_collection_url = reverse(
+                        'admin:cms_moderation_cancel_collection',
+                        args=(collection_id,)
+                    )
+                    extra_context['cancel_collection_url'] = cancel_collection_url
+
                 if collection.allow_submit_for_review(user=request.user):
                     submit_for_review_url = reverse(
                         'admin:cms_moderation_submit_collection_for_moderation',
                         args=(collection_id,)
                     )
                     extra_context['submit_for_review_url'] = submit_for_review_url
+
         else:
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
@@ -584,6 +592,11 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
                 name="cms_moderation_submit_collection_for_moderation",
             ),
             _url(
+                '^(?P<collection_id>\d+)/cancel-collection/$',
+                views.cancel_collection,
+                name="cms_moderation_cancel_collection",
+            ),
+            _url(
                 r'^item/add-item/$',
                 views.add_item_to_collection,
                 name='cms_moderation_item_to_collection',
@@ -595,13 +608,15 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return {'author': request.user}
 
     def get_readonly_fields(self, request, obj=None):
+        readonly_fields = ['status']
         if obj:
-            readonly_fields = ['workflow']
             if not request.user.has_perm('{}.can_change_author'.format('djangocms_moderation')):
                 readonly_fields.append('author')
-            return readonly_fields
-        else:
-            return ['status']
+            # Author of the collection can change the workflow if the collection
+            # is still in the `collecting` state
+            if obj.status != COLLECTING or obj.author != request.user:
+                readonly_fields.append('workflow')
+        return readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)

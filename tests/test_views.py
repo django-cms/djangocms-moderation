@@ -1,4 +1,5 @@
 import mock
+from mock import patch
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -7,10 +8,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_versioning.admin import GROUPER_PARAM
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
-from djangocms_moderation import constants
+from djangocms_moderation import constants, views
 from djangocms_moderation.forms import CollectionItemForm
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
@@ -77,32 +77,22 @@ class CollectionItemViewTest(BaseViewTestCase):
         ModerationRequest.objects.all().delete()
         self.client.force_login(self.user)
         url = get_admin_url(
-                name='cms_moderation_item_to_collection',
-                language='en',
-                args=()
-            )
-        response = self.client.post(
-            path=url,
-            data={
-                'collection':  self.collection_1.pk,
-                'version': self.pg_version.pk,
-            }
+            name='cms_moderation_item_to_collection',
+            language='en',
+            args=()
         )
 
-        # Check we redirect back to the grouper changelist
-        self.assertEqual(response.status_code, 302)
-        changelist_url = reverse(
-            'admin:{app}_{model}version_changelist'.format(
-                app=self.pg_version._meta.app_label,
-                model=self.pg_version.content._meta.model_name,
+        with patch.object(views, 'version_list_url') as mock_:
+            response = self.client.post(
+                path=url,
+                data={
+                    'collection': self.collection_1.pk,
+                    'version': self.pg_version.pk,
+                }
             )
-        )
-        redirect_url = "{changelist_url}?{grouper_param}={grouper_id}".format(
-            changelist_url=changelist_url,
-            grouper_param=GROUPER_PARAM,
-            grouper_id=self.pg_version.grouper.id,
-        )
-        self.assertEqual(response.url, redirect_url)
+
+        mock_.assert_called_with(self.pg_version.content)
+        self.assertEqual(response.status_code, 302)
 
         moderation_request = ModerationRequest.objects.filter(
             version=self.pg_version,
@@ -113,6 +103,7 @@ class CollectionItemViewTest(BaseViewTestCase):
     def test_invalid_version_already_in_collection(self):
         # add object
         self.collection_1.add_version(self.pg_version)
+        self.assertEqual(1, ModerationRequest.objects.filter(version=self.pg_version).count())
 
         self.client.force_login(self.user)
 
@@ -121,7 +112,7 @@ class CollectionItemViewTest(BaseViewTestCase):
                 name='cms_moderation_item_to_collection',
                 language='en',
                 args=()
-            ), {'collection': self.collection_1.pk,
+            ), {'collection': self.collection_2.pk,
                 'version': self.pg_version.pk})
 
         self.assertEqual(response.status_code, 200)
@@ -129,6 +120,20 @@ class CollectionItemViewTest(BaseViewTestCase):
               "is already part of existing moderation request which is part",
               response.context_data['form'].errors['__all__'][0]
         )
+        self.assertEqual(1, ModerationRequest.objects.filter(version=self.pg_version).count())
+
+        # make the moderation request inactive, we will be able to submit it
+        self.collection_1.moderation_requests.all().update(is_active=False)
+        response = self.client.post(
+            get_admin_url(
+                name='cms_moderation_item_to_collection',
+                language='en',
+                args=()
+            ), {'collection': self.collection_2.pk,
+                'version': self.pg_version.pk})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(2, ModerationRequest.objects.filter(version=self.pg_version).count())
 
     def test_non_existing_version(self):
         self.client.force_login(self.user)
@@ -236,6 +241,26 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
         assert submit_mock.called
         self.assertEqual(302, response.status_code)
         self.assertEqual(self.request_change_list_url, response.url)
+
+
+class CancelCollectionViewTest(BaseViewTestCase):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse(
+            'admin:cms_moderation_cancel_collection',
+            args=(self.collection2.pk,)
+        )
+        self.collection_change_list_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+
+    @mock.patch.object(ModerationCollection, 'cancel')
+    def test_submit_collection_for_moderation(self, cancel_mock):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(self.url)
+        assert cancel_mock.called
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(self.collection_change_list_url, response.url)
 
 
 class ModerationRequestChangeListView(BaseViewTestCase):

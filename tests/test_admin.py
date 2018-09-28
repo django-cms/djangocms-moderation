@@ -189,6 +189,7 @@ class ModerationAdminTestCase(BaseTestCase):
         conf.REQUEST_COMMENTS_ENABLED = False
         list_display = self.mra.get_list_display(mock_request)
         self.assertNotIn('get_comments_link', list_display)
+
         conf.REQUEST_COMMENTS_ENABLED = True
         list_display = self.mra.get_list_display(mock_request)
         self.assertIn('get_comments_link', list_display)
@@ -227,7 +228,7 @@ class ModerationAdminTestCase(BaseTestCase):
         self.assertFalse(mock_request.user.has_perm('djangocms_moderation.can_change_author'))
 
         # check that author is readonly
-        self.assertIn('author', self.mca.get_readonly_fields(mock_request, self.mca))
+        self.assertIn('author', self.mca.get_readonly_fields(mock_request, self.collection))
 
         # add the permission
         content_type = ContentType.objects.get_for_model(ModerationCollection)
@@ -238,10 +239,49 @@ class ModerationAdminTestCase(BaseTestCase):
         user = User.objects.get(pk=user.pk)
         mock_request.user = user
 
+        # test that the permission was added successfully
         mock_request.user.has_perm('djangocms_moderation.can_change_author')
 
         # check that the user does not have the permissions
         self.assertTrue(mock_request.user.has_perm('djangocms_moderation.can_change_author'))
 
         # check that author is editable
-        self.assertNotIn('author', self.mca.get_readonly_fields(mock_request, self.mca))
+        self.assertNotIn('author', self.mca.get_readonly_fields(mock_request, self.collection))
+
+    def test_get_readonly_fields_for_moderation_collection(self):
+        self.assertNotEqual(self.collection.author, self.user3)
+        self.collection.status = constants.COLLECTING
+        self.collection.save()
+
+        mock_request_author = MockRequest()
+        mock_request_author.user = self.collection.author
+
+        mock_request_non_author = MockRequest()
+        mock_request_non_author.user = self.user3
+
+        # We are creating a new collection, only `status` should be read_only
+        fields = self.mca.get_readonly_fields(mock_request_author)
+        self.assertListEqual(['status'], fields)
+
+        # Now we pass the object.
+        # The author field will be editable because this is a superuser
+        # (it wouldn't be if they weren't and didn't have the 'can_change_author' permission)
+        # As the collection is still in `collecting` status and the request
+        # user is the author of the collection, they can change still
+        # change the `workflow`
+        fields = self.mca.get_readonly_fields(mock_request_author, self.collection)
+        self.assertListEqual(['status'], fields)
+
+        # Non-author can't edit the workflow
+        fields = self.mca.get_readonly_fields(mock_request_non_author, self.collection)
+        self.assertListEqual(['status', 'workflow'], fields)
+
+        # If the collection is not in `collecting` status, then the author
+        # can't edit the workflow anymore
+        self.collection.status = constants.IN_REVIEW
+        self.collection.save()
+        fields = self.mca.get_readonly_fields(mock_request_author, self.collection)
+        self.assertListEqual(['status', 'workflow'], fields)
+
+        fields = self.mca.get_readonly_fields(mock_request_non_author, self.collection)
+        self.assertListEqual(['status', 'workflow'], fields)
