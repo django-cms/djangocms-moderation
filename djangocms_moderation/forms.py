@@ -18,7 +18,7 @@ from .constants import (
 )
 from .helpers import (
     get_active_moderation_request,
-    is_content_obj_version_unlocked,
+    is_obj_version_unlocked,
 )
 from .models import (
     CollectionComment,
@@ -158,7 +158,7 @@ class CollectionItemForm(forms.Form):
                 "of another active collection".format(version.content)
             ))
 
-        if not is_content_obj_version_unlocked(version.content, self.user):
+        if not is_obj_version_unlocked(version.content, self.user):
             raise forms.ValidationError(_(
                 "{} is version locked to another user".format(version.content)
             ))

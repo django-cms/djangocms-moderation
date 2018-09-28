@@ -7,7 +7,7 @@ from djangocms_versioning.test_utils.factories import PageVersionFactory
 from djangocms_moderation.helpers import (
     get_form_submission_for_step,
     get_page_or_404,
-    is_content_obj_version_unlocked,
+    is_obj_version_unlocked,
 )
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
@@ -50,15 +50,15 @@ class GetFormSubmissions(BaseTestCase):
 
 
 class VersionLockingTestCase(BaseTestCase):
-    def test_is_content_obj_version_unlocked(self):
+    def test_is_obj_version_unlocked(self):
         version = PageVersionFactory(created_by=self.user)
-        self.assertTrue(is_content_obj_version_unlocked(version.content, self.user))
-        self.assertFalse(is_content_obj_version_unlocked(version.content, self.user2))
+        self.assertTrue(is_obj_version_unlocked(version.content, self.user))
+        self.assertFalse(is_obj_version_unlocked(version.content, self.user2))
         version.publish(self.user)
-        self.assertTrue(is_content_obj_version_unlocked(version.content, self.user2))
+        self.assertTrue(is_obj_version_unlocked(version.content, self.user2))
 
         # Make sure that we are actually calling the version-lock method and it
         # still exists
         with mock.patch('djangocms_version_locking.helpers.content_is_unlocked_for_user') as _mock:
-            is_content_obj_version_unlocked(version.content, self.user2)
+            is_obj_version_unlocked(version.content, self.user2)
             self.assertTrue(_mock.called)

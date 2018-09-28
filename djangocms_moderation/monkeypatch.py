@@ -8,7 +8,7 @@ from djangocms_versioning.constants import DRAFT
 
 from .helpers import (
     get_active_moderation_request,
-    is_content_obj_version_unlocked,
+    is_obj_version_unlocked,
     is_obj_review_locked,
 )
 from .utils import get_admin_url
@@ -37,7 +37,7 @@ def _get_moderation_link(self, version, request):
         return _('In Moderation "%(collection_name)s"') % {
             'collection_name': moderation_request.collection.name
         }
-    elif is_content_obj_version_unlocked(content_object, request.user):
+    elif is_obj_version_unlocked(content_object, request.user):
         url = add_url_parameters(
             get_admin_url(
                 name='cms_moderation_item_to_collection',

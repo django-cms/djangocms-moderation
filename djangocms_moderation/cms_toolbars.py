@@ -9,7 +9,7 @@ from djangocms_versioning.models import Version
 
 from .helpers import (
     get_active_moderation_request,
-    is_content_obj_version_unlocked,
+    is_obj_version_unlocked,
     is_obj_review_locked,
 )
 from .utils import get_admin_url
@@ -65,7 +65,7 @@ class ModerationToolbar(VersioningToolbar):
                     side=self.toolbar.RIGHT,
                 )
             # Check if the object is not version locked to someone else
-            elif is_content_obj_version_unlocked(self.toolbar.obj, self.request.user):
+            elif is_obj_version_unlocked(self.toolbar.obj, self.request.user):
                 version = Version.objects.get_for_content(self.toolbar.obj)
                 url = add_url_parameters(
                     get_admin_url(
