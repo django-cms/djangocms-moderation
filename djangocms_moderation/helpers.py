@@ -34,3 +34,19 @@ def get_form_submission_for_step(active_request, current_step):
         .filter(request=active_request, for_step=current_step)
     )
     return lookup.first()
+
+
+def is_content_unlocked_for_user(content_obj, user):
+    """
+    If djangocms_version_locking is installed, we need to consider it,
+    otherwise, the content is never version-locked for an user
+    :param content_obj: <obj>
+    :param user: <obj>
+    :return: <bool>
+    """
+    try:
+        from djangocms_version_locking.helpers import content_is_unlocked_for_user
+    except ImportError:
+        return True
+    else:
+        return content_is_unlocked_for_user(content_obj, user)
