@@ -6,6 +6,7 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT
 
+from djangocms_moderation.helpers import is_content_version_locked
 from .utils import (
     get_active_moderation_request,
     get_admin_url,
@@ -29,12 +30,14 @@ def get_state_actions(func):
 def _get_moderation_link(self, version, request):
     if version.state != DRAFT:
         return ''
-    moderation_request = get_active_moderation_request(version.content)
+
+    content_object = version.content
+    moderation_request = get_active_moderation_request(content_object)
     if moderation_request:
         return _('In Moderation "%(collection_name)s"') % {
             'collection_name': moderation_request.collection.name
         }
-    else:
+    elif is_content_version_locked(content_object, request.user):
         url = add_url_parameters(
             get_admin_url(
                 name='cms_moderation_item_to_collection',
@@ -49,6 +52,7 @@ def _get_moderation_link(self, version, request):
             url,
             _('Submit for moderation')
         )
+    return ''
 
 
 def _get_edit_link(func):

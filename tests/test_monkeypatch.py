@@ -54,7 +54,16 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         )
         self.assertEqual('', link)
 
-        draft_version = PageVersionFactory()
+        draft_version = PageVersionFactory(created_by=self.user3)
+        # Request has self.user, so the moderation link won't be displayed.
+        # This is version lock in place
+        link = self.version_admin._get_moderation_link(
+            draft_version, self.mock_request
+        )
+        self.assertEqual('', link)
+
+        draft_version = PageVersionFactory(created_by=self.mock_request.user)
+        # Now the version lock is lifted, so we should be able to add to moderation
         link = self.version_admin._get_moderation_link(
             draft_version, self.mock_request
         )
