@@ -12,7 +12,7 @@ from djangocms_moderation.forms import (
     UpdateModerationRequestForm,
     CollectionItemForm,
 )
-from djangocms_moderation.models import ModerationCollection
+from djangocms_moderation.models import ModerationCollection, ModerationRequest
 
 from .utils.base import BaseTestCase
 
@@ -147,3 +147,30 @@ class CollectionItemFormTestCase(BaseTestCase):
         form = CollectionItemForm(data=data, user=self.user3)
         self.assertFalse(form.is_valid())
         self.assertIn('version', form.errors)
+
+    def test_cant_add_version_which_is_in_moderation(self):
+        self.collection1.status = COLLECTING
+        self.collection1.save()
+
+        # Version is not a part of any moderation request yet
+        version = PageVersionFactory(created_by=self.user)
+        data = {
+            'collection': self.collection1.pk,
+            'version': version.pk,
+        }
+        form = CollectionItemForm(data=data, user=version.created_by)
+        self.assertTrue(form.is_valid(), form.errors)
+
+        # Now lets add the version to an active moderation request
+        mr = ModerationRequest.objects.create(
+            collection=self.collection1, version=version, is_active=True
+        )
+        form = CollectionItemForm(data=data, user=version.created_by)
+        self.assertFalse(form.is_valid(), form.errors)
+        self.assertIn('version', form.errors)
+
+        # If mr was inactive, we are good to go
+        mr.is_active = False
+        mr.save()
+        form = CollectionItemForm(data=data, user=version.created_by)
+        self.assertTrue(form.is_valid(), form.errors)
