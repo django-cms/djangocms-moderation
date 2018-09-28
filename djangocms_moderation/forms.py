@@ -184,16 +184,13 @@ class CollectionItemsForm(forms.Form):
             can_delete_related=related_modeladmin.has_delete_permission(request),
         )
 
-    def clean(self):
+    def clean_versions(self):
         """
         Process objects which are not part of an active moderation request.
         Other objects are ignored.
 
         :return:
         """
-        if self.errors:
-            return self.cleaned_data
-
         versions = self.cleaned_data['versions']
 
         versions_not_in_moderation = []
@@ -202,7 +199,7 @@ class CollectionItemsForm(forms.Form):
             active_moderation_request = get_active_moderation_request(version.content)
 
             if not active_moderation_request:
-                versions_not_in_moderation.append(version)
+                versions_not_in_moderation.append(version.pk)
 
         if len(versions_not_in_moderation) == 0:
             raise forms.ValidationError(_(
@@ -210,8 +207,7 @@ class CollectionItemsForm(forms.Form):
                 "of another active collection"
             ))
 
-        self.cleaned_data['versions'] = versions_not_in_moderation
-        return self.cleaned_data
+        return Version.objects.filter(pk__in=versions_not_in_moderation)
 
 
 class SubmitCollectionForModerationForm(forms.Form):
