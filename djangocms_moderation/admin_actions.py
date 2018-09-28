@@ -228,6 +228,7 @@ publish_selected.short_description = _("Publish selected requests")  # noqa: E30
 
 
 def queryset_version_ids(queryset):
+    """Returns the version object keys corresponding to the objects in the Haystack queryset"""
     version_ids = []
     for obj in queryset:
         version = Version.objects.get_for_content(obj.object)
@@ -236,13 +237,21 @@ def queryset_version_ids(queryset):
 
 
 def add_items_to_collection(modeladmin, request, queryset):
+    """
+
+    :param modeladmin:
+    :param request:
+    :param queryset: Haystack query set
+    :return:
+    """
     version_id_list = queryset_version_ids(queryset)
-    admin_url = add_url_parameters(get_admin_url(
-        name='cms_moderation_items_to_collection',
-        language=request.GET.get('language'),
-        args=()
-    ), version_ids=','.join(version_id_list),
-        next=request.META.get('HTTP_REFERER'))
+    admin_url = add_url_parameters(
+        get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language=request.GET.get('language'),
+            args=()
+        ), version_ids=','.join(version_id_list),
+        return_to=request.META.get('HTTP_REFERER'))
     return HttpResponseRedirect(admin_url)
 add_items_to_collection.short_description = _("Add to moderation collection")  # noqa: E305
 

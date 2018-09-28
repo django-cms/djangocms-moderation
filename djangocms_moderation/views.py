@@ -112,13 +112,13 @@ class CollectionItemsView(FormView):
     success_template_name = 'djangocms_moderation/request_finalized.html'
 
     def get_form_kwargs(self):
-        kwargs = super(CollectionItemsView, self).get_form_kwargs()
+        kwargs = super().get_form_kwargs()
 
         ids = self.request.GET.get('version_ids')
-        vids = Version.objects.filter(pk__in=list(map(int, ids.split(','))))
+        versions = Version.objects.filter(pk__in=list(map(int, ids.split(','))))
 
         kwargs['initial'].update({
-            'versions': vids,
+            'versions': versions,
         })
         collection_id = self.request.GET.get('collection_id')
 
@@ -131,13 +131,18 @@ class CollectionItemsView(FormView):
         collection = form.cleaned_data['collection']
         for v in versions:
             collection.add_version(v)
-        messages.success(self.request, _('{} items successfully added to moderation collection'.format(len(versions))))
+        messages.success(
+            self.request,
+            _('{} items successfully added to moderation collection'
+              .format(len(versions))
+              )
+        )
 
-        next = self.request.GET.get('next')
-        return HttpResponseRedirect(next)
+        return_to = self.request.GET.get('return_to')
+        return HttpResponseRedirect(return_to)
 
     def get_form(self, **kwargs):
-        form = super(CollectionItemsView, self).get_form(**kwargs)
+        form = super().get_form(**kwargs)
         form.set_collection_widget(self.request)
         return form
 
@@ -148,7 +153,7 @@ class CollectionItemsView(FormView):
 
         Always gets content_object_list from a collection at a time
         """
-        context = super(CollectionItemsView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
         collection_id = self.request.GET.get('collection_id')
 

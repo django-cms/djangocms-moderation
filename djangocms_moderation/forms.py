@@ -186,8 +186,8 @@ class CollectionItemsForm(forms.Form):
 
     def clean(self):
         """
-        Validates content_object_id: Checks that a given content_object_id has
-        a content_object and it is not currently part of any ModerationRequest
+        Process objects which are not part of an active moderation request.
+        Other objects are ignored.
 
         :return:
         """
@@ -196,21 +196,21 @@ class CollectionItemsForm(forms.Form):
 
         versions = self.cleaned_data['versions']
 
-        versions_with_no_request = []
-        for v in versions:
+        versions_not_in_moderation = []
+        for version in versions:
 
-            active_moderation_request = get_active_moderation_request(v.content)
+            active_moderation_request = get_active_moderation_request(version.content)
 
             if not active_moderation_request:
-                versions_with_no_request.append(v)
+                versions_not_in_moderation.append(version)
 
-        if len(versions_with_no_request) == 0:
+        if len(versions_not_in_moderation) == 0:
             raise forms.ValidationError(_(
                 "All items are already part of an existing moderation request which is part "
                 "of another active collection"
             ))
 
-        self.cleaned_data['versions'] = versions_with_no_request
+        self.cleaned_data['versions'] = versions_not_in_moderation
         return self.cleaned_data
 
 
