@@ -107,7 +107,7 @@ add_item_to_collection = CollectionItemView.as_view()
 
 
 class CollectionItemsView(FormView):
-    template_name = 'djangocms_moderation/item_to_collection.html'
+    template_name = 'djangocms_moderation/items_to_collection.html'
     form_class = CollectionItemsForm
     success_template_name = 'djangocms_moderation/request_finalized.html'
 
@@ -118,7 +118,7 @@ class CollectionItemsView(FormView):
         vids = Version.objects.filter(pk__in=list(map(int, ids.split(','))))
 
         kwargs['initial'].update({
-            'version': vids,
+            'versions': vids,
         })
         collection_id = self.request.GET.get('collection_id')
 
@@ -127,11 +127,11 @@ class CollectionItemsView(FormView):
         return kwargs
 
     def form_valid(self, form):
-        version = form.cleaned_data['version']
+        versions = form.cleaned_data['versions']
         collection = form.cleaned_data['collection']
-        for v in version:
+        for v in versions:
             collection.add_version(v)
-        messages.success(self.request, _('{} items successfully added to moderation collection'.format(len(version))))
+        messages.success(self.request, _('{} items successfully added to moderation collection'.format(len(versions))))
 
         next = self.request.GET.get('next')
         return HttpResponseRedirect(next)
@@ -153,10 +153,15 @@ class CollectionItemsView(FormView):
         collection_id = self.request.GET.get('collection_id')
 
         if collection_id:
-            collection = ModerationCollection.objects.get(pk=collection_id)
-            moderation_request_list = collection.moderation_requests.all()
+            try:
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+            else:
+                moderation_request_list = collection.moderation_requests.all()
         else:
             moderation_request_list = []
+
 
         model_admin = admin.site._registry[ModerationCollection]
         context.update({

@@ -165,7 +165,7 @@ class CollectionItemsForm(forms.Form):
         queryset=ModerationCollection.objects.filter(status=COLLECTING),
         required=True
     )
-    version = forms.ModelMultipleChoiceField(
+    versions = forms.ModelMultipleChoiceField(
         queryset=Version.objects.all(),
         required=True,
         widget=forms.MultipleHiddenInput(),
@@ -194,25 +194,23 @@ class CollectionItemsForm(forms.Form):
         if self.errors:
             return self.cleaned_data
 
-        version = self.cleaned_data['version']
+        versions = self.cleaned_data['versions']
 
-        version_with_no_request = []
-        for v in version:
+        versions_with_no_request = []
+        for v in versions:
 
-            request_with_version_exists = ModerationRequest.objects.filter(
-                version=v
-            ).exists()
+            active_moderation_request = get_active_moderation_request(v.content)
 
-            if not request_with_version_exists:
-                version_with_no_request.append(v)
+            if not active_moderation_request:
+                versions_with_no_request.append(v)
 
-        if len(version_with_no_request) == 0:
+        if len(versions_with_no_request) == 0:
             raise forms.ValidationError(_(
                 "All items are already part of an existing moderation request which is part "
                 "of another active collection"
             ))
 
-        self.cleaned_data['version'] = version_with_no_request
+        self.cleaned_data['versions'] = versions_with_no_request
         return self.cleaned_data
 
 
