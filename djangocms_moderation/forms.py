@@ -114,9 +114,9 @@ class UpdateModerationRequestForm(forms.Form):
 
 
 class CollectionItemForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user')
+    def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.user = user
 
     collection = forms.ModelChoiceField(
         queryset=ModerationCollection.objects.filter(status=COLLECTING),
