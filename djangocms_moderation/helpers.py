@@ -2,6 +2,11 @@ from django.contrib.contenttypes.models import ContentType
 
 from djangocms_versioning.models import Version
 
+try:
+    from djangocms_version_locking.helpers import content_is_unlocked_for_user
+except ImportError:
+    content_is_unlocked_for_user = None
+
 from .models import ConfirmationFormSubmission, Workflow
 
 
@@ -46,12 +51,9 @@ def is_obj_version_unlocked(content_obj, user):
     :param user: <obj>
     :return: <bool>
     """
-    try:
-        from djangocms_version_locking.helpers import content_is_unlocked_for_user
-    except ImportError:
-        return True
-    else:
+    if content_is_unlocked_for_user is not None:
         return content_is_unlocked_for_user(content_obj, user)
+    return True
 
 
 def is_obj_review_locked(obj, user):
