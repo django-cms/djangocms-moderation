@@ -16,7 +16,11 @@ from .constants import (
     ACTION_RESUBMITTED,
     COLLECTING,
 )
-from .helpers import get_active_moderation_request, is_obj_version_unlocked
+from .helpers import (
+    get_active_moderation_request,
+    is_obj_version_unlocked,
+    is_registered_for_moderation,
+)
 from .models import (
     CollectionComment,
     ModerationCollection,
@@ -147,6 +151,12 @@ class CollectionItemForm(forms.Form):
         or version locked to another user
         """
         version = self.cleaned_data['version']
+
+        if not is_registered_for_moderation(version.content):
+            raise forms.ValidationError(_(
+                "{} is not registered for moderation, please see configuration docs for how to"
+                .format(version.content.__class__.__name__)
+            ))
 
         active_moderation_request = get_active_moderation_request(version.content)
         if active_moderation_request:

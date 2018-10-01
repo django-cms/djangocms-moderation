@@ -1,3 +1,5 @@
+import mock
+
 from django.test.client import RequestFactory
 
 from cms.middleware.toolbar import ToolbarMiddleware
@@ -38,7 +40,7 @@ class TestCMSToolbars(BaseTestCase):
         cms_toolbar = CMSToolbar(request)
         toolbar = ModerationToolbar(
             request, toolbar=cms_toolbar, is_current_app=True, app_path='/')
-        toolbar.toolbar.obj = content_obj
+        toolbar.toolbar.set_object(content_obj)
         if edit_mode:
             toolbar.toolbar.edit_mode_active = True
             toolbar.toolbar.content_mode_active = False
@@ -74,11 +76,13 @@ class TestCMSToolbars(BaseTestCase):
         self.collection1.add_version(
             version=version
         )
+
         toolbar = self._get_toolbar(version.content, edit_mode=True)
         toolbar.populate()
         toolbar.post_template_populate()
+
         self.assertEquals(
-            toolbar.toolbar.get_right_items()[1].buttons[0].name,
+            toolbar.toolbar.get_right_items()[0].buttons[0].name,
             'In Moderation "%s"' % self.collection1.name
         )
 
@@ -153,3 +157,31 @@ class TestCMSToolbars(BaseTestCase):
         # We shouldn't see Edit button when there is no toolbar object set.
         # Some of the custom views in some apps dont have toolbar.obj
         self.assertEquals(toolbar.toolbar.get_right_items(), [])
+
+    @mock.patch('djangocms_moderation.cms_toolbars.is_registered_for_moderation')
+    def test_publish_buttons_when_unregistered(self, mock_is_registered_for_moderation):
+        mock_is_registered_for_moderation.return_value = False
+        ModerationRequest.objects.all().delete()
+        version = PageVersionFactory()
+        toolbar = self._get_toolbar(version.content, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertEquals(
+            toolbar.toolbar.get_right_items()[0].buttons[0].name,
+            'Publish',
+        )
+
+    @mock.patch('djangocms_moderation.cms_toolbars.is_registered_for_moderation')
+    def test_add_edit_buttons_when_unregistered(self, mock_is_registered_for_moderation):
+        mock_is_registered_for_moderation.return_value = False
+        ModerationRequest.objects.all().delete()
+        version = PageVersionFactory()
+        toolbar = self._get_toolbar(version.content)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertEquals(
+            toolbar.toolbar.get_right_items()[0].buttons[0].name,
+            'Edit',
+        )

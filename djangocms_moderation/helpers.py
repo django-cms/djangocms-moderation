@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 
 from djangocms_versioning.models import Version
@@ -84,3 +85,14 @@ def get_active_moderation_request(content_object):
         return ModerationRequest.objects.get(version=version, is_active=True)
     except ModerationRequest.DoesNotExist:
         return None
+
+
+def is_registered_for_moderation(content_object):
+    """
+    Helper method to check if model is registered to moderated
+    @param content_object: content object
+    @return: bool
+    """
+    moderation_config = apps.get_app_config('djangocms_moderation')
+    moderated_models = moderation_config.cms_extension.moderated_models
+    return content_object.__class__ in moderated_models

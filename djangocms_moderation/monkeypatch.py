@@ -10,6 +10,7 @@ from .helpers import (
     get_active_moderation_request,
     is_obj_review_locked,
     is_obj_version_unlocked,
+    is_registered_for_moderation,
 )
 from .utils import get_admin_url
 
@@ -28,6 +29,9 @@ def get_state_actions(func):
 
 
 def _get_moderation_link(self, version, request):
+    if not is_registered_for_moderation(version.content):
+        return ''
+
     if version.state != DRAFT:
         return ''
 
@@ -59,11 +63,10 @@ def _get_edit_link(func):
     """
     Don't display edit link if the object is review locked
     """
-    def inner(self, version, request):
-        if is_obj_review_locked(version.content, request.user):
-            return ''
-        return func(self, version, request)
-
+    def inner(self, version, request, disabled):
+        if is_registered_for_moderation(version.content):
+            if is_obj_review_locked(version.content, request.user):
+                return ''
     return inner
 
 
