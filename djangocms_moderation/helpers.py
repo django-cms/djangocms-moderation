@@ -69,9 +69,7 @@ def is_obj_review_locked(obj, user):
 
     # If `user` can resubmit the moderation request, it means they can edit
     # the version to submit the changes. Review lock should be lifted for them
-    if moderation_request.user_can_resubmit(user):
-        return False
-    return True
+    return not moderation_request.user_can_resubmit(user)
 
 
 def get_active_moderation_request(content_object):
