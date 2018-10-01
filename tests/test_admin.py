@@ -221,3 +221,18 @@ class ModerationAdminTestCase(BaseTestCase):
 
         fields = self.mca.get_readonly_fields(mock_request_non_author, self.collection)
         self.assertListEqual(['status', 'author', 'workflow'], fields)
+
+    def test_get_readonly_fields_for_moderation_request_review_user(self):
+        mock_request_author = MockRequest()
+        mock_request_author.user = self.user2  # user2 is a reviewer
+        mra_inline = self.mra.inlines[0]
+        fields = mra_inline.get_readonly_fields(mra_inline, mock_request_author, self.mr1)
+        self.assertListEqual(['show_user', 'date_taken', 'form_submission'], fields)
+
+    def test_get_readonly_fields_for_moderation_request_non_review_user(self):
+        mock_request_author = MockRequest()
+        mock_request_author.user = self.user3  # user3 is not a reviewer
+        mra_inline = self.mra.inlines[0]
+        fields = mra_inline.get_readonly_fields(mra_inline, mock_request_author, self.mr1)
+        self.assertListEqual(mra_inline.fields, fields)
+        self.assertIn('message', fields)
