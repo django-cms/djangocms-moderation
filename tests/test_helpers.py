@@ -65,6 +65,6 @@ class VersionLockingTestCase(BaseTestCase):
 
     def test_is_obj_version_unlocked_when_locking_is_not_installed(self):
         with mock.patch('djangocms_moderation.helpers.content_is_unlocked_for_user') as _mock:
-            _mock = None
+            _mock = None  # noqa
             version = PageVersionFactory(created_by=self.user)
             self.assertTrue(is_obj_version_unlocked(version.content, self.user3))

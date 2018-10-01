@@ -3,12 +3,13 @@ from django.contrib.contenttypes.models import ContentType
 
 from djangocms_versioning.models import Version
 
+from .models import ConfirmationFormSubmission, Workflow
+
+
 try:
     from djangocms_version_locking.helpers import content_is_unlocked_for_user
 except ImportError:
     content_is_unlocked_for_user = None
-
-from .models import ConfirmationFormSubmission, Workflow
 
 
 def get_default_workflow():
