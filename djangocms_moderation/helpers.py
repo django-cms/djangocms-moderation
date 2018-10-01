@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 
 from .models import ConfirmationFormSubmission, Workflow
@@ -34,3 +35,14 @@ def get_form_submission_for_step(active_request, current_step):
         .filter(request=active_request, for_step=current_step)
     )
     return lookup.first()
+
+
+def is_registered_for_moderation(content_object):
+    """
+    Helper method to check if model is registered to moderated
+    @param content_object: content object
+    @return: bool
+    """
+    moderation_config = apps.get_app_config('djangocms_moderation')
+    moderated_models = moderation_config.cms_extension.moderated_models
+    return content_object.__class__ in moderated_models

@@ -42,6 +42,8 @@ class ModerationFlowsTestCase(TestCase):
         cls.role1 = Role.objects.create(name='Role 1', user=cls.moderator_1)
         cls.role2 = Role.objects.create(name='Role 2', user=cls.moderator_2)
 
+        cls.page = create_page(title='Page 1', template='page.html', language='en', created_by=cls.author)
+
         cls.step1 = cls.workflow.steps.create(role=cls.role1, is_required=True, order=1)
         cls.step2 = cls.workflow.steps.create(role=cls.role2, is_required=True, order=2)
 
