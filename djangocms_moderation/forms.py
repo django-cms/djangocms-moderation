@@ -16,6 +16,7 @@ from .constants import (
     ACTION_RESUBMITTED,
     COLLECTING,
 )
+from .helpers import is_registered_for_moderation
 from .models import (
     CollectionComment,
     ModerationCollection,
@@ -149,6 +150,12 @@ class CollectionItemForm(forms.Form):
             return self.cleaned_data
 
         version = self.cleaned_data['version']
+
+        if not is_registered_for_moderation(version.content):
+            raise forms.ValidationError(_(
+                "{} is not registered for moderation, please see configuration docs for how to"
+                .format(version.content.__class__.__name__)
+            ))
 
         active_moderation_request = get_active_moderation_request(version.content)
         if active_moderation_request:
