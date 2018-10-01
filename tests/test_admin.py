@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 
@@ -174,7 +174,7 @@ class ModerationAdminTestCase(BaseTestCase):
             username='change_author', email='change_author@test.com', password='can_change_author',)
 
         mock_request = MockRequest()
-        mock_request.user = self.user
+        mock_request.user = user
         mock_request._collection = self.collection
 
         # login

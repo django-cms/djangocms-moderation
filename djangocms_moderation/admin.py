@@ -121,7 +121,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             'get_preview_link',
             'get_status',
         ]
-        # import ipdb; ipdb.set_trace()
         if conf.REQUEST_COMMENTS_ENABLED:
             list_display.append('get_comments_link')
         return list_display
@@ -494,11 +493,11 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     list_filter = [
         'author',
         'status',
-        'date_created'
+        'date_created',
     ]
 
     def __init__(self, *args, **kwargs):
-        super(ModerationCollectionAdmin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.list_display_links = (None, )
 
     def get_list_display(self, request):
@@ -531,19 +530,15 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         ]
         if conf.COLLECTION_COMMENTS_ENABLED:
             actions.append(self.get_comments_link)
-
         return actions
 
     def _get_edit_link(self, obj):
         """Helper function to get the html link to the edit action
         """
-
-        opts = ModerationCollection._meta
         url = reverse(
-            'admin:{}_{}_change'.format(opts.app_label, opts.model_name),
+            'admin:djangocms_moderation_moderationcollection_change',
             args=[obj.pk],
         )
-
         return render_to_string(
             'admin/edit_icon.html',
             {'url': url}
@@ -554,7 +549,6 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         Name of the collection should link to the list of associated
         moderation requests
         """
-        opts = ModerationCollection._meta
         url = format_html(
             '{}?collection__id__exact={}',
             reverse('admin:djangocms_moderation_moderationrequest_changelist'),
@@ -567,13 +561,11 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     get_requests_link.short_description = _('Requests')
 
     def get_comments_link(self, obj):
-
         edit_url = format_html(
             '{}?collection__id__exact={}',
             reverse('admin:djangocms_moderation_collectioncomment_changelist'),
             obj.pk
         )
-
         return render_to_string(
             'admin/comment_icon.html',
             {'url': edit_url}
