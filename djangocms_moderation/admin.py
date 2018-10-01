@@ -83,7 +83,8 @@ class ModerationRequestActionInline(admin.TabularInline):
     form_submission.short_description = _('Form Submission')
 
     def get_readonly_fields(self, request, obj=None):
-        if obj and request.user == obj.author:
+        if obj.user_can_moderate(request.user):
+            # omit 'message' from readonly_fields when user is a reviewer
             return ['show_user', 'date_taken', 'form_submission']
         return self.fields
 
