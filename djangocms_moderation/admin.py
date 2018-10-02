@@ -494,10 +494,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         'status',
         'date_created',
     ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.list_display_links = None
+    list_display_links = None
 
     def get_list_display(self, request):
         list_display = [
@@ -538,7 +535,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             args=[obj.pk],
         )
         return render_to_string(
-            'admin/edit_icon.html',
+            'djangocms_moderation/edit_icon.html',
             {'url': url}
         )
 
@@ -553,7 +550,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             obj.pk,
         )
         return render_to_string(
-            'admin/request_icon.html',
+            'djangocms_moderation/request_icon.html',
             {'url': url}
         )
 
@@ -564,7 +561,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             obj.pk
         )
         return render_to_string(
-            'admin/comment_icon.html',
+            'djangocms_moderation/comment_icon.html',
             {'url': edit_url}
         )
 
