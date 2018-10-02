@@ -220,8 +220,6 @@ class ModerationAdminTestCase(BaseTestCase):
         mock_request = MockRequest()
         mock_request.user = user
         mock_request._collection = self.collection
-
-        # login
         self.client.force_login(mock_request.user)
 
         # check that the user does not have the permissions
@@ -240,9 +238,6 @@ class ModerationAdminTestCase(BaseTestCase):
         mock_request.user = user
 
         # test that the permission was added successfully
-        mock_request.user.has_perm('djangocms_moderation.can_change_author')
-
-        # check that the user does not have the permissions
         self.assertTrue(mock_request.user.has_perm('djangocms_moderation.can_change_author'))
 
         # check that author is editable
