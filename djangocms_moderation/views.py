@@ -31,6 +31,7 @@ class CollectionItemView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super(CollectionItemView, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
         kwargs['initial'].update({
             'version': self.request.GET.get('version_id'),
         })

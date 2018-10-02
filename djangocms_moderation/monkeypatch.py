@@ -6,12 +6,13 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT
 
-from .helpers import is_registered_for_moderation
-from .utils import (
+from .helpers import (
     get_active_moderation_request,
-    get_admin_url,
     is_obj_review_locked,
+    is_obj_version_unlocked,
+    is_registered_for_moderation,
 )
+from .utils import get_admin_url
 
 
 def get_state_actions(func):
@@ -33,12 +34,14 @@ def _get_moderation_link(self, version, request):
 
     if version.state != DRAFT:
         return ''
-    moderation_request = get_active_moderation_request(version.content)
+
+    content_object = version.content
+    moderation_request = get_active_moderation_request(content_object)
     if moderation_request:
         return _('In Moderation "%(collection_name)s"') % {
             'collection_name': moderation_request.collection.name
         }
-    else:
+    elif is_obj_version_unlocked(content_object, request.user):
         url = add_url_parameters(
             get_admin_url(
                 name='cms_moderation_item_to_collection',
@@ -53,18 +56,18 @@ def _get_moderation_link(self, version, request):
             url,
             _('Submit for moderation')
         )
+    return ''
 
 
 def _get_edit_link(func):
     """
     Don't display edit link if the object is review locked
     """
-    def inner(self, version, request):
+    def inner(self, version, request, disabled=False):
         if is_registered_for_moderation(version.content):
             if is_obj_review_locked(version.content, request.user):
-                return ''
-        return func(self, version, request)
-
+                disabled = True
+        return func(self, version, request, disabled)
     return inner
 
 
