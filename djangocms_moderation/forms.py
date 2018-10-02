@@ -21,6 +21,7 @@ from .models import (
     CollectionComment,
     ModerationCollection,
     ModerationRequest,
+    ModerationRequestAction,
     RequestComment,
 )
 from .utils import get_active_moderation_request
@@ -245,6 +246,10 @@ class RequestCommentForm(forms.ModelForm):
 
 
 class ModerationRequestActionInlineForm(forms.ModelForm):
+
+    class Meta:
+        model = ModerationRequestAction
+        fields = ('message',)
 
     def clean_message(self):
         if self.cleaned_data['message'] != self.instance.message:

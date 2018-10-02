@@ -6,6 +6,7 @@ from django.forms import HiddenInput
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
     CancelCollectionForm,
+    ModerationRequestActionInlineForm,
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
 )
@@ -119,4 +120,26 @@ class CancelCollectionFormTest(BaseTestCase):
 
         is_cancellable_mock.return_value = True
         form = CancelCollectionForm(data={}, collection=self.collection1, user=self.user)
+        self.assertTrue(form.is_valid())
+
+
+class ModerationRequestActionInlineFormTest(BaseTestCase):
+
+    def test_non_action_user_cannot_change_comment(self):
+        instance = self.moderation_request1.actions.first()
+        data = {
+            'message': "Some other Message 902630"
+        }
+        form = ModerationRequestActionInlineForm(data=data, instance=instance)
+        form.current_user = self.user3
+        assert form.current_user != instance.by_user
+        self.assertFalse(form.is_valid())
+
+    def test_action_user_can_change_own_comment(self):
+        instance = self.moderation_request1.actions.first()
+        data = {
+            'message': "Some other Message 902630"
+        }
+        form = ModerationRequestActionInlineForm(data=data, instance=instance)
+        form.current_user = instance.by_user
         self.assertTrue(form.is_valid())
