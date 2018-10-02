@@ -7,13 +7,6 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-def moderationrequest_author(apps, schema_editor):
-    ModerationRequest = apps.get_model('djangocms_moderation', 'ModerationRequest')
-    for mr in ModerationRequest.objects.all():
-        mr.author = mr.collection.author
-        mr.save()
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -32,5 +25,4 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='author'),
             preserve_default=False,
         ),
-        migrations.RunPython(moderationrequest_author),
     ]
