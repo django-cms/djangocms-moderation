@@ -167,7 +167,6 @@ class CollectionItemsView(FormView):
         else:
             moderation_request_list = []
 
-
         model_admin = admin.site._registry[ModerationCollection]
         context.update({
             'moderation_request_list': moderation_request_list,

@@ -6,13 +6,13 @@ from django.utils.translation import ugettext_lazy as _, ungettext
 from cms.utils.urlutils import add_url_parameters
 
 from django_fsm import TransitionNotAllowed
+from djangocms_versioning.models import Version
 
 from djangocms_moderation import constants
 from djangocms_moderation.emails import (
     notify_collection_author,
     notify_collection_moderators,
 )
-from djangocms_versioning.models import Version
 
 from .utils import get_admin_url
 

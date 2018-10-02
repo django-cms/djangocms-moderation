@@ -1,16 +1,18 @@
 import mock
 from mock import patch
+
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.messages import get_messages
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.messages import get_messages
+
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants, views
-from djangocms_moderation.forms import CollectionItemForm, CollectionItemsForm
+from djangocms_moderation.forms import CollectionItemForm
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
 
@@ -268,7 +270,8 @@ class CollectionItemsViewTest(BaseViewTestCase):
         self.assertEqual(moderation_request.collection, self.collection_1)
 
         messages = list(get_messages(response.wsgi_request))
-        self.assertTrue('1 items successfully added to moderation collection' in [message.message for message in messages])
+        self.assertTrue(
+            '1 items successfully added to moderation collection' in [message.message for message in messages])
 
     def test_add_items_to_collection(self):
         ModerationRequest.objects.all().delete()
@@ -288,7 +291,7 @@ class CollectionItemsViewTest(BaseViewTestCase):
             path=url,
             data={
                 'collection': self.collection_1.pk,
-                'versions': [self.pg_version.pk,self.pg_version_1.pk]
+                'versions': [self.pg_version.pk, self.pg_version_1.pk],
             },
             follow=False
         )
@@ -302,7 +305,8 @@ class CollectionItemsViewTest(BaseViewTestCase):
         self.assertEqual(moderation_request.collection, self.collection_1)
 
         messages = list(get_messages(response.wsgi_request))
-        self.assertTrue('2 items successfully added to moderation collection' in [message.message for message in messages])
+        self.assertTrue(
+            '2 items successfully added to moderation collection' in [message.message for message in messages])
 
     def test_attempt_add_with_item_already_in_collection(self):
         self.client.force_login(self.user)
@@ -321,7 +325,7 @@ class CollectionItemsViewTest(BaseViewTestCase):
             path=url,
             data={
                 'collection': self.collection_1.pk,
-                'versions': [self.pg1_version.pk,self.pg_version_1.pk]
+                'versions': [self.pg1_version.pk, self.pg_version_1.pk],
             },
             follow=False
         )
@@ -337,7 +341,8 @@ class CollectionItemsViewTest(BaseViewTestCase):
         messages = list(get_messages(response.wsgi_request))
         for m in messages:
             print(m.message)
-        self.assertTrue('1 items successfully added to moderation collection' in [message.message for message in messages])
+        self.assertTrue(
+            '1 items successfully added to moderation collection' in [message.message for message in messages])
 
     def test_attempt_add_with_all_items_already_in_collection(self):
         self.client.force_login(self.user)
