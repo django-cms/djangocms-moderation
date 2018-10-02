@@ -1,17 +1,16 @@
 import mock
 from mock import patch
-
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
-
+from django.contrib.messages import get_messages
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants, views
-from djangocms_moderation.forms import CollectionItemForm
+from djangocms_moderation.forms import CollectionItemForm, CollectionItemsForm
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
 
@@ -217,6 +216,163 @@ class CollectionItemViewTest(BaseViewTestCase):
         )
 
         self.assertEqual(response.status_code, 302)
+
+
+class CollectionItemsViewTest(BaseViewTestCase):
+
+    def setUp(self):
+
+        self.user = User.objects.create_user(
+            username='test1', email='test1@test.com', password='test1', is_staff=True
+        )
+
+        self.collection_1 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        self.collection_2 = ModerationCollection.objects.create(
+            author=self.user, name='My collection 2', workflow=self.wf1
+        )
+
+        self.content_type = ContentType.objects.get_for_model(self.pg1_version)
+        self.pg_version = PageVersionFactory()
+        self.pg_version_1 = PageVersionFactory()
+
+    def test_add_item_to_collection(self):
+        ModerationRequest.objects.all().delete()
+        self.client.force_login(self.user)
+        url = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_items_to_collection',
+                language='en',
+                args=()
+            ),
+            return_to_url='http://example.com',
+            version_ids=self.pg_version.pk,
+            collection_id=self.collection_1.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': self.collection_1.pk,
+                'versions': self.pg_version.pk,
+            },
+            follow=False
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        moderation_request = ModerationRequest.objects.filter(
+            version=self.pg_version,
+        )[0]
+
+        self.assertEqual(moderation_request.collection, self.collection_1)
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertTrue('1 items successfully added to moderation collection' in [message.message for message in messages])
+
+    def test_add_items_to_collection(self):
+        ModerationRequest.objects.all().delete()
+        self.client.force_login(self.user)
+
+        url = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_items_to_collection',
+                language='en',
+                args=()
+            ),
+            return_to_url='http://example.com',
+            version_ids=','.join(str(x) for x in [self.pg_version.pk, self.pg_version_1.pk]),
+            collection_id=self.collection_1.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': self.collection_1.pk,
+                'versions': [self.pg_version.pk,self.pg_version_1.pk]
+            },
+            follow=False
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        moderation_request = ModerationRequest.objects.get(version=self.pg_version)
+        self.assertEqual(moderation_request.collection, self.collection_1)
+
+        moderation_request = ModerationRequest.objects.get(version=self.pg_version_1)
+        self.assertEqual(moderation_request.collection, self.collection_1)
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertTrue('2 items successfully added to moderation collection' in [message.message for message in messages])
+
+    def test_attempt_add_with_item_already_in_collection(self):
+        self.client.force_login(self.user)
+
+        url = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_items_to_collection',
+                language='en',
+                args=()
+            ),
+            return_to_url='http://example.com',
+            version_ids=','.join(str(x) for x in [self.pg1_version.pk, self.pg_version_1.pk]),
+            collection_id=self.collection_1.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': self.collection_1.pk,
+                'versions': [self.pg1_version.pk,self.pg_version_1.pk]
+            },
+            follow=False
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        moderation_request = ModerationRequest.objects.get(version=self.pg1_version)
+        self.assertEqual(moderation_request.collection, self.collection1)
+
+        moderation_request = ModerationRequest.objects.get(version=self.pg_version_1)
+        self.assertEqual(moderation_request.collection, self.collection_1)
+
+        messages = list(get_messages(response.wsgi_request))
+        for m in messages:
+            print(m.message)
+        self.assertTrue('1 items successfully added to moderation collection' in [message.message for message in messages])
+
+    def test_attempt_add_with_all_items_already_in_collection(self):
+        self.client.force_login(self.user)
+
+        url = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_items_to_collection',
+                language='en',
+                args=()
+            ),
+            return_to_url='http://example.com',
+            version_ids=','.join(str(x) for x in [self.pg1_version.pk, self.pg4_version.pk]),
+            collection_id=self.collection_1.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': self.collection_1.pk,
+                'versions': [self.pg1_version.pk, self.pg4_version.pk]
+            },
+            follow=False
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        moderation_request = ModerationRequest.objects.get(version=self.pg1_version)
+        self.assertEqual(moderation_request.collection, self.collection1)
+
+        moderation_request = ModerationRequest.objects.get(version=self.pg4_version)
+        self.assertEqual(moderation_request.collection, self.collection3)
+
+        self.assertIn(
+              "All items are already part of an existing moderation request which is part of another active collection",
+              response.context_data['form'].errors['versions'][0]
+        )
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
