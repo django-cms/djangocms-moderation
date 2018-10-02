@@ -51,7 +51,7 @@ from . import views  # isort:skip
 class ModerationRequestActionInline(admin.TabularInline):
     model = ModerationRequestAction
     form = ModerationRequestActionInlineForm
-    fields = ['show_user', 'message', 'date_taken', 'form_submission', 'by_user']
+    fields = ['show_user', 'message', 'date_taken', 'form_submission']
     verbose_name = _('Action')
     verbose_name_plural = _('Actions')
 
