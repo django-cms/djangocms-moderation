@@ -9,7 +9,7 @@ import django.db.models.deletion
 
 def moderationrequest_author(apps, schema_editor):
     moderation_request = apps.get_model('djangocms_moderation', 'ModerationRequest')
-    for mr in moderation_request.all():
+    for mr in moderation_request.objects.all():
         mr.author = mr.collection.author
         mr.save()
 
