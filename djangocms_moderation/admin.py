@@ -396,7 +396,6 @@ class RequestCommentAdmin(admin.ModelAdmin):
             url,
             _('View')
         )
-    get_request_link.short_description = _('Request')
 
     def get_form(self, request, obj=None, **kwargs):
         return RequestCommentForm
@@ -498,7 +497,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.list_display_links = (None, )
+        self.list_display_links = None
 
     def get_list_display(self, request):
         list_display = [
@@ -520,7 +519,6 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             '{}',
             ((action(obj), ) for action in self.get_list_display_actions()),
         )
-
     list_display_actions.short_description = _('actions')
 
     def get_list_display_actions(self):
@@ -540,7 +538,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             args=[obj.pk],
         )
         return render_to_string(
-            'admin/edit_icon.html',
+            'djangocms_moderation/admin/edit_icon.html',
             {'url': url}
         )
 
@@ -555,10 +553,9 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             obj.pk,
         )
         return render_to_string(
-            'admin/request_icon.html',
+            'djangocms_moderation/admin/request_icon.html',
             {'url': url}
         )
-    get_requests_link.short_description = _('Requests')
 
     def get_comments_link(self, obj):
         edit_url = format_html(
@@ -567,10 +564,9 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             obj.pk
         )
         return render_to_string(
-            'admin/comment_icon.html',
+            'djangocms_moderation/admin/comment_icon.html',
             {'url': edit_url}
         )
-    get_comments_link.short_description = _('Comments')
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):
