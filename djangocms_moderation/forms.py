@@ -16,7 +16,11 @@ from .constants import (
     ACTION_RESUBMITTED,
     COLLECTING,
 )
-from .helpers import is_registered_for_moderation
+from .helpers import (
+    get_active_moderation_request,
+    is_obj_version_unlocked,
+    is_registered_for_moderation,
+)
 from .models import (
     CollectionComment,
     ModerationCollection,
@@ -24,7 +28,6 @@ from .models import (
     ModerationRequestAction,
     RequestComment,
 )
-from .utils import get_active_moderation_request
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
@@ -116,6 +119,9 @@ class UpdateModerationRequestForm(forms.Form):
 
 
 class CollectionItemForm(forms.Form):
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
 
     collection = forms.ModelChoiceField(
         queryset=ModerationCollection.objects.filter(status=COLLECTING),
@@ -140,16 +146,11 @@ class CollectionItemForm(forms.Form):
             can_delete_related=related_modeladmin.has_delete_permission(request),
         )
 
-    def clean(self):
+    def clean_version(self):
         """
-        Validates content_object_id: Checks that a given content_object_id has
-        a content_object and it is not currently part of any ModerationRequest
-
-        :return:
+        Make sure that version is not part of another active moderation request
+        or version locked to another user
         """
-        if self.errors:
-            return self.cleaned_data
-
         version = self.cleaned_data['version']
 
         if not is_registered_for_moderation(version.content):
@@ -165,8 +166,12 @@ class CollectionItemForm(forms.Form):
                 "of another active collection".format(version.content)
             ))
 
-        self.cleaned_data['version'] = version
-        return self.cleaned_data
+        if not is_obj_version_unlocked(version.content, self.user):
+            raise forms.ValidationError(_(
+                "{} is version locked to another user".format(version.content)
+            ))
+
+        return version
 
 
 class SubmitCollectionForModerationForm(forms.Form):

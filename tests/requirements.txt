@@ -8,3 +8,4 @@ freezegun
 -e git+git://github.com/aldryn/aldryn-forms.git@master#egg=aldryn-forms
 mock
 -e git+git://github.com/divio/djangocms-versioning.git@master#egg=djangocms-versioning
+-e git+git://github.com/FidelityInternational/djangocms-version-locking.git@master#egg=djangocms-version-locking
