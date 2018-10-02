@@ -538,7 +538,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             args=[obj.pk],
         )
         return render_to_string(
-            'djangocms_moderation/admin/edit_icon.html',
+            'admin/edit_icon.html',
             {'url': url}
         )
 
@@ -553,7 +553,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             obj.pk,
         )
         return render_to_string(
-            'djangocms_moderation/admin/request_icon.html',
+            'admin/request_icon.html',
             {'url': url}
         )
 
@@ -564,7 +564,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             obj.pk
         )
         return render_to_string(
-            'djangocms_moderation/admin/comment_icon.html',
+            'admin/comment_icon.html',
             {'url': edit_url}
         )
 
