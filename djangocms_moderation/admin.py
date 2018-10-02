@@ -27,6 +27,7 @@ from .forms import (
     RequestCommentForm,
     WorkflowStepInlineFormSet,
 )
+from .forms import ModerationRequestActionInlineForm
 from .helpers import get_form_submission_for_step
 from .models import (
     CollectionComment,
@@ -49,7 +50,8 @@ from . import views  # isort:skip
 
 class ModerationRequestActionInline(admin.TabularInline):
     model = ModerationRequestAction
-    fields = ['show_user', 'message', 'date_taken', 'form_submission']
+    form = ModerationRequestActionInlineForm
+    fields = ['show_user', 'message', 'date_taken', 'form_submission', 'by_user']
     verbose_name = _('Action')
     verbose_name_plural = _('Actions')
 
@@ -83,8 +85,10 @@ class ModerationRequestActionInline(admin.TabularInline):
     form_submission.short_description = _('Form Submission')
 
     def get_readonly_fields(self, request, obj=None):
-        if obj.user_can_moderate(request.user):
-            # omit 'message' from readonly_fields when user is a reviewer
+        if obj.user_can_moderate(request.user) or obj.user_is_author(request.user):
+            # Omit 'message' from readonly_fields when user is a reviewer
+            # or an author. This disallow a non-participant from
+            # adding or editing comments on action objects
             return ['show_user', 'date_taken', 'form_submission']
         return self.fields
 
@@ -104,6 +108,11 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
     readonly_fields = fields
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+
+    def get_formsets_with_inlines(self, request, obj=None):
+        for inline in self.get_inline_instances(request, obj):
+            inline.form.current_user = request.user
+            yield inline.get_formset(request, obj), inline
 
     def has_module_permission(self, request):
         """

@@ -242,3 +242,16 @@ class RequestCommentForm(forms.ModelForm):
             'author': forms.HiddenInput(),
             'moderation_request': forms.HiddenInput(),
         }
+
+
+class ModerationRequestActionInlineForm(forms.ModelForm):
+
+    class Meta:
+        widgets = {
+            'by_user': forms.HiddenInput()
+        }
+
+    def clean(self):
+        if self.cleaned_data['message'] != self.instance.message:
+            if self.current_user != self.cleaned_data['by_user']:
+                raise forms.ValidationError(_('You can only change your own comments'))
