@@ -570,7 +570,6 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             'admin/comment_icon.html',
             {'url': edit_url}
         )
-
     get_comments_link.short_description = _('Comments')
 
     def get_urls(self):
@@ -602,7 +601,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = ['status']
         if obj:
-            if not request.user.has_perm('{}.can_change_author'.format('djangocms_moderation')):
+            if not request.user.has_perm('djangocms_moderation.can_change_author'):
                 readonly_fields.append('author')
             # Author of the collection can change the workflow if the collection
             # is still in the `collecting` state
