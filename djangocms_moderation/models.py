@@ -247,7 +247,7 @@ class ModerationCollection(models.Model):
 
     class Meta:
         permissions = (
-            ("can_change_author", "Can change collection author"),
+            ("can_change_author", _("Can change collection author")),
         )
 
     def __str__(self):
