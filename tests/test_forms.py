@@ -7,9 +7,9 @@ from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
+    CollectionItemForm,
     CancelCollectionForm,
     ModerationRequestActionInlineForm,
-    CollectionItemForm,
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
 )
@@ -197,4 +197,3 @@ class CollectionItemFormTestCase(BaseTestCase):
         mr.save()
         form = CollectionItemForm(data=data, user=version.created_by)
         self.assertTrue(form.is_valid(), form.errors)
-
