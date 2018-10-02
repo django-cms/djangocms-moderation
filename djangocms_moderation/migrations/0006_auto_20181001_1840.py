@@ -8,11 +8,10 @@ import django.db.models.deletion
 
 
 def moderationrequest_author(apps, schema_editor):
-    moderation_collection = apps.get_model('djangocms_moderation', 'ModerationCollection')
-    for collection in moderation_collection.objects.all():
-        for moderation_request in collection.moderation_requests.all():
-            moderation_request.author = collection.author
-            moderation_request.save()
+    moderation_request = apps.get_model('djangocms_moderation', 'ModerationRequest')
+    for mr in moderation_request.all():
+        mr.author = mr.collection.can_change_author
+        mr.save()
 
 
 class Migration(migrations.Migration):
