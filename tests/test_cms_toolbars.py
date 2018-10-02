@@ -28,12 +28,14 @@ class TestCMSToolbars(BaseTestCase):
             request.toolbar.populate()
         return request
 
-    def _get_toolbar(self, content_obj, edit_mode=False):
+    def _get_toolbar(self, content_obj, user=None, edit_mode=False):
         """Helper method to set up the toolbar
         """
+        if not user:
+            user = UserFactory(is_staff=True)
         page = PageVersionFactory().content.page
         request = self._get_page_request(
-            page=page, user=UserFactory(is_staff=True)
+            page=page, user=user
         )
         cms_toolbar = CMSToolbar(request)
         toolbar = ModerationToolbar(
@@ -45,10 +47,10 @@ class TestCMSToolbars(BaseTestCase):
             toolbar.toolbar.structure_mode_active = False
         return toolbar
 
-    def test_submit_for_moderation(self):
+    def test_submit_for_moderation_not_version_locked(self):
         ModerationRequest.objects.all().delete()
-        version = PageVersionFactory()
-        toolbar = self._get_toolbar(version.content, edit_mode=True)
+        version = PageVersionFactory(created_by=self.user)
+        toolbar = self._get_toolbar(version.content, user=self.user, edit_mode=True)
         toolbar.populate()
         toolbar.post_template_populate()
 
@@ -56,6 +58,17 @@ class TestCMSToolbars(BaseTestCase):
             toolbar.toolbar.get_right_items()[0].buttons[0].name,
             'Submit for moderation'
         )
+
+    def test_submit_for_moderation_version_locked(self):
+        ModerationRequest.objects.all().delete()
+        version = PageVersionFactory(created_by=self.user2)
+        # Different user to version author is logged in
+        toolbar = self._get_toolbar(version.content, user=self.user, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        # No Submit for moderation button has been added
+        self.assertEquals(0, len(toolbar.toolbar.get_right_items()))
 
     def test_page_in_moderation(self):
         ModerationRequest.objects.all().delete()
@@ -73,10 +86,40 @@ class TestCMSToolbars(BaseTestCase):
             'In Moderation "%s"' % self.collection1.name
         )
 
+    def test_add_edit_button_with_version_lock(self):
+        """
+        Version lock is in the test requirements, lets make sure it still works
+        with moderation
+        """
+        ModerationRequest.objects.all().delete()
+        # Version created with the same user as toolbar user
+        version = PageVersionFactory(created_by=self.user)
+        toolbar = self._get_toolbar(version.content, user=self.user)
+        toolbar.populate()
+        toolbar.post_template_populate()
+        self.assertEquals(
+            toolbar.toolbar.get_right_items()[0].buttons[0].name,
+            'Edit',
+        )
+        # Edit button should be clickable
+        self.assertFalse(toolbar.toolbar.get_right_items()[0].buttons[0].disabled)
+
+        # Now version user is different to toolbar user
+        version = PageVersionFactory(created_by=self.user2)
+        toolbar = self._get_toolbar(version.content, user=self.user)
+        toolbar.populate()
+        toolbar.post_template_populate()
+        self.assertEquals(
+            toolbar.toolbar.get_right_items()[0].buttons[0].name,
+            'Edit',
+        )
+        # Edit button should not be clickable
+        self.assertTrue(toolbar.toolbar.get_right_items()[0].buttons[0].disabled)
+
     def test_add_edit_button(self):
         ModerationRequest.objects.all().delete()
-        version = PageVersionFactory()
-        toolbar = self._get_toolbar(version.content)
+        version = PageVersionFactory(created_by=self.user)
+        toolbar = self._get_toolbar(version.content, user=self.user)
         toolbar.populate()
         toolbar.post_template_populate()
         # We can see the Edit button, as the version hasn't been submitted
@@ -111,7 +154,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar = self._get_toolbar(None)
         toolbar.populate()
         toolbar.post_template_populate()
-        # We shouldnt see Edit button when there is no toolbar object set.
+        # We shouldn't see Edit button when there is no toolbar object set.
         # Some of the custom views in some apps dont have toolbar.obj
         self.assertEquals(toolbar.toolbar.get_right_items(), [])
 

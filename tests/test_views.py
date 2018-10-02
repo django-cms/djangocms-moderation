@@ -34,7 +34,7 @@ class CollectionItemViewTest(BaseViewTestCase):
         )
 
         self.content_type = ContentType.objects.get_for_model(self.pg1_version)
-        self.pg_version = PageVersionFactory()
+        self.pg_version = PageVersionFactory(created_by=self.user)
 
     def _assert_render(self, response):
         form = response.context_data['form']
@@ -101,7 +101,6 @@ class CollectionItemViewTest(BaseViewTestCase):
         self.assertEqual(moderation_request.collection, self.collection_1)
 
     def test_invalid_version_already_in_collection(self):
-        # add object
         self.collection_1.add_version(self.pg_version)
         self.assertEqual(1, ModerationRequest.objects.filter(version=self.pg_version).count())
 
@@ -118,7 +117,7 @@ class CollectionItemViewTest(BaseViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(
               "is already part of existing moderation request which is part",
-              response.context_data['form'].errors['__all__'][0]
+              response.context_data['form'].errors['version'][0]
         )
         self.assertEqual(1, ModerationRequest.objects.filter(version=self.pg_version).count())
 
