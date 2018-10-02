@@ -257,7 +257,7 @@ class ModerationRequestActionInlineForm(forms.ModelForm):
         fields = ('message',)
 
     def clean_message(self):
-        if self.cleaned_data['message'] != self.instance.message:
+        if self.instance and self.cleaned_data['message'] != self.instance.message:
             if self.current_user != self.instance.by_user:
                 raise forms.ValidationError(_('You can only change your own comments'))
 

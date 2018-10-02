@@ -7,8 +7,8 @@ from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
-    CollectionItemForm,
     CancelCollectionForm,
+    CollectionItemForm,
     ModerationRequestActionInlineForm,
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
