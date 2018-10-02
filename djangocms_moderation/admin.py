@@ -24,10 +24,10 @@ from .admin_actions import (
 from .constants import ARCHIVED, COLLECTING, IN_REVIEW
 from .forms import (
     CollectionCommentForm,
+    ModerationRequestActionInlineForm,
     RequestCommentForm,
     WorkflowStepInlineFormSet,
 )
-from .forms import ModerationRequestActionInlineForm
 from .helpers import get_form_submission_for_step
 from .models import (
     CollectionComment,
