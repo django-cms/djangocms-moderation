@@ -57,7 +57,7 @@ class UtilsTestCase(BaseTestCase):
         version = PageVersionFactory()
         # Inactive request with this version
         ModerationRequest.objects.create(
-            version=version, collection=self.collection1, is_active=False
+            version=version, collection=self.collection1, is_active=False, author=self.user
         )
         self.assertIsNone(
             get_active_moderation_request(version.content)

@@ -77,18 +77,21 @@ class BaseTestCase(TestCase):
         cls.collection4 = ModerationCollection.objects.create(
             author=cls.user, name='Collection 4', workflow=cls.wf4
         )
-
         cls.moderation_request1 = ModerationRequest.objects.create(
-            version=cls.pg1_version, language='en', collection=cls.collection1, is_active=True,)
+            version=cls.pg1_version, language='en', collection=cls.collection1,
+            is_active=True, author=cls.collection1.author,)
         cls.moderation_request1.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
 
         ModerationRequest.objects.create(
-            version=cls.pg3_version, language='en', collection=cls.collection1, is_active=False,)
+            version=cls.pg3_version, language='en', collection=cls.collection1,
+            is_active=False, author=cls.collection1.author,)
         ModerationRequest.objects.create(
-            version=cls.pg2_version, language='en', collection=cls.collection2, is_active=False,)
+            version=cls.pg2_version, language='en', collection=cls.collection2,
+            is_active=False, author=cls.collection2.author,)
 
         cls.moderation_request2 = ModerationRequest.objects.create(
-            version=cls.pg3_version, language='en', collection=cls.collection2, is_active=True,)
+            version=cls.pg3_version, language='en', collection=cls.collection2,
+            is_active=True,  author=cls.collection2.author)
         cls.moderation_request2.actions.create(
             by_user=cls.user, action=constants.ACTION_STARTED,)
         cls.moderation_request2.actions.create(
@@ -97,7 +100,8 @@ class BaseTestCase(TestCase):
             by_user=cls.user, action=constants.ACTION_APPROVED, step_approved=cls.wf2st2,)
 
         cls.moderation_request3 = ModerationRequest.objects.create(
-            version=cls.pg4_version, language='en',  collection=cls.collection3, is_active=True,)
+            version=cls.pg4_version, language='en',  collection=cls.collection3,
+            is_active=True, author=cls.collection3.author,)
         cls.moderation_request3.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
         cls.moderation_request3.actions.create(
             by_user=cls.user,
@@ -107,12 +111,14 @@ class BaseTestCase(TestCase):
         )
         # This request will be rejected
         cls.moderation_request4 = ModerationRequest.objects.create(
-            version=cls.pg5_version, language='en', collection=cls.collection3, is_active=True,)
+            version=cls.pg5_version, language='en', collection=cls.collection3,
+            is_active=True, author=cls.collection3.author,)
         cls.moderation_request4.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
         cls.moderation_request4.actions.create(by_user=cls.user2, action=constants.ACTION_REJECTED)
 
         cls.moderation_request5 = ModerationRequest.objects.create(
-            version=cls.pg6_version, language='en', collection=cls.collection4, is_active=True,)
+            version=cls.pg6_version, language='en', collection=cls.collection4,
+            is_active=True, author=cls.collection4.author,)
         cls.moderation_request5.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
 
 
