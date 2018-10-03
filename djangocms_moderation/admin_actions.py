@@ -231,8 +231,12 @@ def queryset_version_ids(queryset):
     """Returns the version object keys corresponding to the objects in the Haystack queryset"""
     version_ids = []
     for obj in queryset:
-        version = Version.objects.get_for_content(obj.object)
-        version_ids.append(str(version.pk))
+        try:
+            version = Version.objects.get_for_content(obj.object)
+            version_ids.append(str(version.pk))
+        except Version.DoesNotExist:
+            pass
+
     return version_ids
 
 
@@ -245,14 +249,18 @@ def add_items_to_collection(modeladmin, request, queryset):
     :return:
     """
     version_id_list = queryset_version_ids(queryset)
-    admin_url = add_url_parameters(
-        get_admin_url(
-            name='cms_moderation_items_to_collection',
-            language=request.GET.get('language'),
-            args=()
-        ), version_ids=','.join(version_id_list),
-        return_to_url=request.META.get('HTTP_REFERER'))
-    return HttpResponseRedirect(admin_url)
+    if version_id_list:
+        admin_url = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_items_to_collection',
+                language=request.GET.get('language'),
+                args=()
+            ), version_ids=','.join(version_id_list),
+            return_to_url=request.META.get('HTTP_REFERER'))
+        return HttpResponseRedirect(admin_url)
+    else:
+        messages.success(request, _("No suitable items found to add to moderation collection"))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 add_items_to_collection.short_description = _("Add to moderation collection")  # noqa: E305
 
 
