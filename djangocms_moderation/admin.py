@@ -433,6 +433,7 @@ class RequestCommentAdmin(admin.ModelAdmin):
             show_save_and_add_another=False,
             show_save_and_continue=False,
         )
+        # import ipdb; ipdb.set_trace()
         if object_id:
             try:
                 request_comment = get_object_or_404(RequestComment, pk=int(object_id))
@@ -440,14 +441,14 @@ class RequestCommentAdmin(admin.ModelAdmin):
                 raise Http404
             if request.user != request_comment.author:
                 extra_context['readonly'] = True
-
         # for breadcrumb trail
         moderation_request_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'moderation_request__id__exact'
         )
         if moderation_request_id:
             extra_context['moderation_request_id'] = moderation_request_id
-
+            mr = ModerationRequest.objects.get(pk=int(moderation_request_id))
+            extra_context['collection_id'] = mr.collection.id
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_delete_permission(self, request, obj=None):
