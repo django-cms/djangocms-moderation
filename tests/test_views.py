@@ -222,18 +222,11 @@ class CollectionItemViewTest(BaseViewTestCase):
 class CollectionItemsViewTest(BaseViewTestCase):
 
     def setUp(self):
-
-        self.user = User.objects.create_user(
-            username='test1', email='test1@test.com', password='test1', is_staff=True
-        )
-
-        self.collection_1 = ModerationCollection.objects.create(
-            author=self.user, name='My collection 1', workflow=self.wf1
-        )
-        self.collection_2 = ModerationCollection.objects.create(
-            author=self.user, name='My collection 2', workflow=self.wf1
-        )
-
+        self.user = User.objects.create_user(username='test1', email='test1@test.com', password='test1', is_staff=True)
+        self.collection_1 = ModerationCollection.objects.create(author=self.user, name='My collection 1',
+                                                                workflow=self.wf1)
+        self.collection_2 = ModerationCollection.objects.create(author=self.user, name='My collection 2',
+                                                                workflow=self.wf1)
         self.content_type = ContentType.objects.get_for_model(self.pg1_version)
         self.pg_version = PageVersionFactory(created_by=self.user)
         self.pg_version_1 = PageVersionFactory(created_by=self.user)
