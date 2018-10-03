@@ -371,8 +371,23 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
 
 class RequestCommentAdmin(admin.ModelAdmin):
-    list_display = ['message', 'get_request_link', 'author', 'date_created']
+    list_display = ['date_created', 'get_message', 'get_author' ]
     fields = ['moderation_request', 'message', 'author']
+
+    class Media:
+        css = {
+            'all': ('djangocms_moderation/css/comments_changelist.css',)
+        }
+
+    def get_author(self, obj):
+        author = obj.author.first_name+' '+obj.author.last_name
+        return author
+    get_author.short_description = _('Author')
+
+    def get_message(self, obj):
+        # import ipdb; ipdb.set_trace()
+        return str(obj.message)[:200]
+    get_message.short_description = _('Message')
 
     def get_changeform_initial_data(self, request):
         data = {
@@ -384,18 +399,6 @@ class RequestCommentAdmin(admin.ModelAdmin):
         if moderation_request_id:
             data['moderation_request'] = moderation_request_id
         return data
-
-    def get_request_link(self, obj):
-        opts = ModerationRequest._meta
-        url = reverse(
-            'admin:{}_{}_change'.format(opts.app_label, opts.model_name),
-            args=[obj.moderation_request.pk],
-        )
-        return format_html(
-            '<a href="{}">{}</a>',
-            url,
-            _('View')
-        )
 
     def get_form(self, request, obj=None, **kwargs):
         return RequestCommentForm

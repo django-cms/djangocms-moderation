@@ -1,0 +1,20 @@
+td.field-get_message, th.column-get_message {
+    width: 65%;
+    overflow-wrap: break-word;
+    word-break: break-all;
+    white-space: wrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+td.field-id, th.column-id {
+    width: 2%;
+}
+td.field-date_created, th.column-date_created {
+    width: 5%rem;
+}
+
+
+#changelist-form table {
+	table-layout:fixed;
+} 
