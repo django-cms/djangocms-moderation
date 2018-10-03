@@ -163,7 +163,7 @@ class CollectionItemFormTestCase(BaseTestCase):
 
         # Now lets add the version to an active moderation request
         mr = ModerationRequest.objects.create(
-            collection=self.collection1, version=version, is_active=True
+            collection=self.collection1, version=version, is_active=True, author=self.collection1.author
         )
         form = CollectionItemForm(data=data, user=version.created_by)
         self.assertFalse(form.is_valid(), form.errors)

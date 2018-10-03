@@ -6,6 +6,7 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -395,7 +396,6 @@ class RequestCommentAdmin(admin.ModelAdmin):
             url,
             _('View')
         )
-    get_request_link.short_description = _('Request')
 
     def get_form(self, request, obj=None, **kwargs):
         return RequestCommentForm
@@ -481,12 +481,20 @@ class WorkflowAdmin(admin.ModelAdmin):
 
 
 class ModerationCollectionAdmin(admin.ModelAdmin):
+
+    class Media:
+        js = ('djangocms_moderation/js/actions.js',)
+        css = {
+            'all': ('djangocms_moderation/css/actions.css',)
+        }
+
     actions = None  # remove `delete_selected` for now, it will be handled later
     list_filter = [
         'author',
         'status',
         'date_created',
     ]
+    list_display_links = None
 
     def get_list_display(self, request):
         list_display = [
@@ -496,33 +504,66 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             'workflow',
             'status',
             'date_created',
-            'get_requests_link'
+            'list_display_actions',
+        ]
+        return list_display
+
+    def list_display_actions(self, obj):
+        """Display links to state change endpoints
+        """
+        return format_html_join(
+            '',
+            '{}',
+            ((action(obj), ) for action in self.get_list_display_actions()),
+        )
+    list_display_actions.short_description = _('actions')
+
+    def get_list_display_actions(self):
+        actions = [
+            self._get_edit_link,
+            self.get_requests_link,
         ]
         if conf.COLLECTION_COMMENTS_ENABLED:
-            list_display.append('get_comments_link')
-        return list_display
+            actions.append(self.get_comments_link)
+        return actions
+
+    def _get_edit_link(self, obj):
+        """Helper function to get the html link to the edit action
+        """
+        url = reverse(
+            'admin:djangocms_moderation_moderationcollection_change',
+            args=[obj.pk],
+        )
+        return render_to_string(
+            'djangocms_moderation/edit_icon.html',
+            {'url': url}
+        )
 
     def get_requests_link(self, obj):
         """
         Name of the collection should link to the list of associated
         moderation requests
         """
-        return format_html(
-            '<a href="{}?collection__id__exact={}">{}</a>',
+        url = format_html(
+            '{}?collection__id__exact={}',
             reverse('admin:djangocms_moderation_moderationrequest_changelist'),
             obj.pk,
-            _('View')
         )
-    get_requests_link.short_description = _('Requests')
+        return render_to_string(
+            'djangocms_moderation/request_icon.html',
+            {'url': url}
+        )
 
     def get_comments_link(self, obj):
-        return format_html(
-            '<a href="{}?collection__id__exact={}">{}</a>',
+        edit_url = format_html(
+            '{}?collection__id__exact={}',
             reverse('admin:djangocms_moderation_collectioncomment_changelist'),
-            obj.id,
-            _('View')
+            obj.pk
         )
-    get_comments_link.short_description = _('Comments')
+        return render_to_string(
+            'djangocms_moderation/comment_icon.html',
+            {'url': edit_url}
+        )
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):
@@ -556,14 +597,15 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return {'author': request.user}
 
     def get_readonly_fields(self, request, obj=None):
-        read_only_fields = ['status']
+        readonly_fields = ['status']
         if obj:
-            read_only_fields.append('author')
+            if not request.user.has_perm('djangocms_moderation.can_change_author'):
+                readonly_fields.append('author')
             # Author of the collection can change the workflow if the collection
             # is still in the `collecting` state
             if obj.status != COLLECTING or obj.author != request.user:
-                read_only_fields.append('workflow')
-        return read_only_fields
+                readonly_fields.append('workflow')
+        return readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)

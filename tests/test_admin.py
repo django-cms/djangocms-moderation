@@ -1,7 +1,9 @@
 from django.contrib import admin
+from django.contrib.auth.models import Permission, User
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 
-from djangocms_versioning.test_utils.factories import PageVersionFactory
+from djangocms_versioning.test_utils import factories
 
 from djangocms_moderation import conf, constants
 from djangocms_moderation.admin import (
@@ -25,11 +27,12 @@ class ModerationAdminTestCase(BaseTestCase):
             author=self.user, name='Collection Admin Actions', workflow=self.wf, status=constants.IN_REVIEW
         )
 
-        pg1_version = PageVersionFactory()
-        pg2_version = PageVersionFactory()
+        pg1_version = factories.PageVersionFactory()
+        pg2_version = factories.PageVersionFactory()
 
         self.mr1 = ModerationRequest.objects.create(
-            version=pg1_version, language='en',  collection=self.collection, is_active=True,)
+            version=pg1_version, language='en',  collection=self.collection,
+            is_active=True, author=self.collection.author,)
 
         self.wfst = self.wf.steps.create(role=self.role2, is_required=True, order=1,)
 
@@ -44,7 +47,8 @@ class ModerationAdminTestCase(BaseTestCase):
 
         # this moderation request is not approved
         self.mr2 = ModerationRequest.objects.create(
-            version=pg2_version, language='en',  collection=self.collection, is_active=True,)
+            version=pg2_version, language='en',  collection=self.collection,
+            is_active=True, author=self.collection.author,)
         self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
         self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
@@ -166,18 +170,22 @@ class ModerationAdminTestCase(BaseTestCase):
         self.assertIn('approve_selected', actions)
 
     def test_change_list_view_should_respect_conf(self):
+        user = User.objects.create(
+            username='change_author', email='change_author@test.com', password='can_change_author',)
+
         mock_request = MockRequest()
-        mock_request.user = self.user
+        mock_request.user = user
         mock_request._collection = self.collection
 
-        conf.COLLECTION_COMMENTS_ENABLED = False
-        list_display = self.mca.get_list_display(mock_request)
-        self.assertNotIn('get_comments_link', list_display)
+        # login
+        self.client.force_login(mock_request.user)
 
-        conf.COLLECTION_COMMENTS_ENABLED = True
-        list_display = self.mca.get_list_display(mock_request)
-        self.assertIn('get_comments_link', list_display)
+        # add the permission
+        content_type = ContentType.objects.get_for_model(ModerationCollection)
+        permission = Permission.objects.get(content_type=content_type, codename='can_change_author')
+        mock_request.user.user_permissions.add(permission)
 
+        # test ModerationRequests
         conf.REQUEST_COMMENTS_ENABLED = False
         list_display = self.mra.get_list_display(mock_request)
         self.assertNotIn('get_comments_link', list_display)
@@ -185,6 +193,55 @@ class ModerationAdminTestCase(BaseTestCase):
         conf.REQUEST_COMMENTS_ENABLED = True
         list_display = self.mra.get_list_display(mock_request)
         self.assertIn('get_comments_link', list_display)
+
+        # test ModerationCollections
+        conf.COLLECTION_COMMENTS_ENABLED = False
+        mca_buttons = []
+        for action in self.mca.get_list_display_actions():
+            mca_buttons.append(action.__name__)
+        list_display = self.mca.get_list_display_actions()
+        self.assertNotIn('get_comments_link', mca_buttons)
+
+        conf.COLLECTION_COMMENTS_ENABLED = True
+        mca_buttons = []
+        for action in self.mca.get_list_display_actions():
+            mca_buttons.append(action.__name__)
+        list_display = self.mca.get_list_display_actions()
+        self.assertIn('get_comments_link', mca_buttons)
+
+    def test_change_moderation_collection_author_permission(self):
+        user = factories.UserFactory(
+            username='change_author',
+            email='change_author@test.com',
+            password='can_change_author',
+            is_staff=True,
+            is_active=True,
+        )
+        mock_request = MockRequest()
+        mock_request.user = user
+        mock_request._collection = self.collection
+        self.client.force_login(mock_request.user)
+
+        # check that the user does not have the permissions
+        self.assertFalse(mock_request.user.has_perm('djangocms_moderation.can_change_author'))
+
+        # check that author is readonly
+        self.assertIn('author', self.mca.get_readonly_fields(mock_request, self.collection))
+
+        # add the permission
+        content_type = ContentType.objects.get_for_model(ModerationCollection)
+        permission = Permission.objects.get(content_type=content_type, codename='can_change_author')
+        mock_request.user.user_permissions.add(permission)
+
+        # reload the user to clear permissions cache
+        user = User.objects.get(pk=user.pk)
+        mock_request.user = user
+
+        # test that the permission was added successfully
+        self.assertTrue(mock_request.user.has_perm('djangocms_moderation.can_change_author'))
+
+        # check that author is editable
+        self.assertNotIn('author', self.mca.get_readonly_fields(mock_request, self.collection))
 
     def test_get_readonly_fields_for_moderation_collection(self):
         self.assertNotEqual(self.collection.author, self.user3)
@@ -201,23 +258,25 @@ class ModerationAdminTestCase(BaseTestCase):
         fields = self.mca.get_readonly_fields(mock_request_author)
         self.assertListEqual(['status'], fields)
 
-        # Now we pass the object, `author` field should not be editable anymore.
+        # Now we pass the object.
+        # The author field will be editable because this is a superuser
+        # (it wouldn't be if they weren't and didn't have the 'can_change_author' permission)
         # As the collection is still in `collecting` status and the request
         # user is the author of the collection, they can change still
         # change the `workflow`
         fields = self.mca.get_readonly_fields(mock_request_author, self.collection)
-        self.assertListEqual(['status', 'author'], fields)
+        self.assertListEqual(['status'], fields)
 
         # Non-author can't edit the workflow
         fields = self.mca.get_readonly_fields(mock_request_non_author, self.collection)
-        self.assertListEqual(['status', 'author', 'workflow'], fields)
+        self.assertListEqual(['status', 'workflow'], fields)
 
         # If the collection is not in `collecting` status, then the author
         # can't edit the workflow anymore
         self.collection.status = constants.IN_REVIEW
         self.collection.save()
         fields = self.mca.get_readonly_fields(mock_request_author, self.collection)
-        self.assertListEqual(['status', 'author', 'workflow'], fields)
+        self.assertListEqual(['status', 'workflow'], fields)
 
         fields = self.mca.get_readonly_fields(mock_request_non_author, self.collection)
-        self.assertListEqual(['status', 'author', 'workflow'], fields)
+        self.assertListEqual(['status', 'workflow'], fields)

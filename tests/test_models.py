@@ -111,24 +111,6 @@ class ModerationRequestTest(BaseTestCase):
             self.moderation_request2.actions.first()
         )
 
-    def test_get_author(self):
-        self.assertEqual(
-            self.user,
-            self.moderation_request2.author
-        )
-        del self.moderation_request2.author  # Invalidate cached_property
-
-        # Lets change the first step's by_user, which should become our
-        # new author
-        first_action = self.moderation_request2.get_first_action()
-        first_action.by_user = self.user2
-        first_action.save()
-
-        self.assertEqual(
-            self.user2,
-            self.moderation_request2.author
-        )
-
     def test_get_last_action(self):
         self.assertEqual(
             self.moderation_request2.get_last_action(),
@@ -341,6 +323,7 @@ class ModerationRequestTest(BaseTestCase):
             language='en',
             is_active=True,
             collection=self.collection1,
+            author=self.collection1.author,
         )
         self.assertEqual(mock_uuid.call_count, 0)
 
@@ -354,6 +337,7 @@ class ModerationRequestTest(BaseTestCase):
             version=self.pg1_version,
             language='en',
             collection=self.collection2,
+            author=self.collection2.author,
         )
         request.refresh_from_db()
         self.assertIsNone(request.compliance_number)
@@ -373,6 +357,7 @@ class ModerationRequestTest(BaseTestCase):
             version=self.pg1_version,
             language='en',
             collection=self.collection2,
+            author=self.collection2.author,
         )
         request.refresh_from_db()
         self.assertIsNone(request.compliance_number)
@@ -407,6 +392,7 @@ class ModerationRequestActionTest(BaseTestCase):
             language='en',
             collection=self.collection1,
             is_active=True,
+            author=self.collection1.author,
         )
         new_action = new_request.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
         self.assertEqual(new_action.to_role, self.role1)
@@ -522,7 +508,10 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertTrue(self.collection1.should_be_archived())
 
         ModerationRequest.objects.create(
-            version=self.pg1_version, collection=self.collection1, is_active=True
+            version=self.pg1_version,
+            collection=self.collection1,
+            is_active=True,
+            author=self.collection1.author,
         )
         is_approved_mock.return_value = False
         self.assertFalse(self.collection1.should_be_archived())
@@ -537,7 +526,10 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertFalse(self.collection1.allow_submit_for_review(user=self.user))
 
         ModerationRequest.objects.create(
-            version=self.pg1_version, collection=self.collection1, is_active=True
+            version=self.pg1_version,
+            collection=self.collection1,
+            is_active=True,
+            author=self.collection1.author,
         )
         self.assertTrue(self.collection1.allow_submit_for_review(user=self.user))
         # Only collection author can submit
@@ -550,10 +542,16 @@ class ModerationCollectionTest(BaseTestCase):
     @patch('djangocms_moderation.models.notify_collection_moderators')
     def test_submit_for_review(self, mock_ncm):
         ModerationRequest.objects.create(
-            version=self.pg1_version, language='en', collection=self.collection1
+            version=self.pg1_version,
+            language='en',
+            collection=self.collection1,
+            author=self.collection1.author,
         )
         ModerationRequest.objects.create(
-            version=self.pg3_version, language='en', collection=self.collection1
+            version=self.pg3_version,
+            language='en',
+            collection=self.collection1,
+            author=self.collection1.author,
         )
 
         self.assertFalse(
@@ -580,10 +578,16 @@ class ModerationCollectionTest(BaseTestCase):
 
     def test_cancel(self):
         active_request = ModerationRequest.objects.create(
-            version=self.pg1_version, collection=self.collection1, is_active=True
+            version=self.pg1_version,
+            collection=self.collection1,
+            is_active=True,
+            author=self.collection1.author
         )
         ModerationRequest.objects.create(
-            version=self.pg3_version, collection=self.collection1, is_active=False
+            version=self.pg3_version,
+            collection=self.collection1,
+            is_active=False,
+            author=self.collection1.author
         )
 
         self.collection1.status = constants.COLLECTING

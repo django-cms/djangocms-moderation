@@ -245,6 +245,11 @@ class ModerationCollection(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        permissions = (
+            ("can_change_author", _("Can change collection author")),
+        )
+
     def __str__(self):
         return self.name
 
@@ -330,6 +335,7 @@ class ModerationCollection(models.Model):
         return self.moderation_requests.create(
             version=version,
             collection=self,
+            author=self.author,
         )
 
 
@@ -367,6 +373,12 @@ class ModerationRequest(models.Model):
         unique=True,
         editable=False,
     )
+    author = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        verbose_name=_('author'),
+        related_name='+',
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
         verbose_name = _('Request')
@@ -379,14 +391,6 @@ class ModerationRequest(models.Model):
             self.pk,
             self.version.pk
         )
-
-    @cached_property
-    def author(self):
-        """
-        Author of this request is the user who created the first action
-        """
-        first_action = self.get_first_action()
-        return first_action.by_user if first_action else None
 
     @cached_property
     def workflow(self):
