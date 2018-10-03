@@ -232,8 +232,10 @@ def queryset_version_ids(queryset):
     version_ids = []
     for obj in queryset:
         try:
-            version = Version.objects.get_for_content(obj.object)
-            version_ids.append(str(version.pk))
+            from djangocms_versioning.helpers import override_default_manager
+            with override_default_manager(obj.model, obj.model._original_manager):
+                version = Version.objects.get_for_content(obj.object)
+                version_ids.append(str(version.pk))
         except Version.DoesNotExist:
             pass
 
