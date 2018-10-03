@@ -215,7 +215,7 @@ class CollectionItemsForm(forms.Form):
 
             active_moderation_request = get_active_moderation_request(version.content)
 
-            if not active_moderation_request and not is_obj_version_unlocked(version.content, self.user):
+            if not active_moderation_request and is_obj_version_unlocked(version.content, self.user):
                 versions_not_in_moderation.append(version.pk)
 
         if len(versions_not_in_moderation) == 0:

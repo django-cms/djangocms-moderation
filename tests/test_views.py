@@ -235,8 +235,8 @@ class CollectionItemsViewTest(BaseViewTestCase):
         )
 
         self.content_type = ContentType.objects.get_for_model(self.pg1_version)
-        self.pg_version = PageVersionFactory()
-        self.pg_version_1 = PageVersionFactory()
+        self.pg_version = PageVersionFactory(created_by=self.user)
+        self.pg_version_1 = PageVersionFactory(created_by=self.user)
 
     def test_add_item_to_collection(self):
         ModerationRequest.objects.all().delete()
