@@ -1,7 +1,15 @@
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 
+from djangocms_versioning.models import Version
+
 from .models import ConfirmationFormSubmission, Workflow
+
+
+try:
+    from djangocms_version_locking.helpers import content_is_unlocked_for_user
+except ImportError:
+    content_is_unlocked_for_user = None
 
 
 def get_default_workflow():
@@ -35,6 +43,47 @@ def get_form_submission_for_step(active_request, current_step):
         .filter(request=active_request, for_step=current_step)
     )
     return lookup.first()
+
+
+def is_obj_version_unlocked(content_obj, user):
+    """
+    If djangocms_version_locking is installed, we need to consider it,
+    otherwise, the content object is never version-locked for an user
+    :param content_obj: <obj>
+    :param user: <obj>
+    :return: <bool>
+    """
+    if content_is_unlocked_for_user is not None:
+        return content_is_unlocked_for_user(content_obj, user)
+    return True
+
+
+def is_obj_review_locked(obj, user):
+    """
+    Util function which determines if the `obj` is Review locked.
+    It is the equivalent of "Can `user` edit the version of object `obj`"?
+    """
+    moderation_request = get_active_moderation_request(obj)
+    if not moderation_request:
+        return False
+
+    # If `user` can resubmit the moderation request, it means they can edit
+    # the version to submit the changes. Review lock should be lifted for them
+    return not moderation_request.user_can_resubmit(user)
+
+
+def get_active_moderation_request(content_object):
+    """
+    If this returns None, it means there is no active_moderation request for this
+    object, and it means it can be submitted for moderation
+    """
+    from djangocms_moderation.models import ModerationRequest  # noqa
+    version = Version.objects.get_for_content(content_object)
+
+    try:
+        return ModerationRequest.objects.get(version=version, is_active=True)
+    except ModerationRequest.DoesNotExist:
+        return None
 
 
 def is_registered_for_moderation(content_object):

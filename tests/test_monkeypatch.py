@@ -27,12 +27,12 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         """
         mock_is_obj_review_locked.return_value = True
         edit_link = self.version_admin._get_edit_link(
-            self.pg1_version, self.mock_request
+            self.pg1_version, self.mock_request, disabled=False
         )
         # We test that moderation check is called when getting an edit link
         self.assertTrue(mock_is_obj_review_locked.called)
         # Edit link is blank as `mock_is_obj_review_locked` is True
-        self.assertEqual(edit_link, '')
+        self.assertIn('inactive', edit_link)
 
     @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')
     @mock.patch('djangocms_moderation.monkeypatch.is_obj_review_locked')
@@ -44,7 +44,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         mock_is_registered_for_moderation.return_value = False
         mock_is_obj_review_locked.return_value = True
         edit_link = self.version_admin._get_edit_link(
-            self.pg1_version, self.mock_request
+            self.pg1_version, self.mock_request, disabled=False
         )
 
         # Edit link is not blanked out because moderation is not registered
@@ -76,7 +76,16 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         )
         self.assertEqual('', link)
 
-        draft_version = PageVersionFactory()
+        draft_version = PageVersionFactory(created_by=self.user3)
+        # Request has self.user, so the moderation link won't be displayed.
+        # This is version lock in place
+        link = self.version_admin._get_moderation_link(
+            draft_version, self.mock_request
+        )
+        self.assertEqual('', link)
+
+        draft_version = PageVersionFactory(created_by=self.mock_request.user)
+        # Now the version lock is lifted, so we should be able to add to moderation
         link = self.version_admin._get_moderation_link(
             draft_version, self.mock_request
         )

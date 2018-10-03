@@ -7,12 +7,13 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_versioning.cms_toolbars import VersioningToolbar
 from djangocms_versioning.models import Version
 
-from .helpers import is_registered_for_moderation
-from .utils import (
+from .helpers import (
     get_active_moderation_request,
-    get_admin_url,
     is_obj_review_locked,
+    is_obj_version_unlocked,
+    is_registered_for_moderation,
 )
+from .utils import get_admin_url
 
 
 class ModerationToolbar(VersioningToolbar):
@@ -72,7 +73,8 @@ class ModerationToolbar(VersioningToolbar):
                     disabled=True,
                     side=self.toolbar.RIGHT,
                 )
-            else:
+            # Check if the object is not version locked to someone else
+            elif is_obj_version_unlocked(self.toolbar.obj, self.request.user):
                 version = Version.objects.get_for_content(self.toolbar.obj)
                 url = add_url_parameters(
                     get_admin_url(
