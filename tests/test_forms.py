@@ -134,8 +134,8 @@ class ModerationRequestActionInlineFormTest(BaseTestCase):
             'message': "Some other Message 902630"
         }
         form = ModerationRequestActionInlineForm(data=data, instance=instance)
-        form.current_user = self.user3
-        assert form.current_user != instance.by_user
+        form.current_user = User.objects.create_superuser(
+            username='non_action_user', email='non_action_user@test.com', password='non_action_user',)
         self.assertFalse(form.is_valid())
 
     def test_action_user_can_change_own_comment(self):
