@@ -87,8 +87,8 @@ class ModerationRequestActionInline(admin.TabularInline):
 
     def get_readonly_fields(self, request, obj=None):
         if obj.user_can_moderate(request.user) or obj.user_is_author(request.user):
-            # Omit 'message' from readonly_fields when user is a reviewer
-            # or an author. This disallow a non-participant from
+            # Omit 'message' from readonly_fields when current user is a reviewer
+            # or an author. This disallows a non-participant from
             # adding or editing comments on action objects
             return ['show_user', 'date_taken', 'form_submission']
         return self.fields
