@@ -371,7 +371,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
 
 class RequestCommentAdmin(admin.ModelAdmin):
-    list_display = ['date_created', 'message', 'get_author' ]
+    list_display = ['date_created', 'message', 'get_author']
     fields = ['moderation_request', 'message', 'author']
 
     @property
