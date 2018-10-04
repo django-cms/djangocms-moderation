@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ungettext
 from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
@@ -132,13 +132,17 @@ class CollectionItemsView(FormView):
         collection = form.cleaned_data['collection']
         for version in versions:
             collection.add_version(version)
+
         messages.success(
             self.request,
-            _('{} items successfully added to moderation collection'
-              .format(len(versions))
-              )
+            ungettext(
+                '%(count)d item successfully added to moderation collection',
+                '%(count)d items successfully added to moderation collection',
+                len(versions)
+            ) % {
+                'count': len(versions)
+            },
         )
-
         return_to_url = self.request.GET.get('return_to_url')
         return HttpResponseRedirect(return_to_url)
 
@@ -148,12 +152,6 @@ class CollectionItemsView(FormView):
         return form
 
     def get_context_data(self, **kwargs):
-        """
-        Gets collection_id from params or from the first collection in the list
-        when no ?collection_id is not supplied
-
-        Always gets content_object_list from a collection at a time
-        """
         context = super().get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
         collection_id = self.request.GET.get('collection_id')
@@ -176,7 +174,6 @@ class CollectionItemsView(FormView):
             'form': self.get_form(),
             'media': model_admin.media,
         })
-
         return context
 
 

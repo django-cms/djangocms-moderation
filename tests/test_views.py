@@ -263,7 +263,7 @@ class CollectionItemsViewTest(BaseViewTestCase):
 
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(
-            '1 items successfully added to moderation collection' in [message.message for message in messages])
+            '1 item successfully added to moderation collection' in [message.message for message in messages])
 
     def test_add_items_to_collection(self):
         ModerationRequest.objects.all().delete()
@@ -299,76 +299,6 @@ class CollectionItemsViewTest(BaseViewTestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(
             '2 items successfully added to moderation collection' in [message.message for message in messages])
-
-    def test_attempt_add_with_item_already_in_collection(self):
-        self.client.force_login(self.user)
-
-        url = add_url_parameters(
-            get_admin_url(
-                name='cms_moderation_items_to_collection',
-                language='en',
-                args=()
-            ),
-            return_to_url='http://example.com',
-            version_ids=','.join(str(x) for x in [self.pg1_version.pk, self.pg_version_1.pk]),
-            collection_id=self.collection_1.pk
-        )
-        response = self.client.post(
-            path=url,
-            data={
-                'collection': self.collection_1.pk,
-                'versions': [self.pg1_version.pk, self.pg_version_1.pk],
-            },
-            follow=False
-        )
-
-        self.assertEqual(response.status_code, 302)
-
-        moderation_request = ModerationRequest.objects.get(version=self.pg1_version)
-        self.assertEqual(moderation_request.collection, self.collection1)
-
-        moderation_request = ModerationRequest.objects.get(version=self.pg_version_1)
-        self.assertEqual(moderation_request.collection, self.collection_1)
-
-        messages = list(get_messages(response.wsgi_request))
-
-        self.assertTrue(
-            '1 items successfully added to moderation collection' in [message.message for message in messages])
-
-    def test_attempt_add_with_all_items_already_in_collection(self):
-        self.client.force_login(self.user)
-
-        url = add_url_parameters(
-            get_admin_url(
-                name='cms_moderation_items_to_collection',
-                language='en',
-                args=()
-            ),
-            return_to_url='http://example.com',
-            version_ids=','.join(str(x) for x in [self.pg1_version.pk, self.pg4_version.pk]),
-            collection_id=self.collection_1.pk
-        )
-        response = self.client.post(
-            path=url,
-            data={
-                'collection': self.collection_1.pk,
-                'versions': [self.pg1_version.pk, self.pg4_version.pk]
-            },
-            follow=False
-        )
-
-        self.assertEqual(response.status_code, 200)
-
-        moderation_request = ModerationRequest.objects.get(version=self.pg1_version)
-        self.assertEqual(moderation_request.collection, self.collection1)
-
-        moderation_request = ModerationRequest.objects.get(version=self.pg4_version)
-        self.assertEqual(moderation_request.collection, self.collection3)
-
-        self.assertIn(
-            "All items are locked or are already part of an existing moderation request "
-            "which is part of another active collection",
-            response.context_data['form'].errors['versions'][0])
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):

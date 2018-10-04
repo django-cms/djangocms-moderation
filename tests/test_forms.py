@@ -1,14 +1,17 @@
 import mock
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.forms import HiddenInput
 
+from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
     CancelCollectionForm,
     CollectionItemForm,
+    CollectionItemsForm,
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
 )
@@ -174,3 +177,73 @@ class CollectionItemFormTestCase(BaseTestCase):
         mr.save()
         form = CollectionItemForm(data=data, user=version.created_by)
         self.assertTrue(form.is_valid(), form.errors)
+
+
+class CollectionItemsFormTestCase(BaseTestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='test1', email='test1@test.com', password='test1', is_staff=True)
+        self.collection_1 = ModerationCollection.objects.create(author=self.user, name='My collection 1',
+                                                                workflow=self.wf1)
+        self.collection_2 = ModerationCollection.objects.create(author=self.user, name='My collection 2',
+                                                                workflow=self.wf1)
+        self.content_type = ContentType.objects.get_for_model(self.pg1_version)
+        self.pg_version = PageVersionFactory(created_by=self.user)
+        self.pg_version_1 = PageVersionFactory(created_by=self.user)
+
+    def test_add_item_to_collection(self):
+        ModerationRequest.objects.all().delete()
+        data = {
+            'collection': self.collection_1.pk,
+            'versions': Version.objects.filter(pk__in=[self.pg_version.pk]),
+        }
+        form = CollectionItemsForm(data=data, user=self.user)
+        self.assertTrue(form.is_valid())
+        versions = form.clean_versions()
+        self.assertQuerysetEqual(
+            versions,
+            Version.objects.filter(pk__in=[self.pg_version.pk]),
+            transform=lambda x: x,
+            ordered=False,
+        )
+
+    def test_add_items_to_collection(self):
+        ModerationRequest.objects.all().delete()
+        data = {
+            'collection': self.collection_1.pk,
+            'versions': [self.pg_version.pk, self.pg_version_1.pk],
+        }
+        form = CollectionItemsForm(data=data, user=self.user)
+        self.assertTrue(form.is_valid())
+        versions = form.clean_versions()
+        self.assertQuerysetEqual(
+            versions,
+            Version.objects.filter(pk__in=[self.pg_version.pk, self.pg_version_1.pk]),
+            transform=lambda x: x,
+            ordered=False,
+        )
+
+    def test_attempt_add_with_item_already_in_collection(self):
+        data = {
+            'collection': self.collection_1.pk,
+            'versions': [self.pg1_version.pk, self.pg_version_1.pk],
+        }
+        form = CollectionItemsForm(data=data, user=self.user)
+        self.assertTrue(form.is_valid())
+        versions = form.clean_versions()
+        self.assertQuerysetEqual(
+            versions,
+            Version.objects.filter(pk__in=[self.pg_version_1.pk]),
+            transform=lambda x: x,
+            ordered=False,
+        )
+
+    def test_attempt_add_with_all_items_already_in_collection(self):
+        data = {
+            'collection': self.collection_1.pk,
+            'versions': [self.pg1_version.pk, self.pg4_version.pk],
+        }
+        form = CollectionItemsForm(data=data, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn(("All items are locked or are already part of an existing "
+                       "moderation request which is part of another active collection"),
+                      form.errors['versions'])

@@ -205,26 +205,21 @@ class CollectionItemsForm(forms.Form):
         """
         Process objects which are not part of an active moderation request.
         Other objects are ignored.
-
-        :return:
         """
         versions = self.cleaned_data['versions']
 
-        versions_not_in_moderation = []
+        versions_eligible_for_moderation_collection = []
         for version in versions:
-
             active_moderation_request = get_active_moderation_request(version.content)
-
             if not active_moderation_request and is_obj_version_unlocked(version.content, self.user):
-                versions_not_in_moderation.append(version.pk)
+                versions_eligible_for_moderation_collection.append(version.pk)
 
-        if len(versions_not_in_moderation) == 0:
+        if len(versions_eligible_for_moderation_collection) == 0:
             raise forms.ValidationError(_(
                 "All items are locked or are already part of an existing moderation request which is part "
                 "of another active collection"
             ))
-
-        return Version.objects.filter(pk__in=versions_not_in_moderation)
+        return Version.objects.filter(pk__in=versions_eligible_for_moderation_collection)
 
 
 class SubmitCollectionForModerationForm(forms.Form):

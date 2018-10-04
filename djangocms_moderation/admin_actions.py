@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _, ungettext
 from cms.utils.urlutils import add_url_parameters
 
 from django_fsm import TransitionNotAllowed
+from djangocms_versioning.helpers import override_default_manager
 from djangocms_versioning.models import Version
 
 from djangocms_moderation import constants
@@ -232,8 +233,9 @@ def queryset_version_ids(queryset):
     version_ids = []
     for obj in queryset:
         try:
-            from djangocms_versioning.helpers import override_default_manager
             with override_default_manager(obj.model, obj.model._original_manager):
+                # We need to override the default manager as haystack incorrectly uses
+                # model._default_manager which results in the PublishedContentManager being used
                 version = Version.objects.get_for_content(obj.object)
                 version_ids.append(str(version.pk))
         except Version.DoesNotExist:
@@ -244,11 +246,8 @@ def queryset_version_ids(queryset):
 
 def add_items_to_collection(modeladmin, request, queryset):
     """
-
-    :param modeladmin:
-    :param request:
-    :param queryset: Haystack query set
-    :return:
+    Action to add queryset to moderation collection. Note that queryset is a
+    Haystack SearchQuerySet
     """
     version_id_list = queryset_version_ids(queryset)
     if version_id_list:
