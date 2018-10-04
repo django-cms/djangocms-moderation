@@ -220,7 +220,10 @@ class CollectionItemViewTest(BaseViewTestCase):
 
 
 class CollectionItemsViewTest(BaseViewTestCase):
-    def test_add_item_to_collection(self):
+    def test_no_suitable_items_to_add_to_collection(self):
+        """
+        We try add pg4_version to a collection but expect it to fail as it is already party of a collection
+        """
         self.client.force_login(self.user)
         url = add_url_parameters(
             get_admin_url(
@@ -240,10 +243,8 @@ class CollectionItemsViewTest(BaseViewTestCase):
             },
             follow=False
         )
-        self.assertContains(response,
-                            ('All items are locked or are already part of an existing moderation '
-                             'request which is part of another active collection'),
-                            status_code=200)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('versions', response.context['form'].errors)
 
     def test_add_items_to_collection(self):
         pg_version1 = PageVersionFactory(created_by=self.user)
