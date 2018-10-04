@@ -25,6 +25,7 @@ from .models import (
     CollectionComment,
     ModerationCollection,
     ModerationRequest,
+    ModerationRequestAction,
     RequestComment,
 )
 
@@ -298,3 +299,17 @@ class RequestCommentForm(forms.ModelForm):
             'author': forms.HiddenInput(),
             'moderation_request': forms.HiddenInput(),
         }
+
+
+class ModerationRequestActionInlineForm(forms.ModelForm):
+
+    class Meta:
+        model = ModerationRequestAction
+        fields = ('message',)
+
+    def clean_message(self):
+        if self.instance and self.cleaned_data['message'] != self.instance.message:
+            if self.current_user != self.instance.by_user:
+                raise forms.ValidationError(_('You can only change your own comments'))
+
+        return self.cleaned_data['message']
