@@ -224,6 +224,7 @@ class CollectionItemsFormTestCase(BaseTestCase):
         pg_version = PageVersionFactory(created_by=self.user)
         data = {
             'collection': self.collection1.pk,
+            # pg1_version is part of a collection and will be removed from the form during validation
             'versions': [self.pg1_version, pg_version],
         }
         form = CollectionItemsForm(data=data, user=self.user)
@@ -239,6 +240,7 @@ class CollectionItemsFormTestCase(BaseTestCase):
     def test_attempt_add_with_all_items_already_in_collection(self):
         data = {
             'collection': self.collection1.pk,
+            # both version objects are part of other collections and will be remove from the form during validation
             'versions': [self.pg1_version, self.pg4_version],
         }
         form = CollectionItemsForm(data=data, user=self.user)
@@ -246,10 +248,11 @@ class CollectionItemsFormTestCase(BaseTestCase):
         self.assertIn('versions', form.errors)
 
     def test_attempt_add_version_locked_version(self):
-        pg_version_user3 = PageVersionFactory(created_by=self.user2)
+        pg_version_user2 = PageVersionFactory(created_by=self.user2)
         data = {
             'collection': self.collection1.pk,
-            'versions': [pg_version_user3],
+            # pg_version_user2 is locked by user2 so it will be removed from the form during validation
+            'versions': [pg_version_user2],
         }
         form = CollectionItemsForm(data=data, user=self.user)
         self.assertFalse(form.is_valid())

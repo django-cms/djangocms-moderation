@@ -220,19 +220,7 @@ class CollectionItemViewTest(BaseViewTestCase):
 
 
 class CollectionItemsViewTest(BaseViewTestCase):
-
-    def setUp(self):
-        self.user = User.objects.create_user(username='test1', email='test1@test.com', password='test1', is_staff=True)
-        self.collection_1 = ModerationCollection.objects.create(author=self.user, name='My collection 1',
-                                                                workflow=self.wf1)
-        self.collection_2 = ModerationCollection.objects.create(author=self.user, name='My collection 2',
-                                                                workflow=self.wf1)
-        self.content_type = ContentType.objects.get_for_model(self.pg1_version)
-        self.pg_version = PageVersionFactory(created_by=self.user)
-        self.pg_version_1 = PageVersionFactory(created_by=self.user)
-
     def test_add_item_to_collection(self):
-        ModerationRequest.objects.all().delete()
         self.client.force_login(self.user)
         url = add_url_parameters(
             get_admin_url(
@@ -241,31 +229,25 @@ class CollectionItemsViewTest(BaseViewTestCase):
                 args=()
             ),
             return_to_url='http://example.com',
-            version_ids=self.pg_version.pk,
-            collection_id=self.collection_1.pk
+            version_ids=self.pg4_version.pk,
+            collection_id=self.collection1.pk
         )
         response = self.client.post(
             path=url,
             data={
-                'collection': self.collection_1.pk,
-                'versions': self.pg_version.pk,
+                'collection': self.collection1.pk,
+                'versions': self.pg4_version.pk,
             },
             follow=False
         )
-
-        self.assertEqual(response.status_code, 302)
-
-        moderation_request = ModerationRequest.objects.filter(
-            version=self.pg_version,
-        )[0]
-
-        self.assertEqual(moderation_request.collection, self.collection_1)
-
-        messages = list(get_messages(response.wsgi_request))
-        self.assertTrue(
-            '1 item successfully added to moderation collection' in [message.message for message in messages])
+        self.assertContains(response,
+                            ('All items are locked or are already part of an existing moderation '
+                             'request which is part of another active collection'),
+                            status_code=200)
 
     def test_add_items_to_collection(self):
+        pg_version1 = PageVersionFactory(created_by=self.user)
+        pg_version2 = PageVersionFactory(created_by=self.user)
         ModerationRequest.objects.all().delete()
         self.client.force_login(self.user)
 
@@ -276,25 +258,25 @@ class CollectionItemsViewTest(BaseViewTestCase):
                 args=()
             ),
             return_to_url='http://example.com',
-            version_ids=','.join(str(x) for x in [self.pg_version.pk, self.pg_version_1.pk]),
-            collection_id=self.collection_1.pk
+            version_ids=','.join(str(x) for x in [pg_version1.pk, pg_version2.pk]),
+            collection_id=self.collection1.pk
         )
         response = self.client.post(
             path=url,
             data={
-                'collection': self.collection_1.pk,
-                'versions': [self.pg_version.pk, self.pg_version_1.pk],
+                'collection': self.collection1.pk,
+                'versions': [pg_version1.pk, pg_version2.pk],
             },
             follow=False
         )
 
         self.assertEqual(response.status_code, 302)
 
-        moderation_request = ModerationRequest.objects.get(version=self.pg_version)
-        self.assertEqual(moderation_request.collection, self.collection_1)
+        moderation_request = ModerationRequest.objects.get(version=pg_version1)
+        self.assertEqual(moderation_request.collection, self.collection1)
 
-        moderation_request = ModerationRequest.objects.get(version=self.pg_version_1)
-        self.assertEqual(moderation_request.collection, self.collection_1)
+        moderation_request = ModerationRequest.objects.get(version=pg_version1)
+        self.assertEqual(moderation_request.collection, self.collection1)
 
         messages = list(get_messages(response.wsgi_request))
         self.assertTrue(
