@@ -371,8 +371,12 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
 
 class RequestCommentAdmin(admin.ModelAdmin):
-    list_display = ['date_created', 'get_message', 'get_author' ]
+    list_display = ['date_created', 'message', 'get_author' ]
     fields = ['moderation_request', 'message', 'author']
+
+    @property
+    def author_name(self):
+        return self.author.get_full_name() or self.author.get_username()
 
     class Media:
         css = {
@@ -380,14 +384,8 @@ class RequestCommentAdmin(admin.ModelAdmin):
         }
 
     def get_author(self, obj):
-        author = obj.author.first_name+' '+obj.author.last_name
-        return author
+        return self.author_name
     get_author.short_description = _('Author')
-
-    def get_message(self, obj):
-        # import ipdb; ipdb.set_trace()
-        return str(obj.message)[:200]
-    get_message.short_description = _('Message')
 
     def get_changeform_initial_data(self, request):
         data = {
@@ -436,7 +434,6 @@ class RequestCommentAdmin(admin.ModelAdmin):
             show_save_and_add_another=False,
             show_save_and_continue=False,
         )
-        # import ipdb; ipdb.set_trace()
         if object_id:
             try:
                 request_comment = get_object_or_404(RequestComment, pk=int(object_id))
