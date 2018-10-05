@@ -1,0 +1,19 @@
+{% extends "djangocms_moderation/item_to_collection.html" %}
+{% load i18n static %}
+{% block item_to_collection_header %}
+    <h2>
+        {% trans "Add items to collection" %}
+    </h2>
+{% endblock %}
+
+{% block item_to_collection_form %}
+    <div class="form-row">
+        <div class="related-widget-wrapper widget-wrapper-links-2">
+            {{ form.versions.as_hidden }}
+            {{ form.versions.errors }}
+            {{ form.collection.label_tag }}
+            {{ form.collection.errors }}
+            {{ form.collection }}
+        </div>
+    </div>
+{% endblock %}
