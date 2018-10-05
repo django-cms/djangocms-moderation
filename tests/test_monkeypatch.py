@@ -32,7 +32,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         )
         # We test that moderation check is called when getting an edit link
         self.assertTrue(mock_is_obj_review_locked.called)
-        # Edit link is blank as `mock_is_obj_review_locked` is True
+        # Edit link is inactive as `mock_is_obj_review_locked` is True
         self.assertIn('inactive', edit_link)
 
     @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')

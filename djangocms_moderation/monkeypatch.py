@@ -73,7 +73,7 @@ def _get_edit_link(func):
 
 def _get_archive_link(func):
     """
-    Don't display edit link if the object is review locked
+    Don't display archive link if the object is in moderation
     """
     def inner(self, version, request, disabled=False):
         if is_registered_for_moderation(version.content):
