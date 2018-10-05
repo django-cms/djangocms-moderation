@@ -4,9 +4,10 @@ from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _, ungettext
 from django.views.generic import FormView
-from django.utils.http import is_safe_url
+
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.helpers import version_list_url
