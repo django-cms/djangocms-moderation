@@ -32,14 +32,14 @@ class GetFormSubmissions(BaseTestCase):
         self.role1.save()
 
         cfs1 = ConfirmationFormSubmission.objects.create(
-            request=self.moderation_request1,
+            moderation_request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
             data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
             confirmation_page=cp,
         )
         ConfirmationFormSubmission.objects.create(
-            request=self.moderation_request1,
+            moderation_request=self.moderation_request1,
             for_step=self.wf1st2,
             by_user=self.user,
             data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),

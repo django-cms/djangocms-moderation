@@ -585,9 +585,9 @@ class ModerationRequestAction(models.Model):
         verbose_name=_('message'),
         blank=True,
     )
-    request = models.ForeignKey(
+    moderation_request = models.ForeignKey(
         to=ModerationRequest,
-        verbose_name=_('request'),
+        verbose_name=_('moderation_request'),
         related_name='actions',
     )
     date_taken = models.DateTimeField(
@@ -631,11 +631,11 @@ class ModerationRequestAction(models.Model):
         if self.action == constants.ACTION_REJECTED:
             next_step = None
         elif self.to_user:
-            next_step = self.request.user_get_step(self.to_user)
+            next_step = self.moderation_request.user_get_step(self.to_user)
         elif self.action in (constants.ACTION_STARTED, constants.ACTION_RESUBMITTED):
-            next_step = self.request.workflow.first_step
+            next_step = self.moderation_request.workflow.first_step
         else:
-            current_step = self.request.user_get_step(self.by_user)
+            current_step = self.moderation_request.user_get_step(self.by_user)
             next_step = current_step.get_next() if current_step else None
 
         if next_step:
@@ -674,9 +674,9 @@ class RequestComment(AbstractComment):
 
 
 class ConfirmationFormSubmission(models.Model):
-    request = models.ForeignKey(
+    moderation_request = models.ForeignKey(
         to=ModerationRequest,
-        verbose_name=_('request'),
+        verbose_name=_('moderation request'),
         related_name='form_submissions',
         on_delete=models.CASCADE,
     )
@@ -710,7 +710,7 @@ class ConfirmationFormSubmission(models.Model):
     class Meta:
         verbose_name = _('Confirmation Form Submission')
         verbose_name_plural = _('Confirmation Form Submissions')
-        unique_together = ('request', 'for_step')
+        unique_together = ('moderation_request', 'for_step')
 
     def get_by_user_name(self):
         user = self.by_user

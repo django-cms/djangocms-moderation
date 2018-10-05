@@ -40,7 +40,7 @@ def get_form_submission_for_step(active_request, current_step):
     lookup = (
         ConfirmationFormSubmission
         .objects
-        .filter(request=active_request, for_step=current_step)
+        .filter(moderation_request=active_request, for_step=current_step)
     )
     return lookup.first()
 
