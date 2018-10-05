@@ -76,9 +76,10 @@ def _is_object_review_locked(placeholder, user):
     """
     Register review lock with placeholder checks framework to prevent users from editing content by directly accessing the URL
     """
-    if is_registered_for_moderation(version.content):
-        return is_obj_review_locked(placeholder.source, user)
-    return true
+    if is_registered_for_moderation(placeholder.source):
+        if is_obj_review_locked(placeholder.source, user):
+            return False
+    return True
 
 VersionAdmin.get_state_actions = get_state_actions(VersionAdmin.get_state_actions)
 VersionAdmin._get_edit_link = _get_edit_link(VersionAdmin._get_edit_link)
