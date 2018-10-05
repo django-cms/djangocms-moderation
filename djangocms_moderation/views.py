@@ -6,7 +6,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext_lazy as _, ungettext
 from django.views.generic import FormView
-
+from django.utils.http import is_safe_url
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.helpers import version_list_url
@@ -115,8 +115,9 @@ class CollectionItemsView(FormView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
-        ids = self.request.GET.get('version_ids')
-        versions = Version.objects.filter(pk__in=list(map(int, ids.split(','))))
+        ids = self.request.GET.get('version_ids', '').split(',')
+        ids = [int(x) for x in ids if x.isdigit()]
+        versions = Version.objects.filter(pk__in=ids)
 
         kwargs['initial'].update({
             'versions': versions,
@@ -144,6 +145,14 @@ class CollectionItemsView(FormView):
             },
         )
         return_to_url = self.request.GET.get('return_to_url')
+        url_is_safe = is_safe_url(
+            url=return_to_url,
+            allowed_hosts=self.request.get_host(),
+            require_https=self.request.is_secure(),
+        )
+        if not url_is_safe:
+            return_to_url = self.request.path
+
         return HttpResponseRedirect(return_to_url)
 
     def get_form(self, **kwargs):
@@ -159,7 +168,7 @@ class CollectionItemsView(FormView):
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
+            except (ValueError, ModerationCollection.DoesNotExist, TypeError):
                 raise Http404
             else:
                 moderation_request_list = collection.moderation_requests.all()

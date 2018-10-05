@@ -181,7 +181,7 @@ class CollectionItemsForm(forms.Form):
 
     collection = forms.ModelChoiceField(
         queryset=ModerationCollection.objects.filter(status=COLLECTING),
-        required=True
+        required=True,
     )
     versions = forms.ModelMultipleChoiceField(
         queryset=Version.objects.all(),
@@ -209,18 +209,18 @@ class CollectionItemsForm(forms.Form):
         """
         versions = self.cleaned_data['versions']
 
-        versions_eligible_for_moderation_collection = []
+        eligible_versions = []
         for version in versions:
             active_moderation_request = get_active_moderation_request(version.content)
             if not active_moderation_request and is_obj_version_unlocked(version.content, self.user):
-                versions_eligible_for_moderation_collection.append(version.pk)
+                eligible_versions.append(version.pk)
 
-        if len(versions_eligible_for_moderation_collection) == 0:
+        if not eligible_versions:
             raise forms.ValidationError(_(
                 "All items are locked or are already part of an existing moderation request which is part "
                 "of another active collection"
             ))
-        return Version.objects.filter(pk__in=versions_eligible_for_moderation_collection)
+        return Version.objects.filter(pk__in=eligible_versions)
 
 
 class SubmitCollectionForModerationForm(forms.Form):

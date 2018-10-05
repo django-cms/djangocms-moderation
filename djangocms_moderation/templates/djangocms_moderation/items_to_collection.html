@@ -1,11 +1,9 @@
 {% extends "djangocms_moderation/item_to_collection.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% load static %}
 {% block item_to_collection_header %}
     <h2>
-        {% blocktrans with version.content as content_name %}
-           Add items to collection
-        {% endblocktrans %}
+        {% trans "Add items to collection" %}
     </h2>
 {% endblock %}
 

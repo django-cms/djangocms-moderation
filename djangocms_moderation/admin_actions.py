@@ -1,12 +1,15 @@
+from collections import defaultdict
+
 from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _, ungettext
 
 from cms.utils.urlutils import add_url_parameters
 
 from django_fsm import TransitionNotAllowed
-from djangocms_versioning.helpers import override_default_manager
 from djangocms_versioning.models import Version
 
 from djangocms_moderation import constants
@@ -228,18 +231,16 @@ def publish_selected(modeladmin, request, queryset):
 publish_selected.short_description = _("Publish selected requests")  # noqa: E305
 
 
-def queryset_version_ids(queryset):
-    """Returns the version object keys corresponding to the objects in the Haystack queryset"""
-    version_ids = []
+def haystack_queryset_to_version_queryset(queryset):
+    """Returns the version objects corresponding to the objects in the Haystack queryset"""
+    id_map = defaultdict(list)
     for obj in queryset:
-        try:
-            with override_default_manager(obj.model, obj.model._original_manager):
-                # We need to override the default manager as haystack incorrectly uses
-                # model._default_manager which results in the PublishedContentManager being used
-                version = Version.objects.get_for_content(obj.object)
-                version_ids.append(str(version.pk))
-        except Version.DoesNotExist:
-            pass
+        id_map[obj.model].append(obj.pk)
+    q = Q()
+    for obj_model, ids in id_map.items():
+        ctype = ContentType.objects.get_for_model(obj_model)
+        q |= Q(content_type=ctype, object_id__in=ids)
+    version_ids = Version.objects.filter(q)
 
     return version_ids
 
@@ -249,7 +250,8 @@ def add_items_to_collection(modeladmin, request, queryset):
     Action to add queryset to moderation collection. Note that queryset is a
     Haystack SearchQuerySet
     """
-    version_id_list = queryset_version_ids(queryset)
+    version_id_list = haystack_queryset_to_version_queryset(queryset).values_list('pk', flat=True)
+    version_id_list = [str(x) for x in version_id_list]
     if version_id_list:
         admin_url = add_url_parameters(
             get_admin_url(
@@ -260,7 +262,7 @@ def add_items_to_collection(modeladmin, request, queryset):
             return_to_url=request.META.get('HTTP_REFERER'))
         return HttpResponseRedirect(admin_url)
     else:
-        messages.success(request, _("No suitable items found to add to moderation collection"))
+        modeladmin.message_user(request, _("No suitable items found to add to moderation collection"))
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 add_items_to_collection.short_description = _("Add to moderation collection")  # noqa: E305
 
