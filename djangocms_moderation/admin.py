@@ -374,17 +374,13 @@ class RequestCommentAdmin(admin.ModelAdmin):
     list_display = ['date_created', 'message', 'get_author']
     fields = ['moderation_request', 'message', 'author']
 
-    @property
-    def author_name(self):
-        return self.author.get_full_name() or self.author.get_username()
-
     class Media:
         css = {
             'all': ('djangocms_moderation/css/comments_changelist.css',)
         }
 
     def get_author(self, obj):
-        return self.author_name
+        return obj.author_name
     get_author.short_description = _('Author')
 
     def get_changeform_initial_data(self, request):
