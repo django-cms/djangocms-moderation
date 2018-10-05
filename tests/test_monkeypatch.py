@@ -3,11 +3,14 @@ import mock
 from django.contrib import admin
 
 from cms.models import PageContent
+from cms.models.fields import PlaceholderRelationField
 
 from djangocms_versioning import versionables
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import PUBLISHED
 from djangocms_versioning.test_utils.factories import PageVersionFactory
+
+from djangocms_moderation.monkeypatch import _is_object_review_locked
 
 from .utils.base import BaseTestCase, MockRequest
 
@@ -99,3 +102,9 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
             self.pg1_version, self.mock_request
         )
         self.assertEqual('', link)
+
+    def test_is_object_review_locked(self):
+        self.assertIn(
+            _is_object_review_locked,
+            PlaceholderRelationField.default_checks,
+        )
