@@ -240,9 +240,7 @@ def haystack_queryset_to_version_queryset(queryset):
     for obj_model, ids in id_map.items():
         ctype = ContentType.objects.get_for_model(obj_model)
         q |= Q(content_type=ctype, object_id__in=ids)
-    version_ids = Version.objects.filter(q)
-
-    return version_ids
+    return Version.objects.filter(q)
 
 
 def add_items_to_collection(modeladmin, request, queryset):
@@ -250,15 +248,15 @@ def add_items_to_collection(modeladmin, request, queryset):
     Action to add queryset to moderation collection. Note that queryset is a
     Haystack SearchQuerySet
     """
-    version_id_list = haystack_queryset_to_version_queryset(queryset).values_list('pk', flat=True)
-    version_id_list = [str(x) for x in version_id_list]
-    if version_id_list:
+    version_ids = haystack_queryset_to_version_queryset(queryset).values_list('pk', flat=True)
+    version_ids = [str(x) for x in version_ids]
+    if version_ids:
         admin_url = add_url_parameters(
             get_admin_url(
                 name='cms_moderation_items_to_collection',
                 language=request.GET.get('language'),
                 args=()
-            ), version_ids=','.join(version_id_list),
+            ), version_ids=','.join(version_ids),
             return_to_url=request.META.get('HTTP_REFERER'))
         return HttpResponseRedirect(admin_url)
     else:
