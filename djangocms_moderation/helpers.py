@@ -75,7 +75,7 @@ def is_obj_review_locked(obj, user):
 def get_active_moderation_request(content_object):
     """
     If this returns None, it means there is no active_moderation request for this
-    object, and it means it can be submitted for moderation
+    object, and it means it can be submitted for new moderation
     """
     from djangocms_moderation.models import ModerationRequest  # noqa
     version = Version.objects.get_for_content(content_object)
