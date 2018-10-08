@@ -118,62 +118,6 @@ class UpdateModerationRequestForm(forms.Form):
         )
 
 
-class CollectionItemForm(forms.Form):
-    def __init__(self, user, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user = user
-
-    collection = forms.ModelChoiceField(
-        queryset=ModerationCollection.objects.filter(status=COLLECTING),
-        required=True
-    )
-    version = forms.ModelChoiceField(
-        queryset=Version.objects.all(),
-        required=True,
-        widget=forms.HiddenInput(),
-    )
-
-    def set_collection_widget(self, request):
-        related_modeladmin = admin.site._registry.get(ModerationCollection)
-        dbfield = ModerationRequest._meta.get_field('collection')
-        formfield = self.fields['collection']
-        formfield.widget = RelatedFieldWidgetWrapper(
-            formfield.widget,
-            dbfield.rel,
-            admin_site=admin.site,
-            can_add_related=related_modeladmin.has_add_permission(request),
-            can_change_related=related_modeladmin.has_change_permission(request),
-            can_delete_related=related_modeladmin.has_delete_permission(request),
-        )
-
-    def clean_version(self):
-        """
-        Make sure that version is not part of another active moderation request
-        or version locked to another user
-        """
-        version = self.cleaned_data['version']
-
-        if not is_registered_for_moderation(version.content):
-            raise forms.ValidationError(_(
-                "{} is not registered for moderation, please see configuration docs for how to"
-                .format(version.content.__class__.__name__)
-            ))
-
-        active_moderation_request = get_active_moderation_request(version.content)
-        if active_moderation_request:
-            raise forms.ValidationError(_(
-                "{} is already part of existing moderation request which is part "
-                "of another active collection".format(version.content)
-            ))
-
-        if not is_obj_version_unlocked(version.content, self.user):
-            raise forms.ValidationError(_(
-                "{} is version locked to another user".format(version.content)
-            ))
-
-        return version
-
-
 class CollectionItemsForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -211,14 +155,18 @@ class CollectionItemsForm(forms.Form):
 
         eligible_versions = []
         for version in versions:
-            active_moderation_request = get_active_moderation_request(version.content)
-            if not active_moderation_request and is_obj_version_unlocked(version.content, self.user):
+            if all([
+                is_registered_for_moderation(version.content),
+                not get_active_moderation_request(version.content),
+                is_obj_version_unlocked(version.content, self.user),
+            ]):
                 eligible_versions.append(version.pk)
 
         if not eligible_versions:
             raise forms.ValidationError(_(
-                "All items are locked or are already part of an existing moderation request which is part "
-                "of another active collection"
+                "Your item(s) is either locked, not enabled for moderation, or "
+                "is already part of an existing moderation request which is "
+                "part of another active collection."
             ))
         return Version.objects.filter(pk__in=eligible_versions)
 

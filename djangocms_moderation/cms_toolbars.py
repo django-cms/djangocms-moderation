@@ -78,13 +78,12 @@ class ModerationToolbar(VersioningToolbar):
                 version = Version.objects.get_for_content(self.toolbar.obj)
                 url = add_url_parameters(
                     get_admin_url(
-                        name='cms_moderation_item_to_collection',
+                        name='cms_moderation_items_to_collection',
                         language=self.current_lang,
                         args=()
                     ),
-                    version_id=version.pk,
+                    version_ids=version.pk,
                     # Indicate to the view that we opened the view as a modal
-                    _modal=1,
                 )
 
                 self.toolbar.add_modal_button(

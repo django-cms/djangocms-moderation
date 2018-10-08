@@ -2,6 +2,7 @@ from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
+from djangocms_versioning.helpers import version_list_url
 
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT
@@ -44,11 +45,12 @@ def _get_moderation_link(self, version, request):
     elif is_obj_version_unlocked(content_object, request.user):
         url = add_url_parameters(
             get_admin_url(
-                name='cms_moderation_item_to_collection',
+                name='cms_moderation_items_to_collection',
                 language='en',
                 args=()
             ),
-            version_id=version.pk
+            version_ids=version.pk,
+            return_to_url=version_list_url(version.content)
         )
         # TODO use a fancy icon as for the rest of the actions?
         return format_html(
