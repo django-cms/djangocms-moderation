@@ -64,8 +64,22 @@ def _get_edit_link(func):
     Don't display edit link if the object is review locked
     """
     def inner(self, version, request, disabled=False):
-        if is_registered_for_moderation(version.content):
-            if is_obj_review_locked(version.content, request.user):
+        content_object = version.content
+        if is_registered_for_moderation(content_object):
+            if is_obj_review_locked(content_object, request.user):
+                disabled = True
+        return func(self, version, request, disabled)
+    return inner
+
+
+def _get_archive_link(func):
+    """
+    Don't display archive link if the object is in moderation
+    """
+    def inner(self, version, request, disabled=False):
+        content_object = version.content
+        if is_registered_for_moderation(content_object):
+            if get_active_moderation_request(content_object):
                 disabled = True
         return func(self, version, request, disabled)
     return inner
@@ -73,4 +87,5 @@ def _get_edit_link(func):
 
 VersionAdmin.get_state_actions = get_state_actions(VersionAdmin.get_state_actions)
 VersionAdmin._get_edit_link = _get_edit_link(VersionAdmin._get_edit_link)
+VersionAdmin._get_archive_link = _get_archive_link(VersionAdmin._get_archive_link)
 VersionAdmin._get_moderation_link = _get_moderation_link
