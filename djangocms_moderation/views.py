@@ -4,7 +4,8 @@ from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.utils.translation import ugettext_lazy as _
+from django.utils.http import is_safe_url
+from django.utils.translation import ugettext_lazy as _, ungettext
 from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
@@ -15,6 +16,7 @@ from djangocms_versioning.models import Version
 from .forms import (
     CancelCollectionForm,
     CollectionItemForm,
+    CollectionItemsForm,
     SubmitCollectionForModerationForm,
 )
 from .models import ConfirmationPage, ModerationCollection
@@ -104,6 +106,88 @@ class CollectionItemView(FormView):
 
 
 add_item_to_collection = CollectionItemView.as_view()
+
+
+class CollectionItemsView(FormView):
+    template_name = 'djangocms_moderation/items_to_collection.html'
+    form_class = CollectionItemsForm
+    success_template_name = 'djangocms_moderation/request_finalized.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        ids = self.request.GET.get('version_ids', '').split(',')
+        ids = [int(x) for x in ids if x.isdigit()]
+        versions = Version.objects.filter(pk__in=ids)
+
+        kwargs['initial'].update({
+            'versions': versions,
+        })
+        collection_id = self.request.GET.get('collection_id')
+
+        if collection_id:
+            kwargs['initial']['collection'] = collection_id
+        return kwargs
+
+    def form_valid(self, form):
+        versions = form.cleaned_data['versions']
+        collection = form.cleaned_data['collection']
+        for version in versions:
+            collection.add_version(version)
+
+        messages.success(
+            self.request,
+            ungettext(
+                '%(count)d item successfully added to moderation collection',
+                '%(count)d items successfully added to moderation collection',
+                len(versions)
+            ) % {
+                'count': len(versions)
+            },
+        )
+        return_to_url = self.request.GET.get('return_to_url')
+        url_is_safe = is_safe_url(
+            url=return_to_url,
+            allowed_hosts=self.request.get_host(),
+            require_https=self.request.is_secure(),
+        )
+        if not url_is_safe:
+            return_to_url = self.request.path
+
+        return HttpResponseRedirect(return_to_url)
+
+    def get_form(self, **kwargs):
+        form = super().get_form(**kwargs)
+        form.set_collection_widget(self.request)
+        return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        opts_meta = ModerationCollection._meta
+        collection_id = self.request.GET.get('collection_id')
+
+        if collection_id:
+            try:
+                collection = ModerationCollection.objects.get(pk=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist, TypeError):
+                raise Http404
+            else:
+                moderation_request_list = collection.moderation_requests.all()
+        else:
+            moderation_request_list = []
+
+        model_admin = admin.site._registry[ModerationCollection]
+        context.update({
+            'moderation_request_list': moderation_request_list,
+            'opts': opts_meta,
+            'title': _('Add to collection'),
+            'form': self.get_form(),
+            'media': model_admin.media,
+        })
+        return context
+
+
+add_items_to_collection = CollectionItemsView.as_view()
 
 
 def moderation_confirmation_page(request, confirmation_id):

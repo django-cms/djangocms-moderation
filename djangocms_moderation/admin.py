@@ -594,6 +594,11 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
                 r'^item/add-item/$',
                 views.add_item_to_collection,
                 name='cms_moderation_item_to_collection',
+            ),
+            _url(
+                r'^item/add-items/$',
+                views.add_items_to_collection,
+                name='cms_moderation_items_to_collection',
             )
         ]
         return url_patterns + super().get_urls()
