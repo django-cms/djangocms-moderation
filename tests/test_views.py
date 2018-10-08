@@ -44,7 +44,7 @@ class CollectionItemsViewTest(BaseViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('versions', response.context['form'].errors)
 
-    def test_add_items_to_collection_no_return_url_spefified(self):
+    def test_add_items_to_collection_no_return_url_set(self):
         ModerationRequest.objects.all().delete()
         pg_version = PageVersionFactory(created_by=self.user)
 
@@ -76,10 +76,12 @@ class CollectionItemsViewTest(BaseViewTestCase):
             ).exists()
         )
 
-    def test_add_items_to_collection_return_url_provided(self):
+    def test_add_items_to_collection_return_url_set(self):
         ModerationRequest.objects.all().delete()
         pg1_version = PageVersionFactory(created_by=self.user)
         pg2_version = PageVersionFactory(created_by=self.user)
+
+        redirect_to_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
 
         url = add_url_parameters(
             get_admin_url(
@@ -87,7 +89,7 @@ class CollectionItemsViewTest(BaseViewTestCase):
                 language='en',
                 args=()
             ),
-            return_to_url='http://example.com',
+            return_to_url=redirect_to_url,
             version_ids=','.join(str(x) for x in [pg1_version.pk, pg2_version.pk]),
             collection_id=self.collection1.pk
         )
@@ -100,7 +102,7 @@ class CollectionItemsViewTest(BaseViewTestCase):
             follow=False
         )
 
-        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, redirect_to_url)
 
         moderation_request = ModerationRequest.objects.get(version=pg1_version)
         self.assertEqual(moderation_request.collection, self.collection1)
