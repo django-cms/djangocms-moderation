@@ -28,7 +28,7 @@ class TestCMSToolbars(BaseTestCase):
             request.toolbar.populate()
         return request
 
-    def _get_toolbar(self, content_obj, user=None, edit_mode=False):
+    def _get_toolbar(self, content_obj, user=None, **kwargs):
         """Helper method to set up the toolbar
         """
         if not user:
@@ -41,9 +41,17 @@ class TestCMSToolbars(BaseTestCase):
         toolbar = ModerationToolbar(
             request, toolbar=cms_toolbar, is_current_app=True, app_path='/')
         toolbar.toolbar.set_object(content_obj)
-        if edit_mode:
+        if kwargs.get('edit_mode', False):
             toolbar.toolbar.edit_mode_active = True
             toolbar.toolbar.content_mode_active = False
+            toolbar.toolbar.structure_mode_active = False
+        elif kwargs.get('structure_mode', False):
+            toolbar.toolbar.edit_mode_active = False
+            toolbar.toolbar.content_mode_active = False
+            toolbar.toolbar.structure_mode_active = True
+        elif kwargs.get('preview_mode', False):
+            toolbar.toolbar.edit_mode_active = False
+            toolbar.toolbar.content_mode_active = True
             toolbar.toolbar.structure_mode_active = False
         return toolbar
 
@@ -75,7 +83,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
 
         # No Submit for moderation button has been added
-        self.assertEquals(0, len(toolbar.toolbar.get_right_items()))
+        self.assertFalse(self._button_exists('Submit for moderation',toolbar.toolbar))
 
     def test_page_in_moderation(self):
         ModerationRequest.objects.all().delete()
@@ -104,7 +112,10 @@ class TestCMSToolbars(BaseTestCase):
 
         self.assertTrue(self._button_exists('Edit',toolbar.toolbar))
         # Edit button should be clickable
-        self.assertFalse(toolbar.toolbar.get_right_items()[0].buttons[0].disabled)
+        button = self._find_button('Edit',toolbar.toolbar)
+        self.assertFalse(
+            button[0].disabled
+        )
 
         # Now version user is different to toolbar user
         version = PageVersionFactory(created_by=self.user2)
@@ -114,7 +125,11 @@ class TestCMSToolbars(BaseTestCase):
 
         self.assertTrue(self._button_exists('Edit',toolbar.toolbar))
         # Edit button should not be clickable
-        self.assertTrue(toolbar.toolbar.get_right_items()[0].buttons[0].disabled)
+        button = self._find_button('Edit',toolbar.toolbar)
+        self.assertTrue
+        (
+            button[0].disabled
+        )
 
     def test_add_edit_button(self):
         ModerationRequest.objects.all().delete()
@@ -122,11 +137,10 @@ class TestCMSToolbars(BaseTestCase):
         toolbar = self._get_toolbar(version.content, user=self.user)
         toolbar.populate()
         toolbar.post_template_populate()
+
         # We can see the Edit button, as the version hasn't been submitted
         # to the moderation (collection) yet
-
         self.assertTrue(self._button_exists('Edit',toolbar.toolbar))
-
         button = self._find_button('Edit',toolbar.toolbar)
         self.assertFalse(
             button[0].disabled
@@ -137,12 +151,12 @@ class TestCMSToolbars(BaseTestCase):
         self.collection1.add_version(
             version=version
         )
-        toolbar = self._get_toolbar(version.content)
+
+        # refresh the toolbar
+        toolbar = self._get_toolbar(version.content, user=self.user)
         toolbar.populate()
         toolbar.post_template_populate()
-        self.assertEqual(1, len(toolbar.toolbar.get_right_items()))
-
-        import ipdb; ipdb.set_trace()
+        
         self.assertTrue(self._button_exists('Edit',toolbar.toolbar))
         button = self._find_button('Edit',toolbar.toolbar)
         self.assertTrue(
@@ -156,7 +170,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
         # We shouldn't see Edit button when there is no toolbar object set.
         # Some of the custom views in some apps dont have toolbar.obj
-        self.assertEquals(toolbar.toolbar.get_right_items(), [])
+        self.assertFalse(self._button_exists('Edit',toolbar.toolbar))
 
     @mock.patch('djangocms_moderation.cms_toolbars.is_registered_for_moderation')
     def test_publish_buttons_when_unregistered(self, mock_is_registered_for_moderation):
@@ -174,7 +188,7 @@ class TestCMSToolbars(BaseTestCase):
         mock_is_registered_for_moderation.return_value = False
         ModerationRequest.objects.all().delete()
         version = PageVersionFactory()
-        toolbar = self._get_toolbar(version.content)
+        toolbar = self._get_toolbar(version.content, preview_mode=True)
         toolbar.populate()
         toolbar.post_template_populate()
 
