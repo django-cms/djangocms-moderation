@@ -590,6 +590,7 @@ class ModerationRequestAction(models.Model):
         verbose_name=_('moderation_request'),
         related_name='actions',
     )
+
     date_taken = models.DateTimeField(
         verbose_name=_('date taken'),
         auto_now_add=True,
@@ -608,7 +609,7 @@ class ModerationRequestAction(models.Model):
 
     def __str__(self):
         return "{} - {}".format(
-            self.request_id, self.get_action_display()
+            self.moderation_request_id, self.get_action_display()
         )
 
     def get_by_user_name(self):

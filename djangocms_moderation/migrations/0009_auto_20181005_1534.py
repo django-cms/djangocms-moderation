@@ -13,28 +13,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='moderationrequestaction',
-            name='request',
-        ),
         migrations.AddField(
             model_name='confirmationformsubmission',
             name='moderation_request',
-            field=models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, related_name='form_submissions', to='djangocms_moderation.ModerationRequest', verbose_name='moderation request'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='form_submissions', to='djangocms_moderation.ModerationRequest', verbose_name='moderation request'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='moderationrequestaction',
             name='moderation_request',
-            field=models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, related_name='actions', to='djangocms_moderation.ModerationRequest', verbose_name='moderation_request'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='actions', to='djangocms_moderation.ModerationRequest', verbose_name='moderation_request'),
             preserve_default=False,
-        ),
-        migrations.RemoveField(
-            model_name='confirmationformsubmission',
-            name='request',
-        ),
-        migrations.AlterUniqueTogether(
-            name='confirmationformsubmission',
-            unique_together=set([('moderation_request', 'for_step')]),
         ),
     ]
