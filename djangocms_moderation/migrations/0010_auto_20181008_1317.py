@@ -5,13 +5,24 @@ from __future__ import unicode_literals
 from django.db import migrations
 
 
-def copy_moderation_request_data(apps, schema_editor):
+def get_model_classes(apps):
     confirmation_form_submission = apps.get_model('djangocms_moderation', 'ConfirmationFormSubmission')
     moderation_request_action = apps.get_model('djangocms_moderation', 'ModerationRequestAction')
 
-    for model_class in (confirmation_form_submission, moderation_request_action):
+    return confirmation_form_submission, moderation_request_action
+
+
+def forward_copy_moderation_requests(apps, schema_editor):
+    for model_class in get_model_classes(apps):
         for obj in model_class.objects.all():
             obj.moderation_request = obj.request
+            obj.save()
+
+
+def reverse_copy_moderation_requests(apps, schema_editor):
+    for model_class in get_model_classes(apps):
+        for obj in model_class.objects.all():
+            obj.request = obj.moderation_request
             obj.save()
 
 
@@ -22,5 +33,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(copy_moderation_request_data),
+        migrations.RunPython(forward_copy_moderation_requests, reverse_copy_moderation_requests),
     ]
