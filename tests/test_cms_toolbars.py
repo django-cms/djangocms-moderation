@@ -55,14 +55,14 @@ class TestCMSToolbars(BaseTestCase):
             toolbar.toolbar.structure_mode_active = False
         return toolbar
 
-    def _find_button(self, button_name, toolbar):
+    def _find_buttons(self, button_name, toolbar):
         found = []
         for button_list in toolbar.get_right_items():
             found = found + [button for button in button_list.buttons if button.name == button_name]
         return found
 
     def _button_exists(self, button_name, toolbar):
-        found = self._find_button(button_name, toolbar)
+        found = self._find_buttons(button_name, toolbar)
         return bool(len(found))
 
     def test_submit_for_moderation_not_version_locked(self):
@@ -118,7 +118,7 @@ class TestCMSToolbars(BaseTestCase):
 
         self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
         # Edit button should be clickable
-        button = self._find_button('Edit', toolbar.toolbar)
+        button = self._find_buttons('Edit', toolbar.toolbar)
         self.assertFalse(button[0].disabled)
 
         # Now version user is different to toolbar user
@@ -129,7 +129,7 @@ class TestCMSToolbars(BaseTestCase):
 
         self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
         # Edit button should not be clickable
-        button = self._find_button('Edit', toolbar.toolbar)
+        button = self._find_buttons('Edit', toolbar.toolbar)
         self.assertTrue(button[0].disabled)
 
     def test_add_edit_button(self):
@@ -142,7 +142,7 @@ class TestCMSToolbars(BaseTestCase):
         # We can see the Edit button, as the version hasn't been submitted
         # to the moderation (collection) yet
         self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
-        button = self._find_button('Edit', toolbar.toolbar)
+        button = self._find_buttons('Edit', toolbar.toolbar)
         self.assertFalse(button[0].disabled)
 
         # Lets add the version to moderation, the Edit should no longer be
@@ -155,7 +155,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
 
         self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
-        button = self._find_button('Edit', toolbar.toolbar)
+        button = self._find_buttons('Edit', toolbar.toolbar)
         self.assertTrue(button[0].disabled)
 
     def test_add_edit_button_without_toolbar_object(self):
