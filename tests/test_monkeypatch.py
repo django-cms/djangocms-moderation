@@ -1,6 +1,7 @@
 import mock
 
 from django.contrib import admin
+from django.urls import reverse
 
 from cms.models import PageContent
 
@@ -31,7 +32,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         )
         # We test that moderation check is called when getting an edit link
         self.assertTrue(mock_is_obj_review_locked.called)
-        # Edit link is blank as `mock_is_obj_review_locked` is True
+        # Edit link is inactive as `mock_is_obj_review_locked` is True
         self.assertIn('inactive', edit_link)
 
     @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')
@@ -51,6 +52,36 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         self.assertTrue(mock_is_registered_for_moderation.called)
         self.assertFalse(mock_is_obj_review_locked.called)
         self.assertNotEqual(edit_link, '')
+
+    @mock.patch('djangocms_moderation.monkeypatch.get_active_moderation_request')
+    def test_get_archive_link(self, _mock):
+        """
+        VersionAdmin should call moderation's version of _get_archive_link
+        """
+        archive_url = reverse('admin:{app}_{model}version_archive'.format(
+            app=self.pg1_version._meta.app_label,
+            model=self.pg1_version.content._meta.model_name,
+        ), args=(self.pg1_version.pk,))
+
+        _mock.return_value = True
+        archive_link = self.version_admin._get_archive_link(
+            self.pg1_version, self.mock_request
+        )
+        # We test that moderation check is called when getting an edit link
+        self.assertEqual(1, _mock.call_count)
+        # Edit link is inactive as `get_active_moderation_request` is True
+        self.assertIn('inactive', archive_link)
+        self.assertNotIn(archive_url, archive_link)
+
+        _mock.return_value = None
+        archive_link = self.version_admin._get_archive_link(
+            self.pg1_version, self.mock_request
+        )
+        # We test that moderation check is called when getting the link
+        self.assertEqual(2, _mock.call_count)
+        # Archive link is active there as `get_active_moderation_request` is None
+        self.assertNotIn('inactive', archive_link)
+        self.assertIn(archive_url, archive_link)
 
     def test_get_state_actions(self):
         """
