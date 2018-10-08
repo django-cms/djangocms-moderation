@@ -174,6 +174,55 @@ class CollectionItemForm(forms.Form):
         return version
 
 
+class CollectionItemsForm(forms.Form):
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    collection = forms.ModelChoiceField(
+        queryset=ModerationCollection.objects.filter(status=COLLECTING),
+        required=True,
+    )
+    versions = forms.ModelMultipleChoiceField(
+        queryset=Version.objects.all(),
+        required=True,
+        widget=forms.MultipleHiddenInput(),
+    )
+
+    def set_collection_widget(self, request):
+        related_modeladmin = admin.site._registry.get(ModerationCollection)
+        dbfield = ModerationRequest._meta.get_field('collection')
+        formfield = self.fields['collection']
+        formfield.widget = RelatedFieldWidgetWrapper(
+            formfield.widget,
+            dbfield.rel,
+            admin_site=admin.site,
+            can_add_related=related_modeladmin.has_add_permission(request),
+            can_change_related=related_modeladmin.has_change_permission(request),
+            can_delete_related=related_modeladmin.has_delete_permission(request),
+        )
+
+    def clean_versions(self):
+        """
+        Process objects which are not part of an active moderation request.
+        Other objects are ignored.
+        """
+        versions = self.cleaned_data['versions']
+
+        eligible_versions = []
+        for version in versions:
+            active_moderation_request = get_active_moderation_request(version.content)
+            if not active_moderation_request and is_obj_version_unlocked(version.content, self.user):
+                eligible_versions.append(version.pk)
+
+        if not eligible_versions:
+            raise forms.ValidationError(_(
+                "All items are locked or are already part of an existing moderation request which is part "
+                "of another active collection"
+            ))
+        return Version.objects.filter(pk__in=eligible_versions)
+
+
 class SubmitCollectionForModerationForm(forms.Form):
     moderator = forms.ModelChoiceField(
         label=_('Select review group'),
@@ -226,6 +275,7 @@ class CollectionCommentForm(forms.ModelForm):
     NB: Hidden fields seems to be the only reliable way to do this;
     readonly fields do not work for add, only for edit.
     """
+
     class Meta:
         model = CollectionComment
         fields = '__all__'
@@ -241,6 +291,7 @@ class RequestCommentForm(forms.ModelForm):
     NB: Hidden fields seems to be the only reliable way to do this;
     readonly fields do not work for add, only for edit.
     """
+
     class Meta:
         model = RequestComment
         fields = '__all__'

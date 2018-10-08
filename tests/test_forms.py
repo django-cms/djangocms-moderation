@@ -3,12 +3,14 @@ import mock
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
 
+from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
 from djangocms_moderation.forms import (
     CancelCollectionForm,
     CollectionItemForm,
+    CollectionItemsForm,
     ModerationRequestActionInlineForm,
     SubmitCollectionForModerationForm,
     UpdateModerationRequestForm,
@@ -197,3 +199,61 @@ class CollectionItemFormTestCase(BaseTestCase):
         mr.save()
         form = CollectionItemForm(data=data, user=version.created_by)
         self.assertTrue(form.is_valid(), form.errors)
+
+
+class CollectionItemsFormTestCase(BaseTestCase):
+    def test_add_items_to_collection(self):
+        pg_version1 = PageVersionFactory(created_by=self.user)
+        pg_version2 = PageVersionFactory(created_by=self.user)
+        ModerationRequest.objects.all().delete()
+        data = {
+            'collection': self.collection1.pk,
+            'versions': [pg_version1, pg_version2],
+        }
+        form = CollectionItemsForm(data=data, user=self.user)
+        self.assertTrue(form.is_valid())
+        versions = form.clean_versions()
+        self.assertQuerysetEqual(
+            versions,
+            Version.objects.filter(pk__in=[pg_version1.pk, pg_version2.pk]),
+            transform=lambda x: x,
+            ordered=False,
+        )
+
+    def test_attempt_add_with_item_already_in_collection(self):
+        pg_version = PageVersionFactory(created_by=self.user)
+        data = {
+            'collection': self.collection1.pk,
+            # pg1_version is part of a collection and will be removed from the form during validation
+            'versions': [self.pg1_version, pg_version],
+        }
+        form = CollectionItemsForm(data=data, user=self.user)
+        self.assertTrue(form.is_valid())
+        versions = form.clean_versions()
+        self.assertQuerysetEqual(
+            versions,
+            Version.objects.filter(pk__in=[pg_version.pk]),
+            transform=lambda x: x,
+            ordered=False,
+        )
+
+    def test_attempt_add_with_all_items_already_in_collection(self):
+        data = {
+            'collection': self.collection1.pk,
+            # both version objects are part of other collections and will be remove from the form during validation
+            'versions': [self.pg1_version, self.pg4_version],
+        }
+        form = CollectionItemsForm(data=data, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn('versions', form.errors)
+
+    def test_attempt_add_version_locked_version(self):
+        pg_version_user2 = PageVersionFactory(created_by=self.user2)
+        data = {
+            'collection': self.collection1.pk,
+            # pg_version_user2 is locked by user2 so it will be removed from the form during validation
+            'versions': [pg_version_user2],
+        }
+        form = CollectionItemsForm(data=data, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn('versions', form.errors)

@@ -1,14 +1,24 @@
+from collections import defaultdict
+
 from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
+from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _, ungettext
 
+from cms.utils.urlutils import add_url_parameters
+
 from django_fsm import TransitionNotAllowed
+from djangocms_versioning.models import Version
 
 from djangocms_moderation import constants
 from djangocms_moderation.emails import (
     notify_collection_author,
     notify_collection_moderators,
 )
+
+from .utils import get_admin_url
 
 
 def resubmit_selected(modeladmin, request, queryset):
@@ -186,7 +196,7 @@ def delete_selected(modeladmin, request, queryset):
     )
 
     post_bulk_actions(request._collection)
-delete_selected.short_description = _('Delete selected')  # noqa: E305
+delete_selected.short_description = _('Remove selected')  # noqa: E305
 
 
 def publish_selected(modeladmin, request, queryset):
@@ -219,6 +229,40 @@ def publish_selected(modeladmin, request, queryset):
 
     post_bulk_actions(request._collection)
 publish_selected.short_description = _("Publish selected requests")  # noqa: E305
+
+
+def haystack_queryset_to_version_queryset(queryset):
+    """Returns the version objects corresponding to the objects in the Haystack queryset"""
+    id_map = defaultdict(list)
+    for obj in queryset:
+        id_map[obj.model].append(obj.pk)
+    q = Q()
+    for obj_model, ids in id_map.items():
+        ctype = ContentType.objects.get_for_model(obj_model)
+        q |= Q(content_type=ctype, object_id__in=ids)
+    return Version.objects.filter(q)
+
+
+def add_items_to_collection(modeladmin, request, queryset):
+    """
+    Action to add queryset to moderation collection. Note that queryset is a
+    Haystack SearchQuerySet
+    """
+    version_ids = haystack_queryset_to_version_queryset(queryset).values_list('pk', flat=True)
+    version_ids = [str(x) for x in version_ids]
+    if version_ids:
+        admin_url = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_items_to_collection',
+                language=request.GET.get('language'),
+                args=()
+            ), version_ids=','.join(version_ids),
+            return_to_url=request.META.get('HTTP_REFERER'))
+        return HttpResponseRedirect(admin_url)
+    else:
+        modeladmin.message_user(request, _("No suitable items found to add to moderation collection"))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+add_items_to_collection.short_description = _("Add to moderation collection")  # noqa: E305
 
 
 def post_bulk_actions(collection):
