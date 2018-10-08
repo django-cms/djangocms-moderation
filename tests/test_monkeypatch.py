@@ -103,11 +103,11 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         )
         self.assertEqual('', link)
 
-    def test_is_object_review_locked(self):
+    def test_is_object_review_unlocked(self):
         """
         Check that the method has been added to the checks framework
         """
         self.assertIn(
-            _is_object_review_locked,
+            _is_object_review_unlocked,
             PlaceholderRelationField.default_checks,
         )

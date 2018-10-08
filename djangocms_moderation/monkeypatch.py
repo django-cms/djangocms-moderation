@@ -72,7 +72,7 @@ def _get_edit_link(func):
     return inner
 
 
-def _is_object_review_locked(placeholder, user):
+def _is_object_review_unlocked(placeholder, user):
     """
     Register review lock with placeholder checks framework to
     prevent users from editing content by directly accessing the URL
