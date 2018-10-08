@@ -87,4 +87,4 @@ VersionAdmin.get_state_actions = get_state_actions(VersionAdmin.get_state_action
 VersionAdmin._get_edit_link = _get_edit_link(VersionAdmin._get_edit_link)
 VersionAdmin._get_moderation_link = _get_moderation_link
 
-fields.PlaceholderRelationField.default_checks += [_is_object_review_locked]
+fields.PlaceholderRelationField.default_checks += [_is_object_review_unlocked]

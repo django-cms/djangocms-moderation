@@ -2,15 +2,19 @@ import mock
 
 from django.contrib import admin
 
+from cms.api import create_page
 from cms.models import PageContent
 from cms.models.fields import PlaceholderRelationField
+from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 from djangocms_versioning import versionables
+from djangocms_versioning.models import Version
 from djangocms_versioning.admin import VersionAdmin
-from djangocms_versioning.constants import PUBLISHED
+from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
-from djangocms_moderation.monkeypatch import _is_object_review_locked
+from djangocms_moderation.monkeypatch import _is_object_review_unlocked
 
 from .utils.base import BaseTestCase, MockRequest
 
@@ -103,11 +107,58 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         )
         self.assertEqual('', link)
 
-    def test_is_object_review_unlocked(self):
+
+class PlaceholderChecksTestCase(BaseTestCase):
+    def setUp(self):
+        versionable = versionables.for_content(PageContent)
+        self.version_admin = VersionAdmin(versionable.version_model_proxy, admin.AdminSite())
+        self.mock_request = MockRequest()
+        self.mock_request.user = self.user
+        super().setUp()
+
+    @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')
+    @mock.patch('djangocms_moderation.monkeypatch.is_obj_review_locked')
+    def test_is_object_review_unlocked(self, mock_is_registered_for_moderation, mock_is_obj_review_locked):
         """
-        Check that the method has been added to the checks framework
+        Check that the method has been added to the checks framework and that the monkeypatch returns expected value
         """
         self.assertIn(
             _is_object_review_unlocked,
             PlaceholderRelationField.default_checks,
         )
+
+        try:
+            # try to get a feature template with fallback
+            template = settings.CMS_TEMPLATES[1][0]
+            if template != 'feature.html':
+                template = settings.CMS_TEMPLATES[0][0]
+        except IndexError:
+            template = settings.CMS_TEMPLATES[0][0]
+
+        lang = settings.LANGUAGES[0][0]
+        page = create_page(title=_('Home'), template=template, language=lang, created_by=self.user,)
+
+        # page = create_page(_('Home'), template, lang, user)
+        page.set_as_homepage()
+
+        # create version
+        v5 = Version.objects.filter_by_grouper(page).filter(state=DRAFT).first()
+        v5.publish(self.user)
+        placeholder = {}
+        placeholder['main'] = v5.content.get_placeholders().get(slot='content')
+
+
+        mock_is_registered_for_moderation.return_value = True
+        mock_is_obj_review_locked.return_value = True
+
+        self.assertFalse(_is_object_review_unlocked(placeholder['main'], self.user))
+
+        mock_is_registered_for_moderation.return_value = True
+        mock_is_obj_review_locked.return_value = False
+
+        self.assertTrue(_is_object_review_unlocked(placeholder['main'], self.user))
+
+        mock_is_registered_for_moderation.return_value = False
+        mock_is_obj_review_locked.return_value = True
+
+        self.assertTrue(_is_object_review_unlocked(placeholder['main'], self.user))
