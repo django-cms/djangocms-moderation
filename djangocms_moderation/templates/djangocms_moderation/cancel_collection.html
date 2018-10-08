@@ -12,6 +12,9 @@
     {% trans "Are you sure you'd like to cancel this collection?" %}
     <div class="submit-row">
         {{ form }}
+        <a class="btn" href="{% url 'admin:djangocms_moderation_moderationrequest_changelist' %}?collection__id__exact={{ collection.id }}">
+            {% trans 'Cancel' %}
+        </a>
         <input type="submit" value="{% trans 'Confirm' %}" class="default" name="_save">
     </div>
 </form>
