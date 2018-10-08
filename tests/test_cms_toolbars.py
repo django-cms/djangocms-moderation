@@ -187,8 +187,8 @@ class TestCMSToolbars(BaseTestCase):
     def test_add_edit_buttons_when_unregistered(self, mock_is_registered_for_moderation):
         mock_is_registered_for_moderation.return_value = False
         ModerationRequest.objects.all().delete()
-        version = PageVersionFactory()
-        toolbar = self._get_toolbar(version.content, preview_mode=True)
+        version = PageVersionFactory(created_by=self.user)
+        toolbar = self._get_toolbar(version.content, preview_mode=True, user=self.user)
         toolbar.populate()
         toolbar.post_template_populate()
 
