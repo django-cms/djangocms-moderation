@@ -3,16 +3,12 @@ import mock
 from django.contrib import admin
 from django.urls import reverse
 
-from cms.api import create_page
 from cms.models import PageContent
 from cms.models.fields import PlaceholderRelationField
-from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
 
 from djangocms_versioning import versionables
-from djangocms_versioning.models import Version
 from djangocms_versioning.admin import VersionAdmin
-from djangocms_versioning.constants import DRAFT, PUBLISHED
+from djangocms_versioning.constants import PUBLISHED
 from djangocms_versioning.test_utils.factories import PageVersionFactory, PlaceholderFactory
 
 from djangocms_moderation.monkeypatch import _is_placeholder_review_unlocked
@@ -167,10 +163,9 @@ class PlaceholderChecksTestCase(BaseTestCase):
 
     def test_function_added_to_checks_framework(self):
         """
-        Check that the method has been added to the checks framework 
+        Check that the method has been added to the checks framework
         """
         self.assertIn(
             _is_placeholder_review_unlocked,
             PlaceholderRelationField.default_checks,
         )
-
