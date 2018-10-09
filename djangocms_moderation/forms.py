@@ -119,12 +119,8 @@ class UpdateModerationRequestForm(forms.Form):
 
 
 class CollectionItemsForm(forms.Form):
-    def __init__(self, user, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user = user
-
     collection = forms.ModelChoiceField(
-        queryset=ModerationCollection.objects.filter(status=COLLECTING),
+        queryset=None,  # Populated in __init__
         required=True,
     )
     versions = forms.ModelMultipleChoiceField(
@@ -132,6 +128,13 @@ class CollectionItemsForm(forms.Form):
         required=True,
         widget=forms.MultipleHiddenInput(),
     )
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        self.fields['collection'].queryset = ModerationCollection.objects.filter(
+            status=COLLECTING, author=user
+        )
 
     def set_collection_widget(self, request):
         related_modeladmin = admin.site._registry.get(ModerationCollection)

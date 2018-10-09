@@ -151,19 +151,19 @@ class ModerationRequestActionInlineFormTest(BaseTestCase):
 
 class CollectionItemsFormTestCase(BaseTestCase):
     def test_add_items_to_collection(self):
-        pg_version1 = PageVersionFactory(created_by=self.user)
-        pg_version2 = PageVersionFactory(created_by=self.user)
+        pg1_version = PageVersionFactory(created_by=self.user)
+        pg2_version = PageVersionFactory(created_by=self.user)
         ModerationRequest.objects.all().delete()
         data = {
             'collection': self.collection1.pk,
-            'versions': [pg_version1, pg_version2],
+            'versions': [pg1_version, pg2_version],
         }
         form = CollectionItemsForm(data=data, user=self.user)
         self.assertTrue(form.is_valid())
         versions = form.clean_versions()
         self.assertQuerysetEqual(
             versions,
-            Version.objects.filter(pk__in=[pg_version1.pk, pg_version2.pk]),
+            Version.objects.filter(pk__in=[pg1_version.pk, pg2_version.pk]),
             transform=lambda x: x,
             ordered=False,
         )
@@ -205,3 +205,46 @@ class CollectionItemsFormTestCase(BaseTestCase):
         form = CollectionItemsForm(data=data, user=self.user)
         self.assertFalse(form.is_valid())
         self.assertIn('versions', form.errors)
+
+    def test_collection_choice_should_be_limited_to_current_user_and_collecting_status(self):
+        user = User.objects.create_superuser(
+            username='matko', email='test@matko.com', password='test',)
+        pg_version = PageVersionFactory(created_by=user)
+
+        # Create valid collection
+        collection1 = ModerationCollection.objects.create(
+            author=user, name='Collection 1', status=constants.COLLECTING, workflow=self.wf1
+        )
+        collection2 = ModerationCollection.objects.create(
+            author=user, name='Collection 2', status=constants.COLLECTING, workflow=self.wf2
+        )
+        # Now invalid collections, either with status in REVIEW, or different author
+        collection3 = ModerationCollection.objects.create(
+            author=user, name='Collection 3', status=constants.IN_REVIEW, workflow=self.wf3
+        )
+        collection4 = ModerationCollection.objects.create(
+            author=self.user3, name='Collection 4', status=constants.COLLECTING, workflow=self.wf4
+        )
+
+        fixtures = (
+            # (collection, should_the_form_be_valid?)
+            (collection1, True),
+            (collection2, True),
+            (collection3, False),
+            (collection4, False),
+        )
+
+        for fixture in fixtures:
+            data = {'collection': fixture[0].pk, 'versions': [pg_version]}
+            form = CollectionItemsForm(data=data, user=user)
+
+            self.assertEqual(form.is_valid(), fixture[1], "{} failed".format(fixture[0]))
+            if not form.is_valid():
+                self.assertIn('collection', form.errors)
+
+        self.assertQuerysetEqual(
+            form.fields['collection'].queryset,
+            ModerationCollection.objects.filter(pk__in=[collection1.pk, collection2.pk]),
+            transform=lambda x: x,
+            ordered=False,
+        )
