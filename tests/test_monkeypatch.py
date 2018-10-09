@@ -12,7 +12,7 @@ from djangocms_versioning import versionables
 from djangocms_versioning.models import Version
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT, PUBLISHED
-from djangocms_versioning.test_utils.factories import PageVersionFactory
+from djangocms_versioning.test_utils.factories import PageVersionFactory, PlaceholderFactory
 
 from djangocms_moderation.monkeypatch import _is_object_review_unlocked
 
@@ -127,38 +127,20 @@ class PlaceholderChecksTestCase(BaseTestCase):
             PlaceholderRelationField.default_checks,
         )
 
-        try:
-            # try to get a feature template with fallback
-            template = settings.CMS_TEMPLATES[1][0]
-            if template != 'feature.html':
-                template = settings.CMS_TEMPLATES[0][0]
-        except IndexError:
-            template = settings.CMS_TEMPLATES[0][0]
-
-        lang = settings.LANGUAGES[0][0]
-        page = create_page(title=_('Home'), template=template, language=lang, created_by=self.user,)
-
-        # page = create_page(_('Home'), template, lang, user)
-        page.set_as_homepage()
-
-        # create version
-        v5 = Version.objects.filter_by_grouper(page).filter(state=DRAFT).first()
-        v5.publish(self.user)
-        placeholder = {}
-        placeholder['main'] = v5.content.get_placeholders().get(slot='content')
-
+        version = PageVersionFactory()
+        placeholder = PlaceholderFactory.create(source=version.content)
 
         mock_is_registered_for_moderation.return_value = True
         mock_is_obj_review_locked.return_value = True
 
-        self.assertFalse(_is_object_review_unlocked(placeholder['main'], self.user))
+        self.assertFalse(_is_object_review_unlocked(placeholder, self.user))
 
         mock_is_registered_for_moderation.return_value = True
         mock_is_obj_review_locked.return_value = False
 
-        self.assertTrue(_is_object_review_unlocked(placeholder['main'], self.user))
+        self.assertTrue(_is_object_review_unlocked(placeholder, self.user))
 
         mock_is_registered_for_moderation.return_value = False
         mock_is_obj_review_locked.return_value = True
 
-        self.assertTrue(_is_object_review_unlocked(placeholder['main'], self.user))
+        self.assertTrue(_is_object_review_unlocked(placeholder, self.user))
