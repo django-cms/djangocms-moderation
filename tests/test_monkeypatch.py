@@ -140,12 +140,6 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
 
 
 class PlaceholderChecksTestCase(BaseTestCase):
-    def setUp(self):
-        versionable = versionables.for_content(PageContent)
-        self.version_admin = VersionAdmin(versionable.version_model_proxy, admin.AdminSite())
-        self.mock_request = MockRequest()
-        self.mock_request.user = self.user
-        super().setUp()
 
     @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')
     @mock.patch('djangocms_moderation.monkeypatch.is_obj_review_locked')
