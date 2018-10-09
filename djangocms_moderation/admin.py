@@ -381,8 +381,17 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
 
 class RequestCommentAdmin(admin.ModelAdmin):
-    list_display = ['message', 'get_request_link', 'author', 'date_created']
+    list_display = ['date_created', 'message', 'get_author']
     fields = ['moderation_request', 'message', 'author']
+
+    class Media:
+        css = {
+            'all': ('djangocms_moderation/css/comments_changelist.css',)
+        }
+
+    def get_author(self, obj):
+        return obj.author_name
+    get_author.short_description = _('Author')
 
     def get_changeform_initial_data(self, request):
         data = {
@@ -394,18 +403,6 @@ class RequestCommentAdmin(admin.ModelAdmin):
         if moderation_request_id:
             data['moderation_request'] = moderation_request_id
         return data
-
-    def get_request_link(self, obj):
-        opts = ModerationRequest._meta
-        url = reverse(
-            'admin:{}_{}_change'.format(opts.app_label, opts.model_name),
-            args=[obj.moderation_request.pk],
-        )
-        return format_html(
-            '<a href="{}">{}</a>',
-            url,
-            _('View')
-        )
 
     def get_form(self, request, obj=None, **kwargs):
         return RequestCommentForm
@@ -450,14 +447,14 @@ class RequestCommentAdmin(admin.ModelAdmin):
                 raise Http404
             if request.user != request_comment.author:
                 extra_context['readonly'] = True
-
         # for breadcrumb trail
         moderation_request_id = utils.extract_filter_param_from_changelist_url(
             request, '_changelist_filters', 'moderation_request__id__exact'
         )
         if moderation_request_id:
             extra_context['moderation_request_id'] = moderation_request_id
-
+            mr = ModerationRequest.objects.get(pk=int(moderation_request_id))
+            extra_context['collection_id'] = mr.collection.id
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_delete_permission(self, request, obj=None):
@@ -594,6 +591,11 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
                 r'^item/add-item/$',
                 views.add_item_to_collection,
                 name='cms_moderation_item_to_collection',
+            ),
+            _url(
+                r'^item/add-items/$',
+                views.add_items_to_collection,
+                name='cms_moderation_items_to_collection',
             )
         ]
         return url_patterns + super().get_urls()
