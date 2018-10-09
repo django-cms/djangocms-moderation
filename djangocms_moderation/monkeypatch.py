@@ -86,7 +86,7 @@ def _get_archive_link(func):
     return inner
 
 
-def _is_object_review_unlocked(placeholder, user):
+def _is_placeholder_review_unlocked(placeholder, user):
     """
     Register review lock with placeholder checks framework to
     prevent users from editing content by directly accessing the URL
@@ -102,4 +102,4 @@ VersionAdmin._get_edit_link = _get_edit_link(VersionAdmin._get_edit_link)
 VersionAdmin._get_archive_link = _get_archive_link(VersionAdmin._get_archive_link)
 VersionAdmin._get_moderation_link = _get_moderation_link
 
-fields.PlaceholderRelationField.default_checks += [_is_object_review_unlocked]
+fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]

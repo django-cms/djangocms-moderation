@@ -15,7 +15,7 @@ from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.test_utils.factories import PageVersionFactory, PlaceholderFactory
 
-from djangocms_moderation.monkeypatch import _is_object_review_unlocked
+from djangocms_moderation.monkeypatch import _is_placeholder_review_unlocked
 
 from .utils.base import BaseTestCase, MockRequest
 
@@ -143,7 +143,7 @@ class PlaceholderChecksTestCase(BaseTestCase):
 
     @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')
     @mock.patch('djangocms_moderation.monkeypatch.is_obj_review_locked')
-    def test_is_object_review_unlocked(self, mock_is_registered_for_moderation, mock_is_obj_review_locked):
+    def test_is_placeholder_review_unlocked(self, mock_is_registered_for_moderation, mock_is_obj_review_locked):
         """
         Check that the monkeypatch returns expected value
         """
@@ -153,24 +153,24 @@ class PlaceholderChecksTestCase(BaseTestCase):
         mock_is_registered_for_moderation.return_value = True
         mock_is_obj_review_locked.return_value = True
 
-        self.assertFalse(_is_object_review_unlocked(placeholder, self.user))
+        self.assertFalse(_is_placeholder_review_unlocked(placeholder, self.user))
 
         mock_is_registered_for_moderation.return_value = True
         mock_is_obj_review_locked.return_value = False
 
-        self.assertTrue(_is_object_review_unlocked(placeholder, self.user))
+        self.assertTrue(_is_placeholder_review_unlocked(placeholder, self.user))
 
         mock_is_registered_for_moderation.return_value = False
         mock_is_obj_review_locked.return_value = True
 
-        self.assertTrue(_is_object_review_unlocked(placeholder, self.user))
+        self.assertTrue(_is_placeholder_review_unlocked(placeholder, self.user))
 
     def test_function_added_to_checks_framework(self):
         """
         Check that the method has been added to the checks framework 
         """
         self.assertIn(
-            _is_object_review_unlocked,
+            _is_placeholder_review_unlocked,
             PlaceholderRelationField.default_checks,
         )
 
