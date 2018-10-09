@@ -68,7 +68,7 @@ class ModerationRequestActionInline(admin.TabularInline):
     show_user.short_description = _('Status')
 
     def form_submission(self, obj):
-        instance = get_form_submission_for_step(obj.request, obj.step_approved)
+        instance = get_form_submission_for_step(obj.moderation_request, obj.step_approved)
 
         if not instance:
             return ''
@@ -658,7 +658,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
         )
 
     def moderation_request(self, obj):
-        return obj.request_id
+        return obj.moderation_request_id
     moderation_request.short_description = _('Request')
 
     def show_user(self, obj):
