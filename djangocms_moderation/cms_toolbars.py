@@ -15,6 +15,7 @@ from .helpers import (
 )
 from .utils import get_admin_url
 
+MODERATION_MENU_IDENTIFIER = 'moderation'
 
 class ModerationToolbar(VersioningToolbar):
     class Media:
@@ -93,9 +94,21 @@ class ModerationToolbar(VersioningToolbar):
                     side=self.toolbar.RIGHT,
                 )
 
+    def _add_moderation_menu(self):
+        """ Helper method to add moderation menu in the toolbar
+        """
+        if not is_registered_for_moderation(self.toolbar.obj):
+            return
+
+        moderation_menu = self.toolbar.get_or_create_menu(
+            MODERATION_MENU_IDENTIFIER, _('Moderation'), disabled=False)
+        url = '#'
+        moderation_menu.add_sideframe_item(_('Manage Collection'), url=url)
+
     def post_template_populate(self):
         super().post_template_populate()
         self._add_moderation_buttons()
+        self._add_moderation_menu()
 
 
 toolbar_pool.unregister(VersioningToolbar)
