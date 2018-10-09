@@ -31,18 +31,19 @@ class CollectionItemsView(FormView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
         ids = self.request.GET.get('version_ids', '').split(',')
         ids = [int(x) for x in ids if x.isdigit()]
         versions = Version.objects.filter(pk__in=ids)
+        initial['versions'] = versions
 
-        kwargs['initial'].update({
-            'versions': versions,
-        })
         collection_id = self.request.GET.get('collection_id')
-
         if collection_id:
-            kwargs['initial']['collection'] = collection_id
-        return kwargs
+            initial['collection'] = collection_id
+        return initial
 
     def form_valid(self, form):
         versions = form.cleaned_data['versions']
@@ -90,8 +91,8 @@ class CollectionItemsView(FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
-        collection_id = self.request.GET.get('collection_id')
 
+        collection_id = self.request.GET.get('collection_id')
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
@@ -106,8 +107,8 @@ class CollectionItemsView(FormView):
         context.update({
             'moderation_request_list': moderation_request_list,
             'opts': opts_meta,
-            'title': _('Add to collection'),
             'form': self.get_form(),
+            'collection_id': collection_id,
             'media': model_admin.media,
         })
         return context

@@ -169,7 +169,7 @@ class CollectionItemsForm(forms.Form):
         if not eligible_versions:
             raise forms.ValidationError(
                 ungettext(
-                    "Your item( is either locked, not enabled for moderation,"
+                    "Your item is either locked, not enabled for moderation,"
                     "or is part of another active moderation request",
                     "Your items are either locked, not enabled for moderation,"
                     "or are part of another active moderation request",

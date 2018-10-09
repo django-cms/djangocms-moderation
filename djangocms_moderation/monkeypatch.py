@@ -2,10 +2,10 @@ from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
-from djangocms_versioning.helpers import version_list_url
 
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT
+from djangocms_versioning.helpers import version_list_url
 
 from .helpers import (
     get_active_moderation_request,
