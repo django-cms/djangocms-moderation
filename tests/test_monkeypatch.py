@@ -145,13 +145,8 @@ class PlaceholderChecksTestCase(BaseTestCase):
     @mock.patch('djangocms_moderation.monkeypatch.is_obj_review_locked')
     def test_is_object_review_unlocked(self, mock_is_registered_for_moderation, mock_is_obj_review_locked):
         """
-        Check that the method has been added to the checks framework and that the monkeypatch returns expected value
+        Check that the monkeypatch returns expected value
         """
-        self.assertIn(
-            _is_object_review_unlocked,
-            PlaceholderRelationField.default_checks,
-        )
-
         version = PageVersionFactory()
         placeholder = PlaceholderFactory.create(source=version.content)
 
@@ -169,3 +164,13 @@ class PlaceholderChecksTestCase(BaseTestCase):
         mock_is_obj_review_locked.return_value = True
 
         self.assertTrue(_is_object_review_unlocked(placeholder, self.user))
+
+    def test_function_added_to_checks_framework(self):
+        """
+        Check that the method has been added to the checks framework 
+        """
+        self.assertIn(
+            _is_object_review_unlocked,
+            PlaceholderRelationField.default_checks,
+        )
+
