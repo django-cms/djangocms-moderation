@@ -427,7 +427,7 @@ class ConfirmationPageTest(BaseTestCase):
 
     def test_is_valid_returns_true_when_form_submission_exists(self):
         ConfirmationFormSubmission.objects.create(
-            request=self.moderation_request1,
+            moderation_request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
             data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
@@ -452,7 +452,7 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
 
     def test_get_by_user_name(self):
         cfs = ConfirmationFormSubmission.objects.create(
-            request=self.moderation_request1,
+            moderation_request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
             data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
@@ -556,7 +556,7 @@ class ModerationCollectionTest(BaseTestCase):
 
         self.assertFalse(
             ModerationRequestAction.objects.filter(
-                request__collection=self.collection1
+                moderation_request__collection=self.collection1
             ).exists()
         )
 
@@ -572,7 +572,7 @@ class ModerationCollectionTest(BaseTestCase):
         # We will now have 2 actions with status STARTED.
         self.assertEqual(
             2, ModerationRequestAction.objects.filter(
-                request__collection=self.collection1, action=constants.ACTION_STARTED
+                moderation_request__collection=self.collection1, action=constants.ACTION_STARTED
             ).count()
         )
 
@@ -600,7 +600,7 @@ class ModerationCollectionTest(BaseTestCase):
 
         # Only 1 active request will be cancelled
         actions = ModerationRequestAction.objects.filter(
-            request__collection=self.collection1, action=constants.ACTION_CANCELLED
+            moderation_request__collection=self.collection1, action=constants.ACTION_CANCELLED
         )
         self.assertEqual(1, actions.count())
-        self.assertEqual(actions[0].request, active_request)
+        self.assertEqual(actions[0].moderation_request, active_request)

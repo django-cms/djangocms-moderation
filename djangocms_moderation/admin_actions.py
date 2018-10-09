@@ -75,6 +75,8 @@ def reject_selected(modeladmin, request, queryset):
             )
 
     # Now we need to notify collection reviewers and moderator. TODO task queue?
+    # request._collection is passed down from change_list from admin.py
+    # https://github.com/divio/djangocms-moderation/pull/46#discussion_r211569629
     if rejected_requests:
         notify_collection_author(
             collection=request._collection,
@@ -136,6 +138,8 @@ def approve_selected(modeladmin, request, queryset):
 
     if approved_requests:  # TODO task queue?
         # Lets notify the collection author about the approval
+        # request._collection is passed down from change_list from admin.py
+        # https://github.com/divio/djangocms-moderation/pull/46#discussion_r211569629
         notify_collection_author(
             collection=request._collection,
             moderation_requests=approved_requests,
