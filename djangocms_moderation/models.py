@@ -659,6 +659,10 @@ class AbstractComment(models.Model):
     class Meta:
         abstract = True
 
+    @property
+    def author_name(self):
+        return self.author.get_full_name() or self.author.get_username()
+
 
 class CollectionComment(AbstractComment):
     collection = models.ForeignKey(
