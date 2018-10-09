@@ -1,6 +1,6 @@
 {% extends "admin/change_form.html" %}
-{% load i18n %}
-{% load static %}
+{% load i18n static %}
+
 {% block content %}
 <form action="{{ request.get_full_path }}" method="post">
 {% csrf_token %}
