@@ -148,8 +148,8 @@ class CollectionItemsViewTest(BaseViewTestCase):
         mr1 = ModerationRequest.objects.get(version=pg1_version, collection=collection1)
         mr2 = ModerationRequest.objects.get(version=pg2_version, collection=collection2)
         # mr1 is in the list as it belongs to collection1
-        self.assertIn(mr1, response.context_data['moderation_request_list'])
-        self.assertNotIn(mr2, response.context_data['moderation_request_list'])
+        self.assertIn(mr1, response.context_data['moderation_requests'])
+        self.assertNotIn(mr2, response.context_data['moderation_requests'])
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):

@@ -99,13 +99,13 @@ class CollectionItemsView(FormView):
             except (ValueError, ModerationCollection.DoesNotExist, TypeError):
                 raise Http404
             else:
-                moderation_request_list = collection.moderation_requests.all()
+                moderation_requests = collection.moderation_requests.all()
         else:
-            moderation_request_list = []
+            moderation_requests = []
 
         model_admin = admin.site._registry[ModerationCollection]
         context.update({
-            'moderation_request_list': moderation_request_list,
+            'moderation_requests': moderation_requests,
             'opts': opts_meta,
             'form': self.get_form(),
             'collection_id': collection_id,
