@@ -3,27 +3,13 @@ from django.contrib.contenttypes.models import ContentType
 
 from djangocms_versioning.models import Version
 
-from .models import ConfirmationFormSubmission, Workflow
+from .models import ConfirmationFormSubmission
 
 
 try:
     from djangocms_version_locking.helpers import content_is_unlocked_for_user
 except ImportError:
     content_is_unlocked_for_user = None
-
-
-def get_default_workflow():
-    try:
-        workflow = Workflow.objects.get(is_default=True)
-    except Workflow.DoesNotExist:
-        workflow = None
-    return workflow
-
-
-def get_moderation_workflow():
-    # TODO for now just return default, this would need to depend on the collection
-    # Might be as well not needed in 1.0.x, leaving it here for now
-    return get_default_workflow()
 
 
 def get_page_or_404(obj_id, language):

@@ -4,11 +4,17 @@ from django.contrib import admin
 from django.urls import reverse
 
 from cms.models import PageContent
+from cms.models.fields import PlaceholderRelationField
 
 from djangocms_versioning import versionables
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import PUBLISHED
-from djangocms_versioning.test_utils.factories import PageVersionFactory
+from djangocms_versioning.test_utils.factories import (
+    PageVersionFactory,
+    PlaceholderFactory,
+)
+
+from djangocms_moderation.monkeypatch import _is_placeholder_review_unlocked
 
 from .utils.base import BaseTestCase, MockRequest
 
@@ -58,14 +64,15 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         """
         VersionAdmin should call moderation's version of _get_archive_link
         """
+        version = PageVersionFactory(created_by=self.user)
         archive_url = reverse('admin:{app}_{model}version_archive'.format(
-            app=self.pg1_version._meta.app_label,
-            model=self.pg1_version.content._meta.model_name,
-        ), args=(self.pg1_version.pk,))
+            app=version._meta.app_label,
+            model=version.content._meta.model_name,
+        ), args=(version.pk,))
 
         _mock.return_value = True
         archive_link = self.version_admin._get_archive_link(
-            self.pg1_version, self.mock_request
+            version, self.mock_request
         )
         # We test that moderation check is called when getting an edit link
         self.assertEqual(1, _mock.call_count)
@@ -75,7 +82,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
 
         _mock.return_value = None
         archive_link = self.version_admin._get_archive_link(
-            self.pg1_version, self.mock_request
+            version, self.mock_request
         )
         # We test that moderation check is called when getting the link
         self.assertEqual(2, _mock.call_count)
@@ -130,3 +137,39 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
             self.pg1_version, self.mock_request
         )
         self.assertEqual('', link)
+
+
+class PlaceholderChecksTestCase(BaseTestCase):
+
+    @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')
+    @mock.patch('djangocms_moderation.monkeypatch.is_obj_review_locked')
+    def test_is_placeholder_review_unlocked(self, mock_is_registered_for_moderation, mock_is_obj_review_locked):
+        """
+        Check that the monkeypatch returns expected value
+        """
+        version = PageVersionFactory()
+        placeholder = PlaceholderFactory.create(source=version.content)
+
+        mock_is_registered_for_moderation.return_value = True
+        mock_is_obj_review_locked.return_value = True
+
+        self.assertFalse(_is_placeholder_review_unlocked(placeholder, self.user))
+
+        mock_is_registered_for_moderation.return_value = True
+        mock_is_obj_review_locked.return_value = False
+
+        self.assertTrue(_is_placeholder_review_unlocked(placeholder, self.user))
+
+        mock_is_registered_for_moderation.return_value = False
+        mock_is_obj_review_locked.return_value = True
+
+        self.assertTrue(_is_placeholder_review_unlocked(placeholder, self.user))
+
+    def test_function_added_to_checks_framework(self):
+        """
+        Check that the method has been added to the checks framework
+        """
+        self.assertIn(
+            _is_placeholder_review_unlocked,
+            PlaceholderRelationField.default_checks,
+        )
