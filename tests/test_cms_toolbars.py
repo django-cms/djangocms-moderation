@@ -65,6 +65,16 @@ class TestCMSToolbars(BaseTestCase):
         found = self._find_buttons(button_name, toolbar)
         return bool(len(found))
 
+    def _find_menu(self, name, toolbar):
+        for item in toolbar.get_left_items():
+            if item.name == name:
+                return item
+
+    def _find_menu_item(self, name, menu):
+        for item in menu.items:
+            if item.name == name:
+                return item
+
     def test_submit_for_moderation_not_version_locked(self):
         ModerationRequest.objects.all().delete()
         version = PageVersionFactory(created_by=self.user)
@@ -188,3 +198,18 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
 
         self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
+
+    @mock.patch('djangocms_moderation.cms_toolbars.is_registered_for_moderation')
+    def test_add_manage_collection_item_to_moderation_menu(self, mock_is_registered_for_moderation):
+        mock_is_registered_for_moderation.return_value = True
+
+        version = PageVersionFactory(created_by=self.user)
+        toolbar = self._get_toolbar(version.content, preview_mode=True, user=self.user)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        moderation_menu = self._find_menu('Moderation', toolbar.toolbar)
+        manage_collection_item = self._find_menu_item('Manage Collection...', moderation_menu)
+        self.assertEqual('Moderation', moderation_menu.name)
+        self.assertEquals('Manage Collection...', manage_collection_item.name)
+        self.assertTrue(manage_collection_item.url.endswith('moderationcollection/?author__id__exact=%s' % self.user.pk))
