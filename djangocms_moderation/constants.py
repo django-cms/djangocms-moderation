@@ -56,5 +56,3 @@ STATUS_CHOICES = (
     (CANCELLED, _('Cancelled')),
 )
 
-# for moderation toolbar
-MODERATION_MENU_IDENTIFIER = 'moderation'

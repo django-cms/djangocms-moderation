@@ -3,11 +3,11 @@ from django.utils.translation import ugettext_lazy as _
 
 from cms.toolbar_pool import toolbar_pool
 from cms.utils.urlutils import add_url_parameters
+from cms.cms_toolbars import ADMIN_MENU_IDENTIFIER
 
 from djangocms_versioning.cms_toolbars import VersioningToolbar
 from djangocms_versioning.models import Version
 
-from .constants import MODERATION_MENU_IDENTIFIER
 from .helpers import (
     get_active_moderation_request,
     is_obj_review_locked,
@@ -96,13 +96,16 @@ class ModerationToolbar(VersioningToolbar):
         """
         Helper method to add moderation menu in the toolbar
         """
-        moderation_menu = self.toolbar.get_or_create_menu(
-            MODERATION_MENU_IDENTIFIER, _('Moderation'), disabled=False)
+        admin_menu = self.toolbar.get_or_create_menu(ADMIN_MENU_IDENTIFIER)
         url = get_admin_url('djangocms_moderation_moderationcollection_changelist',
                             language=self.current_lang,
                             args=())
         url += '?author__id__exact=%s' % self.request.user.id
-        moderation_menu.add_sideframe_item(_('Manage Collections'), url=url)
+        admin_menu.add_link_item(
+            _('Manage Collections'),
+            url=url,
+            position=3
+        )
 
     def post_template_populate(self):
         super().post_template_populate()
