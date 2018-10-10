@@ -9,7 +9,10 @@ from cms.models.fields import PlaceholderRelationField
 from djangocms_versioning import versionables
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import PUBLISHED
-from djangocms_versioning.test_utils.factories import PageVersionFactory, PlaceholderFactory
+from djangocms_versioning.test_utils.factories import (
+    PageVersionFactory,
+    PlaceholderFactory,
+)
 
 from djangocms_moderation.monkeypatch import _is_placeholder_review_unlocked
 
