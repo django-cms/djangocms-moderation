@@ -83,7 +83,6 @@ class ModerationToolbar(VersioningToolbar):
                         args=()
                     ),
                     version_ids=version.pk,
-                    # Indicate to the view that we opened the view as a modal
                 )
 
                 self.toolbar.add_modal_button(

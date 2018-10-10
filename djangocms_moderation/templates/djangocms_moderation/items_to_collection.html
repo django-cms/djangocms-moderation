@@ -2,16 +2,20 @@
 {% load i18n static %}
 
 {% block content %}
-<form action="{{ request.get_full_path }}" method="post">
+<form action="" method="post">
 {% csrf_token %}
 <div>
     <h2>
-        {% if form.initial.versions|length > 1 %}
-           {% trans "Add items to collection" %}
+        {% if form.initial.versions %}
+            {% if form.initial.versions|length > 1 %}
+               {% trans "Add items to collection" %}
+            {% else %}
+                {% blocktrans with form.initial.versions.0.content as content_name %}
+                   Add '{{ content_name }}' to collection
+                {% endblocktrans %}
+            {% endif %}
         {% else %}
-            {% blocktrans with form.initial.versions.0.content as content_name %}
-               Add '{{ content_name }}' to collection
-            {% endblocktrans %}
+            {% trans 'No items to add' %}
         {% endif %}
     </h2>
     {% if form.non_field_errors %}
@@ -44,14 +48,14 @@
                 </tr>
             </thead>
             <tbody>
-            {% for mrl in moderation_request_list %}
+            {% for mr in moderation_requests %}
                 <tr class="row1 djangocms_moderation_collections_1">
-                    <td>{{ mrl.version.content_type|title }}</td>
-                    <td>{{ mrl.version.content }}</td>
-                    <td>{{ mrl.version.created_by }}</td>
-                    <td>{{ mrl.version.created }}</td>
-                    <td>{{ mrl.version.number }}</td>
-                    <td>{{ mrl.version.get_state_display }} </td>
+                    <td>{{ mr.version.content_type|title }}</td>
+                    <td>{{ mr.version.content }}</td>
+                    <td>{{ mr.version.created_by }}</td>
+                    <td>{{ mr.version.created }}</td>
+                    <td>{{ mr.version.number }}</td>
+                    <td>{{ mr.version.get_state_display }} </td>
                 </tr>
             {% endfor %}
             </tbody>
