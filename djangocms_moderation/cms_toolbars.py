@@ -7,6 +7,7 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_versioning.cms_toolbars import VersioningToolbar
 from djangocms_versioning.models import Version
 
+from .constants import MODERATION_MENU_IDENTIFIER
 from .helpers import (
     get_active_moderation_request,
     is_obj_review_locked,
@@ -14,7 +15,6 @@ from .helpers import (
     is_registered_for_moderation,
 )
 from .utils import get_admin_url
-from .constants import MODERATION_MENU_IDENTIFIER
 
 
 class ModerationToolbar(VersioningToolbar):
