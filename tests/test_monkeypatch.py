@@ -58,14 +58,15 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         """
         VersionAdmin should call moderation's version of _get_archive_link
         """
+        version = PageVersionFactory(created_by=self.user)
         archive_url = reverse('admin:{app}_{model}version_archive'.format(
-            app=self.pg1_version._meta.app_label,
-            model=self.pg1_version.content._meta.model_name,
-        ), args=(self.pg1_version.pk,))
+            app=version._meta.app_label,
+            model=version.content._meta.model_name,
+        ), args=(version.pk,))
 
         _mock.return_value = True
         archive_link = self.version_admin._get_archive_link(
-            self.pg1_version, self.mock_request
+            version, self.mock_request
         )
         # We test that moderation check is called when getting an edit link
         self.assertEqual(1, _mock.call_count)
@@ -75,7 +76,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
 
         _mock.return_value = None
         archive_link = self.version_admin._get_archive_link(
-            self.pg1_version, self.mock_request
+            version, self.mock_request
         )
         # We test that moderation check is called when getting the link
         self.assertEqual(2, _mock.call_count)
