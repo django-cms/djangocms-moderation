@@ -201,7 +201,6 @@ class TestCMSToolbars(BaseTestCase):
         self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
 
     def test_add_manage_collection_item_to_moderation_menu(self):
-
         version = PageVersionFactory(created_by=self.user)
         toolbar = self._get_toolbar(version.content, preview_mode=True, user=self.user)
         toolbar.populate()
