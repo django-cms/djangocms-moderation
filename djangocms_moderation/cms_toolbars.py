@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from cms.toolbar_pool import toolbar_pool
 from cms.utils.urlutils import add_url_parameters
 
+from djangocms_moderation.constants import COLLECTING
 from djangocms_versioning.cms_toolbars import VersioningToolbar
 from djangocms_versioning.models import Version
 
@@ -65,12 +67,23 @@ class ModerationToolbar(VersioningToolbar):
         if self._is_versioned() and self.toolbar.edit_mode_active:
             moderation_request = get_active_moderation_request(self.toolbar.obj)
             if moderation_request:
-                self.toolbar.add_modal_button(
-                    name=_('In Moderation "%(collection_name)s"') % {
-                        'collection_name': moderation_request.collection.name
-                    },
-                    url='#',
-                    disabled=True,
+                if moderation_request.collection.status == COLLECTING:
+                    button_title = _('In collection "%(collection_name)s (%(collection_id)s)"') % {
+                        'collection_name': moderation_request.collection.name,
+                        'collection_id': moderation_request.collection.id
+                    }
+                else:
+                    button_title = _('In moderation "%(collection_name)s (%(collection_id)s)"') % {
+                        'collection_name': moderation_request.collection.name,
+                        'collection_id': moderation_request.collection.id
+                    }
+                url = "{}?collection__id__exact={}".format(
+                    reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+                    moderation_request.collection.id
+                )
+                self.toolbar.add_sideframe_button(
+                    name=button_title,
+                    url=url,
                     side=self.toolbar.RIGHT,
                 )
             # Check if the object is not version locked to someone else
