@@ -72,6 +72,7 @@ class TestCMSToolbars(BaseTestCase):
                 return item
 
     def _find_menu_item(self, name, menu):
+        name += '...'  # always added to menu items
         for item in menu.items:
             if item.name == name:
                 return item
@@ -207,10 +208,10 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
 
         moderation_menu = self._find_menu('Moderation', toolbar.toolbar)
-        manage_collection_item = self._find_menu_item('Manage Collections...', moderation_menu)
+        self.assertNotEqual(None, moderation_menu)
 
-        self.assertEqual('Moderation', moderation_menu.name)
-        self.assertEquals('Manage Collections...', manage_collection_item.name)
+        manage_collection_item = self._find_menu_item('Manage Collections', moderation_menu)
+        self.assertNotEqual(None, manage_collection_item)
 
         collection_list_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
         collection_list_url += "?author__id__exact=%s" % self.user.pk
