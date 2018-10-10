@@ -102,7 +102,7 @@ class ModerationToolbar(VersioningToolbar):
                             args=())
         url += '?author__id__exact=%s' % self.request.user.id
         admin_menu.add_link_item(
-            _('Manage Collections'),
+            _('Moderation collections'),
             url=url,
             position=3
         )
