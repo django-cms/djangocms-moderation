@@ -5,8 +5,7 @@ from django.contrib import admin
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
 from django.forms.forms import NON_FIELD_ERRORS
-from django.utils.translation import ugettext, ungettext, ugettext_lazy as _
-
+from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
 
 from adminsortable2.admin import CustomInlineFormSet
 from djangocms_versioning.models import Version
