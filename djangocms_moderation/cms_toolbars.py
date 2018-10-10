@@ -14,8 +14,8 @@ from .helpers import (
     is_registered_for_moderation,
 )
 from .utils import get_admin_url
+from .constants import MODERATION_MENU_IDENTIFIER
 
-MODERATION_MENU_IDENTIFIER = 'moderation'
 
 class ModerationToolbar(VersioningToolbar):
     class Media:
@@ -95,18 +95,16 @@ class ModerationToolbar(VersioningToolbar):
                 )
 
     def _add_moderation_menu(self):
-        """ Helper method to add moderation menu in the toolbar
         """
-        if not is_registered_for_moderation(self.toolbar.obj):
-            return
-
+        Helper method to add moderation menu in the toolbar
+        """
         moderation_menu = self.toolbar.get_or_create_menu(
             MODERATION_MENU_IDENTIFIER, _('Moderation'), disabled=False)
         url = get_admin_url('djangocms_moderation_moderationcollection_changelist',
                             language=self.current_lang,
                             args=())
         url += '?author__id__exact=%s' % self.request.user.id
-        moderation_menu.add_sideframe_item(_('Manage Collection'), url=url)
+        moderation_menu.add_sideframe_item(_('Manage Collections'), url=url)
 
     def post_template_populate(self):
         super().post_template_populate()

@@ -43,7 +43,7 @@ ACTION_CHOICES = (
 CONTENT_TYPE_PLAIN = 'plain'
 CONTENT_TYPE_FORM = 'form'
 
-# masks for Collectoin STATUS
+# masks for Collection STATUS
 COLLECTING = 'COLLECTING'
 IN_REVIEW = 'IN_REVIEW'
 ARCHIVED = 'ARCHIVED'
@@ -55,3 +55,6 @@ STATUS_CHOICES = (
     (ARCHIVED, _('Archived')),
     (CANCELLED, _('Cancelled')),
 )
+
+# for moderation toolbar
+MODERATION_MENU_IDENTIFIER = 'moderation'
