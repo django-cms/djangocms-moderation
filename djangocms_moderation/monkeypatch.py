@@ -1,10 +1,12 @@
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
+from cms.models import fields
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT
+from djangocms_versioning.helpers import version_list_url
 
 from .helpers import (
     get_active_moderation_request,
@@ -44,11 +46,12 @@ def _get_moderation_link(self, version, request):
     elif is_obj_version_unlocked(content_object, request.user):
         url = add_url_parameters(
             get_admin_url(
-                name='cms_moderation_item_to_collection',
+                name='cms_moderation_items_to_collection',
                 language='en',
                 args=()
             ),
-            version_id=version.pk
+            version_ids=version.pk,
+            return_to_url=version_list_url(version.content)
         )
         # TODO use a fancy icon as for the rest of the actions?
         return format_html(
@@ -85,7 +88,20 @@ def _get_archive_link(func):
     return inner
 
 
+def _is_placeholder_review_unlocked(placeholder, user):
+    """
+    Register review lock with placeholder checks framework to
+    prevent users from editing content by directly accessing the URL
+    """
+    if is_registered_for_moderation(placeholder.source):
+        if is_obj_review_locked(placeholder.source, user):
+            return False
+    return True
+
+
 VersionAdmin.get_state_actions = get_state_actions(VersionAdmin.get_state_actions)
 VersionAdmin._get_edit_link = _get_edit_link(VersionAdmin._get_edit_link)
 VersionAdmin._get_archive_link = _get_archive_link(VersionAdmin._get_archive_link)
 VersionAdmin._get_moderation_link = _get_moderation_link
+
+fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]

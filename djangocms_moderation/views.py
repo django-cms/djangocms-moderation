@@ -10,12 +10,10 @@ from django.views.generic import FormView
 
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_versioning.helpers import version_list_url
 from djangocms_versioning.models import Version
 
 from .forms import (
     CancelCollectionForm,
-    CollectionItemForm,
     CollectionItemsForm,
     SubmitCollectionForModerationForm,
 )
@@ -26,108 +24,26 @@ from .utils import get_admin_url
 from . import constants  # isort:skip
 
 
-class CollectionItemView(FormView):
-    template_name = 'djangocms_moderation/item_to_collection.html'
-    form_class = CollectionItemForm
-    success_template_name = 'djangocms_moderation/request_finalized.html'
-
-    def get_form_kwargs(self):
-        kwargs = super(CollectionItemView, self).get_form_kwargs()
-        kwargs['user'] = self.request.user
-        kwargs['initial'].update({
-            'version': self.request.GET.get('version_id'),
-        })
-        collection_id = self.request.GET.get('collection_id')
-
-        if collection_id:
-            kwargs['initial']['collection'] = collection_id
-        return kwargs
-
-    def form_valid(self, form):
-        version = form.cleaned_data['version']
-        collection = form.cleaned_data['collection']
-        collection.add_version(version)
-        messages.success(self.request, _('Item successfully added to moderation collection'))
-
-        # Return different response if we opened the view as a modal
-        if self.request.GET.get('_modal'):
-            return render(self.request, self.success_template_name, {})
-        else:
-            # Otherwise redirect to the grouper changelist as this is likely
-            # the place this view was called from
-            return HttpResponseRedirect(version_list_url(version.content))
-
-    def get_form(self, **kwargs):
-        form = super().get_form(**kwargs)
-        form.set_collection_widget(self.request)
-        return form
-
-    def get_context_data(self, **kwargs):
-        """
-        Gets collection_id from params or from the first collection in the list
-        when no ?collection_id is not supplied
-
-        Always gets content_object_list from a collection at a time
-        """
-        context = super().get_context_data(**kwargs)
-        opts_meta = ModerationCollection._meta
-        collection_id = self.request.GET.get('collection_id')
-        version_id = self.request.GET.get('version_id')
-
-        if collection_id:
-            try:
-                collection = ModerationCollection.objects.get(pk=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
-                raise Http404
-            else:
-                moderation_request_list = collection.moderation_requests.all()
-        else:
-            moderation_request_list = []
-
-        if version_id:
-            try:
-                version = Version.objects.get(pk=int(version_id))
-            except (ValueError, Version.DoesNotExist):
-                raise Http404
-        else:
-            version = None
-
-        model_admin = admin.site._registry[ModerationCollection]
-        context.update({
-            'moderation_request_list': moderation_request_list,
-            'opts': opts_meta,
-            'title': _('Add to collection'),
-            'form': self.get_form(),
-            'version': version,
-            'media': model_admin.media,
-        })
-
-        return context
-
-
-add_item_to_collection = CollectionItemView.as_view()
-
-
 class CollectionItemsView(FormView):
     template_name = 'djangocms_moderation/items_to_collection.html'
     form_class = CollectionItemsForm
-    success_template_name = 'djangocms_moderation/request_finalized.html'
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
         ids = self.request.GET.get('version_ids', '').split(',')
         ids = [int(x) for x in ids if x.isdigit()]
         versions = Version.objects.filter(pk__in=ids)
+        initial['versions'] = versions
 
-        kwargs['initial'].update({
-            'versions': versions,
-        })
         collection_id = self.request.GET.get('collection_id')
-
         if collection_id:
-            kwargs['initial']['collection'] = collection_id
-        return kwargs
+            initial['collection'] = collection_id
+        return initial
 
     def form_valid(self, form):
         versions = form.cleaned_data['versions']
@@ -145,16 +61,27 @@ class CollectionItemsView(FormView):
                 'count': len(versions)
             },
         )
-        return_to_url = self.request.GET.get('return_to_url')
-        url_is_safe = is_safe_url(
-            url=return_to_url,
-            allowed_hosts=self.request.get_host(),
-            require_https=self.request.is_secure(),
-        )
-        if not url_is_safe:
-            return_to_url = self.request.path
 
-        return HttpResponseRedirect(return_to_url)
+        return self._get_success_redirect()
+
+    def _get_success_redirect(self):
+        """
+        Lets work out where should we redirect the user after they've added
+        versions to a collection
+        """
+        return_to_url = self.request.GET.get('return_to_url')
+        if return_to_url:
+            url_is_safe = is_safe_url(
+                url=return_to_url,
+                allowed_hosts=self.request.get_host(),
+                require_https=self.request.is_secure(),
+            )
+            if not url_is_safe:
+                return_to_url = self.request.path
+            return HttpResponseRedirect(return_to_url)
+
+        success_template = 'djangocms_moderation/request_finalized.html'
+        return render(self.request, success_template, {})
 
     def get_form(self, **kwargs):
         form = super().get_form(**kwargs)
@@ -164,24 +91,24 @@ class CollectionItemsView(FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         opts_meta = ModerationCollection._meta
-        collection_id = self.request.GET.get('collection_id')
 
+        collection_id = self.request.GET.get('collection_id')
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
             except (ValueError, ModerationCollection.DoesNotExist, TypeError):
                 raise Http404
             else:
-                moderation_request_list = collection.moderation_requests.all()
+                moderation_requests = collection.moderation_requests.all()
         else:
-            moderation_request_list = []
+            moderation_requests = []
 
         model_admin = admin.site._registry[ModerationCollection]
         context.update({
-            'moderation_request_list': moderation_request_list,
+            'moderation_requests': moderation_requests,
             'opts': opts_meta,
-            'title': _('Add to collection'),
             'form': self.get_form(),
+            'collection_id': collection_id,
             'media': model_admin.media,
         })
         return context

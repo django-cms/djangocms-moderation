@@ -588,11 +588,6 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
                 name="cms_moderation_cancel_collection",
             ),
             _url(
-                r'^item/add-item/$',
-                views.add_item_to_collection,
-                name='cms_moderation_item_to_collection',
-            ),
-            _url(
                 r'^item/add-items/$',
                 views.add_items_to_collection,
                 name='cms_moderation_items_to_collection',
