@@ -1,6 +1,7 @@
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
+from cms.models import fields
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.admin import VersionAdmin
@@ -87,7 +88,20 @@ def _get_archive_link(func):
     return inner
 
 
+def _is_placeholder_review_unlocked(placeholder, user):
+    """
+    Register review lock with placeholder checks framework to
+    prevent users from editing content by directly accessing the URL
+    """
+    if is_registered_for_moderation(placeholder.source):
+        if is_obj_review_locked(placeholder.source, user):
+            return False
+    return True
+
+
 VersionAdmin.get_state_actions = get_state_actions(VersionAdmin.get_state_actions)
 VersionAdmin._get_edit_link = _get_edit_link(VersionAdmin._get_edit_link)
 VersionAdmin._get_archive_link = _get_archive_link(VersionAdmin._get_archive_link)
 VersionAdmin._get_moderation_link = _get_moderation_link
+
+fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]
