@@ -54,7 +54,7 @@ def _get_moderation_link(self, version, request):
         return format_html(
             '<a href="{}">{}</a>',
             url,
-            _('Submit for moderation')
+            _('Submit')
         )
     return ''
 

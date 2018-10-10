@@ -120,7 +120,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         link = self.version_admin._get_moderation_link(
             draft_version, self.mock_request
         )
-        self.assertIn('Submit for moderation', link)
+        self.assertIn('Submit', link)
 
     @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')
     def test_get_moderation_link_when_not_registered(self, mock_is_registered_for_moderation):

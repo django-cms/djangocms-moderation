@@ -72,7 +72,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists('Submit for moderation', toolbar.toolbar))
+        self.assertTrue(self._button_exists('Submit', toolbar.toolbar))
 
     def test_submit_for_moderation_version_locked(self):
         ModerationRequest.objects.all().delete()
@@ -83,7 +83,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
 
         # Submit for moderation button has been added
-        self.assertTrue(self._button_exists('Submit for moderation', toolbar.toolbar))
+        self.assertTrue(self._button_exists('Submit', toolbar.toolbar))
 
         # Different user to version author is logged in
         toolbar = self._get_toolbar(version.content, user=self.user, edit_mode=True)
@@ -91,7 +91,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
 
         # No Submit for moderation button has been added
-        self.assertFalse(self._button_exists('Submit for moderation', toolbar.toolbar))
+        self.assertFalse(self._button_exists('Submit', toolbar.toolbar))
 
     def test_page_in_moderation(self):
         ModerationRequest.objects.all().delete()
