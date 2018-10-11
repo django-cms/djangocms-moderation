@@ -10,10 +10,11 @@ from djangocms_versioning.models import Version
 
 from .helpers import (
     get_active_moderation_request,
+    get_moderation_button_title_and_url,
     is_obj_review_locked,
     is_obj_version_unlocked,
     is_registered_for_moderation,
-    get_moderation_button_title_and_url)
+)
 from .utils import get_admin_url
 
 

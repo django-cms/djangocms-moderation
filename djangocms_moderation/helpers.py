@@ -87,6 +87,12 @@ def is_registered_for_moderation(content_object):
 
 
 def get_moderation_button_title_and_url(moderation_request):
+    """
+    Helper to get the moderation button title and url for an
+    existing active moderation request
+    :param moderation_request: <obj>
+    :return: title: <str>, url: <str>
+    """
     if moderation_request.collection.status == COLLECTING:
         button_title = _('In collection "%(collection_name)s (%(collection_id)s)"') % {
             'collection_name': moderation_request.collection.name,
@@ -101,5 +107,4 @@ def get_moderation_button_title_and_url(moderation_request):
         reverse('admin:djangocms_moderation_moderationrequest_changelist'),
         moderation_request.collection.id
     )
-
     return button_title, url

@@ -68,3 +68,10 @@ class VersionLockingTestCase(BaseTestCase):
             _mock = None  # noqa
             version = PageVersionFactory(created_by=self.user)
             self.assertTrue(is_obj_version_unlocked(version.content, self.user3))
+
+
+class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
+    def test_get_moderation_button_title_and_url(self):
+
+
+        get_moderation_button_title_and_url(moderation_request)
