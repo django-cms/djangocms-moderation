@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from djangocms_versioning.models import Version
 
+from . import conf
 from .constants import COLLECTING
 from .models import ConfirmationFormSubmission
 
@@ -86,7 +87,7 @@ def is_registered_for_moderation(content_object):
     return content_object.__class__ in moderated_models
 
 
-def get_moderation_button_title_and_url(moderation_request, collection_name_limit=24):
+def get_moderation_button_title_and_url(moderation_request):
     """
     Helper to get the moderation button title and url for an
     existing active moderation request
@@ -94,10 +95,11 @@ def get_moderation_button_title_and_url(moderation_request, collection_name_limi
     :param collection_name_limit: <int> Truncate collection name if above this limit
     :return: title: <str>, url: <str>
     """
+    name_length_limit = conf.COLLECTION_NAME_LENGTH_LIMIT
     collection_name = moderation_request.collection.name
-    if len(collection_name) > collection_name_limit:
+    if name_length_limit and len(collection_name) > name_length_limit:
         collection_name = "{}{}".format(
-            collection_name[:collection_name_limit],
+            collection_name[:name_length_limit],
             '...',
         )
 

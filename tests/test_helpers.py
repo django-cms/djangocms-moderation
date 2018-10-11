@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
+from djangocms_moderation import conf
 from djangocms_moderation.constants import COLLECTING, IN_REVIEW
 from djangocms_moderation.helpers import (
     get_form_submission_for_step,
@@ -110,21 +111,32 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
         self.assertEqual(url, self.expected_url)
 
     def test_get_moderation_button_truncated_title_and_url(self):
-        self.collection.name = 'Very long collection name sooooo long wow!'
+        self.collection.name = 'Very long collection name so long wow!'
         self.collection.save()
         title, url = get_moderation_button_title_and_url(self.mr)
         self.assertEqual(
             title,
+            # Default limit is 24 characters
             'In collection "Very long collection nam... ({})"'.format(
                 self.collection.id,
              )
         )
-        title, url = get_moderation_button_title_and_url(
-            self.mr, collection_name_limit=3
-        )
+
+        conf.COLLECTION_NAME_LENGTH_LIMIT = 3
+        title, url = get_moderation_button_title_and_url(self.mr)
         self.assertEqual(
             title,
             'In collection "Ver... ({})"'.format(
+                self.collection.id,
+             )
+        )
+
+        # None means no limit
+        conf.COLLECTION_NAME_LENGTH_LIMIT = None
+        title, url = get_moderation_button_title_and_url(self.mr)
+        self.assertEqual(
+            title,
+            'In collection "Very long collection name so long wow! ({})"'.format(
                 self.collection.id,
              )
         )
