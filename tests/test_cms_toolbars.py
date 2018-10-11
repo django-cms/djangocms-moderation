@@ -12,6 +12,7 @@ from djangocms_versioning.test_utils.factories import (
 )
 
 from djangocms_moderation.cms_toolbars import ModerationToolbar
+from djangocms_moderation.constants import IN_REVIEW
 from djangocms_moderation.models import ModerationRequest
 
 from .utils.base import BaseTestCase
@@ -105,7 +106,7 @@ class TestCMSToolbars(BaseTestCase):
         # No Submit for moderation button has been added
         self.assertFalse(self._button_exists('Submit', toolbar.toolbar))
 
-    def test_page_in_moderation(self):
+    def test_page_in_collection_collection(self):
         ModerationRequest.objects.all().delete()
         version = PageVersionFactory()
         self.collection1.add_version(version=version)
@@ -114,7 +115,30 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists('In Moderation "%s"' % self.collection1.name, toolbar.toolbar))
+        self.assertTrue(self._button_exists(
+            'In collection "{} ({})"'.format(
+                self.collection1.name, self.collection1.id
+            ),
+            toolbar.toolbar)
+        )
+
+    def test_page_in_collection_moderating(self):
+        ModerationRequest.objects.all().delete()
+        version = PageVersionFactory()
+        self.collection1.add_version(version=version)
+        self.collection1.status = IN_REVIEW
+        self.collection1.save()
+
+        toolbar = self._get_toolbar(version.content, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertTrue(self._button_exists(
+            'In moderation "{} ({})"'.format(
+                self.collection1.name, self.collection1.id
+            ),
+            toolbar.toolbar)
+        )
 
     def test_add_edit_button_with_version_lock(self):
         """
