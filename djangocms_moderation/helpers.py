@@ -92,7 +92,6 @@ def get_moderation_button_title_and_url(moderation_request):
     Helper to get the moderation button title and url for an
     existing active moderation request
     :param moderation_request: <obj>
-    :param collection_name_limit: <int> Truncate collection name if above this limit
     :return: title: <str>, url: <str>
     """
     name_length_limit = conf.COLLECTION_NAME_LENGTH_LIMIT
