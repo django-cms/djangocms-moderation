@@ -1,6 +1,7 @@
 import mock
 
 from django.test.client import RequestFactory
+from django.urls import reverse
 
 from cms.middleware.toolbar import ToolbarMiddleware
 from cms.toolbar.toolbar import CMSToolbar
@@ -28,9 +29,7 @@ class TestCMSToolbars(BaseTestCase):
             request.toolbar.populate()
         return request
 
-    def _get_toolbar(self, content_obj, user=None, **kwargs):
-        """Helper method to set up the toolbar
-        """
+    def _get_cms_toolbar(self, content_obj, user=None, **kwargs):
         if not user:
             user = UserFactory(is_staff=True)
         page = PageVersionFactory().content.page
@@ -38,6 +37,13 @@ class TestCMSToolbars(BaseTestCase):
             page=page, user=user
         )
         cms_toolbar = CMSToolbar(request)
+
+        return cms_toolbar, request
+
+    def _get_toolbar(self, content_obj, user=None, **kwargs):
+        """Helper method to set up the toolbar
+        """
+        cms_toolbar, request = self._get_cms_toolbar(content_obj, user, **kwargs)
         toolbar = ModerationToolbar(
             request, toolbar=cms_toolbar, is_current_app=True, app_path='/')
         toolbar.toolbar.set_object(content_obj)
@@ -64,6 +70,12 @@ class TestCMSToolbars(BaseTestCase):
     def _button_exists(self, button_name, toolbar):
         found = self._find_buttons(button_name, toolbar)
         return bool(len(found))
+
+    def _find_menu_item(self, name, toolbar):
+        for left_item in toolbar.get_left_items():
+            for menu_item in left_item.items:
+                if menu_item.name == name:
+                    return menu_item
 
     def test_submit_for_moderation_not_version_locked(self):
         ModerationRequest.objects.all().delete()
@@ -188,3 +200,17 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
 
         self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
+
+    def test_add_manage_collection_item_to_moderation_menu(self):
+        version = PageVersionFactory(created_by=self.user)
+        toolbar, _ = self._get_cms_toolbar(version.content, preview_mode=True, user=self.user)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        manage_collection_item = self._find_menu_item('Moderation collections', toolbar)
+        self.assertIsNotNone(manage_collection_item)
+
+        collection_list_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+        collection_list_url += "?author__id__exact=%s" % self.user.pk
+        self.assertTrue(manage_collection_item.url, collection_list_url)
+
