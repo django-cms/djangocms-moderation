@@ -29,23 +29,17 @@ class TestCMSToolbars(BaseTestCase):
             request.toolbar.populate()
         return request
 
-    def _get_cms_toolbar(self, content_obj, user=None, **kwargs):
-        if not user:
-            user = UserFactory(is_staff=True)
-        page = PageVersionFactory().content.page
-        request = self._get_page_request(
-            page=page, user=user
-        )
-        cms_toolbar = CMSToolbar(request)
-
-        return cms_toolbar, request
-
     def _get_toolbar(self, content_obj, user=None, **kwargs):
         """Helper method to set up the toolbar
         """
-        cms_toolbar, request = self._get_cms_toolbar(content_obj, user, **kwargs)
+        if not user:
+            user = UserFactory(is_staff=True)
+        request = self._get_page_request(
+            page=content_obj.page if content_obj else None, user=user
+        )
+        cms_toolbar = CMSToolbar(request)
         toolbar = ModerationToolbar(
-            request, toolbar=cms_toolbar, is_current_app=True, app_path='/')
+            cms_toolbar.request, toolbar=cms_toolbar, is_current_app=True, app_path='/')
         toolbar.toolbar.set_object(content_obj)
         if kwargs.get('edit_mode', False):
             toolbar.toolbar.edit_mode_active = True
@@ -74,8 +68,12 @@ class TestCMSToolbars(BaseTestCase):
     def _find_menu_item(self, name, toolbar):
         for left_item in toolbar.get_left_items():
             for menu_item in left_item.items:
-                if menu_item.name == name:
-                    return menu_item
+                try:
+                    if menu_item.name == name:
+                        return menu_item
+                # Break item has no attribute `name`
+                except AttributeError:
+                    pass
 
     def test_submit_for_moderation_not_version_locked(self):
         ModerationRequest.objects.all().delete()
@@ -203,11 +201,11 @@ class TestCMSToolbars(BaseTestCase):
 
     def test_add_manage_collection_item_to_moderation_menu(self):
         version = PageVersionFactory(created_by=self.user)
-        toolbar, _ = self._get_cms_toolbar(version.content, preview_mode=True, user=self.user)
+        toolbar = self._get_toolbar(version.content, preview_mode=True, user=self.user)
         toolbar.populate()
         toolbar.post_template_populate()
-
-        manage_collection_item = self._find_menu_item('Moderation collections', toolbar)
+        cms_toolbar = toolbar.toolbar
+        manage_collection_item = self._find_menu_item('Moderation collections...', cms_toolbar)
         self.assertIsNotNone(manage_collection_item)
 
         collection_list_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')

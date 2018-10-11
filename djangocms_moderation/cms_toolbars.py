@@ -101,7 +101,7 @@ class ModerationToolbar(VersioningToolbar):
                             language=self.current_lang,
                             args=())
         url += '?author__id__exact=%s' % self.request.user.id
-        admin_menu.add_link_item(
+        admin_menu.add_sideframe_item(
             _('Moderation collections'),
             url=url,
             position=3
