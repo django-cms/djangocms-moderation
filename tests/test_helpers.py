@@ -2,17 +2,20 @@ import json
 import mock
 from unittest import skip
 
+from django.core.urlresolvers import reverse
+
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
+from djangocms_moderation.constants import COLLECTING, IN_REVIEW
 from djangocms_moderation.helpers import (
     get_form_submission_for_step,
     get_page_or_404,
     is_obj_version_unlocked,
-)
+    get_moderation_button_title_and_url)
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-)
+    ModerationCollection, ModerationRequest)
 
 from .utils.base import BaseTestCase
 
@@ -71,7 +74,60 @@ class VersionLockingTestCase(BaseTestCase):
 
 
 class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
-    def test_get_moderation_button_title_and_url(self):
+    def setUp(self):
+        self.collection = ModerationCollection.objects.create(
+            author=self.user, name='C1', workflow=self.wf1, status=COLLECTING
+        )
+        version = PageVersionFactory(created_by=self.user)
 
+        self.collection.add_version(version)
 
-        get_moderation_button_title_and_url(moderation_request)
+        self.mr = ModerationRequest.objects.get(
+            version=version, collection=self.collection
+        )
+        self.expected_url = "{}?collection__id__exact={}".format(
+            reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+            self.collection.id,
+        )
+
+    def test_get_moderation_button_title_and_url_when_collection(self):
+        title, url = get_moderation_button_title_and_url(self.mr)
+        self.assertEqual(
+            title,
+            'In collection "C1 ({})"'.format(self.collection.id)
+        )
+        self.assertEqual(url, self.expected_url)
+
+    def test_get_moderation_button_title_and_url_when_in_review(self):
+        self.collection.status = IN_REVIEW
+        self.collection.save()
+
+        title, url = get_moderation_button_title_and_url(self.mr)
+        self.assertEqual(
+            title,
+            'In moderation "C1 ({})"'.format(self.collection.id)
+        )
+        self.assertEqual(url, self.expected_url)
+
+    def test_get_moderation_button_truncated_title_and_url(self):
+        self.collection.name = 'Very long collection name sooooo long wow!'
+        self.collection.save()
+        title, url = get_moderation_button_title_and_url(self.mr)
+        self.assertEqual(
+            title,
+            'In collection "Very long collection nam... ({})"'.format(
+                self.collection.id,
+             )
+        )
+        title, url = get_moderation_button_title_and_url(
+            self.mr, collection_name_limit=3
+        )
+        self.assertEqual(
+            title,
+            'In collection "Ver... ({})"'.format(
+                self.collection.id,
+             )
+        )
+
+        self.assertEqual(url, self.expected_url)
+

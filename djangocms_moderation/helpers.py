@@ -86,21 +86,29 @@ def is_registered_for_moderation(content_object):
     return content_object.__class__ in moderated_models
 
 
-def get_moderation_button_title_and_url(moderation_request):
+def get_moderation_button_title_and_url(moderation_request, collection_name_limit=24):
     """
     Helper to get the moderation button title and url for an
     existing active moderation request
     :param moderation_request: <obj>
+    :param collection_name_limit: <int> Truncate collection name if above this limit
     :return: title: <str>, url: <str>
     """
+    collection_name = moderation_request.collection.name
+    if len(collection_name) > collection_name_limit:
+        collection_name = "{}{}".format(
+            collection_name[:collection_name_limit],
+            '...',
+        )
+
     if moderation_request.collection.status == COLLECTING:
         button_title = _('In collection "%(collection_name)s (%(collection_id)s)"') % {
-            'collection_name': moderation_request.collection.name,
+            'collection_name': collection_name,
             'collection_id': moderation_request.collection.id
         }
     else:
         button_title = _('In moderation "%(collection_name)s (%(collection_id)s)"') % {
-            'collection_name': moderation_request.collection.name,
+            'collection_name': collection_name,
             'collection_id': moderation_request.collection.id
         }
     url = "{}?collection__id__exact={}".format(
