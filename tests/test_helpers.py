@@ -16,7 +16,9 @@ from djangocms_moderation.helpers import (
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
-    ModerationCollection, ModerationRequest)
+    ModerationCollection,
+    ModerationRequest,
+)
 
 from .utils.base import BaseTestCase
 
@@ -141,4 +143,3 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
             )
 
         self.assertEqual(url, self.expected_url)
-
