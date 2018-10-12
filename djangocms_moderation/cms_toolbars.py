@@ -86,7 +86,7 @@ class ModerationToolbar(VersioningToolbar):
                 )
 
                 self.toolbar.add_modal_button(
-                    name=_('Submit'),
+                    name=_('Submit for moderation'),
                     url=url,
                     side=self.toolbar.RIGHT,
                 )

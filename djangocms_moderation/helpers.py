@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from djangocms_versioning.models import Version
 
-from . import conf
+from .conf import COLLECTION_NAME_LENGTH_LIMIT
 from .constants import COLLECTING
 from .models import ConfirmationFormSubmission
 
@@ -94,7 +94,7 @@ def get_moderation_button_title_and_url(moderation_request):
     :param moderation_request: <obj>
     :return: title: <str>, url: <str>
     """
-    name_length_limit = conf.COLLECTION_NAME_LENGTH_LIMIT
+    name_length_limit = COLLECTION_NAME_LENGTH_LIMIT
     collection_name = moderation_request.collection.name
     if name_length_limit and len(collection_name) > name_length_limit:
         collection_name = "{}{}".format(

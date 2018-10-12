@@ -6,13 +6,13 @@ from django.core.urlresolvers import reverse
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
-from djangocms_moderation import conf
 from djangocms_moderation.constants import COLLECTING, IN_REVIEW
 from djangocms_moderation.helpers import (
     get_form_submission_for_step,
+    get_moderation_button_title_and_url,
     get_page_or_404,
     is_obj_version_unlocked,
-    get_moderation_button_title_and_url)
+)
 from djangocms_moderation.models import (
     ConfirmationFormSubmission,
     ConfirmationPage,
@@ -121,25 +121,24 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
                 self.collection.id,
              )
         )
+        with mock.patch('djangocms_moderation.helpers.COLLECTION_NAME_LENGTH_LIMIT', 3):
+            title, url = get_moderation_button_title_and_url(self.mr)
+            self.assertEqual(
+                title,
+                'In collection "Ver... ({})"'.format(
+                    self.collection.id,
+                 )
+            )
 
-        conf.COLLECTION_NAME_LENGTH_LIMIT = 3
-        title, url = get_moderation_button_title_and_url(self.mr)
-        self.assertEqual(
-            title,
-            'In collection "Ver... ({})"'.format(
-                self.collection.id,
-             )
-        )
-
-        # None means no limit
-        conf.COLLECTION_NAME_LENGTH_LIMIT = None
-        title, url = get_moderation_button_title_and_url(self.mr)
-        self.assertEqual(
-            title,
-            'In collection "Very long collection name so long wow! ({})"'.format(
-                self.collection.id,
-             )
-        )
+        with mock.patch('djangocms_moderation.helpers.COLLECTION_NAME_LENGTH_LIMIT', None):
+            # None means no limit
+            title, url = get_moderation_button_title_and_url(self.mr)
+            self.assertEqual(
+                title,
+                'In collection "Very long collection name so long wow! ({})"'.format(
+                    self.collection.id,
+                 )
+            )
 
         self.assertEqual(url, self.expected_url)
 
