@@ -55,4 +55,3 @@ STATUS_CHOICES = (
     (ARCHIVED, _('Archived')),
     (CANCELLED, _('Cancelled')),
 )
-
