@@ -118,8 +118,8 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
         title, url = get_moderation_button_title_and_url(self.mr)
         self.assertEqual(
             title,
-            # Default limit is 24 characters
-            'In collection "Very long collection nam... ({})"'.format(
+            # By default, truncate will shorten the name
+            'In collection "Very long collection ... ({})"'.format(
                 self.collection.id,
              )
         )
@@ -127,7 +127,8 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
             title, url = get_moderation_button_title_and_url(self.mr)
             self.assertEqual(
                 title,
-                'In collection "Ver... ({})"'.format(
+                # As the limit is only 3, the truncate will produce `...`
+                'In collection "... ({})"'.format(
                     self.collection.id,
                  )
             )
