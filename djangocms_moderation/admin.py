@@ -12,6 +12,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
+from cms.utils.helpers import is_editable_model
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
@@ -144,11 +145,20 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     get_title.short_description = _('Title')
 
     def get_preview_link(self, obj):
+        content = obj.version.content
+        if is_editable_model(content.__class__):
+            object_preview_url = get_object_preview_url(obj.version.content)
+        else:
+            object_preview_url = reverse('admin:{app}_{model}_change'.format(
+                app=content._meta.app_label,
+                model=content._meta.model_name,
+            ), args=[content.pk])
+
         return format_html(
             '<a href="{}" class="js-moderation-close-sideframe" target="_top">'
             '<span class="cms-icon cms-icon-eye"></span>'
             '</a>',
-            get_object_preview_url(obj.version.content),
+            object_preview_url,
         )
     get_preview_link.short_description = _('Preview')
 
