@@ -211,4 +211,3 @@ class TestCMSToolbars(BaseTestCase):
         collection_list_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
         collection_list_url += "?author__id__exact=%s" % self.user.pk
         self.assertTrue(manage_collection_item.url, collection_list_url)
-
