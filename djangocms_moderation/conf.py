@@ -59,3 +59,11 @@ REQUEST_COMMENTS_ENABLED = getattr(
     'CMS_MODERATION_REQUEST_COMMENTS_ENABLED',
     True,
 )
+
+# If the collection name length is above this limit, it will get truncated
+# in the button texts. `None` means no limit
+COLLECTION_NAME_LENGTH_LIMIT = getattr(
+    settings,
+    'CMS_MODERATION_COLLECTION_NAME_LENGTH_LIMIT',
+    24,
+)

@@ -104,8 +104,10 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         link = self.version_admin._get_moderation_link(
             self.pg1_version, self.mock_request
         )
-        self.assertEqual(
-            'In Moderation "{}"'.format(self.collection1.name),
+        self.assertIn(
+            'In collection &quot;{} ({})&quot;'.format(
+                self.collection1.name, self.collection1.id
+            ),
             link
         )
         version = PageVersionFactory(state=PUBLISHED)

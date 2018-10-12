@@ -10,6 +10,7 @@ from djangocms_versioning.helpers import version_list_url
 
 from .helpers import (
     get_active_moderation_request,
+    get_moderation_button_title_and_url,
     is_obj_review_locked,
     is_obj_version_unlocked,
     is_registered_for_moderation,
@@ -40,9 +41,12 @@ def _get_moderation_link(self, version, request):
     content_object = version.content
     moderation_request = get_active_moderation_request(content_object)
     if moderation_request:
-        return _('In Moderation "%(collection_name)s"') % {
-            'collection_name': moderation_request.collection.name
-        }
+        title, url = get_moderation_button_title_and_url(moderation_request)
+        return format_html(
+            '<a href="{}">{}</a>',
+            url,
+            title
+        )
     elif is_obj_version_unlocked(content_object, request.user):
         url = add_url_parameters(
             get_admin_url(

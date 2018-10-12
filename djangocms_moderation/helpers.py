@@ -1,8 +1,13 @@
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
+from django.template.defaultfilters import truncatechars
+from django.utils.translation import ugettext_lazy as _
 
 from djangocms_versioning.models import Version
 
+from .conf import COLLECTION_NAME_LENGTH_LIMIT
+from .constants import COLLECTING
 from .models import ConfirmationFormSubmission
 
 
@@ -81,3 +86,32 @@ def is_registered_for_moderation(content_object):
     moderation_config = apps.get_app_config('djangocms_moderation')
     moderated_models = moderation_config.cms_extension.moderated_models
     return content_object.__class__ in moderated_models
+
+
+def get_moderation_button_title_and_url(moderation_request):
+    """
+    Helper to get the moderation button title and url for an
+    existing active moderation request
+    :param moderation_request: <obj>
+    :return: title: <str>, url: <str>
+    """
+    name_length_limit = COLLECTION_NAME_LENGTH_LIMIT
+    collection_name = moderation_request.collection.name
+    if name_length_limit:
+        collection_name = truncatechars(collection_name, name_length_limit)
+
+    if moderation_request.collection.status == COLLECTING:
+        button_title = _('In collection "%(collection_name)s (%(collection_id)s)"') % {
+            'collection_name': collection_name,
+            'collection_id': moderation_request.collection_id
+        }
+    else:
+        button_title = _('In moderation "%(collection_name)s (%(collection_id)s)"') % {
+            'collection_name': collection_name,
+            'collection_id': moderation_request.collection_id
+        }
+    url = "{}?collection__id__exact={}".format(
+        reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+        moderation_request.collection_id
+    )
+    return button_title, url
