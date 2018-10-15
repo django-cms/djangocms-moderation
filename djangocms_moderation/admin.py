@@ -500,6 +500,39 @@ class WorkflowAdmin(admin.ModelAdmin):
     ]
 
 
+class ReviewerFilter(admin.SimpleListFilter):
+    title = _("Reviewer")
+    parameter_name = "reviewer"
+
+    def lookups(self, request, model_admin):
+        reviewers = []
+        options = ()
+        moderation_requests = self.moderation_requests.all()
+        for mr in moderation_requests:
+            moderation_request_actions = mr.actions.all()
+            for mra in moderation_request_actions:
+                if mra.to_user in reviewers:
+                    continue
+                else:
+                    reviewers.append(mra.to_user)
+                    options + (mra.to_user.pk, mra.get_to_user_name())
+
+        return options
+
+    def queryset(self, request, queryset):
+        reviewers = []
+        moderation_requests = self.moderation_requests.all()
+        for mr in moderation_requests:
+            moderation_request_actions = mr.actions.all()
+            for mra in moderation_request_actions:
+                if mra.to_user in reviewers:
+                    continue
+                else:
+                    reviewers.append(mra.to_user)
+
+        # TODO: how do I do this? Do I need a new virtual field on the model?
+
+
 class ModerationCollectionAdmin(admin.ModelAdmin):
 
     class Media:
@@ -513,6 +546,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         'author',
         'status',
         'date_created',
+        'ReviewerFilter',
     ]
     list_display_links = None
 
