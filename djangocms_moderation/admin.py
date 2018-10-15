@@ -518,10 +518,14 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             'author',
             'workflow',
             'status',
+            'reviewer',
             'date_created',
             'list_display_actions',
         ]
         return list_display
+
+    def reviewer(self, obj):
+        return 'reviewer'
 
     def list_display_actions(self, obj):
         """Display links to state change endpoints
