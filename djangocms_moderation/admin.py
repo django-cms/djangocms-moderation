@@ -308,8 +308,13 @@ class RoleAdmin(admin.ModelAdmin):
 
 
 class CollectionCommentAdmin(admin.ModelAdmin):
-    list_display = ['message', 'author', 'date_created']
+    list_display = ['date_created', 'message', 'author']
     fields = ['collection', 'message', 'author']
+
+    class Media:
+        css = {
+            'all': ('djangocms_moderation/css/comments_changelist.css',)
+        }
 
     def get_changeform_initial_data(self, request):
         data = {
