@@ -530,7 +530,20 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return list_display
 
     def reviewer(self, obj):
-        return 'reviewer'
+        reviewers = []
+        string = ""
+        moderation_requests = obj.moderation_requests.all()
+        for mr in moderation_requests:
+            moderation_request_actions = mr.actions.all()
+            for mra in moderation_request_actions:
+                if mra.to_user in reviewers:
+                    continue
+                else:
+                    reviewers.append(mra.to_user)
+                    if string:
+                        string = string + ", "
+                    string = string + mra.get_to_user_name()
+        return string
 
     def list_display_actions(self, obj):
         """Display links to state change endpoints
