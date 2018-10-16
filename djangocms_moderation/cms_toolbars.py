@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 from django.utils.translation import ugettext_lazy as _
 
+from cms.cms_toolbars import ADMIN_MENU_IDENTIFIER
 from cms.toolbar_pool import toolbar_pool
 from cms.utils.urlutils import add_url_parameters
-from cms.cms_toolbars import ADMIN_MENU_IDENTIFIER
 
 from djangocms_versioning.cms_toolbars import VersioningToolbar
 from djangocms_versioning.models import Version
 
 from .helpers import (
     get_active_moderation_request,
+    get_moderation_button_title_and_url,
     is_obj_review_locked,
     is_obj_version_unlocked,
     is_registered_for_moderation,
@@ -66,12 +67,10 @@ class ModerationToolbar(VersioningToolbar):
         if self._is_versioned() and self.toolbar.edit_mode_active:
             moderation_request = get_active_moderation_request(self.toolbar.obj)
             if moderation_request:
-                self.toolbar.add_modal_button(
-                    name=_('In Moderation "%(collection_name)s"') % {
-                        'collection_name': moderation_request.collection.name
-                    },
-                    url='#',
-                    disabled=True,
+                title, url = get_moderation_button_title_and_url(moderation_request)
+                self.toolbar.add_sideframe_button(
+                    name=title,
+                    url=url,
                     side=self.toolbar.RIGHT,
                 )
             # Check if the object is not version locked to someone else
@@ -101,7 +100,7 @@ class ModerationToolbar(VersioningToolbar):
                             language=self.current_lang,
                             args=())
         url += '?author__id__exact=%s' % self.request.user.id
-        admin_menu.add_link_item(
+        admin_menu.add_sideframe_item(
             _('Moderation collections'),
             url=url,
             position=3

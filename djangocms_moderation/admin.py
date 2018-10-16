@@ -178,6 +178,14 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+    def has_delete_permission(self, request, obj=None):
+        """
+        Hide the delete button from the detail page
+        """
+        if obj:
+            return False
+        return super().has_delete_permission(request, obj)
+
     def get_actions(self, request):
         """
         By default, all actions are enabled. But we need to only keep the actions
@@ -310,8 +318,13 @@ class RoleAdmin(admin.ModelAdmin):
 
 
 class CollectionCommentAdmin(admin.ModelAdmin):
-    list_display = ['message', 'author', 'date_created']
+    list_display = ['date_created', 'message', 'author']
     fields = ['collection', 'message', 'author']
+
+    class Media:
+        css = {
+            'all': ('djangocms_moderation/css/comments_changelist.css',)
+        }
 
     def get_changeform_initial_data(self, request):
         data = {
@@ -537,14 +550,14 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def get_list_display_actions(self):
         actions = [
-            self._get_edit_link,
+            self.get_edit_link,
             self.get_requests_link,
         ]
         if conf.COLLECTION_COMMENTS_ENABLED:
             actions.append(self.get_comments_link)
         return actions
 
-    def _get_edit_link(self, obj):
+    def get_edit_link(self, obj):
         """Helper function to get the html link to the edit action
         """
         url = reverse(
@@ -624,6 +637,9 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         if obj and 'author' in self.readonly_fields:
             form.base_fields['author'].widget = forms.HiddenInput()
         return form
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
