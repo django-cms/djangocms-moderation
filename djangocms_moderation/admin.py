@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -633,6 +634,15 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def changelist_view(self, request, extra_context=None):
+        if 'reviewer' not in request.GET:
+            if request.user in User.objects.filter(moderationrequestaction__isnull=False):
+                q = request.GET.copy()
+                q['reviewer'] = request.user.pk
+                request.GET = q
+                request.META['QUERY_STRING'] = request.GET.urlencode()
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
