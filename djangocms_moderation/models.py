@@ -261,6 +261,23 @@ class ModerationCollection(models.Model):
     def author_name(self):
         return self.author.get_full_name() or self.author.get_username()
 
+    @property
+    def reviewers(self):
+        reviewers = []
+        string = ""
+        moderation_requests = self.moderation_requests.all()
+        for mr in moderation_requests:
+            moderation_request_actions = mr.actions.all()
+            for mra in moderation_request_actions:
+                if mra.to_user in reviewers:
+                    continue
+                else:
+                    reviewers.append(mra.to_user)
+                    if string:
+                        string = string + ", "
+                    string = string + mra.get_to_user_name()
+        return string
+
     def allow_submit_for_review(self, user):
         """
         Can this collection be submitted for review?
@@ -560,7 +577,6 @@ class ModerationRequestAction(models.Model):
         verbose_name=_('to user'),
         blank=True,
         null=True,
-        related_name='+',
         on_delete=models.CASCADE,
     )
     # Role which is next in the moderation flow
