@@ -638,9 +638,9 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         if 'reviewer' not in request.GET:
             if request.user in User.objects.filter(moderationrequestaction__isnull=False):
-                q = request.GET.copy()
-                q['reviewer'] = request.user.pk
-                request.GET = q
+                querystring = request.GET.copy()
+                querystring['reviewer'] = request.user.pk
+                request.GET = querystring
                 request.META['QUERY_STRING'] = request.GET.urlencode()
         return super().changelist_view(request, extra_context=extra_context)
 

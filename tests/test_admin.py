@@ -38,7 +38,7 @@ class ModerationAdminTestCase(BaseTestCase):
         self.wfst = self.wf.steps.create(role=self.role2, is_required=True, order=1,)
 
         # this moderation request is approved
-        self.mr1.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
+        self.mr1.actions.create(to_user=self.user2, by_user=self.user, action=constants.ACTION_STARTED,)
         self.mr1action2 = self.mr1.actions.create(
             by_user=self.user,
             to_user=self.user2,
@@ -50,7 +50,7 @@ class ModerationAdminTestCase(BaseTestCase):
         self.mr2 = ModerationRequest.objects.create(
             version=pg2_version, language='en',  collection=self.collection,
             is_active=True, author=self.collection.author,)
-        self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
+        self.mr2.actions.create(to_user=self.user2, by_user=self.user, action=constants.ACTION_STARTED,)
 
         self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         self.url_with_filter = "{}?collection__id__exact={}".format(
@@ -298,22 +298,14 @@ class ModerationAdminTestCase(BaseTestCase):
         self.assertIn('message', fields)
 
     def test_moderation_collection_changelist_reviewer_filter(self):
-        # @TODO: redo this using https://github.com/django/django/blob/master/django/http/__init__.py#L27 i.e. django.http.HttpRequest
-        # make a request to the page while logged in not as a reviewer, filter should default to All
-        mock_request = RequestFactory()
-        mock_request.COOKIES = mock_request.cookies
-        import ipdb; ipdb.set_trace()
-        mock_request.user = self.user3  # user3 is not a reviewer
-        mock_request.get('/en/admin/djangocms_moderation/moderationcollection/')
-        mock_request.GET = []
-        self.mca.changelist_view(mock_request)
-        self.assertNotIn==('reviewer', mock_request.GET)
+        # login
+        self.client.force_login(self.user3)
+        url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
 
-        # make a request to the page while logged in as a reviewer, filter should default to reviewer
-        mock_request = RequestFactory()
-        mock_request.COOKIES = mock_request.cookies
-        mock_request.user = self.user2  # user2 is a reviewer
-        mock_request.get('/en/admin/djangocms_moderation/moderationcollection/')
-        mock_request.GET = []
-        self.mca.changelist_view(mock_request)
-        self.assertIn('reviewer', mock_request.GET)
+        response = self.client.get(url)
+        self.assertNotIn('reviewer', response.wsgi_request.GET)
+        # login
+        self.client.force_login(self.user2)
+        response = self.client.get(url)
+        self.assertEqual(self.user2.pk, response.wsgi_request.GET['reviewer'])
+
