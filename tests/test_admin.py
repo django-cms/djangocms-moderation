@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
+from django.test.client import RequestFactory
 from django.urls import reverse
 
 from djangocms_versioning.test_utils import factories
@@ -295,3 +296,24 @@ class ModerationAdminTestCase(BaseTestCase):
         fields = mra_inline.get_readonly_fields(mra_inline, mock_request_author, self.mr1)
         self.assertListEqual(mra_inline.fields, fields)
         self.assertIn('message', fields)
+
+    def test_moderation_collection_changelist_reviewer_filter(self):
+        # @TODO: redo this using https://github.com/django/django/blob/master/django/http/__init__.py#L27 i.e. django.http.HttpRequest
+        # make a request to the page while logged in not as a reviewer, filter should default to All
+        mock_request = RequestFactory()
+        mock_request.COOKIES = mock_request.cookies
+        import ipdb; ipdb.set_trace()
+        mock_request.user = self.user3  # user3 is not a reviewer
+        mock_request.get('/en/admin/djangocms_moderation/moderationcollection/')
+        mock_request.GET = []
+        self.mca.changelist_view(mock_request)
+        self.assertNotIn==('reviewer', mock_request.GET)
+
+        # make a request to the page while logged in as a reviewer, filter should default to reviewer
+        mock_request = RequestFactory()
+        mock_request.COOKIES = mock_request.cookies
+        mock_request.user = self.user2  # user2 is a reviewer
+        mock_request.get('/en/admin/djangocms_moderation/moderationcollection/')
+        mock_request.GET = []
+        self.mca.changelist_view(mock_request)
+        self.assertIn('reviewer', mock_request.GET)
