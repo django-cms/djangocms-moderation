@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
-from django.test.client import RequestFactory
 from django.urls import reverse
 
 from djangocms_versioning.test_utils import factories
@@ -308,4 +307,3 @@ class ModerationAdminTestCase(BaseTestCase):
         self.client.force_login(self.user2)
         response = self.client.get(url)
         self.assertEqual(self.user2.pk, response.wsgi_request.GET['reviewer'])
-

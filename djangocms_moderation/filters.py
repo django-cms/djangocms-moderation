@@ -1,9 +1,6 @@
 
 from django.contrib import admin
 from django.contrib.auth.models import User
-from django.utils.translation import ugettext, ugettext_lazy as _
-
-from .models import ModerationCollection, ModerationRequestAction
 
 
 class ReviewerFilter(admin.SimpleListFilter):

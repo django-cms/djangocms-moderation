@@ -104,7 +104,7 @@ class BaseTestCase(TestCase):
             is_active=True, author=cls.collection3.author,)
         cls.moderation_request3.actions.create(to_user=cls.user2, by_user=cls.user, action=constants.ACTION_STARTED,)
         cls.moderation_request3.actions.create(
-            to_user=cls.user2, 
+            to_user=cls.user2,
             by_user=cls.user,
             action=constants.ACTION_APPROVED,
             step_approved=cls.wf3st1,
