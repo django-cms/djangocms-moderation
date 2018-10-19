@@ -104,16 +104,18 @@ def _is_placeholder_review_unlocked(placeholder, user):
     return True
 
 
-def _can_modify_version(obj, version, user):
-    if is_registered_for_moderation(version.content):
-        if get_active_moderation_request(version.content):
-            return False
-    return True
+def _can_modify_version(func):
+    def inner(self, version, user):
+        if is_registered_for_moderation(version.content):
+            if get_active_moderation_request(version.content):
+                return False
+        return func(self, version, user)
+    return inner
 
 VersionAdmin.get_state_actions = get_state_actions(VersionAdmin.get_state_actions)
 VersionAdmin._get_edit_link = _get_edit_link(VersionAdmin._get_edit_link)
 VersionAdmin._get_archive_link = _get_archive_link(VersionAdmin._get_archive_link)
 VersionAdmin._get_moderation_link = _get_moderation_link
-admin.VersioningAdminMixin._can_modify_version = _can_modify_version
+admin.VersioningAdminMixin._can_modify_version = _can_modify_version(admin.VersioningAdminMixin._can_modify_version)
 
 fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]
