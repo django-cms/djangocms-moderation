@@ -8,14 +8,14 @@ from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.helpers import version_list_url
 
-from .helpers import (
+from djangocms_moderation.helpers import (
     get_active_moderation_request,
     get_moderation_button_title_and_url,
     is_obj_review_locked,
     is_obj_version_unlocked,
     is_registered_for_moderation,
 )
-from .utils import get_admin_url
+from djangocms_moderation.utils import get_admin_url
 
 
 def get_state_actions(func):

@@ -14,7 +14,7 @@ from djangocms_versioning.test_utils.factories import (
     PlaceholderFactory,
 )
 
-from djangocms_moderation.monkeypatch import _is_placeholder_review_unlocked
+from djangocms_moderation.monkeypatch.versioning import _is_placeholder_review_unlocked
 
 from .utils.base import BaseTestCase, MockRequest
 
@@ -27,7 +27,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         self.mock_request.user = self.user
         super().setUp()
 
-    @mock.patch('djangocms_moderation.monkeypatch.is_obj_review_locked')
+    @mock.patch('djangocms_moderation.monkeypatch.versioning.is_obj_review_locked')
     def test_get_edit_link(self, mock_is_obj_review_locked):
         """
         VersionAdmin should call moderation's version of _get_edit_link
@@ -41,8 +41,8 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         # Edit link is inactive as `mock_is_obj_review_locked` is True
         self.assertIn('inactive', edit_link)
 
-    @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')
-    @mock.patch('djangocms_moderation.monkeypatch.is_obj_review_locked')
+    @mock.patch('djangocms_moderation.monkeypatch.versioning.is_registered_for_moderation')
+    @mock.patch('djangocms_moderation.monkeypatch.versioning.is_obj_review_locked')
     def test_get_edit_link_not_moderation_registered(self, mock_is_obj_review_locked,
                                                      mock_is_registered_for_moderation):
         """
@@ -59,7 +59,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         self.assertFalse(mock_is_obj_review_locked.called)
         self.assertNotEqual(edit_link, '')
 
-    @mock.patch('djangocms_moderation.monkeypatch.get_active_moderation_request')
+    @mock.patch('djangocms_moderation.monkeypatch.versioning.get_active_moderation_request')
     def test_get_archive_link(self, _mock):
         """
         VersionAdmin should call moderation's version of _get_archive_link
@@ -131,7 +131,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         )
         self.assertIn('Submit for moderation', link)
 
-    @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')
+    @mock.patch('djangocms_moderation.monkeypatch.versioning.is_registered_for_moderation')
     def test_get_moderation_link_when_not_registered(self, mock_is_registered_for_moderation):
         mock_is_registered_for_moderation.return_value = False
 
@@ -143,8 +143,8 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
 
 class PlaceholderChecksTestCase(BaseTestCase):
 
-    @mock.patch('djangocms_moderation.monkeypatch.is_registered_for_moderation')
-    @mock.patch('djangocms_moderation.monkeypatch.is_obj_review_locked')
+    @mock.patch('djangocms_moderation.monkeypatch.versioning.is_registered_for_moderation')
+    @mock.patch('djangocms_moderation.monkeypatch.versioning.is_obj_review_locked')
     def test_is_placeholder_review_unlocked(self, mock_is_registered_for_moderation, mock_is_obj_review_locked):
         """
         Check that the monkeypatch returns expected value
