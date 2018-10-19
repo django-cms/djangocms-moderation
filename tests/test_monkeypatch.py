@@ -14,7 +14,9 @@ from djangocms_versioning.test_utils.factories import (
     PlaceholderFactory,
 )
 
-from djangocms_moderation.monkeypatch.versioning import _is_placeholder_review_unlocked
+from djangocms_moderation.monkeypatch.versioning import (
+    _is_placeholder_review_unlocked,
+)
 
 from .utils.base import BaseTestCase, MockRequest
 

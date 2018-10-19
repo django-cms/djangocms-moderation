@@ -1,5 +1,4 @@
-import filer
-from filer.admin.fileadmin import FileAdminChangeFrom
+from django.apps import apps
 
 from djangocms_moderation.helpers import (
     get_active_moderation_request,
@@ -16,6 +15,11 @@ def init(func):
                 field.disabled = True
     return inner
 
-filer.admin.fileadmin.FileAdminChangeFrom.__init__ = init(
-    filer.admin.fileadmin.FileAdminChangeFrom.__init__
-)
+
+# monkey patch only if filer is installed
+if apps.is_installed('filer'):
+    import filer
+    from filer.admin.fileadmin import FileAdminChangeFrom  # noqa F401
+    filer.admin.fileadmin.FileAdminChangeFrom.__init__ = init(
+        filer.admin.fileadmin.FileAdminChangeFrom.__init__
+    )
