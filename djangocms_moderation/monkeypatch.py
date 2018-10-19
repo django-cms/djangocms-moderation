@@ -5,7 +5,6 @@ from cms.models import fields
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning import admin
-from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.helpers import version_list_url
 
@@ -112,9 +111,9 @@ def _can_modify_version(func):
         return func(self, version, user)
     return inner
 
-VersionAdmin.get_state_actions = get_state_actions(VersionAdmin.get_state_actions)
-VersionAdmin._get_edit_link = _get_edit_link(VersionAdmin._get_edit_link)
-VersionAdmin._get_archive_link = _get_archive_link(VersionAdmin._get_archive_link)
+VersionAdmin.get_state_actions = get_state_actions(admin.VersionAdmin.get_state_actions)
+VersionAdmin._get_edit_link = _get_edit_link(admin.VersionAdmin._get_edit_link)
+VersionAdmin._get_archive_link = _get_archive_link(admin.VersionAdmin._get_archive_link)
 VersionAdmin._get_moderation_link = _get_moderation_link
 admin.VersioningAdminMixin._can_modify_version = _can_modify_version(admin.VersioningAdminMixin._can_modify_version)
 
