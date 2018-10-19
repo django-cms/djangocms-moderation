@@ -4,18 +4,19 @@ from django.utils.translation import ugettext_lazy as _
 from cms.models import fields
 from cms.utils.urlutils import add_url_parameters
 
+from djangocms_versioning import admin
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.helpers import version_list_url
 
-from .helpers import (
+from djangocms_moderation.helpers import (
     get_active_moderation_request,
     get_moderation_button_title_and_url,
     is_obj_review_locked,
     is_obj_version_unlocked,
     is_registered_for_moderation,
 )
-from .utils import get_admin_url
+from djangocms_moderation.utils import get_admin_url
 
 
 def get_state_actions(func):
@@ -103,9 +104,16 @@ def _is_placeholder_review_unlocked(placeholder, user):
     return True
 
 
+def _can_modify_version(obj, version, user):
+    if is_registered_for_moderation(version.content):
+        if get_active_moderation_request(version.content):
+            return False
+    return True
+
 VersionAdmin.get_state_actions = get_state_actions(VersionAdmin.get_state_actions)
 VersionAdmin._get_edit_link = _get_edit_link(VersionAdmin._get_edit_link)
 VersionAdmin._get_archive_link = _get_archive_link(VersionAdmin._get_archive_link)
 VersionAdmin._get_moderation_link = _get_moderation_link
+admin.VersioningAdminMixin._can_modify_version = _can_modify_version
 
 fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]
