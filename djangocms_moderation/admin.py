@@ -636,6 +636,12 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return False
 
     def changelist_view(self, request, extra_context=None):
+        """
+        If reviewer filter is "All" and current user is reviewer
+        and there are moderation_request_actions assigned to that user
+        then set this filter to default to set that filter to show only this reviewer's
+        pending collections. This is done by modifying the query string in the request object directly
+        """
         if 'reviewer' not in request.GET:
             if request.user in User.objects.filter(moderationrequestaction__isnull=False):
                 querystring = request.GET.copy()
