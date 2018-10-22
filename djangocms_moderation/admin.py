@@ -5,7 +5,7 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.html import format_html, format_html_join
@@ -13,6 +13,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
+from cms.utils.urlutils import add_url_parameters
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
@@ -640,14 +641,21 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         If reviewer filter is "All" and current user is reviewer
         and there are moderation_request_actions assigned to that user
         then set this filter to default to set that filter to show only this reviewer's
-        pending collections. This is done by modifying the query string in the request object directly
+        pending collections. This is done by redirecting with an adjusted querystring.
         """
         if 'reviewer' not in request.GET:
             if request.user in User.objects.filter(moderationrequestaction__isnull=False):
-                querystring = request.GET.copy()
+                querystring = request.GET.dict()
                 querystring['reviewer'] = request.user.pk
-                request.GET = querystring
-                request.META['QUERY_STRING'] = request.GET.urlencode()
+                admin_url = add_url_parameters(
+                    utils.get_admin_url(
+                        name='djangocms_moderation_moderationcollection_changelist',
+                        language=request.GET.get('language'),
+                        args=()
+                    ),
+                    querystring
+                )
+                return HttpResponseRedirect(admin_url)
         return super().changelist_view(request, extra_context=extra_context)
 
 
