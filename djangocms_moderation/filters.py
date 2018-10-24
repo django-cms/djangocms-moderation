@@ -86,7 +86,7 @@ class ReviewerFilter(admin.SimpleListFilter):
         }
         for lookup, title in self.lookup_choices:
             yield {
-                'selected': self.parameter_name == force_text(lookup),
+                'selected': self.value() == force_text(lookup),
                 'query_string': changelist.get_query_string({self.parameter_name: lookup}, []),
                 'display': title,
             }
