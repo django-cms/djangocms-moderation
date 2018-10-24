@@ -22,6 +22,8 @@ from .utils import generate_compliance_number
 
 from . import conf, constants  # isort:skip
 
+from pprint import pprint
+
 
 @python_2_unicode_compatible
 class ConfirmationPage(models.Model):
@@ -180,7 +182,6 @@ class WorkflowStep(models.Model):
     role = models.ForeignKey(
         to=Role,
         verbose_name=_('role'),
-        related_name='+',
     )
     is_required = models.BooleanField(
         verbose_name=_('is mandatory'),
@@ -228,7 +229,6 @@ class ModerationCollection(models.Model):
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         verbose_name=_('moderator'),
-        related_name='+',
         on_delete=models.CASCADE,
     )
     workflow = models.ForeignKey(
@@ -263,19 +263,61 @@ class ModerationCollection(models.Model):
 
     @property
     def reviewers(self):
+        """
+        Find all the reviewers assigned to any moderationrequestaction associated with this collection.
+        If none are associated with a given action,
+        then get the role for the step in the workflow and include all reviewers within that list.
+        """
         reviewers = []
+        print('first reviewers')
+        print(reviewers)
         string = ""
         moderation_requests = self.moderation_requests.all()
         for mr in moderation_requests:
             moderation_request_actions = mr.actions.all()
+            reviewers_in_actions = []
+            # import ipdb; ipdb.set_trace()
             for mra in moderation_request_actions:
+                if mra.to_user in reviewers_in_actions:
+                    continue
+                else:
+                    if mra.to_user:
+                        reviewers_in_actions.append(mra.to_user)
                 if mra.to_user in reviewers:
                     continue
                 else:
-                    reviewers.append(mra.to_user)
-                    if string:
-                        string = string + ", "
-                    string = string + mra.get_to_user_name()
+                    if mra.to_user:
+                        reviewers.append(mra.to_user)
+                        if string:
+                            string = string + ", "
+                        string = string + mra.get_to_user_name()
+            # import ipdb; ipdb.set_trace()
+            if reviewers:
+                print('reviewers')
+                pprint(reviewers)
+                print(len(reviewers))
+            if not reviewers:
+                print('no reviewers')
+            if reviewers_in_actions:
+                print('reviewers_in_actions')
+                pprint(reviewers_in_actions)
+            if not reviewers_in_actions:
+                print('no reviewers_in_actions')
+                print('no reviewers')
+            if not reviewers_in_actions and not(self.status == constants.COLLECTING):
+                # import ipdb; ipdb.set_trace()
+                role = self.workflow.first_step.role
+
+                users = role.get_users_queryset()
+                for user in users:
+                    if user in reviewers:
+                        continue
+                    else:
+                        if user:
+                            reviewers.append(user)
+                            if string:
+                                string = string + ", "
+                            string = string + user.get_full_name()
         return string
 
     def allow_submit_for_review(self, user):
@@ -629,9 +671,13 @@ class ModerationRequestAction(models.Model):
         )
 
     def get_by_user_name(self):
+        if not self.to_user:
+            return ''
         return self._get_user_name(self.by_user)
 
     def get_to_user_name(self):
+        if not self.to_user:
+            return ''
         return self._get_user_name(self.to_user)
 
     def _get_user_name(self, user):

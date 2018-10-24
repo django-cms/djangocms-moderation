@@ -25,7 +25,7 @@ from .admin_actions import (
     resubmit_selected,
 )
 from .constants import ARCHIVED, COLLECTING, IN_REVIEW
-from .filters import ReviewerFilter
+from .filters import ModeratorFilter, ReviewerFilter
 from .forms import (
     CollectionCommentForm,
     ModerationRequestActionInlineForm,
@@ -513,7 +513,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     actions = None  # remove `delete_selected` for now, it will be handled later
     list_filter = [
-        'author',
+        ModeratorFilter,
         'status',
         'date_created',
         ReviewerFilter,
