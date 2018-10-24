@@ -48,6 +48,7 @@ from .models import (
 
 
 from . import conf  # isort:skip
+from . import helpers  # isort:skip
 from . import utils  # isort:skip
 from . import views  # isort:skip
 
@@ -644,7 +645,10 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         pending collections. This is done by redirecting with an adjusted querystring.
         """
         if 'reviewer' not in request.GET:
-            if request.user in User.objects.filter(moderationrequestaction__isnull=False):
+            if (
+                request.user in helpers.filter_reviewers_by_role_group()
+                or request.user in helpers.filter_reviewers_by_role_user()
+            ):
                 querystring = request.GET.dict()
                 querystring['reviewer'] = request.user.pk
                 admin_url = add_url_parameters(

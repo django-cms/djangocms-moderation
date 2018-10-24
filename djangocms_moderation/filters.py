@@ -6,6 +6,7 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
 from . import constants
+from . import helpers
 
 
 class ModeratorFilter(admin.SimpleListFilter):
@@ -44,32 +45,10 @@ class ReviewerFilter(admin.SimpleListFilter):
         self.currentuser = request.user
 
         # reviewers assigned to review collections by group
-        self.reviewers_by_group = User.objects.raw('''SELECT DISTINCT  "auth_user"."id"
-        FROM "auth_user"
-        INNER JOIN "auth_user_groups" on ("auth_user"."id" = "auth_user_groups"."user_id")
-        INNER JOIN "auth_group" on ("auth_user_groups"."group_id" = "auth_group"."id")
-        INNER JOIN "djangocms_moderation_role"
-            on ("djangocms_moderation_role"."group_id" = "auth_group"."id")
-        INNER JOIN "djangocms_moderation_workflowstep"
-            on ("djangocms_moderation_workflowstep"."role_id" = "djangocms_moderation_role"."id")
-        INNER JOIN "djangocms_moderation_workflow"
-            on ("djangocms_moderation_workflowstep"."workflow_id" = "djangocms_moderation_workflow"."id")
-        INNER JOIN "djangocms_moderation_moderationcollection"
-            on ("djangocms_moderation_moderationcollection"."workflow_id" = "djangocms_moderation_workflow"."id")
-        WHERE "djangocms_moderation_moderationcollection"."id" IS NOT NULL''')
+        self.reviewers_by_group = helpers.filter_reviewers_by_role_group()
 
         # reviewers assigned to review collections by role
-        self.reviewers_by_role = User.objects.raw('''SELECT DISTINCT  "auth_user"."id"
-        FROM "auth_user"
-        INNER JOIN "djangocms_moderation_role"
-            on ("djangocms_moderation_role"."user_id" = "auth_user"."id")
-        INNER JOIN "djangocms_moderation_workflowstep"
-            on ("djangocms_moderation_workflowstep"."role_id" = "djangocms_moderation_role"."id")
-        INNER JOIN "djangocms_moderation_workflow"
-            on ("djangocms_moderation_workflowstep"."workflow_id" = "djangocms_moderation_workflow"."id")
-        INNER JOIN "djangocms_moderation_moderationcollection"
-            on ("djangocms_moderation_moderationcollection"."workflow_id" = "djangocms_moderation_workflow"."id")
-        WHERE "djangocms_moderation_moderationcollection"."id" IS NOT NULL''')
+        self.reviewers_by_role = helpers.filter_reviewers_by_role_user()
 
         options = []
         # collect all unique users from the three queries

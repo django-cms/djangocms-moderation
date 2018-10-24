@@ -1,4 +1,5 @@
 from django.apps import apps
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import truncatechars
@@ -115,3 +116,33 @@ def get_moderation_button_title_and_url(moderation_request):
         moderation_request.collection_id
     )
     return button_title, url
+
+
+def filter_reviewers_by_role_group():
+        return User.objects.raw('''SELECT DISTINCT  "auth_user"."id"
+            FROM "auth_user"
+            INNER JOIN "auth_user_groups" on ("auth_user"."id" = "auth_user_groups"."user_id")
+            INNER JOIN "auth_group" on ("auth_user_groups"."group_id" = "auth_group"."id")
+            INNER JOIN "djangocms_moderation_role"
+                on ("djangocms_moderation_role"."group_id" = "auth_group"."id")
+            INNER JOIN "djangocms_moderation_workflowstep"
+                on ("djangocms_moderation_workflowstep"."role_id" = "djangocms_moderation_role"."id")
+            INNER JOIN "djangocms_moderation_workflow"
+                on ("djangocms_moderation_workflowstep"."workflow_id" = "djangocms_moderation_workflow"."id")
+            INNER JOIN "djangocms_moderation_moderationcollection"
+                on ("djangocms_moderation_moderationcollection"."workflow_id" = "djangocms_moderation_workflow"."id")
+            WHERE "djangocms_moderation_moderationcollection"."id" IS NOT NULL''')
+
+
+def filter_reviewers_by_role_user():
+    return User.objects.raw('''SELECT DISTINCT  "auth_user"."id"
+        FROM "auth_user"
+        INNER JOIN "djangocms_moderation_role"
+            on ("djangocms_moderation_role"."user_id" = "auth_user"."id")
+        INNER JOIN "djangocms_moderation_workflowstep"
+            on ("djangocms_moderation_workflowstep"."role_id" = "djangocms_moderation_role"."id")
+        INNER JOIN "djangocms_moderation_workflow"
+            on ("djangocms_moderation_workflowstep"."workflow_id" = "djangocms_moderation_workflow"."id")
+        INNER JOIN "djangocms_moderation_moderationcollection"
+            on ("djangocms_moderation_moderationcollection"."workflow_id" = "djangocms_moderation_workflow"."id")
+        WHERE "djangocms_moderation_moderationcollection"."id" IS NOT NULL''')

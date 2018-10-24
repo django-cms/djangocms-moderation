@@ -22,8 +22,6 @@ from .utils import generate_compliance_number
 
 from . import conf, constants  # isort:skip
 
-from pprint import pprint
-
 
 @python_2_unicode_compatible
 class ConfirmationPage(models.Model):
@@ -269,14 +267,11 @@ class ModerationCollection(models.Model):
         then get the role for the step in the workflow and include all reviewers within that list.
         """
         reviewers = []
-        print('first reviewers')
-        print(reviewers)
         string = ""
         moderation_requests = self.moderation_requests.all()
         for mr in moderation_requests:
             moderation_request_actions = mr.actions.all()
             reviewers_in_actions = []
-            # import ipdb; ipdb.set_trace()
             for mra in moderation_request_actions:
                 if mra.to_user in reviewers_in_actions:
                     continue
@@ -291,23 +286,8 @@ class ModerationCollection(models.Model):
                         if string:
                             string = string + ", "
                         string = string + mra.get_to_user_name()
-            # import ipdb; ipdb.set_trace()
-            if reviewers:
-                print('reviewers')
-                pprint(reviewers)
-                print(len(reviewers))
-            if not reviewers:
-                print('no reviewers')
-            if reviewers_in_actions:
-                print('reviewers_in_actions')
-                pprint(reviewers_in_actions)
-            if not reviewers_in_actions:
-                print('no reviewers_in_actions')
-                print('no reviewers')
             if not reviewers_in_actions and not(self.status == constants.COLLECTING):
-                # import ipdb; ipdb.set_trace()
                 role = self.workflow.first_step.role
-
                 users = role.get_users_queryset()
                 for user in users:
                     if user in reviewers:
