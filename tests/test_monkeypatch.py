@@ -8,7 +8,7 @@ from cms.models.fields import PlaceholderRelationField
 
 from djangocms_versioning import versionables
 from djangocms_versioning.admin import VersionAdmin
-from djangocms_versioning.constants import PUBLISHED
+from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.test_utils.factories import (
     PageVersionFactory,
     PlaceholderFactory,
@@ -64,7 +64,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         """
         VersionAdmin should call moderation's version of _get_archive_link
         """
-        version = PageVersionFactory(created_by=self.user)
+        version = PageVersionFactory(state=DRAFT, created_by=self.user)
         archive_url = reverse('admin:{app}_{model}version_archive'.format(
             app=version._meta.app_label,
             model=version.content._meta.model_name,
