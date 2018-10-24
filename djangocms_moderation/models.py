@@ -267,7 +267,6 @@ class ModerationCollection(models.Model):
         then get the role for the step in the workflow and include all reviewers within that list.
         """
         reviewers = []
-        string = ""
         moderation_requests = self.moderation_requests.all()
         for mr in moderation_requests:
             moderation_request_actions = mr.actions.all()
@@ -283,9 +282,6 @@ class ModerationCollection(models.Model):
                 else:
                     if mra.to_user:
                         reviewers.append(mra.to_user)
-                        if string:
-                            string = string + ", "
-                        string = string + mra.get_to_user_name()
             if not reviewers_in_actions and not(self.status == constants.COLLECTING):
                 role = self.workflow.first_step.role
                 users = role.get_users_queryset()
@@ -295,10 +291,7 @@ class ModerationCollection(models.Model):
                     else:
                         if user:
                             reviewers.append(user)
-                            if string:
-                                string = string + ", "
-                            string = string + user.get_full_name()
-        return string
+        return ", ".join(map(get_user_model().get_full_name, reviewers))
 
     def allow_submit_for_review(self, user):
         """

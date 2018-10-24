@@ -42,19 +42,12 @@ class ReviewerFilter(admin.SimpleListFilter):
         """
         self.currentuser = request.user
 
-        # reviewers assigned to review collections by group
-        self.reviewers_by_group = helpers.filter_reviewers_by_role_group()
-
-        # reviewers assigned to review collections by role
-        self.reviewers_by_role = helpers.filter_reviewers_by_role_user()
-
         options = []
         # collect all unique users from the three queries
-        for user in self.reviewers_by_group:
+        for user in User.objects.filter(
+            Q(groups__role__workflowstep__workflow__moderation_collections__isnull=False) |
+            Q(role__workflowstep__workflow__moderation_collections__isnull=False)).distinct():
             options.append((force_text(user.pk), user.get_full_name() or user.get_username()))
-        for user in self.reviewers_by_role:
-            if user not in self.reviewers_by_group:
-                options.append((force_text(user.pk), user.get_full_name() or user.get_username()))
         return options
 
     def queryset(self, request, queryset):

@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from django.urls import reverse
+
+from cms.test_utils.testcases import CMSTestCase
 
 from djangocms_versioning.test_utils import factories
 
@@ -297,6 +300,8 @@ class ModerationAdminTestCase(BaseTestCase):
         self.assertListEqual(mra_inline.fields, fields)
         self.assertIn('message', fields)
 
+
+class ModerationReviewerAdminTestCase(CMSTestCase):
     def test_moderation_collection_changelist_reviewer_filter(self):
 
         user = User.objects.create_user(
@@ -304,7 +309,7 @@ class ModerationAdminTestCase(BaseTestCase):
 
         user2 = User.objects.create_user(
             username='test_non_reviewer', email='test_non_reviewer@test.com',
-            password='test_non_reviewer', is_staff=True)
+            password='test_non_reviewer', is_staff=True, is_superuser=True)
         role = Role.objects.create(name='Role Review', user=user,)
         pg = factories.PageVersionFactory()
         wf = Workflow.objects.create(name='Workflow Review Test',)
@@ -319,23 +324,19 @@ class ModerationAdminTestCase(BaseTestCase):
         wfst = wf.steps.create(role=role, is_required=True, order=1,)
 
         # this moderation request is approved
-        mr.actions.create(to_user=user, by_user=self.user, action=constants.ACTION_STARTED,)
+        mr.actions.create(to_user=user, by_user=user, action=constants.ACTION_STARTED,)
         action = mr.actions.create(
-            by_user=self.user,
+            by_user=user,
             to_user=user,
             action=constants.ACTION_APPROVED,
             step_approved=wfst,
         )
 
-        # TODO: can't get these tests working!
-        # self.client.force_login(user2)
-        # url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
-
-        # response = self.client.get(url)
-        # self.assertNotIn('reviewer', response.wsgi_request.GET)
-
-        # self.client.force_login(user)
-        # response = self.client.get(url)
-        # import ipdb; ipdb.set_trace()
-        # self.assertRedirects(response, '/en/admin/djangocms_moderation/moderationcollection/?reviewer=7')
-        # self.assertEqual(self.user2.pk, response.wsgi_request.GET['reviewer'])
+        url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+        with self.login_user_context(user2):
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.wsgi_request.GET)
+        with self.login_user_context(user):
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)

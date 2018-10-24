@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.conf.urls import url
 from django.contrib import admin
-from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -51,6 +52,8 @@ from . import conf  # isort:skip
 from . import helpers  # isort:skip
 from . import utils  # isort:skip
 from . import views  # isort:skip
+
+User = get_user_model()
 
 
 class ModerationRequestActionInline(admin.TabularInline):
@@ -645,9 +648,11 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         pending collections. This is done by redirecting with an adjusted querystring.
         """
         if 'reviewer' not in request.GET:
-            if (
-                request.user in helpers.filter_reviewers_by_role_group()
-                or request.user in helpers.filter_reviewers_by_role_user()
+            if request.user in (
+                User.objects.filter(
+                    Q(groups__role__workflowstep__workflow__moderation_collections__isnull=False) |
+                    Q(role__workflowstep__workflow__moderation_collections__isnull=False)
+                ).distinct()
             ):
                 querystring = request.GET.dict()
                 querystring['reviewer'] = request.user.pk
