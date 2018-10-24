@@ -15,19 +15,18 @@ class ModeratorFilter(admin.SimpleListFilter):
     """
     title = _("moderator")
     parameter_name = "moderator"
-    moderators = []
 
     def lookups(self, request, model_admin):
         options = []
-        self.moderators = User.objects.filter(moderationcollection__author__isnull=False).distinct()
-        for user in self.moderators:
-            options.append((int(user.pk), user.get_full_name() or user.get_username()))
+        moderators = User.objects.filter(moderationcollection__author__isnull=False).distinct()
+        for user in moderators:
+            options.append((force_text(user.pk), user.get_full_name() or user.get_username()))
         return options
 
     def queryset(self, request, queryset):
-        if request.GET.get(self.parameter_name):
+        if self.value():
             return queryset.filter(
-                author=request.GET.get(self.parameter_name)
+                author=self.value()
             ).distinct()
         return queryset
 
@@ -35,7 +34,6 @@ class ModeratorFilter(admin.SimpleListFilter):
 class ReviewerFilter(admin.SimpleListFilter):
     title = _("reviewer")
     parameter_name = "reviewer"
-    reviewers = []
     currentuser = {}
 
     def lookups(self, request, model_admin):
@@ -53,16 +51,16 @@ class ReviewerFilter(admin.SimpleListFilter):
         options = []
         # collect all unique users from the three queries
         for user in self.reviewers_by_group:
-            options.append((int(user.pk), user.get_full_name() or user.get_username()))
+            options.append((force_text(user.pk), user.get_full_name() or user.get_username()))
         for user in self.reviewers_by_role:
-            if user not in self.reviewers and user not in self.reviewers_by_group:
-                options.append((int(user.pk), user.get_full_name() or user.get_username()))
+            if user not in self.reviewers_by_group:
+                options.append((force_text(user.pk), user.get_full_name() or user.get_username()))
         return options
 
     def queryset(self, request, queryset):
-        if request.GET.get(self.parameter_name):
+        if self.value() and self.value() != 'all':
             result = queryset.filter(
-                Q(moderation_requests__actions__to_user=request.GET.get(self.parameter_name)) |
+                Q(moderation_requests__actions__to_user=self.value()) |
                 # also include those that have been assigned to a role, instead of directly to a user
                 (
                     # include any direct user assignments to actions
@@ -71,8 +69,8 @@ class ReviewerFilter(admin.SimpleListFilter):
                     & ~Q(status=constants.COLLECTING)
                     # include collections with group or role that matches current user
                     & (
-                        Q(workflow__steps__role__user=request.GET.get(self.parameter_name)) |
-                        Q(workflow__steps__role__group__user=request.GET.get(self.parameter_name))
+                        Q(workflow__steps__role__user=self.value()) |
+                        Q(workflow__steps__role__group__user=self.value())
                     )
                 )
             ).distinct()
@@ -81,15 +79,14 @@ class ReviewerFilter(admin.SimpleListFilter):
         return queryset
 
     def choices(self, changelist):
-        if self.currentuser not in self.reviewers:
-            yield {
-                'selected': self.value() is None,
-                'query_string': changelist.get_query_string({}, [self.parameter_name]),
-                'display': _('All'),
-            }
+        yield {
+            'selected': self.value() == 'all',
+            'query_string': changelist.get_query_string({self.parameter_name: 'all'}, []),
+            'display': _('All'),
+        }
         for lookup, title in self.lookup_choices:
             yield {
-                'selected': self.value() == force_text(lookup),
+                'selected': self.parameter_name == force_text(lookup),
                 'query_string': changelist.get_query_string({self.parameter_name: lookup}, []),
                 'display': title,
             }
