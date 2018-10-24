@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from . import constants
 
+
 class ModeratorFilter(admin.SimpleListFilter):
     """
     Provides a moderator filter limited to those users who have authored collections
@@ -42,7 +43,7 @@ class ReviewerFilter(admin.SimpleListFilter):
         """
         self.currentuser = request.user
 
-        #reviewers assigned to review collections by group
+        # reviewers assigned to review collections by group
         self.reviewers_by_group = User.objects.raw('''SELECT DISTINCT  "auth_user"."id"
         FROM "auth_user"
         INNER JOIN "auth_user_groups" on ("auth_user"."id" = "auth_user_groups"."user_id")
