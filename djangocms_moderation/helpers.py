@@ -116,3 +116,16 @@ def get_moderation_button_title_and_url(moderation_request):
         moderation_request.collection_id
     )
     return button_title, url
+
+
+def available_reviewers():
+    """
+    Helper to get the available reviewer
+    :param
+    :return: title: <queryset>
+    """
+    from django.db.models import Q
+
+    return User.objects.filter(
+        Q(groups__role__workflowstep__workflow__moderation_collections__isnull=False) |
+        Q(role__workflowstep__workflow__moderation_collections__isnull=False)).distinct()

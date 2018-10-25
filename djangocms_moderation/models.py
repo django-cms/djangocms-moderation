@@ -266,31 +266,21 @@ class ModerationCollection(models.Model):
         If none are associated with a given action,
         then get the role for the step in the workflow and include all reviewers within that list.
         """
-        reviewers = []
+        reviewers = set()
         moderation_requests = self.moderation_requests.all()
         for mr in moderation_requests:
             moderation_request_actions = mr.actions.all()
-            reviewers_in_actions = []
+            reviewers_in_actions = set()
             for mra in moderation_request_actions:
-                if mra.to_user in reviewers_in_actions:
-                    continue
-                else:
-                    if mra.to_user:
-                        reviewers_in_actions.append(mra.to_user)
-                if mra.to_user in reviewers:
-                    continue
-                else:
-                    if mra.to_user:
-                        reviewers.append(mra.to_user)
-            if not reviewers_in_actions and not(self.status == constants.COLLECTING):
+                if mra.to_user:
+                    reviewers_in_actions.add(mra.to_user)
+                    reviewers.add(mra.to_user)
+
+            if not reviewers_in_actions and self.status != constants.COLLECTING:
                 role = self.workflow.first_step.role
                 users = role.get_users_queryset()
                 for user in users:
-                    if user in reviewers:
-                        continue
-                    else:
-                        if user:
-                            reviewers.append(user)
+                    reviewers.add(user)
         return ", ".join(map(get_user_model().get_full_name, reviewers))
 
     def allow_submit_for_review(self, user):
