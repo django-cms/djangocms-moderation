@@ -33,7 +33,7 @@ from .forms import (
     RequestCommentForm,
     WorkflowStepInlineFormSet,
 )
-from .helpers import get_form_submission_for_step
+from .helpers import get_all_reviewers, get_form_submission_for_step
 from .models import (
     CollectionComment,
     ConfirmationFormSubmission,
@@ -648,7 +648,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         pending collections. This is done by redirecting with an adjusted querystring.
         """
         if 'reviewer' not in request.GET:
-            if request.user in helpers.available_reviewers():
+            if request.user in helpers.get_all_reviewers():
                 querystring = request.GET.dict()
                 querystring['reviewer'] = request.user.pk
                 admin_url = add_url_parameters(
