@@ -32,7 +32,7 @@ from .forms import (
     RequestCommentForm,
     WorkflowStepInlineFormSet,
 )
-from .helpers import get_all_reviewers, get_form_submission_for_step
+from .helpers import get_form_submission_for_step
 from .models import (
     CollectionComment,
     ConfirmationFormSubmission,
