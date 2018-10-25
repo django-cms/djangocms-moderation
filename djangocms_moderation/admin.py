@@ -13,8 +13,8 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
-from cms.utils.urlutils import add_url_parameters
 from cms.utils.helpers import is_editable_model
+from cms.utils.urlutils import add_url_parameters
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
