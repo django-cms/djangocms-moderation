@@ -5,11 +5,13 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.template.defaultfilters import truncatechars
 from django.utils.translation import ugettext_lazy as _
+
 from djangocms_versioning.models import Version
 
 from .conf import COLLECTION_NAME_LENGTH_LIMIT
 from .constants import COLLECTING
 from .models import ConfirmationFormSubmission
+
 
 User = get_user_model()
 
@@ -129,4 +131,3 @@ def get_all_reviewers():
             Q(groups__role__workflowstep__workflow__moderation_collections__isnull=False) |
             Q(role__workflowstep__workflow__moderation_collections__isnull=False)
     ).distinct()
-

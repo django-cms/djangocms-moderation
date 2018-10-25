@@ -1,12 +1,15 @@
 
 from django.contrib import admin
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
 from . import constants
 from . import helpers
+
+
+User = get_user_model()
 
 
 class ModeratorFilter(admin.SimpleListFilter):
