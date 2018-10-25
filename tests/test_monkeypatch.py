@@ -59,7 +59,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         self.assertFalse(mock_is_obj_review_locked.called)
         self.assertNotEqual(edit_link, '')
 
-    @mock.patch('djangocms_moderation.monkeypatch.get_active_moderation_request')
+    @mock.patch('djangocms_moderation.monkeypatch.is_obj_review_locked')
     def test_get_archive_link(self, _mock):
         """
         VersionAdmin should call moderation's version of _get_archive_link
@@ -76,7 +76,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         )
         # We test that moderation check is called when getting an edit link
         self.assertEqual(1, _mock.call_count)
-        # Edit link is inactive as `get_active_moderation_request` is True
+        # Edit link is inactive as `is_obj_review_locked` is True
         self.assertIn('inactive', archive_link)
         self.assertNotIn(archive_url, archive_link)
 
