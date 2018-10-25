@@ -44,7 +44,8 @@ class ReviewerFilter(admin.SimpleListFilter):
 
         options = []
         # collect all unique users from the three queries
-        for user in helpers.get_all_reviewers():
+
+        for user in helpers.available_reviewers():
             options.append((force_text(user.pk), user.get_full_name() or user.get_username()))
         return options
 

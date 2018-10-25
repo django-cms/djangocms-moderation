@@ -648,9 +648,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         pending collections. This is done by redirecting with an adjusted querystring.
         """
         if 'reviewer' not in request.GET:
-            if request.user in (
-                get_all_reviewers()
-            ):
+            if request.user in helpers.available_reviewers():
                 querystring = request.GET.dict()
                 querystring['reviewer'] = request.user.pk
                 admin_url = add_url_parameters(
