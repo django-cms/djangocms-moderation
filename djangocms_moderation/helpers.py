@@ -1,16 +1,17 @@
 from django.apps import apps
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.template.defaultfilters import truncatechars
 from django.utils.translation import ugettext_lazy as _
-
 from djangocms_versioning.models import Version
 
 from .conf import COLLECTION_NAME_LENGTH_LIMIT
 from .constants import COLLECTING
 from .models import ConfirmationFormSubmission
 
+User = get_user_model()
 
 try:
     from djangocms_version_locking.helpers import content_is_unlocked_for_user
@@ -124,8 +125,6 @@ def available_reviewers():
     :param
     :return: title: <queryset>
     """
-    from django.db.models import Q
-
     return User.objects.filter(
         Q(groups__role__workflowstep__workflow__moderation_collections__isnull=False) |
         Q(role__workflowstep__workflow__moderation_collections__isnull=False)).distinct()
