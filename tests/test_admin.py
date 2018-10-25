@@ -324,7 +324,7 @@ class ModerationReviewerAdminTestCase(CMSTestCase):
 
         # this moderation request is approved
         mr.actions.create(to_user=user, by_user=user, action=constants.ACTION_STARTED,)
-        action = mr.actions.create(
+        mr.actions.create(
             by_user=user,
             to_user=user,
             action=constants.ACTION_APPROVED,
