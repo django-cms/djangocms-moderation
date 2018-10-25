@@ -10,7 +10,9 @@ from django.utils.translation import ugettext_lazy as _, ungettext
 from cms.utils.urlutils import add_url_parameters
 
 from django_fsm import TransitionNotAllowed
+from djangocms_versioning.helpers import get_content_types_with_subclasses
 from djangocms_versioning.models import Version
+from filer.models import File, Image
 
 from djangocms_moderation import constants
 from djangocms_moderation.emails import (
@@ -235,24 +237,29 @@ def publish_selected(modeladmin, request, queryset):
 publish_selected.short_description = _("Publish selected requests")  # noqa: E305
 
 
-def haystack_queryset_to_version_queryset(queryset):
-    """Returns the version objects corresponding to the objects in the Haystack queryset"""
+def convert_queryset_to_version_queryset(queryset):
+    if not queryset:
+        return Version.objects.all()
+
     id_map = defaultdict(list)
     for obj in queryset:
-        id_map[obj.model].append(obj.pk)
+        try:
+            id_map[obj.model].append(obj.pk)
+        except AttributeError:
+            id_map[obj._meta.model].append(obj.pk)
     q = Q()
     for obj_model, ids in id_map.items():
-        ctype = ContentType.objects.get_for_model(obj_model)
-        q |= Q(content_type=ctype, object_id__in=ids)
+        if obj_model in [File, Image]:
+            ctype = get_content_types_with_subclasses([obj_model])
+        else:
+            ctype = ContentType.objects.get_for_model(obj_model).pk
+        q |= Q(content_type_id=ctype, object_id__in=ids)
     return Version.objects.filter(q)
 
 
 def add_items_to_collection(modeladmin, request, queryset):
-    """
-    Action to add queryset to moderation collection. Note that queryset is a
-    Haystack SearchQuerySet
-    """
-    version_ids = haystack_queryset_to_version_queryset(queryset).values_list('pk', flat=True)
+    """Action to add queryset to moderation collection."""
+    version_ids = convert_queryset_to_version_queryset(queryset).values_list('pk', flat=True)
     version_ids = [str(x) for x in version_ids]
     if version_ids:
         admin_url = add_url_parameters(

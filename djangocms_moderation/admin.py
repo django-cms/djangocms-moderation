@@ -14,6 +14,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
 from cms.utils.urlutils import add_url_parameters
+from cms.utils.helpers import is_editable_model
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
@@ -150,11 +151,20 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     get_title.short_description = _('Title')
 
     def get_preview_link(self, obj):
+        content = obj.version.content
+        if is_editable_model(content.__class__):
+            object_preview_url = get_object_preview_url(obj.version.content)
+        else:
+            object_preview_url = reverse('admin:{app}_{model}_change'.format(
+                app=content._meta.app_label,
+                model=content._meta.model_name,
+            ), args=[content.pk])
+
         return format_html(
             '<a href="{}" class="js-moderation-close-sideframe" target="_top">'
             '<span class="cms-icon cms-icon-eye"></span>'
             '</a>',
-            get_object_preview_url(obj.version.content),
+            object_preview_url,
         )
     get_preview_link.short_description = _('Preview')
 
@@ -599,12 +609,12 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
         url_patterns = [
             _url(
-                '^(?P<collection_id>\d+)/submit-for-review/$',
+                r'^(?P<collection_id>\d+)/submit-for-review/$',
                 views.submit_collection_for_moderation,
                 name="cms_moderation_submit_collection_for_moderation",
             ),
             _url(
-                '^(?P<collection_id>\d+)/cancel-collection/$',
+                r'^(?P<collection_id>\d+)/cancel-collection/$',
                 views.cancel_collection,
                 name="cms_moderation_cancel_collection",
             ),

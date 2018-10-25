@@ -56,14 +56,21 @@ class TestCMSToolbars(BaseTestCase):
             toolbar.toolbar.structure_mode_active = False
         return toolbar
 
-    def _find_buttons(self, button_name, toolbar):
+    def _find_buttons(self, callable_or_name, toolbar):
         found = []
+
+        if callable(callable_or_name):
+            func = callable_or_name
+        else:
+            def func(button):
+                return button.name == callable_or_name
+
         for button_list in toolbar.get_right_items():
-            found = found + [button for button in button_list.buttons if button.name == button_name]
+            found = found + [button for button in button_list.buttons if func(button)]
         return found
 
-    def _button_exists(self, button_name, toolbar):
-        found = self._find_buttons(button_name, toolbar)
+    def _button_exists(self, callable_or_name, toolbar):
+        found = self._find_buttons(callable_or_name, toolbar)
         return bool(len(found))
 
     def _find_menu_item(self, name, toolbar):
@@ -161,9 +168,13 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
+        self.assertTrue(self._button_exists(
+            lambda button: button.name.endswith('Edit'),
+            toolbar.toolbar))
         # Edit button should not be clickable
-        button = self._find_buttons('Edit', toolbar.toolbar)
+        button = self._find_buttons(
+            lambda button: button.name.endswith('Edit'),
+            toolbar.toolbar)
         self.assertTrue(button[0].disabled)
 
     def test_add_edit_button(self):
