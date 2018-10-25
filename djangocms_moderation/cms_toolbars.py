@@ -2,10 +2,12 @@
 from django.utils.translation import ugettext_lazy as _
 
 from cms.cms_toolbars import ADMIN_MENU_IDENTIFIER
-from cms.toolbar_pool import toolbar_pool
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_versioning.cms_toolbars import VersioningToolbar
+from djangocms_versioning.cms_toolbars import (
+    VersioningToolbar,
+    replace_toolbar,
+)
 from djangocms_versioning.models import Version
 
 from .helpers import (
@@ -112,5 +114,4 @@ class ModerationToolbar(VersioningToolbar):
         self._add_moderation_menu()
 
 
-toolbar_pool.unregister(VersioningToolbar)
-toolbar_pool.register(ModerationToolbar)
+replace_toolbar(VersioningToolbar, ModerationToolbar)

@@ -601,12 +601,12 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
         url_patterns = [
             _url(
-                '^(?P<collection_id>\d+)/submit-for-review/$',
+                r'^(?P<collection_id>\d+)/submit-for-review/$',
                 views.submit_collection_for_moderation,
                 name="cms_moderation_submit_collection_for_moderation",
             ),
             _url(
-                '^(?P<collection_id>\d+)/cancel-collection/$',
+                r'^(?P<collection_id>\d+)/cancel-collection/$',
                 views.cancel_collection,
                 name="cms_moderation_cancel_collection",
             ),
