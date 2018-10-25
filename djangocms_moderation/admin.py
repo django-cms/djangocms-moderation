@@ -33,7 +33,7 @@ from .forms import (
     RequestCommentForm,
     WorkflowStepInlineFormSet,
 )
-from .helpers import get_form_submission_for_step
+from .helpers import get_all_reviewers, get_form_submission_for_step
 from .models import (
     CollectionComment,
     ConfirmationFormSubmission,
@@ -649,10 +649,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         """
         if 'reviewer' not in request.GET:
             if request.user in (
-                User.objects.filter(
-                    Q(groups__role__workflowstep__workflow__moderation_collections__isnull=False) |
-                    Q(role__workflowstep__workflow__moderation_collections__isnull=False)
-                ).distinct()
+                get_all_reviewers()
             ):
                 querystring = request.GET.dict()
                 querystring['reviewer'] = request.user.pk

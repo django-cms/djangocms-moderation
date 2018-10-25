@@ -44,9 +44,7 @@ class ReviewerFilter(admin.SimpleListFilter):
 
         options = []
         # collect all unique users from the three queries
-        for user in User.objects.filter(
-            Q(groups__role__workflowstep__workflow__moderation_collections__isnull=False) |
-            Q(role__workflowstep__workflow__moderation_collections__isnull=False)).distinct():
+        for user in helpers.get_all_reviewers():
             options.append((force_text(user.pk), user.get_full_name() or user.get_username()))
         return options
 
