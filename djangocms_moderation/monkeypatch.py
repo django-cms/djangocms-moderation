@@ -6,7 +6,9 @@ from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning import admin, models
 from djangocms_versioning.constants import DRAFT
+from djangocms_versioning.exceptions import ConditionFailed
 from djangocms_versioning.helpers import version_list_url
+from djangocms_versioning.models import Version
 
 from djangocms_moderation.helpers import (
     get_active_moderation_request,
@@ -66,19 +68,6 @@ def _get_moderation_link(self, version, request):
     return ''
 
 
-def _get_edit_link(func):
-    """
-    Don't display edit link if the object is review locked
-    """
-    def inner(self, version, request, disabled=False):
-        content_object = version.content
-        if is_registered_for_moderation(content_object):
-            if is_obj_review_locked(content_object, request.user):
-                disabled = True
-        return func(self, version, request, disabled)
-    return inner
-
-
 def _is_placeholder_review_unlocked(placeholder, user):
     """
     Register review lock with placeholder checks framework to
@@ -90,20 +79,55 @@ def _is_placeholder_review_unlocked(placeholder, user):
     return True
 
 
-def _is_version_review_locked(version, user):
-    if is_registered_for_moderation(version.content):
-        if is_obj_review_locked(version.content, user):
-            return False
-    return True
+def _is_version_review_locked(message):
+    def inner(version, user):
+        if (
+            is_registered_for_moderation(version.content) and
+            is_obj_review_locked(version.content, user)
+        ):
+            raise ConditionFailed(message)
+    return inner
+
+
+def get_latest_draft_version(version):
+    """Get latest draft version of version object
+    """
+    drafts = (
+        Version.objects
+        .filter_by_content_grouping_values(version.content)
+        .filter(state=DRAFT)
+    )
+    return drafts.first()
+
+
+def _is_draft_version_review_locked(message):
+    def inner(version, user):
+        draft_version = get_latest_draft_version(version)
+        if (
+            is_registered_for_moderation(draft_version.content) and
+            is_obj_review_locked(draft_version.content, user)
+        ):
+            raise ConditionFailed(message)
+    return inner
 
 
 admin.VersionAdmin.get_state_actions = get_state_actions(admin.VersionAdmin.get_state_actions)
-admin.VersionAdmin._get_edit_link = _get_edit_link(admin.VersionAdmin._get_edit_link)
 admin.VersionAdmin._get_moderation_link = _get_moderation_link
 
-models.Version.can_archive += [_is_version_review_locked]
-models.Version.can_revert += [_is_version_review_locked]
-models.Version.can_discard += [_is_version_review_locked]
-models.Version.can_modify += [_is_version_review_locked]
+models.Version.check_archive += [
+    _is_version_review_locked(_('Cannot archive a version in an active moderation collection'))
+]
+models.Version.check_revert += [
+    _is_draft_version_review_locked(_('Cannot revert when draft version is in an active moderation collection'))
+]
+models.Version.check_discard += [
+    _is_version_review_locked(_('Cannot archive a version in an active moderation collection'))
+]
+models.Version.check_modify += [
+    _is_version_review_locked(_('Version is in an active moderation collection'))
+]
+models.Version.check_edit_redirect += [
+    _is_version_review_locked(_('Cannot edit a version in an active moderation collection'))
+]
 
 fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]
