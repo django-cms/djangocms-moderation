@@ -244,14 +244,14 @@ def convert_queryset_to_version_queryset(queryset):
         model = getattr(obj, 'model', obj._meta.model)
 
         from django.db.models.base import ModelBase, Model
-        model_bases = (ModelBase, Model)
+        model_bases = [ModelBase, Model]
         if hasattr(model, 'polymorphic_ctype_id'):
             from polymorphic.base import PolymorphicModelBase
-            model_bases = (*model_bases, PolymorphicModelBase)
+            model_bases.append(PolymorphicModelBase)
         model = next(
             m for m in reversed(model.mro())
             if (
-                isinstance(m, model_bases)
+                isinstance(m, tuple(model_bases))
                 and m not in model_bases
                 and not m._meta.abstract
             )
