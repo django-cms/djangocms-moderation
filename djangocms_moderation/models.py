@@ -180,6 +180,7 @@ class WorkflowStep(models.Model):
     role = models.ForeignKey(
         to=Role,
         verbose_name=_('role'),
+        related_name='+',
     )
     is_required = models.BooleanField(
         verbose_name=_('is mandatory'),
@@ -227,6 +228,7 @@ class ModerationCollection(models.Model):
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         verbose_name=_('moderator'),
+        related_name='+',
         on_delete=models.CASCADE,
     )
     workflow = models.ForeignKey(
@@ -258,30 +260,6 @@ class ModerationCollection(models.Model):
     @property
     def author_name(self):
         return self.author.get_full_name() or self.author.get_username()
-
-    @property
-    def reviewers(self):
-        """
-        Find all the reviewers assigned to any moderationrequestaction associated with this collection.
-        If none are associated with a given action,
-        then get the role for the step in the workflow and include all reviewers within that list.
-        """
-        reviewers = set()
-        moderation_requests = self.moderation_requests.all()
-        for mr in moderation_requests:
-            moderation_request_actions = mr.actions.all()
-            reviewers_in_actions = set()
-            for mra in moderation_request_actions:
-                if mra.to_user:
-                    reviewers_in_actions.add(mra.to_user)
-                    reviewers.add(mra.to_user)
-
-            if not reviewers_in_actions and self.status != constants.COLLECTING:
-                role = self.workflow.first_step.role
-                users = role.get_users_queryset()
-                for user in users:
-                    reviewers.add(user)
-        return ", ".join(map(get_user_model().get_full_name, reviewers))
 
     def allow_submit_for_review(self, user):
         """
@@ -582,6 +560,7 @@ class ModerationRequestAction(models.Model):
         verbose_name=_('to user'),
         blank=True,
         null=True,
+        related_name='+',
         on_delete=models.CASCADE,
     )
     # Role which is next in the moderation flow
@@ -634,13 +613,9 @@ class ModerationRequestAction(models.Model):
         )
 
     def get_by_user_name(self):
-        if not self.to_user:
-            return ''
         return self._get_user_name(self.by_user)
 
     def get_to_user_name(self):
-        if not self.to_user:
-            return ''
         return self._get_user_name(self.to_user)
 
     def _get_user_name(self, user):

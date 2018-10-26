@@ -102,7 +102,7 @@ class CollectionItemsViewTest(BaseViewTestCase):
             follow=False
         )
 
-        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, redirect_to_url)
 
         moderation_request = ModerationRequest.objects.get(version=pg1_version)
         self.assertEqual(moderation_request.collection, self.collection1)

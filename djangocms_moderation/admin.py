@@ -3,9 +3,8 @@ from __future__ import unicode_literals
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin
-from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.html import format_html, format_html_join
@@ -14,7 +13,6 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
 from cms.utils.helpers import is_editable_model
-from cms.utils.urlutils import add_url_parameters
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
@@ -26,7 +24,6 @@ from .admin_actions import (
     resubmit_selected,
 )
 from .constants import ARCHIVED, COLLECTING, IN_REVIEW
-from .filters import ModeratorFilter, ReviewerFilter
 from .forms import (
     CollectionCommentForm,
     ModerationRequestActionInlineForm,
@@ -49,11 +46,8 @@ from .models import (
 
 
 from . import conf  # isort:skip
-from . import helpers  # isort:skip
 from . import utils  # isort:skip
 from . import views  # isort:skip
-
-User = get_user_model()
 
 
 class ModerationRequestActionInline(admin.TabularInline):
@@ -526,10 +520,9 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     actions = None  # remove `delete_selected` for now, it will be handled later
     list_filter = [
-        ModeratorFilter,
+        'author',
         'status',
         'date_created',
-        ReviewerFilter,
     ]
     list_display_links = None
 
@@ -540,7 +533,6 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             'author',
             'workflow',
             'status',
-            'reviewers',
             'date_created',
             'list_display_actions',
         ]
@@ -648,28 +640,6 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
-
-    def changelist_view(self, request, extra_context=None):
-        """
-        If reviewer filter is "All" and current user is reviewer
-        and there are moderation_request_actions assigned to that user
-        then set this filter to default to set that filter to show only this reviewer's
-        pending collections. This is done by redirecting with an adjusted querystring.
-        """
-        if 'reviewer' not in request.GET:
-            if request.user in helpers.get_all_reviewers():
-                querystring = request.GET.dict()
-                querystring['reviewer'] = request.user.pk
-                admin_url = add_url_parameters(
-                    utils.get_admin_url(
-                        name='djangocms_moderation_moderationcollection_changelist',
-                        language=request.GET.get('language'),
-                        args=()
-                    ),
-                    querystring
-                )
-                return HttpResponseRedirect(admin_url)
-        return super().changelist_view(request, extra_context=extra_context)
 
 
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
