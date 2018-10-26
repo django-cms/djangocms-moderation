@@ -10,9 +10,7 @@ from django.utils.translation import ugettext_lazy as _, ungettext
 from cms.utils.urlutils import add_url_parameters
 
 from django_fsm import TransitionNotAllowed
-from djangocms_versioning.helpers import get_content_types_with_subclasses
 from djangocms_versioning.models import Version
-from filer.models import File, Image
 
 from djangocms_moderation import constants
 from djangocms_moderation.emails import (
@@ -239,20 +237,30 @@ publish_selected.short_description = _("Publish selected requests")  # noqa: E30
 
 def convert_queryset_to_version_queryset(queryset):
     if not queryset:
-        return Version.objects.all()
+        return Version.objects.none()
 
     id_map = defaultdict(list)
     for obj in queryset:
-        try:
-            id_map[obj.model].append(obj.pk)
-        except AttributeError:
-            id_map[obj._meta.model].append(obj.pk)
+        model = getattr(obj, 'model', obj._meta.model)
+
+        from django.db.models.base import ModelBase, Model
+        model_bases = (ModelBase, Model)
+        if hasattr(model, 'polymorphic_ctype_id'):
+            from polymorphic.base import PolymorphicModelBase
+            model_bases = (*model_bases, PolymorphicModelBase)
+        model = next(
+            m for m in reversed(model.mro())
+            if (
+                isinstance(m, model_bases)
+                and m not in model_bases
+                and not m._meta.abstract
+            )
+        )
+
+        id_map[model].append(obj.pk)
     q = Q()
     for obj_model, ids in id_map.items():
-        if obj_model in [File, Image]:
-            ctype = get_content_types_with_subclasses([obj_model])
-        else:
-            ctype = ContentType.objects.get_for_model(obj_model).pk
+        ctype = ContentType.objects.get_for_model(obj_model).pk
         q |= Q(content_type_id=ctype, object_id__in=ids)
     return Version.objects.filter(q)
 
