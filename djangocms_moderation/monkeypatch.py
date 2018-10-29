@@ -104,6 +104,7 @@ def _is_draft_version_review_locked(message):
     def inner(version, user):
         draft_version = get_latest_draft_version(version)
         if (
+            draft_version and
             is_registered_for_moderation(draft_version.content) and
             is_obj_review_locked(draft_version.content, user)
         ):
