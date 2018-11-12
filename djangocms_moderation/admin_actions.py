@@ -241,7 +241,9 @@ def convert_queryset_to_version_queryset(queryset):
 
     id_map = defaultdict(list)
     for obj in queryset:
-        model = getattr(obj, 'model', obj._meta.model)
+        model = getattr(obj, 'model', None)
+        if model is None:
+            model = obj._meta.model
 
         from django.db.models.base import ModelBase, Model
         model_bases = [ModelBase, Model]
