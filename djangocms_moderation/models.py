@@ -246,7 +246,7 @@ class ModerationCollection(models.Model):
     date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = _("Collection")
+        verbose_name = _("collection")
         permissions = (
             ("can_change_author", _("Can change collection author")),
         )

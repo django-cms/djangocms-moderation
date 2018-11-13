@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AlterModelOptions(
             name='moderationcollection',
             options={'permissions': (('can_change_author', 'Can change collection author'),),
-                     'verbose_name': 'Collection'},
+                     'verbose_name': 'collection'},
         ),
         migrations.AddField(
             model_name='moderationrequest',
