@@ -561,7 +561,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return actions
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = {'title': 'Modify Collection'}
+        extra_context = {'title': _('Modify Collection')}
         return super().change_view(
             request, object_id, form_url, extra_context=extra_context)
 
