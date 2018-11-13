@@ -240,7 +240,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
         cms_toolbar = toolbar.toolbar
-        manage_collection_item = self._find_menu_item('Moderation collections...', cms_toolbar)
+        manage_collection_item = self._find_menu_item('Collections...', cms_toolbar)
         self.assertIsNotNone(manage_collection_item)
 
         collection_list_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
