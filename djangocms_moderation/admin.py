@@ -562,8 +562,8 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = {'title': 'Modify Collection'}
-        return super().change_view(request, object_id,
-            form_url, extra_context=extra_context)
+        return super().change_view(
+            request, object_id, form_url, extra_context=extra_context)
 
     def get_edit_link(self, obj):
         """Helper function to get the html link to the edit action
