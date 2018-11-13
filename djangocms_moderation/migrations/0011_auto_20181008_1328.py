@@ -44,20 +44,4 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='actions',
                                     to='djangocms_moderation.ModerationRequest', verbose_name='moderation_request'),
         ),
-        migrations.AlterModelOptions(
-            name='moderationcollection',
-            options={'permissions': (('can_change_author', 'Can change collection author'),),
-                     'verbose_name': 'Collection'},
-        ),
-        migrations.AlterField(
-            model_name='moderationcollection',
-            name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+',
-                                    to=settings.AUTH_USER_MODEL, verbose_name='owner'),
-        ),
-        migrations.AlterField(
-            model_name='moderationcollection',
-            name='name',
-            field=models.CharField(max_length=128, verbose_name='collection name'),
-        ),
     ]
