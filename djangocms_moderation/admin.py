@@ -137,7 +137,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return list_display
 
     def get_content_type(self, obj):
-        return obj.version.content_type
+        return obj.version.versionable.grouper_model.__name__
     get_content_type.short_description = _('Content type')
 
     def get_title(self, obj):
