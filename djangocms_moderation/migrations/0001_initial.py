@@ -55,7 +55,7 @@ class Migration(migrations.Migration):
             name='ModerationCollection',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=128, verbose_name='name')),
+                ('name', models.CharField(max_length=128, verbose_name='collection name')),
                 ('status', models.CharField(choices=STATUS_CHOICES, db_index=True, default='COLLECTING', max_length=10)),
                 ('date_created', models.DateTimeField(auto_now_add=True)),
                 ('date_modified', models.DateTimeField(auto_now=True)),

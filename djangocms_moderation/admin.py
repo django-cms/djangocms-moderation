@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -137,7 +138,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return list_display
 
     def get_content_type(self, obj):
-        return obj.version.content_type
+        return ContentType.objects.get_for_model(obj.version.versionable.grouper_model)
     get_content_type.short_description = _('Content type')
 
     def get_title(self, obj):
@@ -173,7 +174,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_version_author(self, obj):
         return obj.version.created_by
-    get_version_author.short_description = _('Version author')
+    get_version_author.short_description = _('Author')
 
     def has_add_permission(self, request):
         return False
@@ -414,7 +415,7 @@ class RequestCommentAdmin(admin.ModelAdmin):
 
     def get_author(self, obj):
         return obj.author_name
-    get_author.short_description = _('Author')
+    get_author.short_description = _('User')
 
     def get_changeform_initial_data(self, request):
         data = {
@@ -528,7 +529,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         list_display = [
-            'id',
+            'job_id',
             'name',
             'author',
             'workflow',
@@ -537,6 +538,9 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             'list_display_actions',
         ]
         return list_display
+
+    def job_id(self, obj):
+        return obj.pk
 
     def list_display_actions(self, obj):
         """Display links to state change endpoints
@@ -556,6 +560,11 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         if conf.COLLECTION_COMMENTS_ENABLED:
             actions.append(self.get_comments_link)
         return actions
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = {'title': _('Modify collection')}
+        return super().change_view(
+            request, object_id, form_url, extra_context=extra_context)
 
     def get_edit_link(self, obj):
         """Helper function to get the html link to the edit action
