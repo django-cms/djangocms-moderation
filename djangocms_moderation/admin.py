@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -137,7 +138,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return list_display
 
     def get_content_type(self, obj):
-        return obj.version.versionable.grouper_model.__name__
+        return ContentType.objects.get_for_model(obj.version.versionable.grouper_model)
     get_content_type.short_description = _('Content type')
 
     def get_title(self, obj):
