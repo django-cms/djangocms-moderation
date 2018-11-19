@@ -32,9 +32,10 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         """
         VersionAdmin should call moderation's version of _get_edit_link
         """
+        pg1_version = PageVersionFactory(created_by=self.mock_request.user)
         mock_is_obj_review_locked.return_value = True
         edit_link = self.version_admin._get_edit_link(
-            self.pg1_version, self.mock_request, disabled=False
+            pg1_version, self.mock_request, disabled=False
         )
         # We test that moderation check is called when getting an edit link
         self.assertTrue(mock_is_obj_review_locked.called)
@@ -48,10 +49,11 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         """
         VersionAdmin should *not* call moderation's version of _get_edit_link
         """
+        pg1_version = PageVersionFactory(created_by=self.mock_request.user)
         mock_is_registered_for_moderation.return_value = False
         mock_is_obj_review_locked.return_value = True
         edit_link = self.version_admin._get_edit_link(
-            self.pg1_version, self.mock_request, disabled=False
+            pg1_version, self.mock_request, disabled=False
         )
 
         # Edit link is not blanked out because moderation is not registered
