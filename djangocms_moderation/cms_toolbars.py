@@ -10,13 +10,8 @@ from djangocms_versioning.cms_toolbars import (
 )
 from djangocms_versioning.models import Version
 
-from .helpers import (
-    get_active_moderation_request,
-    get_moderation_button_title_and_url,
-    is_obj_review_locked,
-    is_obj_version_unlocked,
-    is_registered_for_moderation,
-)
+from . import helpers
+
 from .utils import get_admin_url
 
 
@@ -36,7 +31,7 @@ class ModerationToolbar(VersioningToolbar):
         """
         Disable djangocms_versioning publish button if we can moderate content object
         """
-        if not is_registered_for_moderation(self.toolbar.obj):
+        if not helpers.is_registered_for_moderation(self.toolbar.obj):
             return super()._add_publish_button()
 
     def _add_edit_button(self, disabled=False):
@@ -46,11 +41,11 @@ class ModerationToolbar(VersioningToolbar):
         """
         # can we moderate content object?
         # return early to avoid further DB calls below
-        if not is_registered_for_moderation(self.toolbar.obj):
+        if not helpers.is_registered_for_moderation(self.toolbar.obj):
             return super()._add_edit_button(disabled=disabled)
 
         # yes we can! but is it locked?
-        if is_obj_review_locked(self.toolbar.obj, self.request.user):
+        if helpers.is_obj_review_locked(self.toolbar.obj, self.request.user):
             disabled = True
 
         # disabled if locked, else default to false
@@ -63,20 +58,20 @@ class ModerationToolbar(VersioningToolbar):
 
         Display the collection name when object is in moderation
         """
-        if not is_registered_for_moderation(self.toolbar.obj):
+        if not helpers.is_registered_for_moderation(self.toolbar.obj):
             return
 
         if self._is_versioned() and self.toolbar.edit_mode_active:
-            moderation_request = get_active_moderation_request(self.toolbar.obj)
+            moderation_request = helpers.get_active_moderation_request(self.toolbar.obj)
             if moderation_request:
-                title, url = get_moderation_button_title_and_url(moderation_request)
+                title, url = helpers.get_moderation_button_title_and_url(moderation_request)
                 self.toolbar.add_sideframe_button(
                     name=title,
                     url=url,
                     side=self.toolbar.RIGHT,
                 )
             # Check if the object is not version locked to someone else
-            elif is_obj_version_unlocked(self.toolbar.obj, self.request.user):
+            elif helpers.is_obj_version_unlocked(self.toolbar.obj, self.request.user):
                 version = Version.objects.get_for_content(self.toolbar.obj)
                 url = add_url_parameters(
                     get_admin_url(
@@ -101,7 +96,13 @@ class ModerationToolbar(VersioningToolbar):
         url = get_admin_url('djangocms_moderation_moderationcollection_changelist',
                             language=self.current_lang,
                             args=())
-        url += '?author__id__exact=%s' % self.request.user.id
+        # if the current user is a moderator or reviewer, then create a link
+        # which will filter to show only collections for that user's attention
+        if self.request.user in helpers.get_all_moderators():
+            url += '?moderator=%s' % self.request.user.id
+        else:
+            if self.request.user in helpers.get_all_reviewers():
+                url += '?reviewer=%s' % self.request.user.id
         admin_menu.add_sideframe_item(
             _('Moderation collections'),
             url=url,

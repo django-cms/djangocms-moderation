@@ -1,5 +1,6 @@
 import mock
 
+from django.contrib.auth.models import Permission, User
 from django.test.client import RequestFactory
 from django.urls import reverse
 
@@ -11,9 +12,14 @@ from djangocms_versioning.test_utils.factories import (
     UserFactory,
 )
 
+from djangocms_moderation import constants
 from djangocms_moderation.cms_toolbars import ModerationToolbar
-from djangocms_moderation.constants import IN_REVIEW
-from djangocms_moderation.models import ModerationRequest
+from djangocms_moderation.models import (
+    ModerationCollection,
+    ModerationRequest,
+    Role,
+    Workflow,
+)
 
 from .utils.base import BaseTestCase
 
@@ -131,7 +137,7 @@ class TestCMSToolbars(BaseTestCase):
         ModerationRequest.objects.all().delete()
         version = PageVersionFactory()
         self.collection1.add_version(version=version)
-        self.collection1.status = IN_REVIEW
+        self.collection1.status = constants.IN_REVIEW
         self.collection1.save()
 
         toolbar = self._get_toolbar(version.content, edit_mode=True)
@@ -212,7 +218,7 @@ class TestCMSToolbars(BaseTestCase):
         # Some of the custom views in some apps dont have toolbar.obj
         self.assertFalse(self._button_exists('Edit', toolbar.toolbar))
 
-    @mock.patch('djangocms_moderation.cms_toolbars.is_registered_for_moderation')
+    @mock.patch('djangocms_moderation.cms_toolbars.helpers.is_registered_for_moderation')
     def test_publish_buttons_when_unregistered(self, mock_is_registered_for_moderation):
         mock_is_registered_for_moderation.return_value = False
         ModerationRequest.objects.all().delete()
@@ -223,7 +229,7 @@ class TestCMSToolbars(BaseTestCase):
 
         self.assertTrue(self._button_exists('Publish', toolbar.toolbar))
 
-    @mock.patch('djangocms_moderation.cms_toolbars.is_registered_for_moderation')
+    @mock.patch('djangocms_moderation.cms_toolbars.helpers.is_registered_for_moderation')
     def test_add_edit_buttons_when_unregistered(self, mock_is_registered_for_moderation):
         mock_is_registered_for_moderation.return_value = False
         ModerationRequest.objects.all().delete()
@@ -246,3 +252,78 @@ class TestCMSToolbars(BaseTestCase):
         collection_list_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
         collection_list_url += "?author__id__exact=%s" % self.user.pk
         self.assertTrue(manage_collection_item.url, collection_list_url)
+
+    def test_moderation_collection_changelist_reviewer_filter(self):
+
+        reviewer = User.objects.create_user(
+            username='test_reviewer',
+            email='test_reviewer@test.com',
+            password='test_reviewer',
+            is_staff=True
+        )
+
+        # add reviewer permissions
+        perms = [
+            "change_moderationcollection",
+            "change_moderationrequest",
+            "change_moderationrequestaction",
+            "add_collectioncomment",
+            "change_collectioncomment",
+            "use_structure",
+            "view_page"
+        ]
+
+        for perm in perms:
+            permObj = Permission.objects.get(codename=perm)
+            reviewer.user_permissions.add(
+                permObj
+            )
+
+        moderator = User.objects.create_user(
+            username='test_non_reviewer', email='test_non_reviewer@test.com',
+            password='test_non_reviewer', is_staff=True, is_superuser=True)
+
+        role = Role.objects.create(name='Role Review', user=reviewer,)
+        pg = PageVersionFactory()
+        wf = Workflow.objects.create(name='Workflow Review Test',)
+        collection = ModerationCollection.objects.create(
+            author=moderator, name='Collection Admin Actions Review', workflow=wf, status=constants.IN_REVIEW
+        )
+
+        mr = ModerationRequest.objects.create(
+            version=pg, language='en',  collection=collection,
+            is_active=True, author=collection.author,)
+
+        wfst = wf.steps.create(role=role, is_required=True, order=1,)
+
+        # this moderation request is approved
+        mr.actions.create(to_user=reviewer, by_user=moderator, action=constants.ACTION_STARTED,)
+        mr.actions.create(
+            by_user=moderator,
+            to_user=reviewer,
+            action=constants.ACTION_APPROVED,
+            step_approved=wfst,
+        )
+
+        # test that the moderation url in the cms_toolbar has the correct filtered URL
+        url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+        with self.login_user_context(moderator):
+            response = self.client.get(url)
+            toolbar = self._get_toolbar(pg.content, preview_mode=True, user=moderator)
+            toolbar.populate()
+            toolbar.post_template_populate()
+            manage_collection_item = self._find_menu_item('Moderation collections...', toolbar.toolbar)
+            self.assertEqual(
+                manage_collection_item.url,
+                '/en/admin/djangocms_moderation/moderationcollection/?moderator=' + str(moderator.pk)
+            )
+        with self.login_user_context(reviewer):
+            response = self.client.get(url)
+            toolbar = self._get_toolbar(pg.content, preview_mode=True, user=reviewer)
+            toolbar.populate()
+            toolbar.post_template_populate()
+            manage_collection_item = self._find_menu_item('Moderation collections...', toolbar.toolbar)
+            self.assertEqual(
+                manage_collection_item.url,
+                '/en/admin/djangocms_moderation/moderationcollection/?reviewer=' + str(reviewer.pk)
+            )

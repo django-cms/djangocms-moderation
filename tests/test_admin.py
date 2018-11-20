@@ -3,8 +3,6 @@ from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 
-from cms.test_utils.testcases import CMSTestCase
-
 from djangocms_versioning.test_utils import factories
 
 from djangocms_moderation import conf, constants
@@ -16,7 +14,6 @@ from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
-    Role,
     Workflow,
 )
 
@@ -298,44 +295,3 @@ class ModerationAdminTestCase(BaseTestCase):
         fields = mra_inline.get_readonly_fields(mra_inline, mock_request_author, self.mr1)
         self.assertListEqual(mra_inline.fields, fields)
         self.assertIn('message', fields)
-
-
-class ModerationReviewerAdminTestCase(CMSTestCase):
-    def test_moderation_collection_changelist_reviewer_filter(self):
-
-        user = User.objects.create_user(
-            username='test_reviewer', email='test_reviewer@test.com', password='test_reviewer', is_staff=True)
-
-        user2 = User.objects.create_user(
-            username='test_non_reviewer', email='test_non_reviewer@test.com',
-            password='test_non_reviewer', is_staff=True, is_superuser=True)
-        role = Role.objects.create(name='Role Review', user=user,)
-        pg = factories.PageVersionFactory()
-        wf = Workflow.objects.create(name='Workflow Review Test',)
-        collection = ModerationCollection.objects.create(
-            author=user, name='Collection Admin Actions Review', workflow=wf, status=constants.IN_REVIEW
-        )
-
-        mr = ModerationRequest.objects.create(
-            version=pg, language='en',  collection=collection,
-            is_active=True, author=collection.author,)
-
-        wfst = wf.steps.create(role=role, is_required=True, order=1,)
-
-        # this moderation request is approved
-        mr.actions.create(to_user=user, by_user=user, action=constants.ACTION_STARTED,)
-        mr.actions.create(
-            by_user=user,
-            to_user=user,
-            action=constants.ACTION_APPROVED,
-            step_approved=wfst,
-        )
-
-        url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
-        with self.login_user_context(user2):
-            response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.wsgi_request.GET)
-        with self.login_user_context(user):
-            response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)

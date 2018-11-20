@@ -126,3 +126,7 @@ def get_all_reviewers():
             Q(groups__role__workflowstep__workflow__moderation_collections__isnull=False) |
             Q(role__workflowstep__workflow__moderation_collections__isnull=False)
     ).distinct()
+
+
+def get_all_moderators():
+    return User.objects.filter(moderationcollection__author__isnull=False).distinct()

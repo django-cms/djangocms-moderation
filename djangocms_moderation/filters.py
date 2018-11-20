@@ -20,8 +20,7 @@ class ModeratorFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         options = []
-        moderators = User.objects.filter(moderationcollection__author__isnull=False).distinct()
-        for user in moderators:
+        for user in helpers.get_all_moderators():
             options.append((force_text(user.pk), user.get_full_name() or user.get_username()))
         return options
 
@@ -43,7 +42,6 @@ class ReviewerFilter(admin.SimpleListFilter):
         Provides a reviewers filter if there are any reviewers
         """
         self.currentuser = request.user
-
         options = []
         # collect all unique users from the three queries
         for user in helpers.get_all_reviewers():
@@ -73,8 +71,8 @@ class ReviewerFilter(admin.SimpleListFilter):
 
     def choices(self, changelist):
         yield {
-            'selected': self.value() == 'all',
-            'query_string': changelist.get_query_string({self.parameter_name: 'all'}, []),
+            'selected': self.value() is None,
+            'query_string': changelist.get_query_string({}, [self.parameter_name]),
             'display': _('All'),
         }
         for lookup, title in self.lookup_choices:
