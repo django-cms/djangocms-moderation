@@ -223,7 +223,7 @@ class WorkflowStep(models.Model):
 
 
 class ModerationCollection(models.Model):
-    name = models.CharField(verbose_name=_('name'), max_length=128)
+    name = models.CharField(verbose_name=_('collection name'), max_length=128)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         verbose_name=_('moderator'),
@@ -244,6 +244,7 @@ class ModerationCollection(models.Model):
     date_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
+        verbose_name = _("collection")
         permissions = (
             ("can_change_author", _("Can change collection author")),
         )
