@@ -6,6 +6,7 @@ from djangocms_moderation.helpers import is_obj_version_unlocked
 
 from .utils.base import BaseTestCase
 
+
 try:
     from djangocms_versioning.models import Version
 except ImportError:
