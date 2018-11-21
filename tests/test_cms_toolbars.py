@@ -309,6 +309,7 @@ class TestCMSToolbars(BaseTestCase):
         url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
         with self.login_user_context(moderator):
             response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
             toolbar = self._get_toolbar(pg.content, preview_mode=True, user=moderator)
             toolbar.populate()
             toolbar.post_template_populate()
@@ -319,6 +320,7 @@ class TestCMSToolbars(BaseTestCase):
             )
         with self.login_user_context(reviewer):
             response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
             toolbar = self._get_toolbar(pg.content, preview_mode=True, user=reviewer)
             toolbar.populate()
             toolbar.post_template_populate()

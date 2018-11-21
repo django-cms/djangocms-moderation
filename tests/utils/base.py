@@ -1,5 +1,4 @@
 from django.contrib.auth.models import Group, User
-from django.test import TestCase
 
 from cms.test_utils.testcases import CMSTestCase
 

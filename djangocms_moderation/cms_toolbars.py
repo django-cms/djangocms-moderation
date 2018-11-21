@@ -11,7 +11,6 @@ from djangocms_versioning.cms_toolbars import (
 from djangocms_versioning.models import Version
 
 from . import helpers
-
 from .utils import get_admin_url
 
 

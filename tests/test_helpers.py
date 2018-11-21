@@ -60,13 +60,11 @@ class VersionLockingTestCase(BaseTestCase):
         version = PageVersionFactory(created_by=self.user)
         self.assertTrue(is_obj_version_unlocked(version.content, self.user))
         self.assertFalse(is_obj_version_unlocked(version.content, self.user2))
-        version.publish(self.user)
-        self.assertTrue(is_obj_version_unlocked(version.content, self.user2))
 
         # Make sure that we are actually calling the version-lock method and it
         # still exists
-        with mock.patch('djangocms_moderation.helpers.content_is_unlocked_for_user') as _mock:
-            is_obj_version_unlocked(version.content, self.user2)
+        with mock.patch('djangocms_moderation.helpers.content_is_unlocked_for_user', return_value=True) as _mock:
+            self.assertTrue(is_obj_version_unlocked(version.content, self.user2))
             _mock.assert_called_once_with(version.content, self.user2)
 
     def test_is_obj_version_unlocked_when_locking_is_not_installed(self):
