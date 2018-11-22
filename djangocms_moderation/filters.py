@@ -35,7 +35,6 @@ class ModeratorFilter(admin.SimpleListFilter):
 class ReviewerFilter(admin.SimpleListFilter):
     title = _("reviewer")
     parameter_name = "reviewer"
-    currentuser = {}
 
     def lookups(self, request, model_admin):
         """
