@@ -97,10 +97,9 @@ class ModerationToolbar(VersioningToolbar):
                             args=())
         # if the current user is a moderator or reviewer, then create a link
         # which will filter to show only collections for that user's attention
-        if self.request.user in helpers.get_all_moderators():
+        if helpers.get_all_moderators().filter(pk=self.request.user).exists():
             url += '?moderator=%s' % self.request.user.id
-        else:
-            if self.request.user in helpers.get_all_reviewers():
+        elif self.request.user in helpers.get_all_reviewers():
                 url += '?reviewer=%s' % self.request.user.id
         admin_menu.add_sideframe_item(
             _('Moderation collections'),

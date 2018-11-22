@@ -40,7 +40,6 @@ class ReviewerFilter(admin.SimpleListFilter):
         """
         Provides a reviewers filter if there are any reviewers
         """
-        self.currentuser = request.user
         options = []
         # collect all unique users from the three queries
         for user in helpers.get_all_reviewers():
