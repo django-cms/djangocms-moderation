@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group, User
-from django.test import TestCase
+
+from cms.test_utils.testcases import CMSTestCase
 
 from djangocms_versioning.constants import PUBLISHED
 from djangocms_versioning.test_utils.factories import PageVersionFactory
@@ -17,7 +18,7 @@ class MockRequest:
     GET = {}
 
 
-class BaseTestCase(TestCase):
+class BaseTestCase(CMSTestCase):
 
     @classmethod
     def setUpTestData(cls):
@@ -80,7 +81,7 @@ class BaseTestCase(TestCase):
         cls.moderation_request1 = ModerationRequest.objects.create(
             version=cls.pg1_version, language='en', collection=cls.collection1,
             is_active=True, author=cls.collection1.author,)
-        cls.moderation_request1.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
+        cls.moderation_request1.actions.create(to_user=cls.user2, by_user=cls.user, action=constants.ACTION_STARTED,)
 
         ModerationRequest.objects.create(
             version=cls.pg3_version, language='en', collection=cls.collection1,
@@ -93,19 +94,19 @@ class BaseTestCase(TestCase):
             version=cls.pg3_version, language='en', collection=cls.collection2,
             is_active=True,  author=cls.collection2.author)
         cls.moderation_request2.actions.create(
-            by_user=cls.user, action=constants.ACTION_STARTED,)
+            to_user=cls.user2, by_user=cls.user, action=constants.ACTION_STARTED,)
         cls.moderation_request2.actions.create(
-            by_user=cls.user, action=constants.ACTION_APPROVED, step_approved=cls.wf2st1,)
+            to_user=cls.user2, by_user=cls.user, action=constants.ACTION_APPROVED, step_approved=cls.wf2st1,)
         cls.moderation_request2.actions.create(
-            by_user=cls.user, action=constants.ACTION_APPROVED, step_approved=cls.wf2st2,)
+            to_user=cls.user2, by_user=cls.user, action=constants.ACTION_APPROVED, step_approved=cls.wf2st2,)
 
         cls.moderation_request3 = ModerationRequest.objects.create(
             version=cls.pg4_version, language='en',  collection=cls.collection3,
             is_active=True, author=cls.collection3.author,)
-        cls.moderation_request3.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
+        cls.moderation_request3.actions.create(to_user=cls.user2, by_user=cls.user, action=constants.ACTION_STARTED,)
         cls.moderation_request3.actions.create(
-            by_user=cls.user,
             to_user=cls.user2,
+            by_user=cls.user,
             action=constants.ACTION_APPROVED,
             step_approved=cls.wf3st1,
         )
@@ -113,13 +114,13 @@ class BaseTestCase(TestCase):
         cls.moderation_request4 = ModerationRequest.objects.create(
             version=cls.pg5_version, language='en', collection=cls.collection3,
             is_active=True, author=cls.collection3.author,)
-        cls.moderation_request4.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
-        cls.moderation_request4.actions.create(by_user=cls.user2, action=constants.ACTION_REJECTED)
+        cls.moderation_request4.actions.create(to_user=cls.user2, by_user=cls.user, action=constants.ACTION_STARTED,)
+        cls.moderation_request4.actions.create(to_user=cls.user2, by_user=cls.user3, action=constants.ACTION_REJECTED)
 
         cls.moderation_request5 = ModerationRequest.objects.create(
             version=cls.pg6_version, language='en', collection=cls.collection4,
             is_active=True, author=cls.collection4.author,)
-        cls.moderation_request5.actions.create(by_user=cls.user, action=constants.ACTION_STARTED,)
+        cls.moderation_request5.actions.create(to_user=cls.user2, by_user=cls.user, action=constants.ACTION_STARTED,)
 
 
 class BaseViewTestCase(BaseTestCase):

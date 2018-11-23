@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.http import Http404
@@ -25,6 +26,7 @@ from .admin_actions import (
     resubmit_selected,
 )
 from .constants import ARCHIVED, COLLECTING, IN_REVIEW
+from .filters import ModeratorFilter, ReviewerFilter
 from .forms import (
     CollectionCommentForm,
     ModerationRequestActionInlineForm,
@@ -49,6 +51,8 @@ from .models import (
 from . import conf  # isort:skip
 from . import utils  # isort:skip
 from . import views  # isort:skip
+
+User = get_user_model()
 
 
 class ModerationRequestActionInline(admin.TabularInline):
@@ -521,9 +525,10 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     actions = None  # remove `delete_selected` for now, it will be handled later
     list_filter = [
-        'author',
+        ModeratorFilter,
         'status',
         'date_created',
+        ReviewerFilter,
     ]
     list_display_links = None
 
@@ -534,6 +539,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             'author',
             'workflow',
             'status',
+            'reviewers',
             'date_created',
             'list_display_actions',
         ]

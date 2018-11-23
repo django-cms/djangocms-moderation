@@ -1,6 +1,8 @@
 from django.apps import apps
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.template.defaultfilters import truncatechars
 from django.utils.translation import ugettext_lazy as _
 
@@ -10,6 +12,8 @@ from .conf import COLLECTION_NAME_LENGTH_LIMIT
 from .constants import COLLECTING
 from .models import ConfirmationFormSubmission
 
+
+User = get_user_model()
 
 try:
     from djangocms_version_locking.helpers import content_is_unlocked_for_user
@@ -115,3 +119,14 @@ def get_moderation_button_title_and_url(moderation_request):
         moderation_request.collection_id
     )
     return button_title, url
+
+
+def get_all_reviewers():
+    return User.objects.filter(
+        Q(groups__role__workflowstep__workflow__moderation_collections__isnull=False) |
+        Q(role__workflowstep__workflow__moderation_collections__isnull=False)
+    ).distinct()
+
+
+def get_all_moderators():
+    return User.objects.filter(moderationcollection__author__isnull=False).distinct()
