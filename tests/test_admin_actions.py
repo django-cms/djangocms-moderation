@@ -190,8 +190,8 @@ class AdminActionTest(BaseTestCase):
         )
         self.assertFalse(notify_moderators_mock.called)
 
-    @mock.patch('djangocms_moderation.admin_actions.notify_collection_moderators')
-    @mock.patch('djangocms_moderation.admin_actions.notify_collection_author')
+    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
+    @mock.patch('djangocms_moderation.admin.notify_collection_author')
     def test_reject_selected(self, notify_author_mock, notify_moderators_mock):
         fixtures = [self.mr1, self.mr2]
         data = {
@@ -202,7 +202,8 @@ class AdminActionTest(BaseTestCase):
         self.assertFalse(self.mr2.is_rejected())
         self.assertTrue(self.mr1.is_approved())
 
-        self.client.post(self.url_with_filter, data)
+        response = self.client.post(self.url_with_filter, data)
+        self.client.post(response.url)
 
         self.assertFalse(self.mr2.is_approved())
         self.assertTrue(self.mr2.is_rejected())

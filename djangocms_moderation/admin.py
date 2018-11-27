@@ -29,6 +29,7 @@ from .admin_actions import (
 from .constants import (
     ACTION_APPROVED,
     ACTION_CANCELLED,
+    ACTION_REJECTED,
     ARCHIVED,
     COLLECTING,
     IN_REVIEW,
@@ -338,7 +339,61 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.approved_view),
                 name='{}_{}_approve'.format(*info),
             ),
+            url(
+                r'^rework/',
+                self.admin_site.admin_view(self.rework_view),
+                name='{}_{}_rework'.format(*info),
+            ),
         ] + super().get_urls()
+
+    def rework_view(self, request):
+        collection_id = request.GET.get('collection_id')
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            collection_id
+        )
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/rework_confirmation.html', context)
+        else:
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
+            collection = ModerationCollection.objects.get(id=collection_id)
+            rejected_requests = []
+
+            for moderation_request in queryset.all():
+                if moderation_request.user_can_take_moderation_action(request.user):
+                    rejected_requests.append(moderation_request)
+                    moderation_request.update_status(
+                        action=ACTION_REJECTED,
+                        by_user=request.user,
+                    )
+
+            # Now we need to notify collection reviewers and moderator. TODO task queue?
+            # request._collection is passed down from change_list from admin.py
+            # https://github.com/divio/djangocms-moderation/pull/46#discussion_r211569629
+            if rejected_requests:
+                notify_collection_author(
+                    collection=collection,
+                    moderation_requests=rejected_requests,
+                    action=ACTION_REJECTED,
+                    by_user=request.user,
+                )
+
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully submitted for rework',
+                    '%(count)d requests successfully submitted for rework',
+                    len(rejected_requests)
+                ) % {
+                    'count': len(rejected_requests)
+                },
+            )
+        return HttpResponseRedirect(redirect_url)
 
     def approved_view(self, request):
         collection_id = request.GET.get('collection_id')

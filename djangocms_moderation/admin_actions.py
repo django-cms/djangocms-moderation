@@ -14,10 +14,8 @@ from django_fsm import TransitionNotAllowed
 from djangocms_versioning.models import Version
 
 from djangocms_moderation import constants
-from djangocms_moderation.emails import (
-    notify_collection_author,
-    notify_collection_moderators,
-)
+from djangocms_moderation.emails import notify_collection_author  # noqa: F401
+from djangocms_moderation.emails import notify_collection_moderators
 
 from .utils import get_admin_url
 
@@ -65,37 +63,15 @@ def reject_selected(modeladmin, request, queryset):
     Validate and reject all the selected moderation requests and notify
     the author about these requests
     """
-    rejected_requests = []
-
-    for moderation_request in queryset.all():
-        if moderation_request.user_can_take_moderation_action(request.user):
-            rejected_requests.append(moderation_request)
-            moderation_request.update_status(
-                action=constants.ACTION_REJECTED,
-                by_user=request.user,
-            )
-
-    # Now we need to notify collection reviewers and moderator. TODO task queue?
-    # request._collection is passed down from change_list from admin.py
-    # https://github.com/divio/djangocms-moderation/pull/46#discussion_r211569629
-    if rejected_requests:
-        notify_collection_author(
-            collection=request._collection,
-            moderation_requests=rejected_requests,
-            action=constants.ACTION_REJECTED,
-            by_user=request.user,
-        )
-
-    messages.success(
-        request,
-        ungettext(
-            '%(count)d request successfully submitted for rework',
-            '%(count)d requests successfully submitted for rework',
-            len(rejected_requests)
-        ) % {
-            'count': len(rejected_requests)
-        },
+    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    url = "{}?ids={}&collection_id={}".format(
+        reverse('admin:djangocms_moderation_moderationrequest_rework'),
+        ",".join(selected),
+        request._collection.id
     )
+    return HttpResponseRedirect(url)
+
+
 reject_selected.short_description = _('Submit for rework')  # noqa: E305
 
 
