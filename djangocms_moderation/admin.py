@@ -2,15 +2,15 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.conf.urls import url
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.utils.html import format_html, format_html_join
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
@@ -21,11 +21,13 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from .admin_actions import (
     approve_selected,
     delete_selected,
+    post_bulk_actions,
     publish_selected,
     reject_selected,
     resubmit_selected,
 )
-from .constants import ARCHIVED, COLLECTING, IN_REVIEW
+from .constants import ACTION_CANCELLED, ARCHIVED, COLLECTING, IN_REVIEW
+from .emails import notify_collection_author
 from .filters import ModeratorFilter, ReviewerFilter
 from .forms import (
     CollectionCommentForm,
@@ -315,6 +317,57 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             status = ugettext('Ready for submission')
         return status
     get_status.short_description = _('Status')
+
+    def get_urls(self):
+        info = self.model._meta.app_label, self.model._meta.model_name
+
+        return [
+            url(
+                r'^delete_selected/',
+                self.admin_site.admin_view(self.delete_selected_view),
+                name='{}_{}_delete'.format(*info),
+            ),
+        ] + super().get_urls()
+
+    def delete_selected_view(self, request):
+        collection_id = request.GET.get('collection_id')
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            collection_id
+        )
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/delete_confirmation.html', context)
+        else:
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
+            num_deleted_requests = queryset.count()
+            collection = ModerationCollection.objects.get(id=collection_id)
+            if num_deleted_requests:  # TODO task queue?
+                notify_collection_author(
+                    collection=collection,
+                    moderation_requests=[mr for mr in queryset],
+                    action=ACTION_CANCELLED,
+                    by_user=request.user,
+                )
+
+            queryset.delete()
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully deleted',
+                    '%(count)d requests successfully deleted',
+                    num_deleted_requests
+                ) % {
+                    'count': num_deleted_requests
+                },
+            )
+            post_bulk_actions(collection)
+
+        return HttpResponseRedirect(redirect_url)
 
 
 class RoleAdmin(admin.ModelAdmin):

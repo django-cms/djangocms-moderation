@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from django.contrib import messages
+from django.contrib import admin, messages
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
@@ -177,29 +177,11 @@ def delete_selected(modeladmin, request, queryset):
     if queryset.exclude(collection__author=request.user).exists():
         raise PermissionDenied
 
-    num_deleted_requests = queryset.count()
+    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    return HttpResponseRedirect('delete_selected?ids=%s&collection_id=%s'
+                                % (",".join(selected), request._collection.id))
 
-    if num_deleted_requests:  # TODO task queue?
-        notify_collection_author(
-            collection=request._collection,
-            moderation_requests=[mr for mr in queryset],
-            action=constants.ACTION_CANCELLED,
-            by_user=request.user,
-        )
 
-    queryset.delete()
-    messages.success(
-        request,
-        ungettext(
-            '%(count)d request successfully deleted',
-            '%(count)d requests successfully deleted',
-            num_deleted_requests
-        ) % {
-            'count': num_deleted_requests
-        },
-    )
-
-    post_bulk_actions(request._collection)
 delete_selected.short_description = _('Remove selected')  # noqa: E305
 
 
