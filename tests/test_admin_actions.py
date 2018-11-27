@@ -138,8 +138,8 @@ class AdminActionTest(BaseTestCase):
         self.assertFalse(self.mr1.is_active)
         self.assertTrue(self.mr2.is_active)
 
-    @mock.patch('djangocms_moderation.admin_actions.notify_collection_moderators')
-    @mock.patch('djangocms_moderation.admin_actions.notify_collection_author')
+    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
+    @mock.patch('djangocms_moderation.admin.notify_collection_author')
     def test_approve_selected(self, notify_author_mock, notify_moderators_mock):
         fixtures = [self.mr1, self.mr2]
         data = {
@@ -149,7 +149,8 @@ class AdminActionTest(BaseTestCase):
         self.assertFalse(self.mr2.is_approved())
         self.assertTrue(self.mr1.is_approved())
 
-        self.client.post(self.url_with_filter, data)
+        response = self.client.post(self.url_with_filter, data)
+        self.client.post(response.url)
 
         notify_author_mock.assert_called_once_with(
             collection=self.collection,
@@ -173,7 +174,8 @@ class AdminActionTest(BaseTestCase):
         self.assertEqual(self.collection.status, constants.IN_REVIEW)
 
         self.client.force_login(self.user2)
-        self.client.post(self.url_with_filter, data)
+        response = self.client.post(self.url_with_filter, data)
+        self.client.post(response.url)
 
         self.assertTrue(self.mr2.is_approved())
         self.assertTrue(self.mr1.is_approved())
@@ -249,7 +251,7 @@ class AdminActionTest(BaseTestCase):
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.IN_REVIEW)
 
-    @mock.patch('djangocms_moderation.admin_actions.notify_collection_moderators')
+    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
     def test_approve_selected_sends_correct_emails(self, notify_moderators_mock):
         role4 = Role.objects.create(user=self.user)
         # Add two more steps
@@ -275,10 +277,11 @@ class AdminActionTest(BaseTestCase):
         }
 
         # First post as `self.user` should notify mr1 and mr2 and mr3 moderators
-        self.client.post(self.url_with_filter, data)
+        response = self.client.post(self.url_with_filter, data)
         # The notify email will be send accordingly. As mr1 and mr3 are in the
         # different stages of approval compared to mr 2,
         # we need to send 2 emails to appropriate moderators
+        self.client.post(response.url)
         self.assertEqual(notify_moderators_mock.call_count, 2)
         self.assertEqual(
             notify_moderators_mock.call_args_list[0],
@@ -299,7 +302,8 @@ class AdminActionTest(BaseTestCase):
         self.assertFalse(self.mr3.is_approved())
 
         notify_moderators_mock.reset_mock()
-        self.client.post(self.url_with_filter, data)
+        response = self.client.post(self.url_with_filter, data)
+        self.client.post(response.url)
         # Second post approves m3 and mr1, but as this is the last stage of
         # the approval, there is no need for notification emails anymore
         self.assertEqual(notify_moderators_mock.call_count, 0)
@@ -309,7 +313,8 @@ class AdminActionTest(BaseTestCase):
         self.client.force_login(self.user2)
         # user2 can approve only 1 request, mr2, so one notification email
         # should go out
-        self.client.post(self.url_with_filter, data)
+        response = self.client.post(self.url_with_filter, data)
+        self.client.post(response.url)
         notify_moderators_mock.assert_called_once_with(
             collection=self.collection,
             moderation_requests=[self.mr2],

@@ -26,8 +26,8 @@ from .admin_actions import (
     reject_selected,
     resubmit_selected,
 )
-from .constants import ACTION_CANCELLED, ARCHIVED, COLLECTING, IN_REVIEW
-from .emails import notify_collection_author
+from .constants import ACTION_APPROVED, ACTION_CANCELLED, ARCHIVED, COLLECTING, IN_REVIEW
+from .emails import notify_collection_author, notify_collection_moderators
 from .filters import ModeratorFilter, ReviewerFilter
 from .forms import (
     CollectionCommentForm,
@@ -329,13 +329,84 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             ),
             url(
                 r'^approve/',
-                self.admin_site.admin_view(self.approve_view),
+                self.admin_site.admin_view(self.approved_view),
                 name='{}_{}_approve'.format(*info),
             ),
         ] + super().get_urls()
 
-    def approve_view(self, request):
-        return
+    def approved_view(self, request):
+        collection_id = request.GET.get('collection_id')
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            collection_id
+        )
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/approve_confirmation.html', context)
+        else:
+            collection = ModerationCollection.objects.get(id=collection_id)
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
+            approved_requests = []
+            # Variable we are using to group the requests by action.step_approved
+            request_action_mapping = dict()
+
+            for mr in queryset.all():
+                if mr.user_can_take_moderation_action(request.user):
+                    approved_requests.append(mr)
+                    mr.update_status(
+                        action=ACTION_APPROVED,
+                        by_user=request.user,
+                    )
+                    action = mr.get_last_action()
+                    if action.to_user_id or action.to_role_id:
+                        # We group the moderation requests by step_approved.pk.
+                        # Sometimes it can be None, in which case they can be grouped
+                        # together and we use "0" as a key
+                        step_approved_key = str(action.step_approved.pk if action.step_approved else 0)
+                        if step_approved_key not in request_action_mapping:
+                            request_action_mapping[step_approved_key] = [mr]
+                            request_action_mapping['action_' + step_approved_key] = action
+                        else:
+                            request_action_mapping[step_approved_key].append(mr)
+
+            if approved_requests:  # TODO task queue?
+                # Lets notify the collection author about the approval
+                # request._collection is passed down from change_list from admin.py
+                # https://github.com/divio/djangocms-moderation/pull/46#discussion_r211569629
+                notify_collection_author(
+                    collection=collection,
+                    moderation_requests=approved_requests,
+                    action=ACTION_APPROVED,
+                    by_user=request.user,
+                )
+
+                # Notify reviewers
+                for key, moderation_requests in sorted(request_action_mapping.items(), key=lambda x: x[0]):
+                    if not key.startswith('action_'):
+                        notify_collection_moderators(
+                            collection=collection,
+                            moderation_requests=moderation_requests,
+                            action_obj=request_action_mapping['action_' + key]
+                        )
+
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully approved',
+                    '%(count)d requests successfully approved',
+                    len(approved_requests)
+                ) % {
+                    'count': len(approved_requests)
+                },
+            )
+
+            post_bulk_actions(collection)
+
+        return HttpResponseRedirect(redirect_url)
 
     def delete_selected_view(self, request):
         collection_id = request.GET.get('collection_id')
