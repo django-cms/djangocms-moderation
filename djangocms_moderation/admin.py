@@ -343,7 +343,60 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.published_view),
                 name='{}_{}_publish'.format(*info),
             ),
+            url(
+                r'^resubmit/',
+                self.admin_site.admin_view(self.resubmit_view),
+                name='{}_{}_resubmit'.format(*info),
+            ),
         ] + super().get_urls()
+
+    def resubmit_view(self, request):
+        collection_id = request.GET.get('collection_id')
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            collection_id
+        )
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html', context)
+        else:
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
+            collection = ModerationCollection.objects.get(id=collection_id)
+            resubmitted_requests = []
+
+            for mr in queryset.all():
+                if mr.user_can_resubmit(request.user):
+                    resubmitted_requests.append(mr)
+                    mr.update_status(
+                        action=constants.ACTION_RESUBMITTED,
+                        by_user=request.user,
+                    )
+
+            if resubmitted_requests:
+                # Lets notify reviewers. TODO task queue?
+                notify_collection_moderators(
+                    collection=collection,
+                    moderation_requests=resubmitted_requests,
+                    # We can take any action here, as all the requests are in the same
+                    # stage of moderation - at the beginning
+                    action_obj=resubmitted_requests[0].get_last_action()
+                )
+
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully resubmitted for review',
+                    '%(count)d requests successfully resubmitted for review',
+                    len(resubmitted_requests)
+                ) % {
+                    'count': len(resubmitted_requests)
+                },
+            )
+        return HttpResponseRedirect(redirect_url)
 
     def published_view(self, request):
         collection_id = request.GET.get('collection_id')

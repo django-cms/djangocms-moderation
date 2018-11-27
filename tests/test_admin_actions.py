@@ -60,7 +60,7 @@ class AdminActionTest(BaseTestCase):
         self.client.force_login(self.user)
 
     @mock.patch.object(ModerationRequestAdmin, 'has_delete_permission')
-    @mock.patch('djangocms_moderation.admin_actions.notify_collection_moderators')
+    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
     @mock.patch('djangocms_moderation.admin.notify_collection_author')
     def test_delete_selected(self, notify_author_mock, notify_moderators_mock, mock_has_delete_permission):
         mock_has_delete_permission.return_value = True
@@ -221,8 +221,8 @@ class AdminActionTest(BaseTestCase):
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.IN_REVIEW)
 
-    @mock.patch('djangocms_moderation.admin_actions.notify_collection_moderators')
-    @mock.patch('djangocms_moderation.admin_actions.notify_collection_author')
+    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
+    @mock.patch('djangocms_moderation.admin.notify_collection_author')
     def test_resubmit_selected(self, notify_author_mock, notify_moderators_mock):
         self.mr2.update_status(
             action=ACTION_REJECTED,
@@ -237,7 +237,8 @@ class AdminActionTest(BaseTestCase):
         self.assertTrue(self.mr2.is_rejected())
         self.assertTrue(self.mr1.is_approved())
 
-        self.client.post(self.url_with_filter, data)
+        response = self.client.post(self.url_with_filter, data)
+        self.client.post(response.url)
 
         self.assertFalse(self.mr2.is_rejected())
         self.assertTrue(self.mr1.is_approved())
