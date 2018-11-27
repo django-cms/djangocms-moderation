@@ -26,7 +26,13 @@ from .admin_actions import (
     reject_selected,
     resubmit_selected,
 )
-from .constants import ACTION_APPROVED, ACTION_CANCELLED, ARCHIVED, COLLECTING, IN_REVIEW
+from .constants import (
+    ACTION_APPROVED,
+    ACTION_CANCELLED,
+    ARCHIVED,
+    COLLECTING,
+    IN_REVIEW,
+)
 from .emails import notify_collection_author, notify_collection_moderators
 from .filters import ModeratorFilter, ReviewerFilter
 from .forms import (
@@ -348,6 +354,20 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/approve_confirmation.html', context)
         else:
+            """
+            Validate and approve all the selected moderation requests and notify
+            the author and reviewers.
+
+            When bulk approving, we need to check for the next line of reviewers and
+            notify them about the pending moderation requests assigned to them.
+
+            Because this is a bulk action, we need to group the approved_requests
+            by the action.step_approved, so we notify the correct reviewers.
+
+            For example, if some requests are in the first stage of approval,
+            and some in the second, then the reviewers we need to notify are
+            different per request, depending on which stage the request is in
+            """
             collection = ModerationCollection.objects.get(id=collection_id)
             queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
             approved_requests = []

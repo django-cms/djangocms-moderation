@@ -100,76 +100,6 @@ reject_selected.short_description = _('Submit for rework')  # noqa: E305
 
 
 def approve_selected(modeladmin, request, queryset):
-    """
-    Validate and approve all the selected moderation requests and notify
-    the author and reviewers.
-
-    When bulk approving, we need to check for the next line of reviewers and
-    notify them about the pending moderation requests assigned to them.
-
-    Because this is a bulk action, we need to group the approved_requests
-    by the action.step_approved, so we notify the correct reviewers.
-
-    For example, if some requests are in the first stage of approval,
-    and some in the second, then the reviewers we need to notify are
-    different per request, depending on which stage the request is in
-    """
-    # approved_requests = []
-    # # Variable we are using to group the requests by action.step_approved
-    # request_action_mapping = dict()
-    #
-    # for mr in queryset.all():
-    #     if mr.user_can_take_moderation_action(request.user):
-    #         approved_requests.append(mr)
-    #         mr.update_status(
-    #             action=constants.ACTION_APPROVED,
-    #             by_user=request.user,
-    #         )
-    #         action = mr.get_last_action()
-    #         if action.to_user_id or action.to_role_id:
-    #             # We group the moderation requests by step_approved.pk.
-    #             # Sometimes it can be None, in which case they can be grouped
-    #             # together and we use "0" as a key
-    #             step_approved_key = str(action.step_approved.pk if action.step_approved else 0)
-    #             if step_approved_key not in request_action_mapping:
-    #                 request_action_mapping[step_approved_key] = [mr]
-    #                 request_action_mapping['action_' + step_approved_key] = action
-    #             else:
-    #                 request_action_mapping[step_approved_key].append(mr)
-    #
-    # if approved_requests:  # TODO task queue?
-    #     # Lets notify the collection author about the approval
-    #     # request._collection is passed down from change_list from admin.py
-    #     # https://github.com/divio/djangocms-moderation/pull/46#discussion_r211569629
-    #     notify_collection_author(
-    #         collection=request._collection,
-    #         moderation_requests=approved_requests,
-    #         action=constants.ACTION_APPROVED,
-    #         by_user=request.user,
-    #     )
-    #
-    #     # Notify reviewers
-    #     for key, moderation_requests in sorted(request_action_mapping.items(), key=lambda x: x[0]):
-    #         if not key.startswith('action_'):
-    #             notify_collection_moderators(
-    #                 collection=request._collection,
-    #                 moderation_requests=moderation_requests,
-    #                 action_obj=request_action_mapping['action_' + key]
-    #             )
-    #
-    # messages.success(
-    #     request,
-    #     ungettext(
-    #         '%(count)d request successfully approved',
-    #         '%(count)d requests successfully approved',
-    #         len(approved_requests)
-    #     ) % {
-    #         'count': len(approved_requests)
-    #     },
-    # )
-    #
-    # post_bulk_actions(request._collection)
-
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
         reverse('admin:djangocms_moderation_moderationrequest_approve'),
@@ -177,6 +107,7 @@ def approve_selected(modeladmin, request, queryset):
         request._collection.id
     )
     return HttpResponseRedirect(url)
+
 
 def delete_selected(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
