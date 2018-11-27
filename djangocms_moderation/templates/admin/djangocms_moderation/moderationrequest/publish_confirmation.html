@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+{% block title %}{% trans "Delete Confirmation" %}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media }}
+{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation{% endblock %}
+
+{% block content %}
+<p>{% trans "Are you sure you want to publish these items?" %}</p>
+<form action="" method="POST">
+    {% csrf_token %}
+    <input  class="button confirm-link js-versioning-keep-sideframe"
+            type="submit"
+            value="{% trans 'Yes, I\'m sure' %}">
+    <a href="{{ back_url }}">
+        <input type="button"
+               class="button js-versioning-keep-sideframe"
+               value="{% trans 'No, take me back' %}">
+         <input type="hidden"
+                name="do_action" value="true"
+               >
+    </a>
+</form>
+{% endblock %}

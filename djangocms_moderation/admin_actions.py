@@ -70,8 +70,6 @@ def reject_selected(modeladmin, request, queryset):
         request._collection.id
     )
     return HttpResponseRedirect(url)
-
-
 reject_selected.short_description = _('Submit for rework')  # noqa: E305
 
 
@@ -106,31 +104,14 @@ def publish_selected(modeladmin, request, queryset):
     if request.user != request._collection.author:
         raise PermissionDenied
 
-    num_published_requests = 0
-    for mr in queryset.all():
-        if mr.version_can_be_published():
-            if publish_version(mr.version, request.user):
-                num_published_requests += 1
-                mr.update_status(
-                    action=constants.ACTION_FINISHED,
-                    by_user=request.user,
-                )
-            else:
-                # TODO provide some feedback back to the user?
-                pass
-
-    messages.success(
-        request,
-        ungettext(
-            '%(count)d request successfully published',
-            '%(count)d requests successfully published',
-            num_published_requests
-        ) % {
-            'count': num_published_requests
-        },
+    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    url = "{}?ids={}&collection_id={}".format(
+        reverse('admin:djangocms_moderation_moderationrequest_publish'),
+        ",".join(selected),
+        request._collection.id
     )
+    return HttpResponseRedirect(url)
 
-    post_bulk_actions(request._collection)
 publish_selected.short_description = _("Publish selected requests")  # noqa: E305
 
 

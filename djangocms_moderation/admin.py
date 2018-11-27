@@ -18,21 +18,15 @@ from cms.utils.helpers import is_editable_model
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
+from . import constants
 from .admin_actions import (
     approve_selected,
     delete_selected,
     post_bulk_actions,
     publish_selected,
+    publish_version,
     reject_selected,
     resubmit_selected,
-)
-from .constants import (
-    ACTION_APPROVED,
-    ACTION_CANCELLED,
-    ACTION_REJECTED,
-    ARCHIVED,
-    COLLECTING,
-    IN_REVIEW,
 )
 from .emails import notify_collection_author, notify_collection_moderators
 from .filters import ModeratorFilter, ReviewerFilter
@@ -217,10 +211,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         actions = super().get_actions(request)
         actions_to_keep = []
 
-        if collection.status in [IN_REVIEW, ARCHIVED]:
+        if collection.status in [constants.IN_REVIEW, constants.ARCHIVED]:
             # Keep track how many actions we've added in the below loop (_actions_kept).
             # If we added all of them (_max_to_keep), we can exit the for loop
-            if collection.status == IN_REVIEW:
+            if collection.status == constants.IN_REVIEW:
                 _max_to_keep = 4  # publish_selected, approve_selected, reject_selected, resubmit_selected
             else:
                 # If the collection is archived, then no other action than
@@ -233,11 +227,11 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 if 'publish_selected' not in actions_to_keep:
                     if request.user == collection.author and mr.version_can_be_published():
                         actions_to_keep.append('publish_selected')
-                if collection.status == IN_REVIEW and 'approve_selected' not in actions_to_keep:
+                if collection.status == constants.IN_REVIEW and 'approve_selected' not in actions_to_keep:
                     if mr.user_can_take_moderation_action(request.user):
                         actions_to_keep.append('approve_selected')
                         actions_to_keep.append('reject_selected')
-                if collection.status == IN_REVIEW and 'resubmit_selected' not in actions_to_keep:
+                if collection.status == constants.IN_REVIEW and 'resubmit_selected' not in actions_to_keep:
                     if mr.user_can_resubmit(request.user):
                         actions_to_keep.append('resubmit_selected')
 
@@ -344,7 +338,56 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.rework_view),
                 name='{}_{}_rework'.format(*info),
             ),
+            url(
+                r'^publish/',
+                self.admin_site.admin_view(self.published_view),
+                name='{}_{}_publish'.format(*info),
+            ),
         ] + super().get_urls()
+
+    def published_view(self, request):
+        collection_id = request.GET.get('collection_id')
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            collection_id
+        )
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/publish_confirmation.html', context)
+        else:
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
+            collection = ModerationCollection.objects.get(id=collection_id)
+            num_published_requests = 0
+            for mr in queryset.all():
+                if mr.version_can_be_published():
+                    if publish_version(mr.version, request.user):
+                        num_published_requests += 1
+                        mr.update_status(
+                            action=constants.ACTION_FINISHED,
+                            by_user=request.user,
+                        )
+                    else:
+                        # TODO provide some feedback back to the user?
+                        pass
+
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully published',
+                    '%(count)d requests successfully published',
+                    num_published_requests
+                ) % {
+                    'count': num_published_requests
+                },
+            )
+
+            post_bulk_actions(collection)
+
+        return HttpResponseRedirect(redirect_url)
 
     def rework_view(self, request):
         collection_id = request.GET.get('collection_id')
@@ -368,7 +411,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 if moderation_request.user_can_take_moderation_action(request.user):
                     rejected_requests.append(moderation_request)
                     moderation_request.update_status(
-                        action=ACTION_REJECTED,
+                        action=constants.ACTION_REJECTED,
                         by_user=request.user,
                     )
 
@@ -379,7 +422,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 notify_collection_author(
                     collection=collection,
                     moderation_requests=rejected_requests,
-                    action=ACTION_REJECTED,
+                    action=constants.ACTION_REJECTED,
                     by_user=request.user,
                 )
 
@@ -433,7 +476,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 if mr.user_can_take_moderation_action(request.user):
                     approved_requests.append(mr)
                     mr.update_status(
-                        action=ACTION_APPROVED,
+                        action=constants.ACTION_APPROVED,
                         by_user=request.user,
                     )
                     action = mr.get_last_action()
@@ -455,7 +498,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 notify_collection_author(
                     collection=collection,
                     moderation_requests=approved_requests,
-                    action=ACTION_APPROVED,
+                    action=constants.ACTION_APPROVED,
                     by_user=request.user,
                 )
 
@@ -504,7 +547,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 notify_collection_author(
                     collection=collection,
                     moderation_requests=[mr for mr in queryset],
-                    action=ACTION_CANCELLED,
+                    action=constants.ACTION_CANCELLED,
                     by_user=request.user,
                 )
 
@@ -850,7 +893,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
                 readonly_fields.append('author')
             # Author of the collection can change the workflow if the collection
             # is still in the `collecting` state
-            if obj.status != COLLECTING or obj.author != request.user:
+            if obj.status != constants.COLLECTING or obj.author != request.user:
                 readonly_fields.append('workflow')
         return readonly_fields
 
