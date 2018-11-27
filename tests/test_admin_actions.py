@@ -90,13 +90,9 @@ class AdminActionTest(BaseTestCase):
 
         mock_has_delete_permission.return_value = True
         self.client.force_login(self.user)
-        # import pdb; pdb.set_trace()
         response = self.client.post(self.url_with_filter, data)
         self.assertEqual(response.status_code, 302)
-        delete_confirmation_response = self.client.get(self.url + response.url)
-        self.assertEqual(delete_confirmation_response.status_code, 301)
-        delete_confirmation_post_response = self.client.post(delete_confirmation_response.url)
-        self.assertEqual(delete_confirmation_post_response.status_code, 302)
+        self.client.post(response.url)
         self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 0)
 
         notify_author_mock.assert_called_once_with(

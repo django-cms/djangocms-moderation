@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseRedirect
+from django.shortcuts import reverse
 from django.utils.translation import ugettext_lazy as _, ungettext
 
 from cms.utils.urlutils import add_url_parameters
@@ -178,8 +179,12 @@ def delete_selected(modeladmin, request, queryset):
         raise PermissionDenied
 
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-    return HttpResponseRedirect('delete_selected?ids=%s&collection_id=%s'
-                                % (",".join(selected), request._collection.id))
+    url = "{}?ids={}&collection_id={}".format(
+        reverse('admin:djangocms_moderation_moderationrequest_delete'),
+        ",".join(selected),
+        request._collection.id
+    )
+    return HttpResponseRedirect(url)
 
 
 delete_selected.short_description = _('Remove selected')  # noqa: E305

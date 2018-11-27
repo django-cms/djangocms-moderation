@@ -327,7 +327,15 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.delete_selected_view),
                 name='{}_{}_delete'.format(*info),
             ),
+            url(
+                r'^approve/',
+                self.admin_site.admin_view(self.approve_view),
+                name='{}_{}_approve'.format(*info),
+            ),
         ] + super().get_urls()
+
+    def approve_view(self, request):
+        return
 
     def delete_selected_view(self, request):
         collection_id = request.GET.get('collection_id')
