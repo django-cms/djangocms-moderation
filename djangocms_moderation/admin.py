@@ -352,6 +352,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def resubmit_view(self, request):
         collection_id = request.GET.get('collection_id')
+        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         redirect_url = "{}?collection__id__exact={}".format(
             redirect_url,
@@ -361,10 +362,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             context = dict(
                 ids=request.GET.getlist('ids'),
                 back_url=redirect_url,
+                queryset=queryset,
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html', context)
         else:
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
             try:
                 collection = ModerationCollection.objects.get(id=int(collection_id))
             except (ValueError, ModerationCollection.DoesNotExist):
@@ -398,11 +399,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 ) % {
                     'count': len(resubmitted_requests)
                 },
-            )
+                )
         return HttpResponseRedirect(redirect_url)
 
     def published_view(self, request):
         collection_id = request.GET.get('collection_id')
+        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         redirect_url = "{}?collection__id__exact={}".format(
             redirect_url,
@@ -412,10 +414,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             context = dict(
                 ids=request.GET.getlist('ids'),
                 back_url=redirect_url,
+                queryset=queryset,
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/publish_confirmation.html', context)
         else:
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
             try:
                 collection = ModerationCollection.objects.get(id=int(collection_id))
             except (ValueError, ModerationCollection.DoesNotExist):
@@ -443,7 +445,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 ) % {
                     'count': num_published_requests
                 },
-            )
+                )
 
             post_bulk_actions(collection)
 
@@ -451,6 +453,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def rework_view(self, request):
         collection_id = request.GET.get('collection_id')
+        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         redirect_url = "{}?collection__id__exact={}".format(
             redirect_url,
@@ -460,10 +463,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             context = dict(
                 ids=request.GET.getlist('ids'),
                 back_url=redirect_url,
+                queryset=queryset,
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/rework_confirmation.html', context)
         else:
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
             try:
                 collection = ModerationCollection.objects.get(id=int(collection_id))
             except (ValueError, ModerationCollection.DoesNotExist):
@@ -498,11 +501,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 ) % {
                     'count': len(rejected_requests)
                 },
-            )
+                )
         return HttpResponseRedirect(redirect_url)
 
     def approved_view(self, request):
         collection_id = request.GET.get('collection_id')
+        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         redirect_url = "{}?collection__id__exact={}".format(
             redirect_url,
@@ -512,6 +516,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             context = dict(
                 ids=request.GET.getlist('ids'),
                 back_url=redirect_url,
+                queryset=queryset,
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/approve_confirmation.html', context)
         else:
@@ -534,7 +539,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             except (ValueError, ModerationCollection.DoesNotExist):
                 raise Http404
 
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
             approved_requests = []
             # Variable we are using to group the requests by action.step_approved
             request_action_mapping = dict()
@@ -587,7 +591,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 ) % {
                     'count': len(approved_requests)
                 },
-            )
+                )
 
             post_bulk_actions(collection)
 
@@ -595,15 +599,18 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def delete_selected_view(self, request):
         collection_id = request.GET.get('collection_id')
+        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         redirect_url = "{}?collection__id__exact={}".format(
             redirect_url,
             collection_id
         )
+
         if request.method != 'POST':
             context = dict(
                 ids=request.GET.getlist('ids'),
                 back_url=redirect_url,
+                queryset=queryset,
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/delete_confirmation.html', context)
         else:
@@ -612,7 +619,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             except (ValueError, ModerationCollection.DoesNotExist):
                 raise Http404
 
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
             num_deleted_requests = queryset.count()
             if num_deleted_requests:  # TODO task queue?
                 notify_collection_author(
