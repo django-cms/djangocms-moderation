@@ -364,8 +364,11 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html', context)
         else:
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
-            collection = ModerationCollection.objects.get(id=collection_id)
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids','').split(','))
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
             resubmitted_requests = []
 
             for mr in queryset.all():
@@ -412,8 +415,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/publish_confirmation.html', context)
         else:
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
-            collection = ModerationCollection.objects.get(id=collection_id)
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+
             num_published_requests = 0
             for mr in queryset.all():
                 if mr.version_can_be_published():
@@ -456,8 +463,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/rework_confirmation.html', context)
         else:
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
-            collection = ModerationCollection.objects.get(id=collection_id)
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+
             rejected_requests = []
 
             for moderation_request in queryset.all():
@@ -469,7 +480,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                     )
 
             # Now we need to notify collection reviewers and moderator. TODO task queue?
-            # request._collection is passed down from change_list from admin.py
             # https://github.com/divio/djangocms-moderation/pull/46#discussion_r211569629
             if rejected_requests:
                 notify_collection_author(
@@ -519,8 +529,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             and some in the second, then the reviewers we need to notify are
             different per request, depending on which stage the request is in
             """
-            collection = ModerationCollection.objects.get(id=collection_id)
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
             approved_requests = []
             # Variable we are using to group the requests by action.step_approved
             request_action_mapping = dict()
@@ -593,9 +607,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/delete_confirmation.html', context)
         else:
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids').split(','))
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
             num_deleted_requests = queryset.count()
-            collection = ModerationCollection.objects.get(id=collection_id)
             if num_deleted_requests:  # TODO task queue?
                 notify_collection_author(
                     collection=collection,
@@ -614,7 +632,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 ) % {
                     'count': num_deleted_requests
                 },
-            )
+                )
             post_bulk_actions(collection)
 
         return HttpResponseRedirect(redirect_url)
