@@ -364,7 +364,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             )
             return render(request, 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html', context)
         else:
-            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids','').split(','))
+            queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
             try:
                 collection = ModerationCollection.objects.get(id=int(collection_id))
             except (ValueError, ModerationCollection.DoesNotExist):
