@@ -2,15 +2,15 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.conf.urls import url
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.utils.html import format_html, format_html_join
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
@@ -18,14 +18,17 @@ from cms.utils.helpers import is_editable_model
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
+from . import constants
 from .admin_actions import (
     approve_selected,
     delete_selected,
+    post_bulk_actions,
     publish_selected,
+    publish_version,
     reject_selected,
     resubmit_selected,
 )
-from .constants import ARCHIVED, COLLECTING, IN_REVIEW
+from .emails import notify_collection_author, notify_collection_moderators
 from .filters import ModeratorFilter, ReviewerFilter
 from .forms import (
     CollectionCommentForm,
@@ -208,10 +211,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         actions = super().get_actions(request)
         actions_to_keep = []
 
-        if collection.status in [IN_REVIEW, ARCHIVED]:
+        if collection.status in [constants.IN_REVIEW, constants.ARCHIVED]:
             # Keep track how many actions we've added in the below loop (_actions_kept).
             # If we added all of them (_max_to_keep), we can exit the for loop
-            if collection.status == IN_REVIEW:
+            if collection.status == constants.IN_REVIEW:
                 _max_to_keep = 4  # publish_selected, approve_selected, reject_selected, resubmit_selected
             else:
                 # If the collection is archived, then no other action than
@@ -224,11 +227,11 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 if 'publish_selected' not in actions_to_keep:
                     if request.user == collection.author and mr.version_can_be_published():
                         actions_to_keep.append('publish_selected')
-                if collection.status == IN_REVIEW and 'approve_selected' not in actions_to_keep:
+                if collection.status == constants.IN_REVIEW and 'approve_selected' not in actions_to_keep:
                     if mr.user_can_take_moderation_action(request.user):
                         actions_to_keep.append('approve_selected')
                         actions_to_keep.append('reject_selected')
-                if collection.status == IN_REVIEW and 'resubmit_selected' not in actions_to_keep:
+                if collection.status == constants.IN_REVIEW and 'resubmit_selected' not in actions_to_keep:
                     if mr.user_can_resubmit(request.user):
                         actions_to_keep.append('resubmit_selected')
 
@@ -315,6 +318,330 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             status = ugettext('Ready for submission')
         return status
     get_status.short_description = _('Status')
+
+    def get_urls(self):
+        info = self.model._meta.app_label, self.model._meta.model_name
+
+        return [
+            url(
+                r'^delete_selected/',
+                self.admin_site.admin_view(self.delete_selected_view),
+                name='{}_{}_delete'.format(*info),
+            ),
+            url(
+                r'^approve/',
+                self.admin_site.admin_view(self.approved_view),
+                name='{}_{}_approve'.format(*info),
+            ),
+            url(
+                r'^rework/',
+                self.admin_site.admin_view(self.rework_view),
+                name='{}_{}_rework'.format(*info),
+            ),
+            url(
+                r'^publish/',
+                self.admin_site.admin_view(self.published_view),
+                name='{}_{}_publish'.format(*info),
+            ),
+            url(
+                r'^resubmit/',
+                self.admin_site.admin_view(self.resubmit_view),
+                name='{}_{}_resubmit'.format(*info),
+            ),
+        ] + super().get_urls()
+
+    def resubmit_view(self, request):
+        collection_id = request.GET.get('collection_id')
+        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            collection_id
+        )
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+                queryset=queryset,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html', context)
+        else:
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+            resubmitted_requests = []
+
+            for mr in queryset.all():
+                if mr.user_can_resubmit(request.user):
+                    resubmitted_requests.append(mr)
+                    mr.update_status(
+                        action=constants.ACTION_RESUBMITTED,
+                        by_user=request.user,
+                    )
+
+            if resubmitted_requests:
+                # Lets notify reviewers. TODO task queue?
+                notify_collection_moderators(
+                    collection=collection,
+                    moderation_requests=resubmitted_requests,
+                    # We can take any action here, as all the requests are in the same
+                    # stage of moderation - at the beginning
+                    action_obj=resubmitted_requests[0].get_last_action()
+                )
+
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully resubmitted for review',
+                    '%(count)d requests successfully resubmitted for review',
+                    len(resubmitted_requests)
+                ) % {
+                    'count': len(resubmitted_requests)
+                },
+                )
+        return HttpResponseRedirect(redirect_url)
+
+    def published_view(self, request):
+        collection_id = request.GET.get('collection_id')
+        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            collection_id
+        )
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+                queryset=queryset,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/publish_confirmation.html', context)
+        else:
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+
+            num_published_requests = 0
+            for mr in queryset.all():
+                if mr.version_can_be_published():
+                    if publish_version(mr.version, request.user):
+                        num_published_requests += 1
+                        mr.update_status(
+                            action=constants.ACTION_FINISHED,
+                            by_user=request.user,
+                        )
+                    else:
+                        # TODO provide some feedback back to the user?
+                        pass
+
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully published',
+                    '%(count)d requests successfully published',
+                    num_published_requests
+                ) % {
+                    'count': num_published_requests
+                },
+                )
+
+            post_bulk_actions(collection)
+
+        return HttpResponseRedirect(redirect_url)
+
+    def rework_view(self, request):
+        collection_id = request.GET.get('collection_id')
+        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            collection_id
+        )
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+                queryset=queryset,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/rework_confirmation.html', context)
+        else:
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+
+            rejected_requests = []
+
+            for moderation_request in queryset.all():
+                if moderation_request.user_can_take_moderation_action(request.user):
+                    rejected_requests.append(moderation_request)
+                    moderation_request.update_status(
+                        action=constants.ACTION_REJECTED,
+                        by_user=request.user,
+                    )
+
+            # Now we need to notify collection reviewers and moderator. TODO task queue?
+            # https://github.com/divio/djangocms-moderation/pull/46#discussion_r211569629
+            if rejected_requests:
+                notify_collection_author(
+                    collection=collection,
+                    moderation_requests=rejected_requests,
+                    action=constants.ACTION_REJECTED,
+                    by_user=request.user,
+                )
+
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully submitted for rework',
+                    '%(count)d requests successfully submitted for rework',
+                    len(rejected_requests)
+                ) % {
+                    'count': len(rejected_requests)
+                },
+                )
+        return HttpResponseRedirect(redirect_url)
+
+    def approved_view(self, request):
+        collection_id = request.GET.get('collection_id')
+        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            collection_id
+        )
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+                queryset=queryset,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/approve_confirmation.html', context)
+        else:
+            """
+            Validate and approve all the selected moderation requests and notify
+            the author and reviewers.
+
+            When bulk approving, we need to check for the next line of reviewers and
+            notify them about the pending moderation requests assigned to them.
+
+            Because this is a bulk action, we need to group the approved_requests
+            by the action.step_approved, so we notify the correct reviewers.
+
+            For example, if some requests are in the first stage of approval,
+            and some in the second, then the reviewers we need to notify are
+            different per request, depending on which stage the request is in
+            """
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+
+            approved_requests = []
+            # Variable we are using to group the requests by action.step_approved
+            request_action_mapping = dict()
+
+            for mr in queryset.all():
+                if mr.user_can_take_moderation_action(request.user):
+                    approved_requests.append(mr)
+                    mr.update_status(
+                        action=constants.ACTION_APPROVED,
+                        by_user=request.user,
+                    )
+                    action = mr.get_last_action()
+                    if action.to_user_id or action.to_role_id:
+                        # We group the moderation requests by step_approved.pk.
+                        # Sometimes it can be None, in which case they can be grouped
+                        # together and we use "0" as a key
+                        step_approved_key = str(action.step_approved.pk if action.step_approved else 0)
+                        if step_approved_key not in request_action_mapping:
+                            request_action_mapping[step_approved_key] = [mr]
+                            request_action_mapping['action_' + step_approved_key] = action
+                        else:
+                            request_action_mapping[step_approved_key].append(mr)
+
+            if approved_requests:  # TODO task queue?
+                # Lets notify the collection author about the approval
+                # request._collection is passed down from change_list from admin.py
+                # https://github.com/divio/djangocms-moderation/pull/46#discussion_r211569629
+                notify_collection_author(
+                    collection=collection,
+                    moderation_requests=approved_requests,
+                    action=constants.ACTION_APPROVED,
+                    by_user=request.user,
+                )
+
+                # Notify reviewers
+                for key, moderation_requests in sorted(request_action_mapping.items(), key=lambda x: x[0]):
+                    if not key.startswith('action_'):
+                        notify_collection_moderators(
+                            collection=collection,
+                            moderation_requests=moderation_requests,
+                            action_obj=request_action_mapping['action_' + key]
+                        )
+
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully approved',
+                    '%(count)d requests successfully approved',
+                    len(approved_requests)
+                ) % {
+                    'count': len(approved_requests)
+                },
+                )
+
+            post_bulk_actions(collection)
+
+        return HttpResponseRedirect(redirect_url)
+
+    def delete_selected_view(self, request):
+        collection_id = request.GET.get('collection_id')
+        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?collection__id__exact={}".format(
+            redirect_url,
+            collection_id
+        )
+
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+                queryset=queryset,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/delete_confirmation.html', context)
+        else:
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+
+            num_deleted_requests = queryset.count()
+            if num_deleted_requests:  # TODO task queue?
+                notify_collection_author(
+                    collection=collection,
+                    moderation_requests=[mr for mr in queryset],
+                    action=constants.ACTION_CANCELLED,
+                    by_user=request.user,
+                )
+
+            queryset.delete()
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully deleted',
+                    '%(count)d requests successfully deleted',
+                    num_deleted_requests
+                ) % {
+                    'count': num_deleted_requests
+                },
+                )
+            post_bulk_actions(collection)
+
+        return HttpResponseRedirect(redirect_url)
 
 
 class RoleAdmin(admin.ModelAdmin):
@@ -643,7 +970,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
                 readonly_fields.append('author')
             # Author of the collection can change the workflow if the collection
             # is still in the `collecting` state
-            if obj.status != COLLECTING or obj.author != request.user:
+            if obj.status != constants.COLLECTING or obj.author != request.user:
                 readonly_fields.append('workflow')
         return readonly_fields
 
