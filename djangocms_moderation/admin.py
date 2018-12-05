@@ -139,6 +139,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             'get_version_author',
             'get_preview_link',
             'get_status',
+            'get_reviewer',
         ]
         if conf.REQUEST_COMMENTS_ENABLED:
             list_display.append('get_comments_link')
@@ -318,6 +319,16 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             status = ugettext('Ready for submission')
         return status
     get_status.short_description = _('Status')
+
+    def get_reviewer(self, obj):
+        last_action = obj.get_last_action()
+        if not last_action:
+            return
+        if obj.is_active and obj.has_pending_step():
+            next_step = obj.get_next_required()
+            return next_step.role.name
+        return last_action._get_user_name(last_action.by_user)
+    get_reviewer.short_description = _('Reviewer')
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name
