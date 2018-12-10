@@ -8,6 +8,7 @@ from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _, ungettext
 from django.views.generic import FormView
 
+from cms.models import PageContent
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.models import Version
@@ -43,6 +44,32 @@ class CollectionItemsView(FormView):
         collection_id = self.request.GET.get('collection_id')
         if collection_id:
             initial['collection'] = collection_id
+
+        from django.apps import apps
+
+        from cms.app_registration import get_cms_config_apps
+
+        moderation_config = apps.get_app_config('djangocms_moderation')
+        registered_models = moderation_config.cms_extension.moderated_models
+
+        # For each version
+        for version in versions:
+
+            # If the version is a page type look at it's contents for draft moderatable objects
+            # How should that work for
+            if isinstance(version.content, PageContent):
+
+                # Using the following list find any draft instances inside this page version
+                # Find all instance of moderatable models in the page
+                for placeholder in version.content.get_placeholders():
+                    for plugin in placeholder.get_plugins():
+                        if plugin in registered_models:
+                            # Is the version draft??
+                            print("Find draft")
+
+
+
+
         return initial
 
     def form_valid(self, form):
