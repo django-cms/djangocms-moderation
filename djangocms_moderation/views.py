@@ -45,30 +45,19 @@ class CollectionItemsView(FormView):
         if collection_id:
             initial['collection'] = collection_id
 
+
         from django.apps import apps
 
-        from cms.app_registration import get_cms_config_apps
-
         moderation_config = apps.get_app_config('djangocms_moderation')
-        registered_models = moderation_config.cms_extension.moderated_models
 
+        #FIXME: Clean out to another helper / util
         # For each version
         for version in versions:
-
             # If the version is a page type look at it's contents for draft moderatable objects
-            # How should that work for
             if isinstance(version.content, PageContent):
-
-                # Using the following list find any draft instances inside this page version
-                # Find all instance of moderatable models in the page
+            # if version.content_type == ContentType.objects.get_for_model(PageContent):
                 for placeholder in version.content.get_placeholders():
-                    for plugin in placeholder.get_plugins():
-                        if plugin in registered_models:
-                            # Is the version draft??
-                            print("Find draft")
-
-
-
+                    moderation_config.cms_extension.get_moderated_children_from_placeholder(placeholder)
 
         return initial
 

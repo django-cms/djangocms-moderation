@@ -5,8 +5,11 @@ from django.urls import reverse
 
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_versioning.test_utils.factories import PageVersionFactory
-
+from djangocms_versioning.test_utils.factories import (
+    PageVersionFactory,
+    PlaceholderFactory,
+    TextPluginFactory,
+)
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
 
@@ -150,6 +153,39 @@ class CollectionItemsViewTest(BaseViewTestCase):
         # mr1 is in the list as it belongs to collection1
         self.assertIn(mr1, response.context_data['moderation_requests'])
         self.assertNotIn(mr2, response.context_data['moderation_requests'])
+
+    def test_add_items_to_collection_pages_items_added(self):
+        ModerationRequest.objects.all().delete()
+
+        collection = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        pg_version = PageVersionFactory(created_by=self.user)
+
+        # Populate page
+        placeholder = PlaceholderFactory.create(source=pg_version.content)
+        plugin_1 = TextPluginFactory.create(placeholder=placeholder)
+
+        collection.add_version(pg_version)
+
+
+        url = add_url_parameters(
+            get_admin_url(
+                name='cms_moderation_items_to_collection',
+                language='en',
+                args=()
+            ),
+            return_to_url='http://example.com',
+            version_ids=pg_version.pk,
+            collection_id=collection.pk
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(200, response.status_code)
+
+
+
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):

@@ -5,6 +5,8 @@ from cms.app_base import CMSAppConfig, CMSAppExtension
 from cms.models import PageContent
 
 
+
+
 class ModerationExtension(CMSAppExtension):
 
     def __init__(self):
@@ -27,6 +29,31 @@ class ModerationExtension(CMSAppExtension):
                 )
 
         self.moderated_models.extend(moderated_models)
+
+    def get_moderated_children_from_placeholder(self, placeholder):
+
+        from djangocms_versioning import versionables
+
+        for plugin in placeholder.get_plugins():
+
+            # Get the fields from the following
+            plugin_model = plugin.get_plugin_class().model._meta
+
+            candidate_fields = [
+                f for f in plugin_model.get_fields()
+                if f.is_relation and not f.auto_created and f.verbose_name == 'alias'
+            ]
+
+            for field in candidate_fields:
+                try:
+                    versionable = versionables.for_grouper(field.remote_field.model)
+                except KeyError:
+                    continue
+
+                if versionable.content_model in self.moderated_models:
+                    #    Is the version draft??
+                    print("Find draft")
+
 
 
 class CoreCMSAppConfig(CMSAppConfig):
