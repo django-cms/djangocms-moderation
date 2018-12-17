@@ -4,7 +4,8 @@ from django.core.exceptions import ImproperlyConfigured
 from cms.app_base import CMSAppConfig, CMSAppExtension
 from cms.models import PageContent
 
-
+from djangocms_versioning import versionables
+from djangocms_versioning.constants import DRAFT
 
 
 class ModerationExtension(CMSAppExtension):
@@ -32,11 +33,8 @@ class ModerationExtension(CMSAppExtension):
 
     def get_moderated_children_from_placeholder(self, placeholder):
 
-        from djangocms_versioning import versionables
-
         for plugin in placeholder.get_plugins():
 
-            # Get the fields from the following
             plugin_model = plugin.get_plugin_class().model._meta
 
             candidate_fields = [
@@ -46,14 +44,23 @@ class ModerationExtension(CMSAppExtension):
 
             for field in candidate_fields:
                 try:
+                    minimize_looping = plugin_model.get_field('alias')
                     versionable = versionables.for_grouper(field.remote_field.model)
                 except KeyError:
                     continue
 
                 if versionable.content_model in self.moderated_models:
-                    #    Is the version draft??
-                    print("Find draft")
+                    # Is the version draft??
 
+                    from .models import Version
+
+                    result_set = versionable.content_model._base_manager.filter(
+                        versions__state__in=(DRAFT),
+                    ).order_by('versions__state')
+
+                    #version = Version.objects.get_for_content(versionable.content_model)
+
+                    print("Find draft")
 
 
 class CoreCMSAppConfig(CMSAppConfig):
