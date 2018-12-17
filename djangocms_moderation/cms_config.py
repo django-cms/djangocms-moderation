@@ -3,9 +3,11 @@ from django.core.exceptions import ImproperlyConfigured
 
 from cms.app_base import CMSAppConfig, CMSAppExtension
 from cms.models import PageContent
+from cms.utils.plugins import downcast_plugins
 
 from djangocms_versioning import versionables
 from djangocms_versioning.constants import DRAFT
+from djangocms_versioning.models import Version
 
 
 class ModerationExtension(CMSAppExtension):
@@ -31,36 +33,33 @@ class ModerationExtension(CMSAppExtension):
 
         self.moderated_models.extend(moderated_models)
 
-    def get_moderated_children_from_placeholder(self, placeholder):
+    def get_moderated_children_from_placeholder(self, placeholder, language=None):
 
-        for plugin in placeholder.get_plugins():
+        for plugin in downcast_plugins(placeholder.get_plugins()):
 
             plugin_model = plugin.get_plugin_class().model._meta
 
             candidate_fields = [
                 f for f in plugin_model.get_fields()
-                if f.is_relation and not f.auto_created and f.verbose_name == 'alias'
+                if f.is_relation and not f.auto_created
             ]
 
             for field in candidate_fields:
                 try:
-                    minimize_looping = plugin_model.get_field('alias')
-                    versionable = versionables.for_grouper(field.remote_field.model)
+                    field_instance = getattr(plugin, field.name)
+                    versionable = versionables.for_grouper(field_instance)  # (field.remote_field.model)
                 except KeyError:
                     continue
 
                 if versionable.content_model in self.moderated_models:
-                    # Is the version draft??
+                    # Get the draft version if it exists
+                    versions = Version.objects.filter_by_grouper(field_instance).filter(state=DRAFT)
 
-                    from .models import Version
+                    #FIXME: Grouping values???
+                    # fields = versionable.grouping_values(content)
+                    # content_objects = versionable.for_grouping_values(**fields)
 
-                    result_set = versionable.content_model._base_manager.filter(
-                        versions__state__in=(DRAFT),
-                    ).order_by('versions__state')
-
-                    #version = Version.objects.get_for_content(versionable.content_model)
-
-                    print("Find draft")
+                    print("Draft found")
 
 
 class CoreCMSAppConfig(CMSAppConfig):

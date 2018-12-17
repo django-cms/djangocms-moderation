@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from django.apps import apps
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect
@@ -40,25 +41,19 @@ class CollectionItemsView(FormView):
         ids = [int(x) for x in ids if x.isdigit()]
         versions = Version.objects.filter(pk__in=ids)
         initial['versions'] = versions
+        moderation_config = apps.get_app_config('djangocms_moderation')
 
         collection_id = self.request.GET.get('collection_id')
         if collection_id:
             initial['collection'] = collection_id
 
-
-        from django.apps import apps
-
-        moderation_config = apps.get_app_config('djangocms_moderation')
-
-        #FIXME: Clean out to another helper / util
-        # For each version
         for version in versions:
             # If the version is a page type look at it's contents for draft moderatable objects
-            if isinstance(version.content, PageContent):
             # if version.content_type == ContentType.objects.get_for_model(PageContent):
+            # and he current user is the user who modified the page
+            if isinstance(version.content, PageContent) and version.created_by == self.request.user:
                 for placeholder in version.content.get_placeholders():
                     moderation_config.cms_extension.get_moderated_children_from_placeholder(placeholder)
-
         return initial
 
     def form_valid(self, form):
