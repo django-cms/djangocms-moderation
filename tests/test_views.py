@@ -155,6 +155,15 @@ class CollectionItemsViewTest(BaseViewTestCase):
         self.assertNotIn(mr2, response.context_data['moderation_requests'])
 
     def test_add_items_to_collection_pages_items_added(self):
+        """
+        Tests TODO!!
+         - Page with multiple instances of the same child added
+         - Page with different languages with two instances of a child added
+         - Page with published changes
+         - Page with multiple children in draft by a different user not added
+         - Page with multiple children
+         - None page with children not added to collection!
+        """
         ModerationRequest.objects.all().delete()
 
         collection = ModerationCollection.objects.create(
@@ -183,9 +192,6 @@ class CollectionItemsViewTest(BaseViewTestCase):
         response = self.client.get(url)
 
         self.assertEqual(200, response.status_code)
-
-
-
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):

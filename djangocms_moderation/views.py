@@ -22,7 +22,6 @@ from .forms import (
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
-
 from . import constants  # isort:skip
 
 
@@ -41,26 +40,25 @@ class CollectionItemsView(FormView):
         ids = [int(x) for x in ids if x.isdigit()]
         versions = Version.objects.filter(pk__in=ids)
         initial['versions'] = versions
-        moderation_config = apps.get_app_config('djangocms_moderation')
 
         collection_id = self.request.GET.get('collection_id')
         if collection_id:
             initial['collection'] = collection_id
 
-        for version in versions:
-            # If the version is a page type look at it's contents for draft moderatable objects
-            # if version.content_type == ContentType.objects.get_for_model(PageContent):
-            # and he current user is the user who modified the page
-            if isinstance(version.content, PageContent) and version.created_by == self.request.user:
-                for placeholder in version.content.get_placeholders():
-                    moderation_config.cms_extension.get_moderated_children_from_placeholder(placeholder)
         return initial
 
     def form_valid(self, form):
         versions = form.cleaned_data['versions']
         collection = form.cleaned_data['collection']
+
         for version in versions:
             collection.add_version(version)
+
+            # If the version is a page type look at it's contents for draft moderatable objects
+            # and the current user is the user who modified the page
+            #TODO: Decide on best method for page check: if version.content_type == ContentType.objects.get_for_model(PageContent):
+            if isinstance(version.content, PageContent) and version.created_by == self.request.user:
+                self._add_children_to_collection(collection, version.content)
 
         messages.success(
             self.request,
@@ -93,6 +91,18 @@ class CollectionItemsView(FormView):
 
         success_template = 'djangocms_moderation/request_finalized.html'
         return render(self.request, success_template, {})
+
+    def _add_children_to_collection(self, collection, parent):
+        """
+        Finds all of the moderated children and adds them to the collection
+        """
+        moderation_config = apps.get_app_config('djangocms_moderation')
+
+        for placeholder in parent.get_placeholders():
+            [
+                collection.add_version(page_version)
+                for page_version in moderation_config.cms_extension.get_moderated_children_from_placeholder(placeholder)
+            ]
 
     def get_form(self, **kwargs):
         form = super().get_form(**kwargs)
