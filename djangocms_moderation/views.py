@@ -44,7 +44,6 @@ class CollectionItemsView(FormView):
         collection_id = self.request.GET.get('collection_id')
         if collection_id:
             initial['collection'] = collection_id
-
         return initial
 
     def form_valid(self, form):
