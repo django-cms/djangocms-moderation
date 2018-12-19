@@ -7,14 +7,20 @@ from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.test_utils.factories import (
     PageVersionFactory,
-    PlaceholderFactory,
     TextPluginFactory,
 )
+
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
 
 from .utils.base import BaseViewTestCase
+from .utils.factories import (
+    PlaceholderFactory,
+    PollPluginFactory,
+)
 
+
+from .utils.moderated_polls.models import PollPlugin
 
 class CollectionItemsViewTest(BaseViewTestCase):
     def setUp(self):
@@ -164,16 +170,21 @@ class CollectionItemsViewTest(BaseViewTestCase):
          - Page with multiple children
          - None page with children not added to collection!
         """
+
         ModerationRequest.objects.all().delete()
 
         collection = ModerationCollection.objects.create(
             author=self.user, name='My collection 1', workflow=self.wf1
         )
-        pg_version = PageVersionFactory(created_by=self.user)
+        pg_version = PageVersionFactory(created_by=self.user, content__language='en')
 
         # Populate page
         placeholder = PlaceholderFactory.create(source=pg_version.content)
-        plugin_1 = TextPluginFactory.create(placeholder=placeholder)
+
+        #plugin = PollPlugin()
+
+        #plugin_2 = PollPluginFactory()
+        #plugin = PollPluginFactory.create(placeholder=placeholder)
 
         collection.add_version(pg_version)
 

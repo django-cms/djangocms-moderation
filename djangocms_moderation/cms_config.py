@@ -37,10 +37,11 @@ class ModerationExtension(CMSAppExtension):
         if versionable.content_model in self.moderated_models:
             # Get the draft version if it exists using grouping values
 
-            # FIXME: Grouping values, without will return multiple drafts, First hacks around this although will provide the wrong version
-            #fields = versionable.grouping_values(field_instance.contents)
-            #content_objects = versionable.for_grouping_values(**fields)
-            #return Version.objects.filter_by_grouper(field_instance).filter(state=DRAFT).first()
+            # FIXME: Grouping values, without will return multiple drafts,
+            #        First hacks around this although will provide the wrong version
+            # fields = versionable.grouping_values(field_instance.contents)
+            # content_objects = versionable.for_grouping_values(**fields)
+            # return Version.objects.filter_by_grouper(field_instance).filter(state=DRAFT).first()
 
             return Version.objects.filter_by_grouping_values(versionable).filter(state=DRAFT).first()
 

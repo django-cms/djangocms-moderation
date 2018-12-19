@@ -1,23 +1,60 @@
 import factory
+import string
 
-from djangocms_text_ckeditor.models import Text
+from cms.models import Placeholder
 
-from djangocms_versioning.test_utils.factories import (
-    get_plugin_language,
-    get_plugin_position,
-    PlaceholderFactory,
-)
+from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
-from factory.fuzzy import FuzzyChoice
+from .moderated_polls.models import Poll, PollContent
+from .moderated_polls.cms_plugins import PollPlugin
 
 
-class ModeratedPluginFactory(factory.django.DjangoModelFactory):
-    language = factory.LazyAttribute(get_plugin_language)
-    placeholder = factory.SubFactory(PlaceholderFactory)
-    parent = None
-    position = factory.LazyAttribute(get_plugin_position)
-    plugin_type = 'ModeratedPlugin'
-    body = factory.fuzzy.FuzzyText(length=50)
+def get_plugin_position(plugin):
+    """Helper function to correctly calculate the plugin position.
+    Use this in plugin factory classes
+    """
+    offset = plugin.placeholder.get_last_plugin_position(
+        plugin.language) or 0
+    return offset + 1
+
+
+def get_plugin_language(plugin):
+    """Helper function to get the language from a plugin's relationships.
+    Use this in plugin factory classes
+    """
+    if plugin.placeholder.source:
+        return plugin.placeholder.source.language
+    # NOTE: If plugin.placeholder.source is None then language will
+    # also be None unless set manually
+
+
+class PlaceholderFactory(factory.django.DjangoModelFactory):
+    default_width = FuzzyInteger(0, 25)
+    slot = FuzzyText(length=2, chars=string.digits)
+    # NOTE: When using this factory you will probably want to set
+    # the source field manually
 
     class Meta:
-        model = Text
+        model = Placeholder
+
+
+class PollFactory(factory.django.DjangoModelFactory):
+    name = FuzzyText(length=6)
+
+    class Meta:
+        model = Poll
+
+
+class PollContentFactory(factory.django.DjangoModelFactory):
+    poll = factory.SubFactory(PollFactory)
+    language = FuzzyChoice(['en', 'fr', 'it'])
+    text = FuzzyText(length=24)
+
+    class Meta:
+        model = PollContent
+
+
+class PollPluginFactory(factory.django.DjangoModelFactory):
+
+    class Meta:
+        model = PollPlugin

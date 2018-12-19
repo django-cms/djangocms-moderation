@@ -22,6 +22,7 @@ from .forms import (
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
+
 from . import constants  # isort:skip
 
 
@@ -55,7 +56,8 @@ class CollectionItemsView(FormView):
 
             # If the version is a page type look at it's contents for draft moderatable objects
             # and the current user is the user who modified the page
-            #TODO: Decide on best method for page check: if version.content_type == ContentType.objects.get_for_model(PageContent):
+            # TODO: Decide on best method for page check:
+            #       if version.content_type == ContentType.objects.get_for_model(PageContent):
             if isinstance(version.content, PageContent) and version.created_by == self.request.user:
                 self._add_children_to_collection(collection, version.content)
 
