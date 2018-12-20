@@ -59,6 +59,7 @@ class PollPluginFactory(factory.django.DjangoModelFactory):
     parent = None
     position = factory.LazyAttribute(get_plugin_position)
     plugin_type = 'PollPlugin'
+    poll = factory.SubFactory(PollFactory)
 
     class Meta:
         model = PollPlugin
