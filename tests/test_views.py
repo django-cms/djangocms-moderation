@@ -183,7 +183,7 @@ class CollectionItemsViewTest(BaseViewTestCase):
 
         #plugin = PollPlugin()
 
-        #plugin_2 = PollPluginFactory()
+        plugin = PollPluginFactory.create(placeholder=placeholder)
         #plugin = PollPluginFactory.create(placeholder=placeholder)
 
         collection.add_version(pg_version)

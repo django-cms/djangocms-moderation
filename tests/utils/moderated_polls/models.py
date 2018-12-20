@@ -32,6 +32,13 @@ class Answer(models.Model):
 
 
 class PollPlugin(CMSPlugin):
+    cmsplugin_ptr = models.OneToOneField(
+        CMSPlugin,
+        on_delete=models.CASCADE,
+        related_name='%(app_label)s_%(class)s',
+        parent_link=True,
+    )
+
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
 
     def __str__(self):

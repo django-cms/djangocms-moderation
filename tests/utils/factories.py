@@ -5,8 +5,7 @@ from cms.models import Placeholder
 
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
-from .moderated_polls.models import Poll, PollContent
-from .moderated_polls.cms_plugins import PollPlugin
+from .moderated_polls.models import Poll, PollContent, PollPlugin
 
 
 def get_plugin_position(plugin):
@@ -55,6 +54,11 @@ class PollContentFactory(factory.django.DjangoModelFactory):
 
 
 class PollPluginFactory(factory.django.DjangoModelFactory):
+    language = factory.LazyAttribute(get_plugin_language)
+    placeholder = factory.SubFactory(PlaceholderFactory)
+    parent = None
+    position = factory.LazyAttribute(get_plugin_position)
+    plugin_type = 'PollPlugin'
 
     class Meta:
         model = PollPlugin
