@@ -36,14 +36,9 @@ class ModerationExtension(CMSAppExtension):
     def _get_moderatable_version(self, versionable, field_instance):
         if versionable.content_model in self.moderated_models:
             # Get the draft version if it exists using grouping values
-
-            # FIXME: Grouping values, without will return multiple drafts,
-            #        First hacks around this although will provide the wrong version
-            # fields = versionable.grouping_values(field_instance.contents)
-            # content_objects = versionable.for_grouping_values(**fields)
-            # return Version.objects.filter_by_grouper(field_instance).filter(state=DRAFT).first()
-
-            return Version.objects.filter_by_grouping_values(versionable).filter(state=DRAFT).first()
+            return Version.objects.filter_by_grouping_values(versionable, **{
+                versionable.grouper_field_name: field_instance,
+            }).filter(state=DRAFT).first()
 
     def get_moderated_children_from_placeholder(self, placeholder):
         moderatable_child_list = []

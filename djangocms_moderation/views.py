@@ -59,7 +59,7 @@ class CollectionItemsView(FormView):
             # TODO: Decide on best method for page check:
             #       if version.content_type == ContentType.objects.get_for_model(PageContent):
             if isinstance(version.content, PageContent) and version.created_by == self.request.user:
-                self._add_children_to_collection(collection, version.content)
+                self._add_children_to_collection(collection, version)
 
         messages.success(
             self.request,
@@ -93,16 +93,22 @@ class CollectionItemsView(FormView):
         success_template = 'djangocms_moderation/request_finalized.html'
         return render(self.request, success_template, {})
 
-    def _add_children_to_collection(self, collection, parent):
+    def _add_children_to_collection(self, collection, version):
         """
         Finds all of the moderated children and adds them to the collection
         """
         moderation_config = apps.get_app_config('djangocms_moderation')
+        parent = version.content
 
         for placeholder in parent.get_placeholders():
             [
-                collection.add_version(page_version)
-                for page_version in moderation_config.cms_extension.get_moderated_children_from_placeholder(placeholder)
+                collection.add_version(child_version)
+                for child_version in moderation_config.cms_extension.get_moderated_children_from_placeholder(
+                    placeholder
+                )
+                # Don't add the version if it's already part of the collection or another users item
+                if version.created_by == child_version.created_by and
+                   not collection.moderation_requests.filter(version=child_version)
             ]
 
     def get_form(self, **kwargs):
