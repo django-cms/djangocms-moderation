@@ -5,10 +5,7 @@ from django.urls import reverse
 
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_versioning.test_utils.factories import (
-    PageVersionFactory,
-    TextPluginFactory,
-)
+from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
@@ -17,10 +14,9 @@ from .utils.base import BaseViewTestCase
 from .utils.factories import (
     PlaceholderFactory,
     PollPluginFactory,
+    PollVersionFactory,
 )
 
-
-from .utils.moderated_polls.models import PollPlugin
 
 class CollectionItemsViewTest(BaseViewTestCase):
     def setUp(self):
@@ -160,14 +156,15 @@ class CollectionItemsViewTest(BaseViewTestCase):
         self.assertIn(mr1, response.context_data['moderation_requests'])
         self.assertNotIn(mr2, response.context_data['moderation_requests'])
 
-    def test_add_items_to_collection_pages_items_added(self):
+    def test_add_pages_moderated_children_to_collection(self):
         """
         Tests TODO!!
          - Page with multiple instances of the same child added
+         - Page with multiple children
+         - Page with multiple children in draft by a different user not added
+
          - Page with different languages with two instances of a child added
          - Page with published changes
-         - Page with multiple children in draft by a different user not added
-         - Page with multiple children
          - None page with children not added to collection!
         """
 
@@ -181,13 +178,9 @@ class CollectionItemsViewTest(BaseViewTestCase):
         # Populate page
         placeholder = PlaceholderFactory.create(source=pg_version.content)
 
-        #plugin = PollPlugin()
-
-        plugin = PollPluginFactory.create(placeholder=placeholder)
-        #plugin = PollPluginFactory.create(placeholder=placeholder)
-
-        collection.add_version(pg_version)
-
+        # Create poll instance as a versioned plugin
+        poll_version = PollVersionFactory()
+        PollPluginFactory.create(placeholder=placeholder, poll=poll_version.content.poll)
 
         url = add_url_parameters(
             get_admin_url(
@@ -199,10 +192,22 @@ class CollectionItemsViewTest(BaseViewTestCase):
             version_ids=pg_version.pk,
             collection_id=collection.pk
         )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': collection.pk,
+                'versions': [pg_version.pk],
+            },
+            follow=False
+        )
 
-        response = self.client.get(url)
+        # Match collection and versions in the DB
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+        stored_collection_plugin = ModerationRequest.objects.get(collection=collection, version=poll_version)
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(stored_collection.count(), 2)
+        self.assertEqual(stored_collection_plugin.version, poll_version)
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):

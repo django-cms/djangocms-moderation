@@ -5,6 +5,9 @@ from cms.models import Placeholder
 
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
+from djangocms_versioning.test_utils.factories import AbstractVersionFactory
+from djangocms_versioning.models import Version
+
 from .moderated_polls.models import Poll, PollContent, PollPlugin
 
 
@@ -63,3 +66,10 @@ class PollPluginFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = PollPlugin
+
+
+class PollVersionFactory(AbstractVersionFactory):
+    content = factory.SubFactory(PollContentFactory)
+
+    class Meta:
+        model = Version
