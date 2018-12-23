@@ -108,7 +108,7 @@ class CollectionItemsView(FormView):
                 )
                 # Don't add the version if it's already part of the collection or another users item
                 if version.created_by == child_version.created_by and
-                   not collection.moderation_requests.filter(version=child_version)
+                not collection.moderation_requests.filter(version=child_version)
             ]
 
     def get_form(self, **kwargs):

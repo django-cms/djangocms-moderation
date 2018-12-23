@@ -3,8 +3,8 @@ import string
 from cms.models import Placeholder
 
 import factory
-from djangocms_versioning.test_utils.factories import AbstractVersionFactory
 from djangocms_versioning.models import Version
+from djangocms_versioning.test_utils.factories import AbstractVersionFactory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
 from .moderated_polls.models import Poll, PollContent, PollPlugin
