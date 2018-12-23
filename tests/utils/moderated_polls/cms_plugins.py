@@ -10,4 +10,3 @@ class PollPlugin(CMSPluginBase):
     name = 'Poll'
     allow_children = True
     render_template = 'polls/poll.html'
-

@@ -1,12 +1,11 @@
-import factory
 import string
 
 from cms.models import Placeholder
 
-from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
-
+import factory
 from djangocms_versioning.test_utils.factories import AbstractVersionFactory
 from djangocms_versioning.models import Version
+from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
 from .moderated_polls.models import Poll, PollContent, PollPlugin
 
