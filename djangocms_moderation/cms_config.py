@@ -34,13 +34,15 @@ class ModerationExtension(CMSAppExtension):
         self.moderated_models.extend(moderated_models)
 
     def _get_moderatable_version(self, versionable, field_instance):
-        if versionable.content_model in self.moderated_models:
-            # Get the draft version if it exists using grouping values
-            return Version.objects.filter_by_grouping_values(versionable, **{
-                versionable.grouper_field_name: field_instance,
-            }).filter(state=DRAFT).first()
+        # Get the draft version if it exists using grouping values
+        return Version.objects.filter_by_grouping_values(versionable, **{
+            versionable.grouper_field_name: field_instance,
+        }).get(state=DRAFT)
 
     def get_moderated_children_from_placeholder(self, placeholder):
+        """
+        Get all moderated children version objects from a placeholder
+        """
         moderatable_child_list = []
 
         for plugin in downcast_plugins(placeholder.get_plugins()):
@@ -52,13 +54,12 @@ class ModerationExtension(CMSAppExtension):
             ]
 
             for field in field_list:
+                field_instance = getattr(plugin, field.name)
+                # Catch fields that are not versionable as field_list contains many fields that are irrelevant
                 try:
-                    field_instance = getattr(plugin, field.name)
                     versionable = versionables.for_grouper(field_instance)
                 except KeyError:
                     continue
-
-                # Get moderatable version
                 version = self._get_moderatable_version(versionable, field_instance)
                 if version:
                     moderatable_child_list.append(version)

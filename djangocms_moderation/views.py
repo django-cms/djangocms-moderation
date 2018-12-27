@@ -56,8 +56,6 @@ class CollectionItemsView(FormView):
 
             # If the version is a page type look at it's contents for draft moderatable objects
             # and the current user is the user who modified the page
-            # TODO: Decide on best method for page check:
-            #       if version.content_type == ContentType.objects.get_for_model(PageContent):
             if isinstance(version.content, PageContent) and version.created_by == self.request.user:
                 self._add_children_to_collection(collection, version)
 
@@ -101,15 +99,13 @@ class CollectionItemsView(FormView):
         parent = version.content
 
         for placeholder in parent.get_placeholders():
-            [
-                collection.add_version(child_version)
-                for child_version in moderation_config.cms_extension.get_moderated_children_from_placeholder(
-                    placeholder
-                )
+            for child_version in moderation_config.cms_extension.get_moderated_children_from_placeholder(
+                placeholder
+            ):
                 # Don't add the version if it's already part of the collection or another users item
-                if version.created_by == child_version.created_by and
-                not collection.moderation_requests.filter(version=child_version)
-            ]
+                if (version.created_by == child_version.created_by and
+                   not collection.moderation_requests.filter(version=child_version)):
+                    collection.add_version(child_version)
 
     def get_form(self, **kwargs):
         form = super().get_form(**kwargs)

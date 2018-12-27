@@ -158,10 +158,8 @@ class CollectionItemsViewTest(BaseViewTestCase):
 
     def test_add_pages_moderated_children_to_collection(self):
         """
-        A page with multiple children moderatable children automatically adds them to the collection
+        A page with multiple moderatable children automatically adds them to the collection
         """
-        ModerationRequest.objects.all().delete()
-
         collection = ModerationCollection.objects.create(
             author=self.user, name='My collection 1', workflow=self.wf1
         )
@@ -174,12 +172,13 @@ class CollectionItemsViewTest(BaseViewTestCase):
         PollPluginFactory.create(placeholder=placeholder, poll=poll_1_version.content.poll)
         PollPluginFactory.create(placeholder=placeholder, poll=poll_2_version.content.poll)
 
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
         url = add_url_parameters(
-            get_admin_url(
-                name='cms_moderation_items_to_collection',
-                language='en',
-                args=()
-            ),
+            admin_endpoint,
             return_to_url='http://example.com',
             version_ids=pg_version.pk,
             collection_id=collection.pk
@@ -195,21 +194,22 @@ class CollectionItemsViewTest(BaseViewTestCase):
 
         # Match collection and versions in the DB
         stored_collection = ModerationRequest.objects.filter(collection=collection)
-        stored_collection_poll_1 = ModerationRequest.objects.get(collection=collection, version=poll_1_version)
-        stored_collection_poll_2 = ModerationRequest.objects.get(collection=collection, version=poll_2_version)
 
         self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
         self.assertEqual(stored_collection.count(), 3)
-        self.assertEqual(stored_collection_poll_1.version, poll_1_version)
-        self.assertEqual(stored_collection_poll_2.version, poll_2_version)
+        self.assertEqual(pg_version,
+                         ModerationRequest.objects.get(collection=collection, version=pg_version).version)
+        self.assertEqual(poll_1_version,
+                         ModerationRequest.objects.get(collection=collection, version=poll_1_version).version)
+        self.assertEqual(poll_2_version,
+                         ModerationRequest.objects.get(collection=collection, version=poll_2_version).version)
 
     def test_add_pages_moderated_duplicated_children_to_collection(self):
         """
         A page with multiple instances of the same version added to the collection should only
         add it to the collection once!
         """
-        ModerationRequest.objects.all().delete()
-
         collection = ModerationCollection.objects.create(
             author=self.user, name='My collection 1', workflow=self.wf1
         )
@@ -221,12 +221,13 @@ class CollectionItemsViewTest(BaseViewTestCase):
         PollPluginFactory.create(placeholder=placeholder, poll=poll_version.content.poll)
         PollPluginFactory.create(placeholder=placeholder, poll=poll_version.content.poll)
 
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
         url = add_url_parameters(
-            get_admin_url(
-                name='cms_moderation_items_to_collection',
-                language='en',
-                args=()
-            ),
+            admin_endpoint,
             return_to_url='http://example.com',
             version_ids=pg_version.pk,
             collection_id=collection.pk
@@ -242,14 +243,17 @@ class CollectionItemsViewTest(BaseViewTestCase):
         stored_collection = ModerationRequest.objects.filter(collection=collection)
 
         self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
         self.assertEqual(stored_collection.count(), 2)
+        self.assertEqual(pg_version,
+                         ModerationRequest.objects.get(collection=collection, version=pg_version).version)
+        self.assertEqual(poll_version,
+                         ModerationRequest.objects.get(collection=collection, version=poll_version).version)
 
     def test_add_pages_moderated_duplicated_children_to_collection_for_author_only(self):
         """
         A page with moderatable children created by different authors only automatically adds the current users items
         """
-        ModerationRequest.objects.all().delete()
-
         collection = ModerationCollection.objects.create(
             author=self.user, name='My collection 1', workflow=self.wf1
         )
@@ -261,12 +265,14 @@ class CollectionItemsViewTest(BaseViewTestCase):
         poll_2_version = PollVersionFactory(created_by=self.user2)
         PollPluginFactory.create(placeholder=placeholder, poll=poll_1_version.content.poll)
         PollPluginFactory.create(placeholder=placeholder, poll=poll_2_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
         url = add_url_parameters(
-            get_admin_url(
-                name='cms_moderation_items_to_collection',
-                language='en',
-                args=()
-            ),
+            admin_endpoint,
             return_to_url='http://example.com',
             version_ids=pg_version.pk,
             collection_id=collection.pk
@@ -282,6 +288,7 @@ class CollectionItemsViewTest(BaseViewTestCase):
         stored_collection = ModerationRequest.objects.filter(collection=collection)
 
         self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
         self.assertEqual(stored_collection.count(), 2)
 
 
