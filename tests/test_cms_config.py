@@ -1,6 +1,5 @@
-from tests.utils.base import BaseTestCase
-
 from djangocms_versioning.test_utils.factories import PageVersionFactory
+from tests.utils.base import BaseTestCase
 
 from djangocms_moderation.cms_config import ModerationExtension
 
