@@ -4,11 +4,14 @@ from unittest import skip
 
 from django.core.urlresolvers import reverse
 
+from cms.test_utils.testcases import CMSTestCase
+
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation.constants import COLLECTING, IN_REVIEW
 from djangocms_moderation.helpers import (
     get_form_submission_for_step,
+    get_moderated_children_from_placeholder,
     get_moderation_button_title_and_url,
     get_page_or_404,
     is_obj_version_unlocked,
@@ -21,6 +24,11 @@ from djangocms_moderation.models import (
 )
 
 from .utils.base import BaseTestCase
+from .utils.factories import (
+    PlaceholderFactory,
+    PollPluginFactory,
+    PollVersionFactory,
+)
 
 
 @skip("Confirmation page feature doesn't support 1.0.x yet")
@@ -142,3 +150,51 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
             )
 
         self.assertEqual(url, self.expected_url)
+
+
+class ModeratedChildrenTestCase(CMSTestCase):
+
+    def setUp(self):
+        self.user = self.get_superuser()
+
+    def test_get_moderated_children_from_placeholder_has_only_registered_model(self):
+        """
+        The moderated model is only a model registered with moderation
+        """
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        poll_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll_version.content.poll)
+
+        moderated_children = get_moderated_children_from_placeholder(placeholder, pg_version.content.language)
+
+        self.assertEqual(moderated_children, [poll_version])
+
+    def test_get_moderated_children_from_placeholder_gets_correct_versions(self):
+        """
+        Models from a page with two different languages are filtered correctly
+        """
+        language_1 = 'en'
+        language_2 = 'fr'
+        # Populate page 1
+        pg_1_version = PageVersionFactory(created_by=self.user, content__language=language_1)
+        pg_1_placeholder = PlaceholderFactory(source=pg_1_version.content)
+        pg_1_poll_version = PollVersionFactory(created_by=self.user, content__language=language_1)
+        PollPluginFactory(placeholder=pg_1_placeholder, poll=pg_1_poll_version.content.poll)
+        # Populate page 2
+        pg_2_version = PageVersionFactory(
+            created_by=self.user, content__language=language_2, content__page=pg_1_version.grouper)
+        pg_2_placeholder = PlaceholderFactory(source=pg_2_version.content)
+        pg_2_poll_version = PollVersionFactory(created_by=self.user, content__language=language_2)
+        PollPluginFactory(placeholder=pg_2_placeholder, poll=pg_2_poll_version.content.poll)
+
+        page_1_moderated_children = get_moderated_children_from_placeholder(
+            pg_1_placeholder, pg_1_version.content.language)
+        page_2_moderated_children = get_moderated_children_from_placeholder(
+            pg_2_placeholder, pg_2_version.content.language)
+
+        self.assertEqual(page_1_moderated_children, [pg_1_poll_version])
+        self.assertEqual(page_2_moderated_children, [pg_2_poll_version])

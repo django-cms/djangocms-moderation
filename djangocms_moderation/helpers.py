@@ -6,6 +6,10 @@ from django.db.models import Q
 from django.template.defaultfilters import truncatechars
 from django.utils.translation import ugettext_lazy as _
 
+from cms.utils.plugins import downcast_plugins
+
+from djangocms_versioning import versionables
+from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.models import Version
 
 from .conf import COLLECTION_NAME_LENGTH_LIMIT
@@ -130,3 +134,44 @@ def get_all_reviewers():
 
 def get_all_moderators():
     return User.objects.filter(moderationcollection__author__isnull=False).distinct()
+
+
+def _get_moderatable_version(versionable, field_instance, language):
+    """
+    Private helper to get a specific version from a field instance
+    """
+    filters = {
+        versionable.grouper_field_name: field_instance,
+    }
+    if language is not None and 'language' in versionable.extra_grouping_fields:
+        filters['language'] = language
+    # Get the draft version if it exists using grouping values
+    return Version.objects.filter_by_grouping_values(versionable, **filters).get(state=DRAFT)
+
+
+def get_moderated_children_from_placeholder(placeholder, language=None):
+    """
+    Get all moderated children version objects from a placeholder
+    """
+    moderatable_child_list = []
+
+    for plugin in downcast_plugins(placeholder.get_plugins()):
+
+        plugin_model = plugin.get_plugin_class().model._meta
+        field_list = [
+            f for f in plugin_model.get_fields()
+            if f.is_relation and not f.auto_created
+        ]
+
+        for field in field_list:
+            field_instance = getattr(plugin, field.name)
+            # Catch fields that are not versionable as field_list contains many fields that are irrelevant
+            try:
+                versionable = versionables.for_grouper(field_instance)
+            except KeyError:
+                continue
+            version = _get_moderatable_version(versionable, field_instance, language)
+            if version:
+                moderatable_child_list.append(version)
+
+    return moderatable_child_list

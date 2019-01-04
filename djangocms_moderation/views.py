@@ -20,6 +20,7 @@ from .forms import (
     SubmitCollectionForModerationForm,
 )
 from .models import ConfirmationPage, ModerationCollection
+from .helpers import get_moderated_children_from_placeholder
 from .utils import get_admin_url
 
 
@@ -95,16 +96,12 @@ class CollectionItemsView(FormView):
         """
         Finds all of the moderated children and adds them to the collection
         """
-        moderation_config = apps.get_app_config('djangocms_moderation')
         parent = version.content
-
         for placeholder in parent.get_placeholders():
-            for child_version in moderation_config.cms_extension.get_moderated_children_from_placeholder(
-                placeholder
-            ):
+            for child_version in get_moderated_children_from_placeholder(placeholder, parent.language):
                 # Don't add the version if it's already part of the collection or another users item
                 if (version.created_by == child_version.created_by and
-                   not collection.moderation_requests.filter(version=child_version)):
+                   not collection.moderation_requests.filter(version=child_version).exists()):
                     collection.add_version(child_version)
 
     def get_form(self, **kwargs):

@@ -163,14 +163,15 @@ class CollectionItemsViewTest(BaseViewTestCase):
         collection = ModerationCollection.objects.create(
             author=self.user, name='My collection 1', workflow=self.wf1
         )
-        pg_version = PageVersionFactory(created_by=self.user, content__language='en')
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
 
         # Populate page
-        placeholder = PlaceholderFactory.create(source=pg_version.content)
-        poll_1_version = PollVersionFactory(created_by=self.user)
-        poll_2_version = PollVersionFactory(created_by=self.user)
-        PollPluginFactory.create(placeholder=placeholder, poll=poll_1_version.content.poll)
-        PollPluginFactory.create(placeholder=placeholder, poll=poll_2_version.content.poll)
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        poll_1_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_2_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll_1_version.content.poll)
+        PollPluginFactory(placeholder=placeholder, poll=poll_2_version.content.poll)
 
         admin_endpoint = get_admin_url(
             name='cms_moderation_items_to_collection',
@@ -213,13 +214,14 @@ class CollectionItemsViewTest(BaseViewTestCase):
         collection = ModerationCollection.objects.create(
             author=self.user, name='My collection 1', workflow=self.wf1
         )
-        pg_version = PageVersionFactory(created_by=self.user, content__language='en')
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
 
         # Populate page
-        placeholder = PlaceholderFactory.create(source=pg_version.content)
-        poll_version = PollVersionFactory(created_by=self.user)
-        PollPluginFactory.create(placeholder=placeholder, poll=poll_version.content.poll)
-        PollPluginFactory.create(placeholder=placeholder, poll=poll_version.content.poll)
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        poll_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll_version.content.poll)
+        PollPluginFactory(placeholder=placeholder, poll=poll_version.content.poll)
 
         admin_endpoint = get_admin_url(
             name='cms_moderation_items_to_collection',
@@ -257,14 +259,14 @@ class CollectionItemsViewTest(BaseViewTestCase):
         collection = ModerationCollection.objects.create(
             author=self.user, name='My collection 1', workflow=self.wf1
         )
-        pg_version = PageVersionFactory(created_by=self.user, content__language='en')
-
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
         # Populate page
-        placeholder = PlaceholderFactory.create(source=pg_version.content)
-        poll_1_version = PollVersionFactory(created_by=self.user)
-        poll_2_version = PollVersionFactory(created_by=self.user2)
-        PollPluginFactory.create(placeholder=placeholder, poll=poll_1_version.content.poll)
-        PollPluginFactory.create(placeholder=placeholder, poll=poll_2_version.content.poll)
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        poll_1_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_2_version = PollVersionFactory(created_by=self.user2, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll_1_version.content.poll)
+        PollPluginFactory(placeholder=placeholder, poll=poll_2_version.content.poll)
 
         admin_endpoint = get_admin_url(
             name='cms_moderation_items_to_collection',
