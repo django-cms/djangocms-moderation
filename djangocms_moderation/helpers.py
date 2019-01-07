@@ -146,7 +146,7 @@ def _get_moderatable_version(versionable, field_instance, language):
     if language is not None and 'language' in versionable.extra_grouping_fields:
         filters['language'] = language
     # Get the draft version if it exists using grouping values
-    return Version.objects.filter_by_grouping_values(versionable, **filters).get(state=DRAFT)
+    return Version.objects.filter_by_grouping_values(versionable, **filters).filter(state=DRAFT).first()
 
 
 def get_moderated_children_from_placeholder(placeholder, language=None):

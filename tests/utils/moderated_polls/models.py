@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 
 from cms.models import CMSPlugin
+from cms.models.fields import PlaceholderField
 
 
 class Poll(models.Model):
@@ -15,12 +16,16 @@ class PollContent(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
     language = models.TextField()
     text = models.TextField()
+    placeholder = PlaceholderField('placeholder')
 
     def __str__(self):
         return self.text
 
     def get_absolute_url(self):
         return reverse('admin:polls_pollcontent_changelist')
+
+    def get_placeholders(self):
+        return [self.placeholder]
 
 
 class Answer(models.Model):

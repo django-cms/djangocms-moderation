@@ -293,6 +293,52 @@ class CollectionItemsViewTest(BaseViewTestCase):
         self.assertEqual(admin_endpoint, response.url)
         self.assertEqual(stored_collection.count(), 2)
 
+    def test_add_pages_moderated_traversed_children_to_collection(self):
+        """
+        A page with moderatable children that also have moderatable children: child within a child
+        are added to a collection
+        """
+        collection = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
+        # Populate page
+        pg_placeholder = PlaceholderFactory(source=pg_version.content)
+        poll_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_plugin = PollPluginFactory(placeholder=pg_placeholder, poll=poll_version.content.poll)
+        # Populate page poll child layer 1
+        poll_child_1_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_child_1_plugin = PollPluginFactory(placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll)
+        # Populate page poll child layer 2
+        poll_child_2_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(placeholder=poll_child_1_plugin.placeholder, poll=poll_child_2_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url='http://example.com',
+            version_ids=pg_version.pk,
+            collection_id=collection.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': collection.pk,
+                'versions': [pg_version.pk],
+            },
+        )
+
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.count(), 4)
+
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
     def setUp(self):

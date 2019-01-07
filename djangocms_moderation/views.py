@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-from django.apps import apps
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect
@@ -19,8 +18,8 @@ from .forms import (
     CollectionItemsForm,
     SubmitCollectionForModerationForm,
 )
-from .models import ConfirmationPage, ModerationCollection
 from .helpers import get_moderated_children_from_placeholder
+from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
 
@@ -103,6 +102,10 @@ class CollectionItemsView(FormView):
                 if (version.created_by == child_version.created_by and
                    not collection.moderation_requests.filter(version=child_version).exists()):
                     collection.add_version(child_version)
+
+                # If the child also has children, traverse that tree
+                if hasattr(child_version.content, 'placeholder'):
+                    self._add_children_to_collection(collection, child_version)
 
     def get_form(self, **kwargs):
         form = super().get_form(**kwargs)
