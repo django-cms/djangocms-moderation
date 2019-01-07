@@ -309,7 +309,8 @@ class CollectionItemsViewTest(BaseViewTestCase):
         poll_plugin = PollPluginFactory(placeholder=pg_placeholder, poll=poll_version.content.poll)
         # Populate page poll child layer 1
         poll_child_1_version = PollVersionFactory(created_by=self.user, content__language=language)
-        poll_child_1_plugin = PollPluginFactory(placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll)
+        poll_child_1_plugin = PollPluginFactory(
+            placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll)
         # Populate page poll child layer 2
         poll_child_2_version = PollVersionFactory(created_by=self.user, content__language=language)
         PollPluginFactory(placeholder=poll_child_1_plugin.placeholder, poll=poll_child_2_version.content.poll)
