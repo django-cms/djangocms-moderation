@@ -25,6 +25,8 @@ from djangocms_moderation.models import (
 
 from .utils.base import BaseTestCase
 from .utils.factories import (
+    NoneModeratedPollPluginFactory,
+    NoneModeratedPollVersionFactory,
     PlaceholderFactory,
     PollPluginFactory,
     PollVersionFactory,
@@ -159,15 +161,19 @@ class ModeratedChildrenTestCase(CMSTestCase):
 
     def test_get_moderated_children_from_placeholder_has_only_registered_model(self):
         """
-        The moderated model is only a model registered with moderation
+        The moderated model is the only model registered with moderation
         """
         pg_version = PageVersionFactory(created_by=self.user)
         language = pg_version.content.language
 
         # Populate page
         placeholder = PlaceholderFactory(source=pg_version.content)
+        # Moderated plugin
         poll_version = PollVersionFactory(created_by=self.user, content__language=language)
         PollPluginFactory(placeholder=placeholder, poll=poll_version.content.poll)
+        # None moderated plugin
+        none_moderated_poll_version = NoneModeratedPollVersionFactory(created_by=self.user, content__language=language)
+        NoneModeratedPollPluginFactory(placeholder=placeholder, poll=none_moderated_poll_version.content.poll)
 
         moderated_children = get_moderated_children_from_placeholder(placeholder, pg_version.content.language)
 

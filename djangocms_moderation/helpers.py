@@ -140,13 +140,17 @@ def _get_moderatable_version(versionable, field_instance, language):
     """
     Private helper to get a specific version from a field instance
     """
+    # If the content model is not registered with moderation nothing should be returned
+    if versionable.content_model not in apps.get_app_config('djangocms_moderation').cms_extension.moderated_models:
+        return
+
     filters = {
         versionable.grouper_field_name: field_instance,
     }
     if language is not None and 'language' in versionable.extra_grouping_fields:
         filters['language'] = language
     # Get the draft version if it exists using grouping values
-    return Version.objects.filter_by_grouping_values(versionable, **filters).filter(state=DRAFT).first()
+    return Version.objects.filter_by_grouping_values(versionable, **filters).get(state=DRAFT)
 
 
 def get_moderated_children_from_placeholder(placeholder, language=None):
@@ -165,7 +169,7 @@ def get_moderated_children_from_placeholder(placeholder, language=None):
 
         for field in field_list:
             field_instance = getattr(plugin, field.name)
-            # Catch fields that are not versionable as field_list contains many fields that are irrelevant
+            # Skip fields that are not versionable because field_list contains many unrelated fields
             try:
                 versionable = versionables.for_grouper(field_instance)
             except KeyError:

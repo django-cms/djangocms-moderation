@@ -8,6 +8,7 @@ from djangocms_versioning.test_utils.factories import AbstractVersionFactory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
 from .moderated_polls.models import Poll, PollContent, PollPlugin
+from .versioned_none_moderated_app.models import NoneModeratedPoll, NoneModeratedPollContent, NoneModeratedPollPlugin
 
 
 def get_plugin_position(plugin):
@@ -72,3 +73,40 @@ class PollVersionFactory(AbstractVersionFactory):
 
     class Meta:
         model = Version
+
+# None Moderated Poll App factories
+
+
+class NoneModeratedPollFactory(factory.django.DjangoModelFactory):
+    name = FuzzyText(length=6)
+
+    class Meta:
+        model = NoneModeratedPoll
+
+
+class NoneModeratedPollContentFactory(factory.django.DjangoModelFactory):
+    poll = factory.SubFactory(NoneModeratedPollFactory)
+    language = FuzzyChoice(['en', 'fr', 'it'])
+    text = FuzzyText(length=24)
+
+    class Meta:
+        model = NoneModeratedPollContent
+
+
+class NoneModeratedPollVersionFactory(AbstractVersionFactory):
+    content = factory.SubFactory(NoneModeratedPollContentFactory)
+
+    class Meta:
+        model = Version
+
+
+class NoneModeratedPollPluginFactory(factory.django.DjangoModelFactory):
+    language = factory.LazyAttribute(get_plugin_language)
+    placeholder = factory.SubFactory(PlaceholderFactory)
+    parent = None
+    position = factory.LazyAttribute(get_plugin_position)
+    plugin_type = 'NoneModeratedPollPlugin'
+    poll = factory.SubFactory(NoneModeratedPollFactory)
+
+    class Meta:
+        model = NoneModeratedPollPlugin

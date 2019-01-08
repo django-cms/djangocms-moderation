@@ -15,6 +15,7 @@ HELPER_SETTINGS = {
         'djangocms_versioning.test_utils.people',
         'djangocms_versioning.test_utils.text',
         'tests.utils.moderated_polls',
+        'tests.utils.versioned_none_moderated_app',
     ],
     # As advised, we can disable migrations in tests. This will improve
     # test performance and removes the need for test apps to provide migrations
