@@ -8,7 +8,11 @@ from djangocms_versioning.test_utils.factories import AbstractVersionFactory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
 from .moderated_polls.models import Poll, PollContent, PollPlugin
-from .versioned_none_moderated_app.models import NoneModeratedPoll, NoneModeratedPollContent, NoneModeratedPollPlugin
+from .versioned_none_moderated_app.models import (
+    NoneModeratedPoll,
+    NoneModeratedPollContent,
+    NoneModeratedPollPlugin
+)
 
 
 def get_plugin_position(plugin):
