@@ -11,7 +11,7 @@ from .moderated_polls.models import Poll, PollContent, PollPlugin
 from .versioned_none_moderated_app.models import (
     NoneModeratedPoll,
     NoneModeratedPollContent,
-    NoneModeratedPollPlugin
+    NoneModeratedPollPlugin,
 )
 
 
