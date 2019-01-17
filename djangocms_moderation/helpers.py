@@ -179,3 +179,20 @@ def get_moderated_children_from_placeholder(placeholder, language=None):
                 moderatable_child_list.append(version)
 
     return moderatable_child_list
+
+
+def add_nested_moderated_children_to_collection(collection, version):
+    """
+    Finds all of the moderated children and adds them to the collection
+    """
+    parent = version.content
+    for placeholder in parent.get_placeholders():
+        for child_version in get_moderated_children_from_placeholder(placeholder, parent.language):
+            # Don't add the version if it's already part of the collection or another users item
+            if (version.created_by == child_version.created_by and
+               not collection.moderation_requests.filter(version=child_version).exists()):
+                collection.add_version(child_version)
+
+            # If the child also has children, traverse that tree
+            if hasattr(child_version.content, 'placeholder'):
+                add_nested_moderated_children_to_collection(collection, child_version)

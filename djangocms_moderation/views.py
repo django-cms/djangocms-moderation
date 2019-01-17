@@ -18,7 +18,7 @@ from .forms import (
     CollectionItemsForm,
     SubmitCollectionForModerationForm,
 )
-from .helpers import get_moderated_children_from_placeholder
+from .helpers import add_nested_moderated_children_to_collection
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
@@ -51,14 +51,20 @@ class CollectionItemsView(FormView):
         versions = form.cleaned_data['versions']
         collection = form.cleaned_data['collection']
 
+        # TODO: Populate a table with the option to add or remove items from it!
+        # TODO: Add items to sa tree structure, may need to knwo what's already in a collection by this point!!
+        # ModerationRequestTreeNode
+
+
+
         for version in versions:
             collection.add_version(version)
 
-            # If the version is a page type look at it's contents for draft moderatable objects
+            # If the version is a page type lo;ok at it's contents for draft moderatable objects
             # and the current user is the user who modified the page
             if isinstance(version.content, PageContent) and version.created_by == self.request.user:
-                self._add_children_to_collection(collection, version)
-
+                add_nested_moderated_children_to_collection(collection, version)
+        
         messages.success(
             self.request,
             ungettext(
@@ -90,22 +96,6 @@ class CollectionItemsView(FormView):
 
         success_template = 'djangocms_moderation/request_finalized.html'
         return render(self.request, success_template, {})
-
-    def _add_children_to_collection(self, collection, version):
-        """
-        Finds all of the moderated children and adds them to the collection
-        """
-        parent = version.content
-        for placeholder in parent.get_placeholders():
-            for child_version in get_moderated_children_from_placeholder(placeholder, parent.language):
-                # Don't add the version if it's already part of the collection or another users item
-                if (version.created_by == child_version.created_by and
-                   not collection.moderation_requests.filter(version=child_version).exists()):
-                    collection.add_version(child_version)
-
-                # If the child also has children, traverse that tree
-                if hasattr(child_version.content, 'placeholder'):
-                    self._add_children_to_collection(collection, child_version)
 
     def get_form(self, **kwargs):
         form = super().get_form(**kwargs)
