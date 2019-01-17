@@ -248,32 +248,31 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         # If we filter by a specific collection, we want to add this collection
         # to the context
         collection_id = request.GET.get('collection__id__exact')
-        if collection_id:
-            try:
-                collection = ModerationCollection.objects.get(pk=int(collection_id))
-                request._collection = collection
-            except (ValueError, ModerationCollection.DoesNotExist):
-                pass
-            else:
-                extra_context = dict(collection=collection)
-                if collection.is_cancellable(request.user):
-                    cancel_collection_url = reverse(
-                        'admin:cms_moderation_cancel_collection',
-                        args=(collection_id,)
-                    )
-                    extra_context['cancel_collection_url'] = cancel_collection_url
-
-                if collection.allow_submit_for_review(user=request.user):
-                    submit_for_review_url = reverse(
-                        'admin:cms_moderation_submit_collection_for_moderation',
-                        args=(collection_id,)
-                    )
-                    extra_context['submit_for_review_url'] = submit_for_review_url
-
-        else:
+        if not collection_id:
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
             raise Http404
+
+        try:
+            collection = ModerationCollection.objects.get(pk=int(collection_id))
+            request._collection = collection
+        except (ValueError, ModerationCollection.DoesNotExist):
+            pass
+        else:
+            extra_context = dict(collection=collection)
+            if collection.is_cancellable(request.user):
+                cancel_collection_url = reverse(
+                    'admin:cms_moderation_cancel_collection',
+                    args=(collection_id,)
+                )
+                extra_context['cancel_collection_url'] = cancel_collection_url
+
+            if collection.allow_submit_for_review(user=request.user):
+                submit_for_review_url = reverse(
+                    'admin:cms_moderation_submit_collection_for_moderation',
+                    args=(collection_id,)
+                )
+                extra_context['submit_for_review_url'] = submit_for_review_url
 
         return super().changelist_view(request, extra_context)
 
