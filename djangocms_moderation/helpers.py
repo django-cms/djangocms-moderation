@@ -181,18 +181,34 @@ def get_moderated_children_from_placeholder(placeholder, language=None):
     return moderatable_child_list
 
 
-def add_nested_moderated_children_to_collection(collection, version):
+from .models import ModerationRequestTreeNode
+from django.core.exceptions import ObjectDoesNotExist
+
+# FIXME: When sucesfully adding items to a collection, a pahge with many items shows a message "1 item succesfully added to collection when it was 1*n"
+def add_nested_moderated_children_to_collection(collection, version, parent_node):
     """
     Finds all of the moderated children and adds them to the collection
     """
     parent = version.content
     for placeholder in parent.get_placeholders():
         for child_version in get_moderated_children_from_placeholder(placeholder, parent.language):
-            # Don't add the version if it's already part of the collection or another users item
-            if (version.created_by == child_version.created_by and
-               not collection.moderation_requests.filter(version=child_version).exists()):
-                collection.add_version(child_version)
 
-            # If the child also has children, traverse that tree
+            # Don't add the version if it's already part of the collection or another users item
+            if version.created_by == child_version.created_by:
+
+                try:
+                    moderation_request = collection.moderation_requests.get(version=child_version)
+                except ObjectDoesNotExist:
+                    moderation_request = collection.add_version(child_version)
+
+                node = ModerationRequestTreeNode(moderation_request=moderation_request)
+                parent_node.add_child(instance=node)
+
+                if hasattr(child_version.content, 'placeholder'):
+                    add_nested_moderated_children_to_collection(collection, child_version, node)
+
+                    continue
+
+            # If the child also has children, traverse through that tree
             if hasattr(child_version.content, 'placeholder'):
-                add_nested_moderated_children_to_collection(collection, child_version)
+                add_nested_moderated_children_to_collection(collection, child_version, parent_node)

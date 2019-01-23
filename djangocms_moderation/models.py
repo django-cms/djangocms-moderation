@@ -361,6 +361,54 @@ class ModerationCollection(models.Model):
             author=self.author,
         )
 
+    def remove_version(self, version):
+        """
+        TODO: Describe this method
+        :return:
+        """
+        # TODO: What if the author is different and you want to remove it from the collection??
+
+        return self.moderation_requests.get(
+            version=version,
+            collection=self,
+            author=self.author,
+        ).delete()
+
+
+from treebeard.mp_tree import MP_Node
+from django.contrib.sites.models import Site
+
+
+class ModerationRequestTreeNode(MP_Node):
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name='moderation_request_children',
+        db_index=True,
+    )
+
+    moderation_request = models.ForeignKey(
+        to='ModerationRequest',
+        verbose_name=_('moderation_request'),
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        ordering = ('id',)
+        default_permissions = []
+
+    def __str__(self):
+        return self.id
+
+    @cached_property
+    def item(self):
+        return self.get_item()
+
+    def get_item(self):
+        return ModerationRequest.objects.get(node=self)
+
 
 @python_2_unicode_compatible
 class ModerationRequest(models.Model):

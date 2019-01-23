@@ -26,6 +26,9 @@ from .utils import get_admin_url
 from . import constants  # isort:skip
 
 
+from .models import ModerationRequestTreeNode
+
+
 class CollectionItemsView(FormView):
     template_name = 'djangocms_moderation/items_to_collection.html'
     form_class = CollectionItemsForm
@@ -52,18 +55,27 @@ class CollectionItemsView(FormView):
         collection = form.cleaned_data['collection']
 
         # TODO: Populate a table with the option to add or remove items from it!
-        # TODO: Add items to sa tree structure, may need to knwo what's already in a collection by this point!!
-        # ModerationRequestTreeNode
-
+        # TODO: Add items to a tree structure, may need to know what's already in a collection by this point!!
 
 
         for version in versions:
-            collection.add_version(version)
 
-            # If the version is a page type lo;ok at it's contents for draft moderatable objects
+
+            moderation_request = collection.add_version(version)
+            # TODO: What if the node here is part of a tree already?
+            #       We shouldn't then add it to a tree!
+            # TODO: Calculate root node: parent_node=None
+
+            node = ModerationRequestTreeNode(moderation_request=moderation_request)
+
+            ModerationRequestTreeNode.add_root(instance=node)
+
+
+
+            # If the version is a page type look at it's contents for draft moderatable objects
             # and the current user is the user who modified the page
             if isinstance(version.content, PageContent) and version.created_by == self.request.user:
-                add_nested_moderated_children_to_collection(collection, version)
+                add_nested_moderated_children_to_collection(collection, version, parent_node=node)
         
         messages.success(
             self.request,
