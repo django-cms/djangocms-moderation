@@ -118,8 +118,8 @@ def get_moderation_button_title_and_url(moderation_request):
             'collection_name': collection_name,
             'collection_id': moderation_request.collection_id
         }
-    url = "{}?collection__id__exact={}".format(
-        reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+    url = "{}?moderation_request__collection__id={}".format(
+        reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist'),
         moderation_request.collection_id
     )
     return button_title, url

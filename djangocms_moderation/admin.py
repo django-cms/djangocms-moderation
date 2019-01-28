@@ -109,6 +109,13 @@ from .models import ModerationRequestTreeNode
 
 class ModerationRequestTreeAdmin(TreeAdmin):
 
+    actions = [  # filtered out in `self.get_actions`
+        delete_selected,
+        publish_selected,
+        approve_selected,
+        reject_selected,
+        resubmit_selected,
+    ]
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
 
     #################
@@ -132,6 +139,9 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             return False
         return super().has_delete_permission(request, obj)
 
+    ###################
+    # Fields to display
+    ###################
     def get_list_display(self, request):
         list_display = [
             'get_id',
@@ -228,136 +238,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         )
     get_comments_link.short_description = _('Comments')
 
-    def changelist_view(self, request, extra_context=None):
-        # If we filter by a specific collection, we want to add this collection
-        # to the context
-        collection_id = request.GET.get('moderation_request__collection__id')
-        if not collection_id:
-            # If no collection id, then don't show all requests
-            # as each collection's actions, buttons and privileges may differ
-            raise Http404
-
-        try:
-            collection = ModerationCollection.objects.get(pk=int(collection_id))
-            request._collection = collection
-        except (ValueError, ModerationCollection.DoesNotExist):
-            pass
-        else:
-            extra_context = dict(collection=collection)
-            if collection.is_cancellable(request.user):
-                cancel_collection_url = reverse(
-                    'admin:cms_moderation_cancel_collection',
-                    args=(collection_id,)
-                )
-                extra_context['cancel_collection_url'] = cancel_collection_url
-
-            if collection.allow_submit_for_review(user=request.user):
-                submit_for_review_url = reverse(
-                    'admin:cms_moderation_submit_collection_for_moderation',
-                    args=(collection_id,)
-                )
-                extra_context['submit_for_review_url'] = submit_for_review_url
-
-        return super().changelist_view(request, extra_context)
-
-    def lookup_allowed(self, lookup, value):
-        if lookup in ('moderation_request__collection__id',):
-            return True
-        return super().lookup_allowed(lookup)
-
-
-class ModerationRequestAdmin(admin.ModelAdmin):
-    class Media:
-        js = ('djangocms_moderation/js/actions.js',)
-
-    actions = [  # filtered out in `self.get_actions`
-        delete_selected,
-        publish_selected,
-        approve_selected,
-        reject_selected,
-        resubmit_selected,
-    ]
-    inlines = [ModerationRequestActionInline]
-    fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
-    readonly_fields = fields
-    change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
-
-    def get_formsets_with_inlines(self, request, obj=None):
-        for inline in self.get_inline_instances(request, obj):
-            inline.form.current_user = request.user
-            yield inline.get_formset(request, obj), inline
-
-    def has_module_permission(self, request):
-        """
-        Don't display Requests in the admin index as they should be accessed
-        and filtered through the Collection list view
-        """
-        return False
-
-    def get_list_display(self, request):
-        list_display = [
-            'id',
-            'get_content_type',
-            'get_title',
-            'get_version_author',
-            'get_preview_link',
-            'get_status',
-            'get_reviewer',
-        ]
-        if conf.REQUEST_COMMENTS_ENABLED:
-            list_display.append('get_comments_link')
-        return list_display
-
-    def get_content_type(self, obj):
-        return ContentType.objects.get_for_model(obj.version.versionable.grouper_model)
-    get_content_type.short_description = _('Content type')
-
-    def get_title(self, obj):
-        return obj.version.content
-    get_title.short_description = _('Title')
-
-    def get_preview_link(self, obj):
-        content = obj.version.content
-        if is_editable_model(content.__class__):
-            object_preview_url = get_object_preview_url(obj.version.content)
-        else:
-            object_preview_url = reverse('admin:{app}_{model}_change'.format(
-                app=content._meta.app_label,
-                model=content._meta.model_name,
-            ), args=[content.pk])
-
-        return format_html(
-            '<a href="{}" class="js-moderation-close-sideframe" target="_top">'
-            '<span class="cms-icon cms-icon-eye"></span>'
-            '</a>',
-            object_preview_url,
-        )
-    get_preview_link.short_description = _('Preview')
-
-    def get_comments_link(self, obj):
-        return format_html(
-            '<a href="{}?moderation_request__id__exact={}">{}</a>',
-            reverse('admin:djangocms_moderation_requestcomment_changelist'),
-            obj.id,
-            _('View')
-        )
-    get_comments_link.short_description = _('Comments')
-
-    def get_version_author(self, obj):
-        return obj.version.created_by
-    get_version_author.short_description = _('Author')
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        """
-        Hide the delete button from the detail page
-        """
-        if obj:
-            return False
-        return super().has_delete_permission(request, obj)
-
     def get_actions(self, request):
         """
         By default, all actions are enabled. But we need to only keep the actions
@@ -408,9 +288,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         }
 
     def changelist_view(self, request, extra_context=None):
+        # FIXME: Add a helper to generate the reverse url with the get parameter for this method!
+
+        
         # If we filter by a specific collection, we want to add this collection
         # to the context
-        collection_id = request.GET.get('collection__id__exact')
+        collection_id = request.GET.get('moderation_request__collection__id')
         if not collection_id:
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
@@ -439,6 +322,43 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
         return super().changelist_view(request, extra_context)
 
+    def lookup_allowed(self, lookup, value):
+        if lookup in ('moderation_request__collection__id',):
+            return True
+        return super().lookup_allowed(lookup)
+
+
+class ModerationRequestAdmin(admin.ModelAdmin):
+    class Media:
+        js = ('djangocms_moderation/js/actions.js',)
+
+
+    inlines = [ModerationRequestActionInline]
+    change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+
+    def get_formsets_with_inlines(self, request, obj=None):
+        for inline in self.get_inline_instances(request, obj):
+            inline.form.current_user = request.user
+            yield inline.get_formset(request, obj), inline
+
+    def has_module_permission(self, request):
+        """
+        Don't display Requests in the admin index as they should be accessed
+        and filtered through the Collection list view
+        """
+        return False
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        Hide the delete button from the detail page
+        """
+        if obj:
+            return False
+        return super().has_delete_permission(request, obj)
+
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         extra_context = extra_context or dict()
 
@@ -453,44 +373,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             raise Http404
 
         return super().changeform_view(request, object_id, form_url, extra_context)
-
-    def get_status(self, obj):
-        # We can have moderation requests without any action (e.g. the
-        # ones not submitted for moderation yet)
-        last_action = obj.get_last_action()
-
-        if last_action:
-            if obj.version_can_be_published():
-                status = ugettext('Ready for publishing')
-            elif obj.is_rejected():
-                status = ugettext('Pending author rework')
-            elif obj.is_active and obj.has_pending_step():
-                next_step = obj.get_next_required()
-                role = next_step.role.name
-                status = ugettext('Pending %(role)s approval') % {'role': role}
-            elif not obj.version.can_be_published():
-                status = obj.version.get_state_display()
-            else:
-                user_name = last_action.get_by_user_name()
-                message_data = {
-                    'action': last_action.get_action_display(),
-                    'name': user_name,
-                }
-                status = ugettext('%(action)s by %(name)s') % message_data
-        else:
-            status = ugettext('Ready for submission')
-        return status
-    get_status.short_description = _('Status')
-
-    def get_reviewer(self, obj):
-        last_action = obj.get_last_action()
-        if not last_action:
-            return
-        if obj.is_active and obj.has_pending_step():
-            next_step = obj.get_next_required()
-            return next_step.role.name
-        return last_action._get_user_name(last_action.by_user)
-    get_reviewer.short_description = _('Reviewer')
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name
@@ -1090,8 +972,8 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         moderation requests
         """
         url = format_html(
-            '{}?collection__id__exact={}',
-            reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+            '{}?moderation_request__collection__id={}',
+            reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist'),
             obj.pk,
         )
         return render_to_string(
