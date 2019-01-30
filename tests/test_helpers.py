@@ -96,8 +96,8 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
         self.mr = ModerationRequest.objects.get(
             version=version, collection=self.collection
         )
-        self.expected_url = "{}?collection__id__exact={}".format(
-            reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+        self.expected_url = "{}?moderation_request__collection__id={}".format(
+            reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist'),
             self.collection.id,
         )
 

@@ -66,7 +66,7 @@ def delete_selected(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
         raise PermissionDenied
 
-    if queryset.exclude(collection__author=request.user).exists():
+    if queryset.exclude(moderation_request__collection__author=request.user).exists():
         raise PermissionDenied
 
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)

@@ -332,9 +332,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     class Media:
         js = ('djangocms_moderation/js/actions.js',)
 
-
-    inlines = [ModerationRequestActionInline]
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+    inlines = [ModerationRequestActionInline]
 
     def get_formsets_with_inlines(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):

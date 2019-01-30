@@ -8,7 +8,7 @@ from djangocms_versioning.test_utils import factories
 from djangocms_moderation import conf, constants
 from djangocms_moderation.admin import (
     ModerationCollectionAdmin,
-    ModerationRequestAdmin,
+    ModerationRequestTreeAdmin,
 )
 from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
@@ -55,7 +55,7 @@ class ModerationAdminTestCase(BaseTestCase):
         self.url_with_filter = "{}?collection__id__exact={}".format(
             self.url, self.collection.pk
         )
-        self.mra = ModerationRequestAdmin(ModerationRequest, admin.AdminSite())
+        self.mra = ModerationRequestTreeAdmin(ModerationRequest, admin.AdminSite())
         self.mca = ModerationCollectionAdmin(ModerationCollection, admin.AdminSite())
 
     def test_delete_selected_action_visibility(self):
