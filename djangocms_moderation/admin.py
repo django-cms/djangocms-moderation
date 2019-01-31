@@ -108,6 +108,8 @@ from .models import ModerationRequestTreeNode
 
 
 class ModerationRequestTreeAdmin(TreeAdmin):
+    class Media:
+        js = ('djangocms_moderation/js/actions.js',)
 
     actions = [  # filtered out in `self.get_actions`
         delete_selected,
@@ -118,30 +120,12 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     ]
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
 
-    #################
-    # Permissions
-    #################
-    def has_module_permission(self, request):
-        """
-        Don't display Requests in the admin index as they should be accessed
-        and filtered through the Collection list view
-        """
-        return False
-
     def has_add_permission(self, request):
+        """
+        Disable the add button by returning false
+        """
         return False
 
-    def has_delete_permission(self, request, obj=None):
-        """
-        Hide the delete button from the detail page
-        """
-        if obj:
-            return False
-        return super().has_delete_permission(request, obj)
-
-    ###################
-    # Fields to display
-    ###################
     def get_list_display(self, request):
         list_display = [
             'get_id',

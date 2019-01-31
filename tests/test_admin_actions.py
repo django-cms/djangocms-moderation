@@ -8,7 +8,7 @@ from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
-from djangocms_moderation.admin import ModerationRequestAdmin
+from djangocms_moderation.admin import ModerationRequestAdmin, ModerationRequestTreeAdmin
 from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationCollection,
