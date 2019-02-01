@@ -100,7 +100,7 @@ class ModerationToolbar(VersioningToolbar):
         if helpers.get_all_moderators().filter(pk=self.request.user.id).exists():
             url += '?moderator=%s' % self.request.user.id
         elif helpers.get_all_reviewers().filter(pk=self.request.user.id).exists():
-                url += '?reviewer=%s' % self.request.user.id
+            url += '?reviewer=%s' % self.request.user.id
         admin_menu.add_sideframe_item(
             _('Moderation collections'),
             url=url,
