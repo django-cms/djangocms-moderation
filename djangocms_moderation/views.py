@@ -8,6 +8,7 @@ from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _, ungettext
 from django.views.generic import FormView
 
+from cms.models import PageContent
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.models import Version
@@ -17,6 +18,7 @@ from .forms import (
     CollectionItemsForm,
     SubmitCollectionForModerationForm,
 )
+from .helpers import get_moderated_children_from_placeholder
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
@@ -48,8 +50,14 @@ class CollectionItemsView(FormView):
     def form_valid(self, form):
         versions = form.cleaned_data['versions']
         collection = form.cleaned_data['collection']
+
         for version in versions:
             collection.add_version(version)
+
+            # If the version is a page type look at it's contents for draft moderatable objects
+            # and the current user is the user who modified the page
+            if isinstance(version.content, PageContent) and version.created_by == self.request.user:
+                self._add_children_to_collection(collection, version)
 
         messages.success(
             self.request,
@@ -82,6 +90,22 @@ class CollectionItemsView(FormView):
 
         success_template = 'djangocms_moderation/request_finalized.html'
         return render(self.request, success_template, {})
+
+    def _add_children_to_collection(self, collection, version):
+        """
+        Finds all of the moderated children and adds them to the collection
+        """
+        parent = version.content
+        for placeholder in parent.get_placeholders():
+            for child_version in get_moderated_children_from_placeholder(placeholder, parent.language):
+                # Don't add the version if it's already part of the collection or another users item
+                if (version.created_by == child_version.created_by and
+                   not collection.moderation_requests.filter(version=child_version).exists()):
+                    collection.add_version(child_version)
+
+                # If the child also has children, traverse that tree
+                if hasattr(child_version.content, 'placeholder'):
+                    self._add_children_to_collection(collection, child_version)
 
     def get_form(self, **kwargs):
         form = super().get_form(**kwargs)

@@ -3,7 +3,7 @@ try:
 except ImportError:
     from mock import Mock
 
-from unittest import TestCase
+from unittest import TestCase, skip
 from unittest.mock import patch
 
 from django.apps import apps
@@ -46,6 +46,7 @@ class CMSConfigTest(CMSTestCase, TestCase):
             extension.configure_app(cms_config)
 
     @patch('django.apps.apps.get_app_config')
+    @skip("Disabled functionality")
     def test_model_not_in_versionables_by_content(self, get_app_config):
         extension = ModerationExtension()
         cms_config = Mock(
@@ -82,7 +83,7 @@ class CMSConfigIntegrationTest(CMSTestCase):
         for model in self.moderated_models:
             self.assertIn(model, registered_model)
 
-        self.assertEqual(len(registered_model), 5)
+        self.assertEqual(len(registered_model), 6)
 
 
 class CMSConfigCheck(CMSTestCase):

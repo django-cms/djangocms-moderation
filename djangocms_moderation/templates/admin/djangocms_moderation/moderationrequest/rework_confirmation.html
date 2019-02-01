@@ -1,0 +1,54 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+{% block title %}{% trans "Delete Confirmation" %}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media }}
+{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation{% endblock %}
+
+{% block content %}
+<h3>{% trans "Are you sure you want to submit these items back for rework?" %}</h3>
+<div class="results">
+    <table id="result_list">
+            <thead>
+                <tr>
+                    <th>{% trans "Id" %}</th>
+                    <th>{% trans "Content Type" %}</th>
+                    <th>{% trans "Identifier" %}</th>
+                    <th>{% trans "Author" %}</th>
+                    <th>{% trans "Edit Date" %}</th>
+                    <th>{% trans "Version #" %}</th>
+                    <th>{% trans "Status" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for mr in queryset %}
+                <tr class="row1 djangocms_moderation_collections_1">
+                   <td>{{ mr.pk }}</td>
+                    <td>{{ mr.version.content_type|title }}</td>
+                    <td>{{ mr.version.content }}</td>
+                    <td>{{ mr.version.created_by }}</td>
+                    <td>{{ mr.version.created }}</td>
+                    <td>{{ mr.version.number }}</td>
+                    <td>{{ mr.version.get_state_display }} </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+ </div><br/>
+<form action="" method="POST">
+    {% csrf_token %}
+    <input  class="button confirm-link js-versioning-keep-sideframe"
+            type="submit"
+            value="{% trans 'Yes, I\'m sure' %}">
+    <a href="{{ back_url }}">
+        <input type="button"
+               class="button js-versioning-keep-sideframe"
+               value="{% trans 'No, take me back' %}">
+    </a>
+</form>
+{% endblock %}

@@ -11,6 +11,11 @@ from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from djangocms_moderation.utils import get_admin_url
 
 from .utils.base import BaseViewTestCase
+from .utils.factories import (
+    PlaceholderFactory,
+    PollPluginFactory,
+    PollVersionFactory,
+)
 
 
 class CollectionItemsViewTest(BaseViewTestCase):
@@ -150,6 +155,190 @@ class CollectionItemsViewTest(BaseViewTestCase):
         # mr1 is in the list as it belongs to collection1
         self.assertIn(mr1, response.context_data['moderation_requests'])
         self.assertNotIn(mr2, response.context_data['moderation_requests'])
+
+    def test_add_pages_moderated_children_to_collection(self):
+        """
+        A page with multiple moderatable children automatically adds them to the collection
+        """
+        collection = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        poll_1_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_2_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll_1_version.content.poll)
+        PollPluginFactory(placeholder=placeholder, poll=poll_2_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url='http://example.com',
+            version_ids=pg_version.pk,
+            collection_id=collection.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': collection.pk,
+                'versions': [pg_version.pk],
+            },
+            follow=False
+        )
+
+        # Match collection and versions in the DB
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.count(), 3)
+        self.assertEqual(pg_version,
+                         ModerationRequest.objects.get(collection=collection, version=pg_version).version)
+        self.assertEqual(poll_1_version,
+                         ModerationRequest.objects.get(collection=collection, version=poll_1_version).version)
+        self.assertEqual(poll_2_version,
+                         ModerationRequest.objects.get(collection=collection, version=poll_2_version).version)
+
+    def test_add_pages_moderated_duplicated_children_to_collection(self):
+        """
+        A page with multiple instances of the same version added to the collection should only
+        add it to the collection once!
+        """
+        collection = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        poll_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll_version.content.poll)
+        PollPluginFactory(placeholder=placeholder, poll=poll_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url='http://example.com',
+            version_ids=pg_version.pk,
+            collection_id=collection.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': collection.pk,
+                'versions': [pg_version.pk],
+            },
+        )
+
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.count(), 2)
+        self.assertEqual(pg_version,
+                         ModerationRequest.objects.get(collection=collection, version=pg_version).version)
+        self.assertEqual(poll_version,
+                         ModerationRequest.objects.get(collection=collection, version=poll_version).version)
+
+    def test_add_pages_moderated_duplicated_children_to_collection_for_author_only(self):
+        """
+        A page with moderatable children created by different authors only automatically adds the current users items
+        """
+        collection = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
+        # Populate page
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        poll_1_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_2_version = PollVersionFactory(created_by=self.user2, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll_1_version.content.poll)
+        PollPluginFactory(placeholder=placeholder, poll=poll_2_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url='http://example.com',
+            version_ids=pg_version.pk,
+            collection_id=collection.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': collection.pk,
+                'versions': [pg_version.pk],
+            },
+        )
+
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.count(), 2)
+
+    def test_add_pages_moderated_traversed_children_to_collection(self):
+        """
+        A page with moderatable children that also have moderatable children: child within a child
+        are added to a collection
+        """
+        collection = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
+        # Populate page
+        pg_placeholder = PlaceholderFactory(source=pg_version.content)
+        poll_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_plugin = PollPluginFactory(placeholder=pg_placeholder, poll=poll_version.content.poll)
+        # Populate page poll child layer 1
+        poll_child_1_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_child_1_plugin = PollPluginFactory(
+            placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll)
+        # Populate page poll child layer 2
+        poll_child_2_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(placeholder=poll_child_1_plugin.placeholder, poll=poll_child_2_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url='http://example.com',
+            version_ids=pg_version.pk,
+            collection_id=collection.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': collection.pk,
+                'versions': [pg_version.pk],
+            },
+        )
+
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.count(), 4)
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
