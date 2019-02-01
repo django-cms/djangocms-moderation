@@ -18,6 +18,8 @@ from cms.utils.helpers import is_editable_model
 
 from adminsortable2.admin import SortableInlineAdminMixin
 
+from treebeard.admin import TreeAdmin
+
 from . import constants
 from .admin_actions import (
     approve_selected,
@@ -44,12 +46,12 @@ from .models import (
     ModerationCollection,
     ModerationRequest,
     ModerationRequestAction,
+    ModerationRequestTreeNode,
     RequestComment,
     Role,
     Workflow,
     WorkflowStep,
 )
-
 
 from . import conf  # isort:skip
 from . import utils  # isort:skip
@@ -102,12 +104,13 @@ class ModerationRequestActionInline(admin.TabularInline):
             return ['show_user', 'date_taken', 'form_submission']
         return self.fields
 
-from treebeard.admin import TreeAdmin
-
-from .models import ModerationRequestTreeNode
-
 
 class ModerationRequestTreeAdmin(TreeAdmin):
+    """
+    This admin is purely for the change list of Moderation Requests using the treebeard nodes to
+    organise the requests into a nested structure which also allows moderation requests to be displayed
+    more than once, i.e. they are present in more than one parent.
+    """
     class Media:
         js = ('djangocms_moderation/js/actions.js',)
 
@@ -272,9 +275,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         }
 
     def changelist_view(self, request, extra_context=None):
-        # FIXME: Add a helper to generate the reverse url with the get parameter for this method!
-
-        
         # If we filter by a specific collection, we want to add this collection
         # to the context
         collection_id = request.GET.get('moderation_request__collection__id')
@@ -282,7 +282,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
             raise Http404
-
         try:
             collection = ModerationCollection.objects.get(pk=int(collection_id))
             request._collection = collection
@@ -316,8 +315,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     class Media:
         js = ('djangocms_moderation/js/actions.js',)
 
-    change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
     inlines = [ModerationRequestActionInline]
+
+    # TODO: Raise an informative error when trying to view the changelist,
+    #       the tree admin is the source of this view!! Redirect???
 
     def get_formsets_with_inlines(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):
