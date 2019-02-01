@@ -392,7 +392,7 @@ class ModerationRequestChangeListView(BaseViewTestCase):
             'admin:cms_moderation_submit_collection_for_moderation',
             args=(self.collection2.pk,)
         )
-        self.url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         self.url_with_filter = "{}?moderation_request__collection__id={}".format(
             self.url, self.collection2.pk
         )

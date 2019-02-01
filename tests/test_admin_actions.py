@@ -52,7 +52,7 @@ class AdminActionTest(BaseTestCase):
             is_active=True, author=self.collection.author,)
         self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
-        self.url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         self.url_with_filter = "{}?moderation_request__collection__id={}".format(
             self.url, self.collection.pk
         )

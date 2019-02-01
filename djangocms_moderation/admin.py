@@ -682,6 +682,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
         return HttpResponseRedirect(redirect_url)
 
+    def changelist_view(self, request, extra_context=None):
+        tree_node_admin = admin.site._registry[ModerationRequestTreeNode]
+        return tree_node_admin.changelist_view(request, extra_context)
+
 
 class RoleAdmin(admin.ModelAdmin):
     list_display = ['name', 'user', 'group', 'confirmation_page']
