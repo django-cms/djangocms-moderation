@@ -961,7 +961,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         """
         url = format_html(
             '{}?moderation_request__collection__id={}',
-            reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist'),
+            reverse('admin:djangocms_moderation_moderationrequest_changelist'),
             obj.pk,
         )
         return render_to_string(
