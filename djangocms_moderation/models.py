@@ -15,11 +15,11 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from cms.models.fields import PlaceholderField
 
 from djangocms_versioning.models import Version
-
 from treebeard.mp_tree import MP_Node
 
 from .emails import notify_collection_moderators
 from .utils import generate_compliance_number
+
 
 from . import conf, constants  # isort:skip
 

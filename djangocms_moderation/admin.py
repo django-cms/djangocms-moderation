@@ -17,7 +17,6 @@ from cms.toolbar.utils import get_object_preview_url
 from cms.utils.helpers import is_editable_model
 
 from adminsortable2.admin import SortableInlineAdminMixin
-
 from treebeard.admin import TreeAdmin
 
 from . import constants
@@ -52,6 +51,7 @@ from .models import (
     Workflow,
     WorkflowStep,
 )
+
 
 from . import conf  # isort:skip
 from . import utils  # isort:skip

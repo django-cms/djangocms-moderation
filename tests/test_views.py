@@ -7,7 +7,11 @@ from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
-from djangocms_moderation.models import ModerationCollection, ModerationRequest, ModerationRequestTreeNode
+from djangocms_moderation.models import (
+    ModerationCollection,
+    ModerationRequest,
+    ModerationRequestTreeNode,
+)
 from djangocms_moderation.utils import get_admin_url
 
 from .utils.base import BaseViewTestCase
@@ -488,7 +492,7 @@ class CollectionItemsViewModerationNodesTest(BaseViewTestCase):
         self.assertEqual(nodes.count(), 5)
 
         # The same Moderation request exists more than once in the list
-        has_duplicate=False
+        has_duplicate = False
         moderation_requests_seen = []
         for node in nodes:
             if node.moderation_request.id in moderation_requests_seen:
