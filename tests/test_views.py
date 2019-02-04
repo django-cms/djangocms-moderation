@@ -422,6 +422,14 @@ class ModerationRequestChangeListView(BaseViewTestCase):
 
 class CollectionItemsViewModerationNodesTest(BaseViewTestCase):
     def setUp(self):
+        """
+        Node structure created
+
+        pg_version
+            layer 1
+                layer 2
+            layer 1
+        """
         super().setUp()
         self.client.force_login(self.user)
 
@@ -445,21 +453,12 @@ class CollectionItemsViewModerationNodesTest(BaseViewTestCase):
         poll_child_2_version = PollVersionFactory(created_by=self.user, content__language=language)
         PollPluginFactory(placeholder=poll_child_1_plugin.placeholder, poll=poll_child_2_version.content.poll)
 
-
         # Same plugin in a different order
         PollPluginFactory(placeholder=pg_placeholder, poll=poll_child_1_version.content.poll)
 
-
-        """
-        pg_version
-            layer 1
-                layer 2
-            layer 1
-        """
-
     def test_tree_nodes_are_created(self):
         """
-
+        Moderation request nodes are created with the correct structure
         """
         admin_endpoint = get_admin_url(
             name='cms_moderation_items_to_collection',
@@ -496,5 +495,3 @@ class CollectionItemsViewModerationNodesTest(BaseViewTestCase):
                 has_duplicate = True
             moderation_requests_seen.append(node.moderation_request.id)
         self.assertTrue(has_duplicate)
-
-

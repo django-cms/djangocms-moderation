@@ -65,7 +65,7 @@ class CollectionItemsView(FormView):
             # and the current user is the user who modified the page
             if isinstance(version.content, PageContent) and version.created_by == self.request.user:
                 add_nested_moderated_children_to_collection(collection, version, parent_node=node)
-        
+
         messages.success(
             self.request,
             ungettext(
