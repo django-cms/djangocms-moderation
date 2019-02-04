@@ -419,15 +419,8 @@ class ModerationRequestChangeListView(BaseViewTestCase):
         response = self.client.get(self.url_with_filter)
         self.assertIn('submit_for_review_url', response.context)
 
-"""
-Adding various structures to collection creates structure
-repeating adding the same versions doesn't replicate
 
-
-"""
-
-
-class CollectionItemsViewTest(BaseViewTestCase):
+class CollectionItemsViewModerationNodesTest(BaseViewTestCase):
     def setUp(self):
         super().setUp()
         self.client.force_login(self.user)
@@ -439,15 +432,30 @@ class CollectionItemsViewTest(BaseViewTestCase):
         language = self.pg_version.content.language
         # Populate page
         pg_placeholder = PlaceholderFactory(source=self.pg_version.content)
+
         poll_version = PollVersionFactory(created_by=self.user, content__language=language)
         poll_plugin = PollPluginFactory(placeholder=pg_placeholder, poll=poll_version.content.poll)
+
         # Populate page poll child layer 1
         poll_child_1_version = PollVersionFactory(created_by=self.user, content__language=language)
         poll_child_1_plugin = PollPluginFactory(
             placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll)
+
         # Populate page poll child layer 2
         poll_child_2_version = PollVersionFactory(created_by=self.user, content__language=language)
         PollPluginFactory(placeholder=poll_child_1_plugin.placeholder, poll=poll_child_2_version.content.poll)
+
+
+        # Same plugin in a different order
+        PollPluginFactory(placeholder=pg_placeholder, poll=poll_child_1_version.content.poll)
+
+
+        """
+        pg_version
+            layer 1
+                layer 2
+            layer 1
+        """
 
     def test_tree_nodes_are_created(self):
         """
@@ -477,4 +485,16 @@ class CollectionItemsViewTest(BaseViewTestCase):
 
         nodes = ModerationRequestTreeNode.objects.filter(moderation_request__collection_id=self.collection.pk)
 
-        self.assertEqual(nodes.count(), 4)
+        # The correct amount of nodes exist
+        self.assertEqual(nodes.count(), 5)
+
+        # The same Moderation request exists more than once in the list
+        has_duplicate=False
+        moderation_requests_seen = []
+        for node in nodes:
+            if node.moderation_request.id in moderation_requests_seen:
+                has_duplicate = True
+            moderation_requests_seen.append(node.moderation_request.id)
+        self.assertTrue(has_duplicate)
+
+
