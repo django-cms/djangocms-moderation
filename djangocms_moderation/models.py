@@ -362,19 +362,6 @@ class ModerationCollection(models.Model):
             author=self.author,
         )
 
-    def remove_version(self, version):
-        """
-        TODO: Describe this method
-        :return:
-        """
-        # TODO: What if the author is different and you want to remove it from the collection??
-
-        return self.moderation_requests.get(
-            version=version,
-            collection=self,
-            author=self.author,
-        ).delete()
-
 
 class ModerationRequestTreeNode(MP_Node):
     parent = models.ForeignKey(

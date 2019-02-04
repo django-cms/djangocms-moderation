@@ -57,12 +57,8 @@ class CollectionItemsView(FormView):
         for version in versions:
             moderation_request = collection.add_version(version)
 
-            # TODO: What if the node here is part of a tree already?
-            #       We shouldn't then add it to a tree!
-            # TODO: Calculate root node: parent_node=None
-
+            # Tree structure
             node = ModerationRequestTreeNode(moderation_request=moderation_request)
-
             ModerationRequestTreeNode.add_root(instance=node)
 
             # If the version is a page type look at it's contents for draft moderatable objects

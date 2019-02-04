@@ -7,7 +7,7 @@ from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
-from djangocms_moderation.models import ModerationCollection, ModerationRequest
+from djangocms_moderation.models import ModerationCollection, ModerationRequest, ModerationRequestTreeNode
 from djangocms_moderation.utils import get_admin_url
 
 from .utils.base import BaseViewTestCase
@@ -418,3 +418,63 @@ class ModerationRequestChangeListView(BaseViewTestCase):
         allow_submit_mock.return_value = True
         response = self.client.get(self.url_with_filter)
         self.assertIn('submit_for_review_url', response.context)
+
+"""
+Adding various structures to collection creates structure
+repeating adding the same versions doesn't replicate
+
+
+"""
+
+
+class CollectionItemsViewTest(BaseViewTestCase):
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.user)
+
+        self.collection = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        self.pg_version = PageVersionFactory(created_by=self.user)
+        language = self.pg_version.content.language
+        # Populate page
+        pg_placeholder = PlaceholderFactory(source=self.pg_version.content)
+        poll_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_plugin = PollPluginFactory(placeholder=pg_placeholder, poll=poll_version.content.poll)
+        # Populate page poll child layer 1
+        poll_child_1_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_child_1_plugin = PollPluginFactory(
+            placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll)
+        # Populate page poll child layer 2
+        poll_child_2_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(placeholder=poll_child_1_plugin.placeholder, poll=poll_child_2_version.content.poll)
+
+    def test_tree_nodes_are_created(self):
+        """
+
+        """
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url='http://example.com',
+            version_ids=self.pg_version.pk,
+            collection_id=self.collection.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': self.collection.pk,
+                'versions': [self.pg_version.pk],
+            },
+        )
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+
+        nodes = ModerationRequestTreeNode.objects.filter(moderation_request__collection_id=self.collection.pk)
+
+        self.assertEqual(nodes.count(), 4)
