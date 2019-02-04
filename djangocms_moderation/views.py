@@ -54,14 +54,9 @@ class CollectionItemsView(FormView):
         versions = form.cleaned_data['versions']
         collection = form.cleaned_data['collection']
 
-        # TODO: Populate a table with the option to add or remove items from it!
-        # TODO: Add items to a tree structure, may need to know what's already in a collection by this point!!
-
-
         for version in versions:
-
-
             moderation_request = collection.add_version(version)
+
             # TODO: What if the node here is part of a tree already?
             #       We shouldn't then add it to a tree!
             # TODO: Calculate root node: parent_node=None
@@ -69,8 +64,6 @@ class CollectionItemsView(FormView):
             node = ModerationRequestTreeNode(moderation_request=moderation_request)
 
             ModerationRequestTreeNode.add_root(instance=node)
-
-
 
             # If the version is a page type look at it's contents for draft moderatable objects
             # and the current user is the user who modified the page

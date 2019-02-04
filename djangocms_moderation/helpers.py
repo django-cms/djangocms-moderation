@@ -14,8 +14,7 @@ from djangocms_versioning.models import Version
 
 from .conf import COLLECTION_NAME_LENGTH_LIMIT
 from .constants import COLLECTING
-from .models import ConfirmationFormSubmission
-
+from .models import ConfirmationFormSubmission, ModerationRequest, ModerationRequestTreeNode
 
 User = get_user_model()
 
@@ -181,10 +180,9 @@ def get_moderated_children_from_placeholder(placeholder, language=None):
     return moderatable_child_list
 
 
-from .models import ModerationRequestTreeNode
-from django.core.exceptions import ObjectDoesNotExist
+# FIXME: When successfully adding items to a collection, a page with many items shows a message
+#        "1 item succesfully added to collection when it was 1*n"
 
-# FIXME: When sucesfully adding items to a collection, a pahge with many items shows a message "1 item succesfully added to collection when it was 1*n"
 def add_nested_moderated_children_to_collection(collection, version, parent_node):
     """
     Finds all of the moderated children and adds them to the collection
@@ -198,7 +196,7 @@ def add_nested_moderated_children_to_collection(collection, version, parent_node
 
                 try:
                     moderation_request = collection.moderation_requests.get(version=child_version)
-                except ObjectDoesNotExist:
+                except ModerationRequest.DoesNotExist:
                     moderation_request = collection.add_version(child_version)
 
                 node = ModerationRequestTreeNode(moderation_request=moderation_request)

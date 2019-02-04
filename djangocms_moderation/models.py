@@ -5,6 +5,7 @@ import json
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
@@ -16,9 +17,10 @@ from cms.models.fields import PlaceholderField
 
 from djangocms_versioning.models import Version
 
+from treebeard.mp_tree import MP_Node
+
 from .emails import notify_collection_moderators
 from .utils import generate_compliance_number
-
 
 from . import conf, constants  # isort:skip
 
@@ -373,10 +375,6 @@ class ModerationCollection(models.Model):
             collection=self,
             author=self.author,
         ).delete()
-
-
-from treebeard.mp_tree import MP_Node
-from django.contrib.sites.models import Site
 
 
 class ModerationRequestTreeNode(MP_Node):
