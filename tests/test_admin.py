@@ -8,6 +8,7 @@ from djangocms_versioning.test_utils import factories
 from djangocms_moderation import conf, constants
 from djangocms_moderation.admin import (
     ModerationCollectionAdmin,
+    ModerationRequestAdmin,
     ModerationRequestTreeAdmin,
 )
 from djangocms_moderation.constants import ACTION_REJECTED
@@ -55,20 +56,21 @@ class ModerationAdminTestCase(BaseTestCase):
         self.url_with_filter = "{}?collection__id__exact={}".format(
             self.url, self.collection.pk
         )
-        self.mra = ModerationRequestTreeAdmin(ModerationRequest, admin.AdminSite())
+        self.mr_tree_admin = ModerationRequestTreeAdmin(ModerationRequest, admin.AdminSite())
+        self.mra = ModerationRequestAdmin(ModerationRequest, admin.AdminSite())
         self.mca = ModerationCollectionAdmin(ModerationCollection, admin.AdminSite())
 
     def test_delete_selected_action_visibility(self):
         mock_request = MockRequest()
         mock_request.user = self.user
         mock_request._collection = self.collection
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertIn('delete_selected', actions)
 
         # user2 won't be able to delete requests, as they are not the collection
         # author
         mock_request.user = self.user2
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertNotIn('delete_selected', actions)
 
     def test_publish_selected_action_visibility_when_version_is_published(self):
@@ -76,40 +78,40 @@ class ModerationAdminTestCase(BaseTestCase):
         mock_request.user = self.user
         mock_request._collection = self.collection
 
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         # mr1 request is approved so user can see the publish_selected action
         self.assertIn('publish_selected', actions)
 
         # Now, when version becomes published, they shouldn't see it
         self.mr1.version._set_publish(self.user)
         self.mr1.version.save()
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertNotIn('publish_selected', actions)
 
     def test_publish_selected_action_visibility(self):
         mock_request = MockRequest()
         mock_request.user = self.user
         mock_request._collection = self.collection
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         # mr1 request is approved, so user1 can see the publish selected option
         self.assertIn('publish_selected', actions)
 
         # user2 should not be able to see it
         mock_request.user = self.user2
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertNotIn('publish_selected', actions)
 
         # if there are no approved requests, user can't see the button either
         mock_request.user = self.user
         self.mr1.get_last_action().delete()
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertNotIn('publish_selected', actions)
 
     def test_approve_and_reject_selected_action_visibility(self):
         mock_request = MockRequest()
         mock_request.user = self.user
         mock_request._collection = self.collection
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         # mr1 is not a moderator for collection1 so he can't approve or reject
         # anything
         self.assertNotIn('approve_selected', actions)
@@ -117,13 +119,13 @@ class ModerationAdminTestCase(BaseTestCase):
 
         # user2 is moderator and there is 1 unapproved request
         mock_request.user = self.user2
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertIn('approve_selected', actions)
         self.assertIn('reject_selected', actions)
 
         # now everything is approved, so not even user2 can see the actions
         self.mr2.delete()
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertNotIn('approve_selected', actions)
         self.assertNotIn('reject_selected', actions)
 
@@ -131,19 +133,19 @@ class ModerationAdminTestCase(BaseTestCase):
         mock_request = MockRequest()
         mock_request.user = self.user
         mock_request._collection = self.collection
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         # There is nothing set to re-work, so user can't see the resubmit action
         self.assertNotIn('resubmit_selected', actions)
 
         self.mr1action2.action = ACTION_REJECTED
         self.mr1action2.save()
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         # There is 1 mr to rework now, so user can do it
         self.assertIn('resubmit_selected', actions)
 
         # user2 can't, as they are not the author of the request
         mock_request.user = self.user2
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertNotIn('resubmit_selected', actions)
 
     def test_in_review_status_is_considered(self):
@@ -153,20 +155,20 @@ class ModerationAdminTestCase(BaseTestCase):
         self.collection.status = constants.ARCHIVED
         self.collection.save()
 
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         # for self.user, the publish_selected should be available even if
         # collection status is ARCHIVED
         self.assertIn('publish_selected', actions)
 
         mock_request.user = self.user2
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         # mr2 request is not approved, so user2 should see the
         # approve_selected option, but the collection is not in IN_REVIEW
         self.assertNotIn('approve_selected', actions)
 
         self.collection.status = constants.IN_REVIEW
         self.collection.save()
-        actions = self.mra.get_actions(request=mock_request)
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertIn('approve_selected', actions)
 
     def test_change_list_view_should_respect_conf(self):
@@ -187,11 +189,11 @@ class ModerationAdminTestCase(BaseTestCase):
 
         # test ModerationRequests
         conf.REQUEST_COMMENTS_ENABLED = False
-        list_display = self.mra.get_list_display(mock_request)
+        list_display = self.mr_tree_admin.get_list_display(mock_request)
         self.assertNotIn('get_comments_link', list_display)
 
         conf.REQUEST_COMMENTS_ENABLED = True
-        list_display = self.mra.get_list_display(mock_request)
+        list_display = self.mr_tree_admin.get_list_display(mock_request)
         self.assertIn('get_comments_link', list_display)
 
         # test ModerationCollections
