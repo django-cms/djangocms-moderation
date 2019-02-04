@@ -317,9 +317,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     inlines = [ModerationRequestActionInline]
 
-    # TODO: Raise an informative error when trying to view the changelist,
-    #       the tree admin is the source of this view!! Redirect???
-
     def get_formsets_with_inlines(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):
             inline.form.current_user = request.user
@@ -683,6 +680,9 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(redirect_url)
 
     def changelist_view(self, request, extra_context=None):
+        """
+        Redirects silently to the tree node changelist.
+        """
         tree_node_admin = admin.site._registry[ModerationRequestTreeNode]
         return tree_node_admin.changelist_view(request, extra_context)
 

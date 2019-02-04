@@ -59,7 +59,7 @@ class AdminActionTest(BaseTestCase):
 
         self.client.force_login(self.user)
 
-    @mock.patch.object(ModerationRequestAdmin, 'has_delete_permission')
+    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission')
     @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
     @mock.patch('djangocms_moderation.admin.notify_collection_author')
     def test_delete_selected(self, notify_author_mock, notify_moderators_mock, mock_has_delete_permission):
