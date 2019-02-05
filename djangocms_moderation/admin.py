@@ -199,7 +199,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                 status = ugettext('Ready for publishing')
             elif obj.moderation_request.is_rejected():
                 status = ugettext('Pending author rework')
-            elif obj.moderation_request.is_active and obj.has_pending_step():
+            elif obj.moderation_request.is_active and obj.moderation_request.has_pending_step():
                 next_step = obj.moderation_request.get_next_required()
                 role = next_step.role.name
                 status = ugettext('Pending %(role)s approval') % {'role': role}
