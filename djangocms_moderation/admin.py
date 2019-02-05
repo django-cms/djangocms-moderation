@@ -129,6 +129,13 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         """
         return False
 
+    def has_module_permission(self, request):
+        """
+        Don't display Requests in the admin index as they should be accessed
+        and filtered through the Collection list view
+        """
+        return False
+
     def get_list_display(self, request):
         list_display = [
             'get_id',

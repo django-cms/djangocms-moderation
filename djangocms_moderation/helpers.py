@@ -20,6 +20,7 @@ from .models import (
     ModerationRequestTreeNode,
 )
 
+
 User = get_user_model()
 
 try:
