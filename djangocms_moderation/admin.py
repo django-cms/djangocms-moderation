@@ -644,7 +644,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         collection_id = request.GET.get('collection_id')
         queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?collection__id__exact={}".format(
+        redirect_url = "{}?moderation_request__collection__id={}".format(
             redirect_url,
             collection_id
         )
