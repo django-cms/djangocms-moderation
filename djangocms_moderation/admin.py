@@ -136,6 +136,22 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         """
         return False
 
+    def lookup_allowed(self, lookup, value):
+        if lookup in ('moderation_request__collection__id',):
+            return True
+        return super().lookup_allowed(lookup)
+
+    def get_urls(self):
+        info = self.model._meta.app_label, self.model._meta.model_name
+
+        return [
+            url(
+                r'^delete_selected/',
+                self.admin_site.admin_view(self.delete_selected_view),
+                name='{}_{}_delete'.format(*info),
+            ),
+        ] + super().get_urls()
+
     def get_list_display(self, request):
         list_display = [
             'get_id',
@@ -312,10 +328,79 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         return super().changelist_view(request, extra_context)
 
-    def lookup_allowed(self, lookup, value):
-        if lookup in ('moderation_request__collection__id',):
-            return True
-        return super().lookup_allowed(lookup)
+    def delete_selected_view(self, request):
+        collection_id = request.GET.get('collection_id')
+
+        #TODO: Use a transaction here to rollback if required!!
+
+
+        moderation_requests_affected = []
+
+        # Get all of the nodes to delete
+        queryset = ModerationRequestTreeNode.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+
+        for node in queryset.all():
+            moderation_requests_affected.append(node.moderation_request.pk)
+
+            children = node.get_children()
+
+            for child in children:
+                moderation_requests_affected.append(child.moderation_request.pk)
+
+        # Check to see if any of the children have any MR get_children()
+        # On confirm delete the nodes and the MR
+
+
+
+        # TODO: For each moderation request id, if one has a tree structure attached go through each one and remove that!
+        #       What if the item has a tree structure, each one in that list needs to be traversed
+
+        # Match node id's to moderation ids.
+        #selected = [str(node.moderation_request.pk) for node in queryset.all()]
+
+        queryset = ModerationRequest.objects.filter(pk__in=moderation_requests_affected)
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?moderation_request__collection__id={}".format(
+            redirect_url,
+            collection_id
+        )
+
+        if request.method != 'POST':
+            context = dict(
+                ids=request.GET.getlist('ids'),
+                back_url=redirect_url,
+                queryset=queryset,
+            )
+            return render(request, 'admin/djangocms_moderation/moderationrequest/delete_confirmation.html', context)
+        else:
+            try:
+                collection = ModerationCollection.objects.get(id=int(collection_id))
+            except (ValueError, ModerationCollection.DoesNotExist):
+                raise Http404
+
+            num_deleted_requests = queryset.count()
+            if num_deleted_requests:  # TODO task queue?
+                notify_collection_author(
+                    collection=collection,
+                    moderation_requests=[mr for mr in queryset],
+                    action=constants.ACTION_CANCELLED,
+                    by_user=request.user,
+                )
+
+            queryset.delete()
+            messages.success(
+                request,
+                ungettext(
+                    '%(count)d request successfully deleted',
+                    '%(count)d requests successfully deleted',
+                    num_deleted_requests
+                ) % {
+                    'count': num_deleted_requests
+                },
+            )
+            post_bulk_actions(collection)
+
+        return HttpResponseRedirect(redirect_url)
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
@@ -341,11 +426,9 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         """
-        Hide the delete button from the detail page
+        Hide the delete button from the detail page and prevent a MR from being deleted in the admin.
         """
-        if obj:
-            return False
-        return super().has_delete_permission(request, obj)
+        return False
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         extra_context = extra_context or dict()
@@ -366,11 +449,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         info = self.model._meta.app_label, self.model._meta.model_name
 
         return [
-            url(
-                r'^delete_selected/',
-                self.admin_site.admin_view(self.delete_selected_view),
-                name='{}_{}_delete'.format(*info),
-            ),
             url(
                 r'^approve/',
                 self.admin_site.admin_view(self.approved_view),
@@ -636,52 +714,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 },
                 )
 
-            post_bulk_actions(collection)
-
-        return HttpResponseRedirect(redirect_url)
-
-    def delete_selected_view(self, request):
-        collection_id = request.GET.get('collection_id')
-        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?moderation_request__collection__id={}".format(
-            redirect_url,
-            collection_id
-        )
-
-        if request.method != 'POST':
-            context = dict(
-                ids=request.GET.getlist('ids'),
-                back_url=redirect_url,
-                queryset=queryset,
-            )
-            return render(request, 'admin/djangocms_moderation/moderationrequest/delete_confirmation.html', context)
-        else:
-            try:
-                collection = ModerationCollection.objects.get(id=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
-                raise Http404
-
-            num_deleted_requests = queryset.count()
-            if num_deleted_requests:  # TODO task queue?
-                notify_collection_author(
-                    collection=collection,
-                    moderation_requests=[mr for mr in queryset],
-                    action=constants.ACTION_CANCELLED,
-                    by_user=request.user,
-                )
-
-            queryset.delete()
-            messages.success(
-                request,
-                ungettext(
-                    '%(count)d request successfully deleted',
-                    '%(count)d requests successfully deleted',
-                    num_deleted_requests
-                ) % {
-                    'count': num_deleted_requests
-                },
-                )
             post_bulk_actions(collection)
 
         return HttpResponseRedirect(redirect_url)

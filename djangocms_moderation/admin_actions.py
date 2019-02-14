@@ -69,7 +69,15 @@ def delete_selected(modeladmin, request, queryset):
     if queryset.exclude(moderation_request__collection__author=request.user).exists():
         raise PermissionDenied
 
+    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    url = "{}?ids={}&collection_id={}".format(
+        reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
+        ",".join(selected),
+        request._collection.id
+    )
+    return HttpResponseRedirect(url)
 
+"""
     # TODO: For each moderation request id, if one has a tree structure attached go through each one and remove that!
     #       What if the item has a tree structure, each one in that list needs to be traversed
 
@@ -82,7 +90,7 @@ def delete_selected(modeladmin, request, queryset):
         request._collection.id
     )
     return HttpResponseRedirect(url)
-
+    """
 
 delete_selected.short_description = _('Remove selected')
 
