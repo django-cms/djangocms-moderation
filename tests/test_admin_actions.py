@@ -52,7 +52,7 @@ class AdminActionTest(BaseTestCase):
             is_active=True, author=self.collection.author,)
         self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
-        self.url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        self.url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
         self.url_with_filter = "{}?moderation_request__collection__id={}".format(
             self.url, self.collection.pk
         )
@@ -95,6 +95,7 @@ class AdminActionTest(BaseTestCase):
         self.client.post(response.url)
         self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 0)
 
+        #FIXME: Fails because the changelist delete action now expects to be sent tree node instances rather than Moderation request instances
         notify_author_mock.assert_called_once_with(
             collection=self.collection,
             moderation_requests=[self.mr1, self.mr2],

@@ -331,12 +331,12 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     def delete_selected_view(self, request):
         collection_id = request.GET.get('collection_id')
 
-        #TODO: Use a transaction here to rollback if required!!
-
+        # TODO: Use a transaction here to rollback if the nodes are deleted but a Moderation request isn't!!
 
         moderation_requests_affected = []
 
-        # Get all of the nodes to delete
+        # For each moderation request id, if one has a tree structure attached go through each one and remove that!
+        # Get all of the nodes selected to delete
         queryset = ModerationRequestTreeNode.objects.filter(pk__in=request.GET.get('ids', '').split(','))
 
         for node in queryset.all():
@@ -346,14 +346,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
             for child in children:
                 moderation_requests_affected.append(child.moderation_request.pk)
-
-        # Check to see if any of the children have any MR get_children()
-        # On confirm delete the nodes and the MR
-
-
-
-        # TODO: For each moderation request id, if one has a tree structure attached go through each one and remove that!
-        #       What if the item has a tree structure, each one in that list needs to be traversed
 
         # Match node id's to moderation ids.
         #selected = [str(node.moderation_request.pk) for node in queryset.all()]
