@@ -331,7 +331,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     def delete_selected_view(self, request):
         collection_id = request.GET.get('collection_id')
 
-        # TODO: Use a transaction here to rollback if the nodes are deleted but a Moderation request isn't!!
+        # TODO: Use a transaction here to rollback if the nodes are deleted but a Moderation request isn't!! What will happen on when POST and not, needs investigating
 
         moderation_requests_affected = []
 
@@ -401,6 +401,19 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     inlines = [ModerationRequestActionInline]
 
+    def _redirect_to_changeview_url(self, collection_id):
+        """
+        An internal private helper that generates a return url to this models changeview.
+        """
+        # TODO: None of the tests broke when all of the methods that use this method used an incorrect query which broke with the chnages that the treechanges made.
+        # FYI Monika ^^^^
+
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        return "{}?moderation_request__collection__id={}".format(
+            redirect_url,
+            collection_id
+        )
+
     def get_formsets_with_inlines(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):
             inline.form.current_user = request.user
@@ -466,11 +479,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     def resubmit_view(self, request):
         collection_id = request.GET.get('collection_id')
         queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?collection__id__exact={}".format(
-            redirect_url,
-            collection_id
-        )
+        redirect_url = self._redirect_to_changeview_url(collection_id)
+
         if request.method != 'POST':
             context = dict(
                 ids=request.GET.getlist('ids'),
@@ -518,11 +528,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     def published_view(self, request):
         collection_id = request.GET.get('collection_id')
         queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?collection__id__exact={}".format(
-            redirect_url,
-            collection_id
-        )
+        redirect_url = self._redirect_to_changeview_url(collection_id)
+
         if request.method != 'POST':
             context = dict(
                 ids=request.GET.getlist('ids'),
@@ -567,11 +574,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     def rework_view(self, request):
         collection_id = request.GET.get('collection_id')
         queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?collection__id__exact={}".format(
-            redirect_url,
-            collection_id
-        )
+        redirect_url = self._redirect_to_changeview_url(collection_id)
+
         if request.method != 'POST':
             context = dict(
                 ids=request.GET.getlist('ids'),
@@ -620,11 +624,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
     def approved_view(self, request):
         collection_id = request.GET.get('collection_id')
         queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?collection__id__exact={}".format(
-            redirect_url,
-            collection_id
-        )
+        redirect_url = self._redirect_to_changeview_url(collection_id)
+
         if request.method != 'POST':
             context = dict(
                 ids=request.GET.getlist('ids'),
