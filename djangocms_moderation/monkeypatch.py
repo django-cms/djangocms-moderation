@@ -26,46 +26,37 @@ def get_state_actions(func):
     as we don't want publishing CMSToolbar button in moderation.
     + Add moderation link
     """
+
     def inner(self):
         links = func(self)
-        links = [link for link in links if link != self._get_publish_link]
         return links + [self._get_moderation_link]
+
     return inner
 
 
 def _get_moderation_link(self, version, request):
     if not is_registered_for_moderation(version.content):
-        return ''
+        return ""
 
     if version.state != DRAFT:
-        return ''
+        return ""
 
     content_object = version.content
     moderation_request = get_active_moderation_request(content_object)
     if moderation_request:
         title, url = get_moderation_button_title_and_url(moderation_request)
-        return format_html(
-            '<a href="{}">{}</a>',
-            url,
-            title
-        )
+        return format_html('<a href="{}">{}</a>', url, title)
     elif is_obj_version_unlocked(content_object, request.user):
         url = add_url_parameters(
             get_admin_url(
-                name='cms_moderation_items_to_collection',
-                language='en',
-                args=()
+                name="cms_moderation_items_to_collection", language="en", args=()
             ),
             version_ids=version.pk,
-            return_to_url=version_list_url(version.content)
+            return_to_url=version_list_url(version.content),
         )
         # TODO use a fancy icon as for the rest of the actions?
-        return format_html(
-            '<a href="{}">{}</a>',
-            url,
-            _('Submit for moderation')
-        )
-    return ''
+        return format_html('<a href="{}">{}</a>', url, _("Submit for moderation"))
+    return ""
 
 
 def _is_placeholder_review_unlocked(placeholder, user):
@@ -81,21 +72,19 @@ def _is_placeholder_review_unlocked(placeholder, user):
 
 def _is_version_review_locked(message):
     def inner(version, user):
-        if (
-            is_registered_for_moderation(version.content) and
-            is_obj_review_locked(version.content, user)
+        if is_registered_for_moderation(version.content) and is_obj_review_locked(
+            version.content, user
         ):
             raise ConditionFailed(message)
+
     return inner
 
 
 def get_latest_draft_version(version):
     """Get latest draft version of version object
     """
-    drafts = (
-        Version.objects
-        .filter_by_content_grouping_values(version.content)
-        .filter(state=DRAFT)
+    drafts = Version.objects.filter_by_content_grouping_values(version.content).filter(
+        state=DRAFT
     )
     return drafts.first()
 
@@ -104,31 +93,61 @@ def _is_draft_version_review_locked(message):
     def inner(version, user):
         draft_version = get_latest_draft_version(version)
         if (
-            draft_version and
-            is_registered_for_moderation(draft_version.content) and
-            is_obj_review_locked(draft_version.content, user)
+            draft_version
+            and is_registered_for_moderation(draft_version.content)
+            and is_obj_review_locked(draft_version.content, user)
         ):
             raise ConditionFailed(message)
+
     return inner
 
 
-admin.VersionAdmin.get_state_actions = get_state_actions(admin.VersionAdmin.get_state_actions)
+def _get_publish_link(func):
+    """
+    Monkey patch VersionAdmin's get_state_actions to remove publish link,
+    as we don't want publishing CMSToolbar button in moderation.
+    + Add moderation link
+    """
+
+    def inner(self, obj, request):
+        if not is_registered_for_moderation(obj.content):
+            return func(self, obj, request)
+        else:
+            return ""
+
+    return inner
+
+
+admin.VersionAdmin._get_publish_link = _get_publish_link(
+    admin.VersionAdmin._get_publish_link
+)
+admin.VersionAdmin.get_state_actions = get_state_actions(
+    admin.VersionAdmin.get_state_actions
+)
 admin.VersionAdmin._get_moderation_link = _get_moderation_link
 
 models.Version.check_archive += [
-    _is_version_review_locked(_('Cannot archive a version in an active moderation collection'))
+    _is_version_review_locked(
+        _("Cannot archive a version in an active moderation collection")
+    )
 ]
 models.Version.check_revert += [
-    _is_draft_version_review_locked(_('Cannot revert when draft version is in an active moderation collection'))
+    _is_draft_version_review_locked(
+        _("Cannot revert when draft version is in an active moderation collection")
+    )
 ]
 models.Version.check_discard += [
-    _is_version_review_locked(_('Cannot archive a version in an active moderation collection'))
+    _is_version_review_locked(
+        _("Cannot archive a version in an active moderation collection")
+    )
 ]
 models.Version.check_modify += [
-    _is_version_review_locked(_('Version is in an active moderation collection'))
+    _is_version_review_locked(_("Version is in an active moderation collection"))
 ]
 models.Version.check_edit_redirect += [
-    _is_version_review_locked(_('Cannot edit a version in an active moderation collection'))
+    _is_version_review_locked(
+        _("Cannot edit a version in an active moderation collection")
+    )
 ]
 
 fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]
