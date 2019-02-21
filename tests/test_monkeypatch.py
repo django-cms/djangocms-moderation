@@ -142,7 +142,6 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
     @mock.patch("djangocms_moderation.monkeypatch.is_registered_for_moderation")
     def test_get_publish_link_when_registered(self, mock_is_registered_for_moderation):
         mock_is_registered_for_moderation.return_value = True
-
         link = self.version_admin._get_publish_link(self.pg1_version, self.mock_request)
         self.assertEqual("", link)
 
@@ -151,9 +150,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         self, mock_is_registered_for_moderation
     ):
         mock_is_registered_for_moderation.return_value = False
-
         link = self.version_admin._get_publish_link(self.pg1_version, self.mock_request)
-
         publish_url = reverse(
             "admin:{app}_{model}version_publish".format(
                 app=self.pg1_version._meta.app_label,
@@ -161,7 +158,6 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
             ),
             args=(self.pg1_version.pk,),
         )
-
         self.assertNotEqual("", link)
         self.assertIn(publish_url, link)
 
