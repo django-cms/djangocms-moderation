@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
@@ -10,12 +11,6 @@ from .utils import get_absolute_url
 
 
 from . import constants  # isort:skip
-
-
-try:
-    from django.urls import reverse
-except ImportError:
-    from django.urls import reverse
 
 
 email_subjects = {
