@@ -1,9 +1,9 @@
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.urls import reverse
 from django.db.models import Q
 from django.template.defaultfilters import truncatechars
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.plugins import downcast_plugins
