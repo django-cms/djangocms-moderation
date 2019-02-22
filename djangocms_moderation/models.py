@@ -71,7 +71,11 @@ class ConfirmationPage(models.Model):
 
 @python_2_unicode_compatible
 class Role(models.Model):
-    name = models.CharField(verbose_name=_('name'), max_length=120)
+    name = models.CharField(
+        verbose_name=_('name'),
+        max_length=120,
+        unique=True,
+    )
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         verbose_name=_('user'),
