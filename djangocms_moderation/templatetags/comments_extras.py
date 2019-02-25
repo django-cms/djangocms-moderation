@@ -1,6 +1,6 @@
 from django import template
 from django.contrib.admin.templatetags.admin_modify import (
-    submit_row as original_submit_row,
+    submit_row as original_submit_row
 )
 
 

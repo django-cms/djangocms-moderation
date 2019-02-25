@@ -1,7 +1,7 @@
 from unittest import skip
 
 from djangocms_moderation.contrib.moderation_forms.cms_plugins import (
-    ModerationFormPlugin,
+    ModerationFormPlugin
 )
 from djangocms_moderation.handlers import moderation_confirmation_form_submission
 from djangocms_moderation.models import ConfirmationFormSubmission, ConfirmationPage
