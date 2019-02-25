@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 
-from djangocms_moderation import conf   
+from djangocms_moderation import conf
 from djangocms_moderation.constants import ACTION_CHOICES, STATUS_CHOICES
 
 
@@ -16,175 +16,455 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('auth', '0008_alter_user_username_max_length'),
-        ('cms', '0020_old_tree_cleanup'),
-        ('cms', '0028_remove_page_placeholders'),
+        ("auth", "0008_alter_user_username_max_length"),
+        ("cms", "0020_old_tree_cleanup"),
+        ("cms", "0028_remove_page_placeholders"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("contenttypes", "0002_remove_content_type_name"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ConfirmationFormSubmission',
+            name="ConfirmationFormSubmission",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('data', models.TextField(blank=True, editable=False)),
-                ('submitted_at', models.DateTimeField(auto_now_add=True)),
-                ('by_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='by user')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("data", models.TextField(blank=True, editable=False)),
+                ("submitted_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "by_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="by user",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Confirmation Form Submission',
-                'verbose_name_plural': 'Confirmation Form Submissions',
+                "verbose_name": "Confirmation Form Submission",
+                "verbose_name_plural": "Confirmation Form Submissions",
             },
         ),
         migrations.CreateModel(
-            name='ConfirmationPage',
+            name="ConfirmationPage",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, verbose_name='name')),
-                ('content_type', models.CharField(choices=[('plain', 'Plain'), ('form', 'Form')], default='form', max_length=50, verbose_name='Content Type')),
-                ('template', models.CharField(choices=conf.CONFIRMATION_PAGE_TEMPLATES, default=conf.DEFAULT_CONFIRMATION_PAGE_TEMPLATE, max_length=100, verbose_name='Template')),
-                ('content', cms.models.fields.PlaceholderField(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE, slotname='confirmation_content', to='cms.Placeholder')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50, verbose_name="name")),
+                (
+                    "content_type",
+                    models.CharField(
+                        choices=[("plain", "Plain"), ("form", "Form")],
+                        default="form",
+                        max_length=50,
+                        verbose_name="Content Type",
+                    ),
+                ),
+                (
+                    "template",
+                    models.CharField(
+                        choices=conf.CONFIRMATION_PAGE_TEMPLATES,
+                        default=conf.DEFAULT_CONFIRMATION_PAGE_TEMPLATE,
+                        max_length=100,
+                        verbose_name="Template",
+                    ),
+                ),
+                (
+                    "content",
+                    cms.models.fields.PlaceholderField(
+                        editable=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        slotname="confirmation_content",
+                        to="cms.Placeholder",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Confirmation Page',
-                'verbose_name_plural': 'Confirmation Pages',
+                "verbose_name": "Confirmation Page",
+                "verbose_name_plural": "Confirmation Pages",
             },
         ),
         migrations.CreateModel(
-            name='ModerationCollection',
+            name="ModerationCollection",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=128, verbose_name='collection name')),
-                ('status', models.CharField(choices=STATUS_CHOICES, db_index=True, default='COLLECTING', max_length=10)),
-                ('date_created', models.DateTimeField(auto_now_add=True)),
-                ('date_modified', models.DateTimeField(auto_now=True)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='author')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=128, verbose_name="collection name"),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=STATUS_CHOICES,
+                        db_index=True,
+                        default="COLLECTING",
+                        max_length=10,
+                    ),
+                ),
+                ("date_created", models.DateTimeField(auto_now_add=True)),
+                ("date_modified", models.DateTimeField(auto_now=True)),
+                (
+                    "author",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="author",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ModerationRequest',
+            name="ModerationRequest",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('object_id', models.PositiveIntegerField()),
-                ('language', models.CharField(choices=settings.LANGUAGES, max_length=5, verbose_name='language')),
-                ('is_active', models.BooleanField(db_index=True, default=False)),
-                ('date_sent', models.DateTimeField(auto_now_add=True, verbose_name='date sent')),
-                ('compliance_number', models.CharField(blank=True, editable=False, max_length=32, null=True, unique=True, verbose_name='compliance number')),
-                ('collection', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='moderation_requests', to='djangocms_moderation.ModerationCollection')),
-                ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.ContentType')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("object_id", models.PositiveIntegerField()),
+                (
+                    "language",
+                    models.CharField(
+                        choices=settings.LANGUAGES,
+                        max_length=5,
+                        verbose_name="language",
+                    ),
+                ),
+                ("is_active", models.BooleanField(db_index=True, default=False)),
+                (
+                    "date_sent",
+                    models.DateTimeField(auto_now_add=True, verbose_name="date sent"),
+                ),
+                (
+                    "compliance_number",
+                    models.CharField(
+                        blank=True,
+                        editable=False,
+                        max_length=32,
+                        null=True,
+                        unique=True,
+                        verbose_name="compliance number",
+                    ),
+                ),
+                (
+                    "collection",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="moderation_requests",
+                        to="djangocms_moderation.ModerationCollection",
+                    ),
+                ),
+                (
+                    "content_type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="contenttypes.ContentType",
+                    ),
+                ),
+            ],
+            options={"verbose_name": "Request", "verbose_name_plural": "Requests"},
+        ),
+        migrations.CreateModel(
+            name="ModerationRequestAction",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "action",
+                    models.CharField(
+                        choices=ACTION_CHOICES, max_length=30, verbose_name="status"
+                    ),
+                ),
+                ("message", models.TextField(blank=True, verbose_name="message")),
+                (
+                    "date_taken",
+                    models.DateTimeField(auto_now_add=True, verbose_name="date taken"),
+                ),
+                ("is_archived", models.BooleanField(default=False)),
+                (
+                    "by_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="by user",
+                    ),
+                ),
+                (
+                    "request",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="actions",
+                        to="djangocms_moderation.ModerationRequest",
+                        verbose_name="request",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Request',
-                'verbose_name_plural': 'Requests',
+                "verbose_name": "Action",
+                "verbose_name_plural": "Actions",
+                "ordering": ("date_taken",),
             },
         ),
         migrations.CreateModel(
-            name='ModerationRequestAction',
+            name="Role",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action', models.CharField(choices=ACTION_CHOICES, max_length=30, verbose_name='status')),
-                ('message', models.TextField(blank=True, verbose_name='message')),
-                ('date_taken', models.DateTimeField(auto_now_add=True, verbose_name='date taken')),
-                ('is_archived', models.BooleanField(default=False)),
-                ('by_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='by user')),
-                ('request', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='actions', to='djangocms_moderation.ModerationRequest', verbose_name='request')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=120, verbose_name="name")),
+                (
+                    "confirmation_page",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="+",
+                        to="djangocms_moderation.ConfirmationPage",
+                        verbose_name="confirmation page",
+                    ),
+                ),
+                (
+                    "group",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="auth.Group",
+                        verbose_name="group",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="user",
+                    ),
+                ),
             ],
-            options={
-                'verbose_name': 'Action',
-                'verbose_name_plural': 'Actions',
-                'ordering': ('date_taken',),
-            },
+            options={"verbose_name": "Role", "verbose_name_plural": "Roles"},
         ),
         migrations.CreateModel(
-            name='Role',
+            name="Workflow",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=120, verbose_name='name')),
-                ('confirmation_page', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='+', to='djangocms_moderation.ConfirmationPage', verbose_name='confirmation page')),
-                ('group', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='auth.Group', verbose_name='group')),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='user')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=120, unique=True, verbose_name="name"),
+                ),
+                (
+                    "is_default",
+                    models.BooleanField(default=False, verbose_name="is default"),
+                ),
+                (
+                    "identifier",
+                    models.CharField(
+                        blank=True,
+                        default="",
+                        help_text="Identifier is a 'free' field you could use for internal purposes. For example, it could be used as a workflow specific prefix of a compliance number",
+                        max_length=128,
+                        verbose_name="identifier",
+                    ),
+                ),
+                (
+                    "requires_compliance_number",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Does the Compliance number need to be generated before the moderation request is approved? Please select the compliance number backend below",
+                        verbose_name="requires compliance number?",
+                    ),
+                ),
+                (
+                    "compliance_number_backend",
+                    models.CharField(
+                        choices=conf.COMPLIANCE_NUMBER_BACKENDS,
+                        default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND,
+                        max_length=255,
+                        verbose_name="compliance number backend",
+                    ),
+                ),
             ],
-            options={
-                'verbose_name': 'Role',
-                'verbose_name_plural': 'Roles',
-            },
+            options={"verbose_name": "Workflow", "verbose_name_plural": "Workflows"},
         ),
         migrations.CreateModel(
-            name='Workflow',
+            name="WorkflowStep",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=120, unique=True, verbose_name='name')),
-                ('is_default', models.BooleanField(default=False, verbose_name='is default')),
-                ('identifier', models.CharField(blank=True, default='', help_text="Identifier is a 'free' field you could use for internal purposes. For example, it could be used as a workflow specific prefix of a compliance number", max_length=128, verbose_name='identifier')),
-                ('requires_compliance_number', models.BooleanField(default=False, help_text='Does the Compliance number need to be generated before the moderation request is approved? Please select the compliance number backend below', verbose_name='requires compliance number?')),
-                ('compliance_number_backend', models.CharField(choices=conf.COMPLIANCE_NUMBER_BACKENDS, default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND, max_length=255, verbose_name='compliance number backend')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "is_required",
+                    models.BooleanField(default=True, verbose_name="is mandatory"),
+                ),
+                ("order", models.PositiveIntegerField()),
+                (
+                    "role",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="djangocms_moderation.Role",
+                        verbose_name="role",
+                    ),
+                ),
+                (
+                    "workflow",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="steps",
+                        to="djangocms_moderation.Workflow",
+                        verbose_name="workflow",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Workflow',
-                'verbose_name_plural': 'Workflows',
-            },
-        ),
-        migrations.CreateModel(
-            name='WorkflowStep',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('is_required', models.BooleanField(default=True, verbose_name='is mandatory')),
-                ('order', models.PositiveIntegerField()),
-                ('role', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='djangocms_moderation.Role', verbose_name='role')),
-                ('workflow', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='steps', to='djangocms_moderation.Workflow', verbose_name='workflow')),
-            ],
-            options={
-                'verbose_name': 'Step',
-                'verbose_name_plural': 'Steps',
-                'ordering': ('order',),
+                "verbose_name": "Step",
+                "verbose_name_plural": "Steps",
+                "ordering": ("order",),
             },
         ),
         migrations.AddField(
-            model_name='moderationrequestaction',
-            name='step_approved',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='djangocms_moderation.WorkflowStep', verbose_name='step approved'),
+            model_name="moderationrequestaction",
+            name="step_approved",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="djangocms_moderation.WorkflowStep",
+                verbose_name="step approved",
+            ),
         ),
         migrations.AddField(
-            model_name='moderationrequestaction',
-            name='to_role',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='djangocms_moderation.Role', verbose_name='to role'),
+            model_name="moderationrequestaction",
+            name="to_role",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="djangocms_moderation.Role",
+                verbose_name="to role",
+            ),
         ),
         migrations.AddField(
-            model_name='moderationrequestaction',
-            name='to_user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='to user'),
+            model_name="moderationrequestaction",
+            name="to_user",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="to user",
+            ),
         ),
         migrations.AddField(
-            model_name='moderationcollection',
-            name='workflow',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='moderation_collections', to='djangocms_moderation.Workflow', verbose_name='workflow'),
+            model_name="moderationcollection",
+            name="workflow",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="moderation_collections",
+                to="djangocms_moderation.Workflow",
+                verbose_name="workflow",
+            ),
         ),
         migrations.AddField(
-            model_name='confirmationformsubmission',
-            name='confirmation_page',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='+', to='djangocms_moderation.ConfirmationPage', verbose_name='confirmation page'),
+            model_name="confirmationformsubmission",
+            name="confirmation_page",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="+",
+                to="djangocms_moderation.ConfirmationPage",
+                verbose_name="confirmation page",
+            ),
         ),
         migrations.AddField(
-            model_name='confirmationformsubmission',
-            name='for_step',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='djangocms_moderation.WorkflowStep', verbose_name='for step'),
+            model_name="confirmationformsubmission",
+            name="for_step",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to="djangocms_moderation.WorkflowStep",
+                verbose_name="for step",
+            ),
         ),
         migrations.AddField(
-            model_name='confirmationformsubmission',
-            name='request',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='form_submissions', to='djangocms_moderation.ModerationRequest', verbose_name='request'),
+            model_name="confirmationformsubmission",
+            name="request",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="form_submissions",
+                to="djangocms_moderation.ModerationRequest",
+                verbose_name="request",
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='workflowstep',
-            unique_together=set([('role', 'workflow')]),
+            name="workflowstep", unique_together=set([("role", "workflow")])
         ),
         migrations.AlterUniqueTogether(
-            name='moderationrequest',
-            unique_together=set([('collection', 'object_id', 'content_type')]),
+            name="moderationrequest",
+            unique_together=set([("collection", "object_id", "content_type")]),
         ),
         migrations.AlterUniqueTogether(
-            name='confirmationformsubmission',
-            unique_together=set([('request', 'for_step')]),
+            name="confirmationformsubmission",
+            unique_together=set([("request", "for_step")]),
         ),
     ]

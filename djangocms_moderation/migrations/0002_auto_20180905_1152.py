@@ -11,42 +11,81 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('djangocms_moderation', '0001_initial'),
+        ("djangocms_moderation", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CollectionComment',
+            name="CollectionComment",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('message', models.TextField(blank=True, verbose_name='message')),
-                ('date_created', models.DateTimeField(auto_now_add=True)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='author')),
-                ('collection', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='djangocms_moderation.ModerationCollection')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("message", models.TextField(blank=True, verbose_name="message")),
+                ("date_created", models.DateTimeField(auto_now_add=True)),
+                (
+                    "author",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="author",
+                    ),
+                ),
+                (
+                    "collection",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="djangocms_moderation.ModerationCollection",
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False},
         ),
         migrations.CreateModel(
-            name='RequestComment',
+            name="RequestComment",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('message', models.TextField(blank=True, verbose_name='message')),
-                ('date_created', models.DateTimeField(auto_now_add=True)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='author')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("message", models.TextField(blank=True, verbose_name="message")),
+                ("date_created", models.DateTimeField(auto_now_add=True)),
+                (
+                    "author",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="author",
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False},
         ),
         migrations.AlterModelOptions(
-            name='moderationrequest',
-            options={'ordering': ['id'], 'verbose_name': 'Request', 'verbose_name_plural': 'Requests'},
+            name="moderationrequest",
+            options={
+                "ordering": ["id"],
+                "verbose_name": "Request",
+                "verbose_name_plural": "Requests",
+            },
         ),
         migrations.AddField(
-            model_name='requestcomment',
-            name='moderation_request',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='djangocms_moderation.ModerationRequest'),
+            model_name="requestcomment",
+            name="moderation_request",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="djangocms_moderation.ModerationRequest",
+            ),
         ),
     ]

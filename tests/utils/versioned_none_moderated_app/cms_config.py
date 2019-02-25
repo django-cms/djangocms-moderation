@@ -12,11 +12,9 @@ class VersionedNoneModeratedAppConfig(CMSAppConfig):
     versioning = [
         VersionableItem(
             content_model=NoneModeratedPollContent,
-            grouper_field_name='poll',
-            extra_grouping_fields=['language'],
-            version_list_filter_lookups={
-                'language': get_language_tuple,
-            },
+            grouper_field_name="poll",
+            extra_grouping_fields=["language"],
+            version_list_filter_lookups={"language": get_language_tuple},
             copy_function=default_copy,
-        ),
+        )
     ]

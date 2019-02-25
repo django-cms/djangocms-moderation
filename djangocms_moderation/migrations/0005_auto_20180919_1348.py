@@ -9,19 +9,24 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('djangocms_moderation', '0004_auto_20180907_1206'),
-    ]
+    dependencies = [("djangocms_moderation", "0004_auto_20180907_1206")]
 
     operations = [
         migrations.AlterField(
-            model_name='moderationcollection',
-            name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='owner'),
+            model_name="moderationcollection",
+            name="author",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="owner",
+            ),
         ),
         migrations.AlterField(
-            model_name='moderationrequest',
-            name='is_active',
-            field=models.BooleanField(db_index=True, default=True, verbose_name='is active'),
+            model_name="moderationrequest",
+            name="is_active",
+            field=models.BooleanField(
+                db_index=True, default=True, verbose_name="is active"
+            ),
         ),
     ]
