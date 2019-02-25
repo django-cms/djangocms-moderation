@@ -7,10 +7,7 @@ from django.urls import reverse
 from cms.middleware.toolbar import ToolbarMiddleware
 from cms.toolbar.toolbar import CMSToolbar
 
-from djangocms_versioning.test_utils.factories import (
-    PageVersionFactory,
-    UserFactory,
-)
+from djangocms_versioning.test_utils.factories import PageVersionFactory, UserFactory
 
 from djangocms_moderation import constants
 from djangocms_moderation.cms_toolbars import ModerationToolbar
@@ -26,13 +23,13 @@ from .utils.base import BaseTestCase
 
 class TestCMSToolbars(BaseTestCase):
     def _get_page_request(self, page, user):
-        request = RequestFactory().get('/')
+        request = RequestFactory().get("/")
         request.session = {}
         request.user = user
         request.current_page = page
         mid = ToolbarMiddleware()
         mid.process_request(request)
-        if hasattr(request, 'toolbar'):
+        if hasattr(request, "toolbar"):
             request.toolbar.populate()
         return request
 
@@ -46,17 +43,18 @@ class TestCMSToolbars(BaseTestCase):
         )
         cms_toolbar = CMSToolbar(request)
         toolbar = ModerationToolbar(
-            cms_toolbar.request, toolbar=cms_toolbar, is_current_app=True, app_path='/')
+            cms_toolbar.request, toolbar=cms_toolbar, is_current_app=True, app_path="/"
+        )
         toolbar.toolbar.set_object(content_obj)
-        if kwargs.get('edit_mode', False):
+        if kwargs.get("edit_mode", False):
             toolbar.toolbar.edit_mode_active = True
             toolbar.toolbar.content_mode_active = False
             toolbar.toolbar.structure_mode_active = False
-        elif kwargs.get('structure_mode', False):
+        elif kwargs.get("structure_mode", False):
             toolbar.toolbar.edit_mode_active = False
             toolbar.toolbar.content_mode_active = False
             toolbar.toolbar.structure_mode_active = True
-        elif kwargs.get('preview_mode', False):
+        elif kwargs.get("preview_mode", False):
             toolbar.toolbar.edit_mode_active = False
             toolbar.toolbar.content_mode_active = True
             toolbar.toolbar.structure_mode_active = False
@@ -68,6 +66,7 @@ class TestCMSToolbars(BaseTestCase):
         if callable(callable_or_name):
             func = callable_or_name
         else:
+
             def func(button):
                 return button.name == callable_or_name
 
@@ -96,7 +95,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists('Submit for moderation', toolbar.toolbar))
+        self.assertTrue(self._button_exists("Submit for moderation", toolbar.toolbar))
 
     def test_submit_for_moderation_version_locked(self):
         ModerationRequest.objects.all().delete()
@@ -107,7 +106,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
 
         # Submit for moderation button has been added
-        self.assertTrue(self._button_exists('Submit for moderation', toolbar.toolbar))
+        self.assertTrue(self._button_exists("Submit for moderation", toolbar.toolbar))
 
         # Different user to version author is logged in
         toolbar = self._get_toolbar(version.content, user=self.user, edit_mode=True)
@@ -115,7 +114,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
 
         # No Submit for moderation button has been added
-        self.assertFalse(self._button_exists('Submit for moderation', toolbar.toolbar))
+        self.assertFalse(self._button_exists("Submit for moderation", toolbar.toolbar))
 
     def test_page_in_collection_collection(self):
         ModerationRequest.objects.all().delete()
@@ -126,11 +125,13 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists(
-            'In collection "{} ({})"'.format(
-                self.collection1.name, self.collection1.id
-            ),
-            toolbar.toolbar)
+        self.assertTrue(
+            self._button_exists(
+                'In collection "{} ({})"'.format(
+                    self.collection1.name, self.collection1.id
+                ),
+                toolbar.toolbar,
+            )
         )
 
     def test_page_in_collection_moderating(self):
@@ -144,11 +145,13 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists(
-            'In moderation "{} ({})"'.format(
-                self.collection1.name, self.collection1.id
-            ),
-            toolbar.toolbar)
+        self.assertTrue(
+            self._button_exists(
+                'In moderation "{} ({})"'.format(
+                    self.collection1.name, self.collection1.id
+                ),
+                toolbar.toolbar,
+            )
         )
 
     def test_add_edit_button_with_version_lock(self):
@@ -163,9 +166,9 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
+        self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
         # Edit button should be clickable
-        button = self._find_buttons('Edit', toolbar.toolbar)
+        button = self._find_buttons("Edit", toolbar.toolbar)
         self.assertFalse(button[0].disabled)
 
         # Now version user is different to toolbar user
@@ -174,13 +177,15 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists(
-            lambda button: button.name.endswith('Edit'),
-            toolbar.toolbar))
+        self.assertTrue(
+            self._button_exists(
+                lambda button: button.name.endswith("Edit"), toolbar.toolbar
+            )
+        )
         # Edit button should not be clickable
         button = self._find_buttons(
-            lambda button: button.name.endswith('Edit'),
-            toolbar.toolbar)
+            lambda button: button.name.endswith("Edit"), toolbar.toolbar
+        )
         self.assertTrue(button[0].disabled)
 
     def test_add_edit_button(self):
@@ -192,8 +197,8 @@ class TestCMSToolbars(BaseTestCase):
 
         # We can see the Edit button, as the version hasn't been submitted
         # to the moderation (collection) yet
-        self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
-        button = self._find_buttons('Edit', toolbar.toolbar)
+        self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
+        button = self._find_buttons("Edit", toolbar.toolbar)
         self.assertFalse(button[0].disabled)
 
         # Lets add the version to moderation, the Edit should no longer be
@@ -205,8 +210,8 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
-        button = self._find_buttons('Edit', toolbar.toolbar)
+        self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
+        button = self._find_buttons("Edit", toolbar.toolbar)
         self.assertTrue(button[0].disabled)
 
     def test_add_edit_button_without_toolbar_object(self):
@@ -216,9 +221,11 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.post_template_populate()
         # We shouldn't see Edit button when there is no toolbar object set.
         # Some of the custom views in some apps dont have toolbar.obj
-        self.assertFalse(self._button_exists('Edit', toolbar.toolbar))
+        self.assertFalse(self._button_exists("Edit", toolbar.toolbar))
 
-    @mock.patch('djangocms_moderation.cms_toolbars.helpers.is_registered_for_moderation')
+    @mock.patch(
+        "djangocms_moderation.cms_toolbars.helpers.is_registered_for_moderation"
+    )
     def test_publish_buttons_when_unregistered(self, mock_is_registered_for_moderation):
         mock_is_registered_for_moderation.return_value = False
         ModerationRequest.objects.all().delete()
@@ -227,10 +234,14 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists('Publish', toolbar.toolbar))
+        self.assertTrue(self._button_exists("Publish", toolbar.toolbar))
 
-    @mock.patch('djangocms_moderation.cms_toolbars.helpers.is_registered_for_moderation')
-    def test_add_edit_buttons_when_unregistered(self, mock_is_registered_for_moderation):
+    @mock.patch(
+        "djangocms_moderation.cms_toolbars.helpers.is_registered_for_moderation"
+    )
+    def test_add_edit_buttons_when_unregistered(
+        self, mock_is_registered_for_moderation
+    ):
         mock_is_registered_for_moderation.return_value = False
         ModerationRequest.objects.all().delete()
         version = PageVersionFactory(created_by=self.user)
@@ -238,7 +249,7 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists('Edit', toolbar.toolbar))
+        self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
 
     def test_add_manage_collection_item_to_moderation_menu(self):
         version = PageVersionFactory(created_by=self.user)
@@ -246,20 +257,24 @@ class TestCMSToolbars(BaseTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
         cms_toolbar = toolbar.toolbar
-        manage_collection_item = self._find_menu_item('Moderation collections...', cms_toolbar)
+        manage_collection_item = self._find_menu_item(
+            "Moderation collections...", cms_toolbar
+        )
         self.assertIsNotNone(manage_collection_item)
 
-        collection_list_url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+        collection_list_url = reverse(
+            "admin:djangocms_moderation_moderationcollection_changelist"
+        )
         collection_list_url += "?author__id__exact=%s" % self.user.pk
         self.assertTrue(manage_collection_item.url, collection_list_url)
 
     def test_moderation_collection_changelist_reviewer_filter(self):
 
         reviewer = User.objects.create_user(
-            username='test_reviewer',
-            email='test_reviewer@test.com',
-            password='test_reviewer',
-            is_staff=True
+            username="test_reviewer",
+            email="test_reviewer@test.com",
+            password="test_reviewer",
+            is_staff=True,
         )
 
         # add reviewer permissions
@@ -270,34 +285,45 @@ class TestCMSToolbars(BaseTestCase):
             "add_collectioncomment",
             "change_collectioncomment",
             "use_structure",
-            "view_page"
+            "view_page",
         ]
 
         for perm in perms:
             permObj = Permission.objects.get(codename=perm)
-            reviewer.user_permissions.add(
-                permObj
-            )
+            reviewer.user_permissions.add(permObj)
 
         moderator = User.objects.create_user(
-            username='test_non_reviewer', email='test_non_reviewer@test.com',
-            password='test_non_reviewer', is_staff=True, is_superuser=True)
+            username="test_non_reviewer",
+            email="test_non_reviewer@test.com",
+            password="test_non_reviewer",
+            is_staff=True,
+            is_superuser=True,
+        )
 
-        role = Role.objects.create(name='Role Review', user=reviewer,)
+        role = Role.objects.create(name="Role Review", user=reviewer)
         pg = PageVersionFactory()
-        wf = Workflow.objects.create(name='Workflow Review Test',)
+        wf = Workflow.objects.create(name="Workflow Review Test")
         collection = ModerationCollection.objects.create(
-            author=moderator, name='Collection Admin Actions Review', workflow=wf, status=constants.IN_REVIEW
+            author=moderator,
+            name="Collection Admin Actions Review",
+            workflow=wf,
+            status=constants.IN_REVIEW,
         )
 
         mr = ModerationRequest.objects.create(
-            version=pg, language='en',  collection=collection,
-            is_active=True, author=collection.author,)
+            version=pg,
+            language="en",
+            collection=collection,
+            is_active=True,
+            author=collection.author,
+        )
 
-        wfst = wf.steps.create(role=role, is_required=True, order=1,)
+        wfst = wf.steps.create(role=role, is_required=True, order=1)
 
         # this moderation request is approved
-        mr.actions.create(to_user=reviewer, by_user=moderator, action=constants.ACTION_STARTED,)
+        mr.actions.create(
+            to_user=reviewer, by_user=moderator, action=constants.ACTION_STARTED
+        )
         mr.actions.create(
             by_user=moderator,
             to_user=reviewer,
@@ -306,17 +332,20 @@ class TestCMSToolbars(BaseTestCase):
         )
 
         # test that the moderation url in the cms_toolbar has the correct filtered URL
-        url = reverse('admin:djangocms_moderation_moderationcollection_changelist')
+        url = reverse("admin:djangocms_moderation_moderationcollection_changelist")
         with self.login_user_context(moderator):
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
             toolbar = self._get_toolbar(pg.content, preview_mode=True, user=moderator)
             toolbar.populate()
             toolbar.post_template_populate()
-            manage_collection_item = self._find_menu_item('Moderation collections...', toolbar.toolbar)
+            manage_collection_item = self._find_menu_item(
+                "Moderation collections...", toolbar.toolbar
+            )
             self.assertEqual(
                 manage_collection_item.url,
-                '/en/admin/djangocms_moderation/moderationcollection/?moderator=' + str(moderator.pk)
+                "/en/admin/djangocms_moderation/moderationcollection/?moderator="
+                + str(moderator.pk),
             )
         with self.login_user_context(reviewer):
             response = self.client.get(url)
@@ -324,8 +353,11 @@ class TestCMSToolbars(BaseTestCase):
             toolbar = self._get_toolbar(pg.content, preview_mode=True, user=reviewer)
             toolbar.populate()
             toolbar.post_template_populate()
-            manage_collection_item = self._find_menu_item('Moderation collections...', toolbar.toolbar)
+            manage_collection_item = self._find_menu_item(
+                "Moderation collections...", toolbar.toolbar
+            )
             self.assertEqual(
                 manage_collection_item.url,
-                '/en/admin/djangocms_moderation/moderationcollection/?reviewer=' + str(reviewer.pk)
+                "/en/admin/djangocms_moderation/moderationcollection/?reviewer="
+                + str(reviewer.pk),
             )

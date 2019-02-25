@@ -19,34 +19,29 @@ except ImportError:
 
 
 email_subjects = {
-    constants.ACTION_APPROVED: _('Approved moderation requests'),
-    constants.ACTION_REJECTED: _('Rejected moderation requests'),
-    constants.ACTION_CANCELLED: _('Request for moderation deleted'),
+    constants.ACTION_APPROVED: _("Approved moderation requests"),
+    constants.ACTION_REJECTED: _("Rejected moderation requests"),
+    constants.ACTION_CANCELLED: _("Request for moderation deleted"),
 }
 
 
 def _send_email(
-    collection,
-    moderation_requests,
-    recipients,
-    subject,
-    template,
-    by_user
+    collection, moderation_requests, recipients, subject, template, by_user
 ):
     admin_url = "{}?collection__id__exact={}".format(
-        reverse('admin:djangocms_moderation_moderationrequest_changelist'),
-        collection.id
+        reverse("admin:djangocms_moderation_moderationrequest_changelist"),
+        collection.id,
     )
 
     context = {
-        'collection': collection,
-        'moderation_requests': moderation_requests,
-        'author_name': collection.author_name,
-        'admin_url': get_absolute_url(admin_url),
-        'job_id': collection.job_id,
-        'by_user': by_user,
+        "collection": collection,
+        "moderation_requests": moderation_requests,
+        "author_name": collection.author_name,
+        "admin_url": get_absolute_url(admin_url),
+        "job_id": collection.job_id,
+        "by_user": by_user,
     }
-    template = 'djangocms_moderation/emails/moderation-request/{}'.format(template)
+    template = "djangocms_moderation/emails/moderation-request/{}".format(template)
 
     # TODO What language should the email be sent in? e.g. `with force_language(lang):`
     subject = force_text(subject)
@@ -70,7 +65,7 @@ def notify_collection_author(collection, moderation_requests, action, by_user):
         moderation_requests=moderation_requests,
         recipients=[collection.author.email],
         subject=email_subjects[action],
-        template='{}.txt'.format(action),
+        template="{}.txt".format(action),
         by_user=by_user,
     )
     return status
@@ -82,8 +77,8 @@ def notify_collection_moderators(collection, moderation_requests, action_obj):
     try:
         recipients = [action_obj.to_user.email]
     except AttributeError:
-        users = action_obj.to_role.get_users_queryset().exclude(email='')
-        recipients = users.values_list('email', flat=True)
+        users = action_obj.to_role.get_users_queryset().exclude(email="")
+        recipients = users.values_list("email", flat=True)
 
     if not recipients:
         return 0
@@ -92,8 +87,8 @@ def notify_collection_moderators(collection, moderation_requests, action_obj):
         collection=collection,
         moderation_requests=moderation_requests,
         recipients=recipients,
-        subject=_('Review requested'),
-        template='request.txt',
-        by_user=action_obj.by_user
+        subject=_("Review requested"),
+        template="request.txt",
+        by_user=action_obj.by_user,
     )
     return status

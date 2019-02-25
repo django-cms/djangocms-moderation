@@ -6,7 +6,7 @@ from django.db import migrations
 
 
 def moderationrequest_author(apps, schema_editor):
-    ModerationRequest = apps.get_model('djangocms_moderation', 'ModerationRequest')
+    ModerationRequest = apps.get_model("djangocms_moderation", "ModerationRequest")
     for mr in ModerationRequest.objects.all():
         mr.author = mr.collection.author
         mr.save()
@@ -14,10 +14,6 @@ def moderationrequest_author(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('djangocms_moderation', '0006_auto_20181001_1840'),
-    ]
+    dependencies = [("djangocms_moderation", "0006_auto_20181001_1840")]
 
-    operations = [
-        migrations.RunPython(moderationrequest_author),
-    ]
+    operations = [migrations.RunPython(moderationrequest_author)]
