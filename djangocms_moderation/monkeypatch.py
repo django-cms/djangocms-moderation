@@ -22,14 +22,11 @@ from djangocms_moderation.utils import get_admin_url
 
 def get_state_actions(func):
     """
-    Monkey patch VersionAdmin's get_state_actions to remove publish link,
-    as we don't want publishing CMSToolbar button in moderation.
-    + Add moderation link
+    Monkey patch VersionAdmin's get_state_actions to add Add moderation link
     """
 
     def inner(self):
         links = func(self)
-        links = [link for link in links if link != self._get_publish_link]
         return links + [self._get_moderation_link]
 
     return inner
@@ -102,6 +99,24 @@ def _is_draft_version_review_locked(message):
 
     return inner
 
+
+def _get_publish_link(func):
+    """
+    Monkey patch VersionAdmin's _get_publish_link to remove publish link,
+    if obj.content is registered with moderation
+    """
+
+    def inner(self, obj, request):
+        if is_registered_for_moderation(obj.content):
+            return ""
+        return func(self, obj, request)
+
+    return inner
+
+
+admin.VersionAdmin._get_publish_link = _get_publish_link(
+    admin.VersionAdmin._get_publish_link
+)
 
 admin.VersionAdmin.get_state_actions = get_state_actions(
     admin.VersionAdmin.get_state_actions
