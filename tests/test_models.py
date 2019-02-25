@@ -21,43 +21,52 @@ from .utils.base import BaseTestCase
 
 
 class RoleTest(BaseTestCase):
-
     def test_user_and_group_validation_error(self):
-        role = Role.objects.create(name='New Role 1', user=self.user, group=self.group,)
-        self.assertRaisesMessage(ValidationError, 'Can\'t pick both user and group. Only one.', role.clean)
+        role = Role.objects.create(name="New Role 1", user=self.user, group=self.group)
+        self.assertRaisesMessage(
+            ValidationError, "Can't pick both user and group. Only one.", role.clean
+        )
 
     def test_user_is_assigned(self):
         # with user
-        role = Role.objects.create(name='New Role 1', user=self.user,)
+        role = Role.objects.create(name="New Role 1", user=self.user)
         self.assertTrue(role.user_is_assigned(self.user))
         self.assertFalse(role.user_is_assigned(self.user2))
         # with group
-        role = Role.objects.create(name='New Role 2', group=self.group,)
+        role = Role.objects.create(name="New Role 2", group=self.group)
         self.assertFalse(role.user_is_assigned(self.user))
         self.assertTrue(role.user_is_assigned(self.user2))
 
     def test_get_users_queryset(self):
         # with user
-        role = Role.objects.create(name='New Role 1', user=self.user,)
+        role = Role.objects.create(name="New Role 1", user=self.user)
         self.assertQuerysetEqual(
-            role.get_users_queryset(), User.objects.filter(pk=self.user.pk), transform=lambda x: x, ordered=False)
+            role.get_users_queryset(),
+            User.objects.filter(pk=self.user.pk),
+            transform=lambda x: x,
+            ordered=False,
+        )
         # with group
-        role = Role.objects.create(name='New Role 2', group=self.group,)
+        role = Role.objects.create(name="New Role 2", group=self.group)
         self.assertQuerysetEqual(
-            role.get_users_queryset(), User.objects.filter(
-                pk__in=[self.user2.pk, self.user3.pk]
-            ), transform=lambda x: x, ordered=False
+            role.get_users_queryset(),
+            User.objects.filter(pk__in=[self.user2.pk, self.user3.pk]),
+            transform=lambda x: x,
+            ordered=False,
         )
 
 
 class WorkflowTest(BaseTestCase):
-
     def test_multiple_defaults_validation_error(self):
-        workflow = Workflow.objects.create(name='New Workflow 3', is_default=False,)
+        workflow = Workflow.objects.create(name="New Workflow 3", is_default=False)
         workflow.clean()
-        workflow = Workflow.objects.create(name='New Workflow 4', is_default=True,)  # self.wf1 is default
+        workflow = Workflow.objects.create(
+            name="New Workflow 4", is_default=True
+        )  # self.wf1 is default
         self.assertRaisesMessage(
-            ValidationError, 'Can\'t have two default workflows, only one is allowed.', workflow.clean
+            ValidationError,
+            "Can't have two default workflows, only one is allowed.",
+            workflow.clean,
         )
 
     def test_first_step(self):
@@ -65,7 +74,6 @@ class WorkflowTest(BaseTestCase):
 
 
 class WorkflowStepTest(BaseTestCase):
-
     def test_get_next(self):
         self.assertEqual(self.wf1st1.get_next(), self.wf1st2)
         self.assertEqual(self.wf1st2.get_next(), self.wf1st3)
@@ -78,7 +86,6 @@ class WorkflowStepTest(BaseTestCase):
 
 
 class ModerationRequestTest(BaseTestCase):
-
     def test_has_pending_step(self):
         self.assertTrue(self.moderation_request1.has_pending_step())
         self.assertFalse(self.moderation_request2.has_pending_step())
@@ -108,13 +115,13 @@ class ModerationRequestTest(BaseTestCase):
     def test_get_first_action(self):
         self.assertEqual(
             self.moderation_request2.get_first_action(),
-            self.moderation_request2.actions.first()
+            self.moderation_request2.actions.first(),
         )
 
     def test_get_last_action(self):
         self.assertEqual(
             self.moderation_request2.get_last_action(),
-            self.moderation_request2.actions.last()
+            self.moderation_request2.actions.last(),
         )
 
     def test_get_pending_steps(self):
@@ -179,16 +186,28 @@ class ModerationRequestTest(BaseTestCase):
 
     def test_user_get_step(self):
         self.assertIsNone(self.moderation_request3.user_get_step(self.user))
-        self.assertEqual(self.moderation_request3.user_get_step(self.user2), self.wf3st2)
+        self.assertEqual(
+            self.moderation_request3.user_get_step(self.user2), self.wf3st2
+        )
 
     def test_user_can_take_moderation_action(self):
-        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
-        self.assertFalse(self.moderation_request1.user_can_take_moderation_action(temp_user))
-        self.assertFalse(self.moderation_request3.user_can_take_moderation_action(self.user))
-        self.assertTrue(self.moderation_request3.user_can_take_moderation_action(self.user2))
+        temp_user = User.objects.create_superuser(
+            username="temp", email="temp@temp.com", password="temp"
+        )
+        self.assertFalse(
+            self.moderation_request1.user_can_take_moderation_action(temp_user)
+        )
+        self.assertFalse(
+            self.moderation_request3.user_can_take_moderation_action(self.user)
+        )
+        self.assertTrue(
+            self.moderation_request3.user_can_take_moderation_action(self.user2)
+        )
 
     def test_user_can_resubmit(self):
-        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
+        temp_user = User.objects.create_superuser(
+            username="temp", email="temp@temp.com", password="temp"
+        )
         self.assertFalse(self.moderation_request1.user_can_resubmit(temp_user))
         author = self.moderation_request4.author
         # Only author can edit and resubmit
@@ -197,25 +216,33 @@ class ModerationRequestTest(BaseTestCase):
         self.assertFalse(self.moderation_request4.user_can_resubmit(self.user3))
 
     def test_user_is_author(self):
-        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
+        temp_user = User.objects.create_superuser(
+            username="temp", email="temp@temp.com", password="temp"
+        )
         self.assertFalse(self.moderation_request1.user_is_author(temp_user))
         self.assertFalse(self.moderation_request1.user_is_author(self.user2))
         self.assertTrue(self.moderation_request1.user_is_author(self.user))
 
     def test_user_can_view_comments(self):
-        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
+        temp_user = User.objects.create_superuser(
+            username="temp", email="temp@temp.com", password="temp"
+        )
         self.assertFalse(self.moderation_request1.user_can_view_comments(temp_user))
         self.assertTrue(self.moderation_request1.user_can_view_comments(self.user2))
         self.assertTrue(self.moderation_request1.user_can_view_comments(self.user))
 
     def test_user_can_moderate(self):
-        temp_user = User.objects.create_superuser(username='temp', email='temp@temp.com', password='temp',)
+        temp_user = User.objects.create_superuser(
+            username="temp", email="temp@temp.com", password="temp"
+        )
         self.assertFalse(self.moderation_request1.user_can_moderate(temp_user))
         self.assertFalse(self.moderation_request2.user_can_moderate(temp_user))
         self.assertFalse(self.moderation_request3.user_can_moderate(temp_user))
 
         # check that it doesn't allow access to users that aren't part of this moderation request
-        user4 = User.objects.create_superuser(username='test4', email='test4@test.com', password='test4',)
+        user4 = User.objects.create_superuser(
+            username="test4", email="test4@test.com", password="test4"
+        )
         self.assertTrue(self.moderation_request4.user_can_moderate(self.user))
         self.assertTrue(self.moderation_request4.user_can_moderate(self.user2))
         self.assertTrue(self.moderation_request4.user_can_moderate(self.user3))
@@ -223,18 +250,16 @@ class ModerationRequestTest(BaseTestCase):
 
     def test_update_status_action_approved(self):
         self.moderation_request1.update_status(
-            action=constants.ACTION_APPROVED,
-            by_user=self.user,
-            message='Approved',
+            action=constants.ACTION_APPROVED, by_user=self.user, message="Approved"
         )
         self.assertTrue(self.moderation_request1.is_active)
-        self.assertEqual(len(self.moderation_request1.actions.filter(is_archived=False)), 2)
+        self.assertEqual(
+            len(self.moderation_request1.actions.filter(is_archived=False)), 2
+        )
 
     def test_update_status_action_rejected(self):
         self.moderation_request1.update_status(
-            action=constants.ACTION_REJECTED,
-            by_user=self.user,
-            message='Rejected',
+            action=constants.ACTION_REJECTED, by_user=self.user, message="Rejected"
         )
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
@@ -243,7 +268,7 @@ class ModerationRequestTest(BaseTestCase):
         self.moderation_request1.update_status(
             action=constants.ACTION_RESUBMITTED,
             by_user=self.user,
-            message='Resubmitting',
+            message="Resubmitting",
         )
         self.assertTrue(self.moderation_request1.is_active)
         self.assertEqual(len(self.moderation_request1.actions.all()), 2)
@@ -292,12 +317,10 @@ class ModerationRequestTest(BaseTestCase):
 
     def test_rejection_makes_the_previous_actions_archived(self):
         previous_action_1 = self.moderation_request1.actions.create(
-            by_user=self.user,
-            action=constants.ACTION_APPROVED,
+            by_user=self.user, action=constants.ACTION_APPROVED
         )
         previous_action_2 = self.moderation_request1.actions.create(
-            by_user=self.user2,
-            action=constants.ACTION_RESUBMITTED,
+            by_user=self.user2, action=constants.ACTION_RESUBMITTED
         )
 
         self.assertFalse(previous_action_1.is_archived)
@@ -306,7 +329,7 @@ class ModerationRequestTest(BaseTestCase):
         self.moderation_request1.update_status(
             action=constants.ACTION_REJECTED,
             by_user=self.user,
-            message='Rejecting this',
+            message="Rejecting this",
         )
 
         previous_action_1.refresh_from_db()
@@ -314,13 +337,13 @@ class ModerationRequestTest(BaseTestCase):
         self.assertTrue(previous_action_1.is_archived)
         self.assertTrue(previous_action_2.is_archived)
 
-    @patch('djangocms_moderation.models.generate_compliance_number')
+    @patch("djangocms_moderation.models.generate_compliance_number")
     def test_compliance_number(self, mock_uuid):
-        mock_uuid.return_value = 'abc123'
+        mock_uuid.return_value = "abc123"
 
         request = ModerationRequest.objects.create(
             version=self.pg4_version,
-            language='en',
+            language="en",
             is_active=True,
             collection=self.collection1,
             author=self.collection1.author,
@@ -329,13 +352,15 @@ class ModerationRequestTest(BaseTestCase):
 
         request.set_compliance_number()
         self.assertEqual(mock_uuid.call_count, 1)
-        self.assertEqual(request.compliance_number, 'abc123')
+        self.assertEqual(request.compliance_number, "abc123")
 
     def test_compliance_number_sequential_number_backend(self):
-        self.wf2.compliance_number_backend = 'djangocms_moderation.backends.sequential_number_backend'
+        self.wf2.compliance_number_backend = (
+            "djangocms_moderation.backends.sequential_number_backend"
+        )
         request = ModerationRequest.objects.create(
             version=self.pg1_version,
-            language='en',
+            language="en",
             collection=self.collection2,
             author=self.collection2.author,
         )
@@ -349,13 +374,13 @@ class ModerationRequestTest(BaseTestCase):
 
     def test_compliance_number_sequential_number_with_identifier_prefix_backend(self):
         self.wf2.compliance_number_backend = (
-            'djangocms_moderation.backends.sequential_number_with_identifier_prefix_backend'
+            "djangocms_moderation.backends.sequential_number_with_identifier_prefix_backend"
         )
-        self.wf2.identifier = 'SSO'
+        self.wf2.identifier = "SSO"
 
         request = ModerationRequest.objects.create(
             version=self.pg1_version,
-            language='en',
+            language="en",
             collection=self.collection2,
             author=self.collection2.author,
         )
@@ -389,12 +414,14 @@ class ModerationRequestActionTest(BaseTestCase):
     def test_save_when_to_user_not_passed_and_action_started(self):
         new_request = ModerationRequest.objects.create(
             version=self.pg2_version,
-            language='en',
+            language="en",
             collection=self.collection1,
             is_active=True,
             author=self.collection1.author,
         )
-        new_action = new_request.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
+        new_action = new_request.actions.create(
+            by_user=self.user, action=constants.ACTION_STARTED
+        )
         self.assertEqual(new_action.to_role, self.role1)
 
     def test_save_when_to_user_not_passed_and_action_not_started(self):
@@ -407,22 +434,23 @@ class ModerationRequestActionTest(BaseTestCase):
 
 
 class ConfirmationPageTest(BaseTestCase):
-
     def setUp(self):
         # First delete all the form submissions for the moderation_request1
         # This will make sure there are no form submissions
         # attached with the self.moderation_request1
         self.moderation_request1.form_submissions.all().delete()
-        self.cp = ConfirmationPage.objects.create(name='Checklist Form')
+        self.cp = ConfirmationPage.objects.create(name="Checklist Form")
         self.role1.confirmation_page = self.cp
         self.role1.save()
 
     def test_get_absolute_url(self):
-        url = reverse('admin:cms_moderation_confirmation_page', args=(self.cp.pk,))
+        url = reverse("admin:cms_moderation_confirmation_page", args=(self.cp.pk,))
         self.assertEqual(self.cp.get_absolute_url(), url)
 
     def test_is_valid_returns_false_when_no_form_submission(self):
-        result = self.cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
+        result = self.cp.is_valid(
+            active_request=self.moderation_request1, for_step=self.wf1st1
+        )
         self.assertFalse(result)
 
     def test_is_valid_returns_true_when_form_submission_exists(self):
@@ -430,23 +458,24 @@ class ConfirmationPageTest(BaseTestCase):
             moderation_request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
-            data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
+            data=json.dumps([{"label": "Question 1", "answer": "Yes"}]),
             confirmation_page=self.cp,
         )
-        result = self.cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
+        result = self.cp.is_valid(
+            active_request=self.moderation_request1, for_step=self.wf1st1
+        )
         self.assertTrue(result)
 
     def test_is_valid_returns_false_when_plain_content_not_reviewed(self):
-        result = self.cp.is_valid(active_request=self.moderation_request1, for_step=self.wf1st1,)
+        result = self.cp.is_valid(
+            active_request=self.moderation_request1, for_step=self.wf1st1
+        )
         self.assertFalse(result)
 
 
 class ConfirmationFormSubmissionTest(BaseTestCase):
-
     def setUp(self):
-        self.cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
+        self.cp = ConfirmationPage.objects.create(name="Checklist Form")
         self.role1.confirmation_page = self.cp
         self.role1.save()
 
@@ -455,7 +484,7 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
             moderation_request=self.moderation_request1,
             for_step=self.wf1st1,
             by_user=self.user,
-            data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
+            data=json.dumps([{"label": "Question 1", "answer": "Yes"}]),
             confirmation_page=self.cp,
         )
         self.assertEqual(cfs.get_by_user_name(), self.user.username)
@@ -464,10 +493,10 @@ class ConfirmationFormSubmissionTest(BaseTestCase):
 class ModerationCollectionTest(BaseTestCase):
     def setUp(self):
         self.collection1 = ModerationCollection.objects.create(
-            author=self.user, name='My collection 1', workflow=self.wf1
+            author=self.user, name="My collection 1", workflow=self.wf1
         )
         self.collection2 = ModerationCollection.objects.create(
-            author=self.user, name='My collection 2', workflow=self.wf1
+            author=self.user, name="My collection 2", workflow=self.wf1
         )
 
     def test_job_id(self):
@@ -493,7 +522,7 @@ class ModerationCollectionTest(BaseTestCase):
             self.collection1.save()
             self.assertFalse(self.collection1.is_cancellable(self.user2))
 
-    @patch.object(ModerationRequest, 'is_approved')
+    @patch.object(ModerationRequest, "is_approved")
     def test_should_be_archived(self, is_approved_mock):
         self.collection1.status = constants.COLLECTING
         self.collection1.save()
@@ -539,17 +568,17 @@ class ModerationCollectionTest(BaseTestCase):
         self.collection1.save()
         self.assertFalse(self.collection1.allow_submit_for_review(user=self.user))
 
-    @patch('djangocms_moderation.models.notify_collection_moderators')
+    @patch("djangocms_moderation.models.notify_collection_moderators")
     def test_submit_for_review(self, mock_ncm):
         ModerationRequest.objects.create(
             version=self.pg1_version,
-            language='en',
+            language="en",
             collection=self.collection1,
             author=self.collection1.author,
         )
         ModerationRequest.objects.create(
             version=self.pg3_version,
-            language='en',
+            language="en",
             collection=self.collection1,
             author=self.collection1.author,
         )
@@ -571,9 +600,11 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertEquals(self.collection1.status, constants.IN_REVIEW)
         # We will now have 2 actions with status STARTED.
         self.assertEqual(
-            2, ModerationRequestAction.objects.filter(
-                moderation_request__collection=self.collection1, action=constants.ACTION_STARTED
-            ).count()
+            2,
+            ModerationRequestAction.objects.filter(
+                moderation_request__collection=self.collection1,
+                action=constants.ACTION_STARTED,
+            ).count(),
         )
 
     def test_cancel(self):
@@ -581,13 +612,13 @@ class ModerationCollectionTest(BaseTestCase):
             version=self.pg1_version,
             collection=self.collection1,
             is_active=True,
-            author=self.collection1.author
+            author=self.collection1.author,
         )
         ModerationRequest.objects.create(
             version=self.pg3_version,
             collection=self.collection1,
             is_active=False,
-            author=self.collection1.author
+            author=self.collection1.author,
         )
 
         self.collection1.status = constants.COLLECTING
@@ -600,7 +631,8 @@ class ModerationCollectionTest(BaseTestCase):
 
         # Only 1 active request will be cancelled
         actions = ModerationRequestAction.objects.filter(
-            moderation_request__collection=self.collection1, action=constants.ACTION_CANCELLED
+            moderation_request__collection=self.collection1,
+            action=constants.ACTION_CANCELLED,
         )
         self.assertEqual(1, actions.count())
         self.assertEqual(actions[0].moderation_request, active_request)

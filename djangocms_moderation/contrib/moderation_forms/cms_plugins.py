@@ -11,25 +11,19 @@ from .models import ModerationForm
 
 
 class ModerationFormPlugin(FormPlugin):
-    name = _('Moderation Form')
+    name = _("Moderation Form")
     model = ModerationForm
-    fieldsets = (
-        (None, {
-            'fields': (
-                'name',
-            ),
-        }),
-    )
+    fieldsets = ((None, {"fields": ("name",)}),)
 
     def form_valid(self, instance, request, form):
         fields = form.get_serialized_fields(is_confirmation=False)
         fields_as_dicts = [field._asdict() for field in fields]
-        page = get_page_or_404(request.GET.get('page'), request.GET.get('language'))
+        page = get_page_or_404(request.GET.get("page"), request.GET.get("language"))
 
         confirmation_form_submission.send(
             sender=self.__class__,
             page=page,
-            language=request.GET.get('language'),
+            language=request.GET.get("language"),
             user=request.user,
             form_data=fields_as_dicts,
         )

@@ -9,14 +9,17 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('djangocms_moderation', '0007_auto_20181002_1725'),
-    ]
+    dependencies = [("djangocms_moderation", "0007_auto_20181002_1725")]
 
     operations = [
         migrations.AlterField(
-            model_name='moderationrequest',
-            name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='author'),
-        ),
+            model_name="moderationrequest",
+            name="author",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="author",
+            ),
+        )
     ]

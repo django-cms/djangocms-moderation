@@ -117,6 +117,7 @@ def _get_publish_link(func):
 admin.VersionAdmin._get_publish_link = _get_publish_link(
     admin.VersionAdmin._get_publish_link
 )
+
 admin.VersionAdmin.get_state_actions = get_state_actions(
     admin.VersionAdmin.get_state_actions
 )

@@ -13,12 +13,12 @@ class CMSApp1Config(CMSAppConfig):
     versioning = [
         VersionableItem(
             content_model=App2PostContent,
-            grouper_field_name='post',
-            copy_function=lambda x: x
+            grouper_field_name="post",
+            copy_function=lambda x: x,
         ),
         VersionableItem(
             content_model=App2TitleContent,
-            grouper_field_name='title',
-            copy_function=lambda x: x
-        )
+            grouper_field_name="title",
+            copy_function=lambda x: x,
+        ),
     ]

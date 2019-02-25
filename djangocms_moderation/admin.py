@@ -61,9 +61,9 @@ User = get_user_model()
 class ModerationRequestActionInline(admin.TabularInline):
     model = ModerationRequestAction
     form = ModerationRequestActionInlineForm
-    fields = ['show_user', 'message', 'date_taken', 'form_submission']
-    verbose_name = _('Action')
-    verbose_name_plural = _('Actions')
+    fields = ["show_user", "message", "date_taken", "form_submission"]
+    verbose_name = _("Action")
+    verbose_name_plural = _("Actions")
 
     def has_add_permission(self, request):
         return False
@@ -73,39 +73,41 @@ class ModerationRequestActionInline(admin.TabularInline):
 
     def show_user(self, obj):
         _name = obj.get_by_user_name()
-        return ugettext('By {user}').format(user=_name)
-    show_user.short_description = _('Status')
+        return ugettext("By {user}").format(user=_name)
+
+    show_user.short_description = _("Status")
 
     def form_submission(self, obj):
-        instance = get_form_submission_for_step(obj.moderation_request, obj.step_approved)
+        instance = get_form_submission_for_step(
+            obj.moderation_request, obj.step_approved
+        )
 
         if not instance:
-            return ''
+            return ""
 
         opts = ConfirmationFormSubmission._meta
         url = reverse(
-            'admin:{}_{}_change'.format(opts.app_label, opts.model_name),
+            "admin:{}_{}_change".format(opts.app_label, opts.model_name),
             args=[instance.pk],
         )
         return format_html(
-            '<a href="{}" target="_blank">{}</a>',
-            url,
-            obj.step_approved.role.name
+            '<a href="{}" target="_blank">{}</a>', url, obj.step_approved.role.name
         )
-    form_submission.short_description = _('Form Submission')
+
+    form_submission.short_description = _("Form Submission")
 
     def get_readonly_fields(self, request, obj=None):
         if obj.user_can_moderate(request.user) or obj.user_is_author(request.user):
             # Omit 'message' from readonly_fields when current user is a reviewer
             # or an author. This disallows a non-participant from
             # adding or editing comments on action objects
-            return ['show_user', 'date_taken', 'form_submission']
+            return ["show_user", "date_taken", "form_submission"]
         return self.fields
 
 
 class ModerationRequestAdmin(admin.ModelAdmin):
     class Media:
-        js = ('djangocms_moderation/js/actions.js',)
+        js = ("djangocms_moderation/js/actions.js",)
 
     actions = [  # filtered out in `self.get_actions`
         delete_selected,
@@ -115,9 +117,9 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         resubmit_selected,
     ]
     inlines = [ModerationRequestActionInline]
-    fields = ['id', 'collection', 'workflow', 'is_active', 'get_status']
+    fields = ["id", "collection", "workflow", "is_active", "get_status"]
     readonly_fields = fields
-    change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+    change_list_template = "djangocms_moderation/moderation_request_change_list.html"
 
     def get_formsets_with_inlines(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):
@@ -133,56 +135,63 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         list_display = [
-            'id',
-            'get_content_type',
-            'get_title',
-            'get_version_author',
-            'get_preview_link',
-            'get_status',
-            'get_reviewer',
+            "id",
+            "get_content_type",
+            "get_title",
+            "get_version_author",
+            "get_preview_link",
+            "get_status",
+            "get_reviewer",
         ]
         if conf.REQUEST_COMMENTS_ENABLED:
-            list_display.append('get_comments_link')
+            list_display.append("get_comments_link")
         return list_display
 
     def get_content_type(self, obj):
         return ContentType.objects.get_for_model(obj.version.versionable.grouper_model)
-    get_content_type.short_description = _('Content type')
+
+    get_content_type.short_description = _("Content type")
 
     def get_title(self, obj):
         return obj.version.content
-    get_title.short_description = _('Title')
+
+    get_title.short_description = _("Title")
 
     def get_preview_link(self, obj):
         content = obj.version.content
         if is_editable_model(content.__class__):
             object_preview_url = get_object_preview_url(obj.version.content)
         else:
-            object_preview_url = reverse('admin:{app}_{model}_change'.format(
-                app=content._meta.app_label,
-                model=content._meta.model_name,
-            ), args=[content.pk])
+            object_preview_url = reverse(
+                "admin:{app}_{model}_change".format(
+                    app=content._meta.app_label, model=content._meta.model_name
+                ),
+                args=[content.pk],
+            )
 
         return format_html(
             '<a href="{}" class="js-moderation-close-sideframe" target="_top">'
             '<span class="cms-icon cms-icon-eye"></span>'
-            '</a>',
+            "</a>",
             object_preview_url,
         )
-    get_preview_link.short_description = _('Preview')
+
+    get_preview_link.short_description = _("Preview")
 
     def get_comments_link(self, obj):
         return format_html(
             '<a href="{}?moderation_request__id__exact={}">{}</a>',
-            reverse('admin:djangocms_moderation_requestcomment_changelist'),
+            reverse("admin:djangocms_moderation_requestcomment_changelist"),
             obj.id,
-            _('View')
+            _("View"),
         )
-    get_comments_link.short_description = _('Comments')
+
+    get_comments_link.short_description = _("Comments")
 
     def get_version_author(self, obj):
         return obj.version.created_by
-    get_version_author.short_description = _('Author')
+
+    get_version_author.short_description = _("Author")
 
     def has_add_permission(self, request):
         return False
@@ -216,38 +225,47 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             # Keep track how many actions we've added in the below loop (_actions_kept).
             # If we added all of them (_max_to_keep), we can exit the for loop
             if collection.status == constants.IN_REVIEW:
-                _max_to_keep = 4  # publish_selected, approve_selected, reject_selected, resubmit_selected
+                _max_to_keep = (
+                    4
+                )  # publish_selected, approve_selected, reject_selected, resubmit_selected
             else:
                 # If the collection is archived, then no other action than
                 # `publish_selected` is possible.
                 _max_to_keep = 1  # publish_selected
 
-            for mr in collection.moderation_requests.all().select_related('version'):
+            for mr in collection.moderation_requests.all().select_related("version"):
                 if len(actions_to_keep) == _max_to_keep:
                     break  # We have found all the actions, so no need to loop anymore
-                if 'publish_selected' not in actions_to_keep:
-                    if request.user == collection.author and mr.version_can_be_published():
-                        actions_to_keep.append('publish_selected')
-                if collection.status == constants.IN_REVIEW and 'approve_selected' not in actions_to_keep:
+                if "publish_selected" not in actions_to_keep:
+                    if (
+                        request.user == collection.author
+                        and mr.version_can_be_published()
+                    ):
+                        actions_to_keep.append("publish_selected")
+                if (
+                    collection.status == constants.IN_REVIEW
+                    and "approve_selected" not in actions_to_keep
+                ):
                     if mr.user_can_take_moderation_action(request.user):
-                        actions_to_keep.append('approve_selected')
-                        actions_to_keep.append('reject_selected')
-                if collection.status == constants.IN_REVIEW and 'resubmit_selected' not in actions_to_keep:
+                        actions_to_keep.append("approve_selected")
+                        actions_to_keep.append("reject_selected")
+                if (
+                    collection.status == constants.IN_REVIEW
+                    and "resubmit_selected" not in actions_to_keep
+                ):
                     if mr.user_can_resubmit(request.user):
-                        actions_to_keep.append('resubmit_selected')
+                        actions_to_keep.append("resubmit_selected")
 
         # Only collection author can delete moderation requests
         if collection.author == request.user:
-            actions_to_keep.append('delete_selected')
+            actions_to_keep.append("delete_selected")
 
-        return {
-            key: value for key, value in actions.items() if key in actions_to_keep
-        }
+        return {key: value for key, value in actions.items() if key in actions_to_keep}
 
     def changelist_view(self, request, extra_context=None):
         # If we filter by a specific collection, we want to add this collection
         # to the context
-        collection_id = request.GET.get('collection__id__exact')
+        collection_id = request.GET.get("collection__id__exact")
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
@@ -258,17 +276,16 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 extra_context = dict(collection=collection)
                 if collection.is_cancellable(request.user):
                     cancel_collection_url = reverse(
-                        'admin:cms_moderation_cancel_collection',
-                        args=(collection_id,)
+                        "admin:cms_moderation_cancel_collection", args=(collection_id,)
                     )
-                    extra_context['cancel_collection_url'] = cancel_collection_url
+                    extra_context["cancel_collection_url"] = cancel_collection_url
 
                 if collection.allow_submit_for_review(user=request.user):
                     submit_for_review_url = reverse(
-                        'admin:cms_moderation_submit_collection_for_moderation',
-                        args=(collection_id,)
+                        "admin:cms_moderation_submit_collection_for_moderation",
+                        args=(collection_id,),
                     )
-                    extra_context['submit_for_review_url'] = submit_for_review_url
+                    extra_context["submit_for_review_url"] = submit_for_review_url
 
         else:
             # If no collection id, then don't show all requests
@@ -277,16 +294,16 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
         return super().changelist_view(request, extra_context)
 
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         extra_context = extra_context or dict()
 
         # get the collection for the breadcrumb trail
         collection_id = utils.extract_filter_param_from_changelist_url(
-            request, '_changelist_filters', 'collection__id__exact'
+            request, "_changelist_filters", "collection__id__exact"
         )
 
         if collection_id:
-            extra_context['collection_id'] = collection_id
+            extra_context["collection_id"] = collection_id
         else:
             raise Http404
 
@@ -299,26 +316,27 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
         if last_action:
             if obj.version_can_be_published():
-                status = ugettext('Ready for publishing')
+                status = ugettext("Ready for publishing")
             elif obj.is_rejected():
-                status = ugettext('Pending author rework')
+                status = ugettext("Pending author rework")
             elif obj.is_active and obj.has_pending_step():
                 next_step = obj.get_next_required()
                 role = next_step.role.name
-                status = ugettext('Pending %(role)s approval') % {'role': role}
+                status = ugettext("Pending %(role)s approval") % {"role": role}
             elif not obj.version.can_be_published():
                 status = obj.version.get_state_display()
             else:
                 user_name = last_action.get_by_user_name()
                 message_data = {
-                    'action': last_action.get_action_display(),
-                    'name': user_name,
+                    "action": last_action.get_action_display(),
+                    "name": user_name,
                 }
-                status = ugettext('%(action)s by %(name)s') % message_data
+                status = ugettext("%(action)s by %(name)s") % message_data
         else:
-            status = ugettext('Ready for submission')
+            status = ugettext("Ready for submission")
         return status
-    get_status.short_description = _('Status')
+
+    get_status.short_description = _("Status")
 
     def get_reviewer(self, obj):
         last_action = obj.get_last_action()
@@ -328,54 +346,58 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             next_step = obj.get_next_required()
             return next_step.role.name
         return last_action._get_user_name(last_action.by_user)
-    get_reviewer.short_description = _('Reviewer')
+
+    get_reviewer.short_description = _("Reviewer")
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name
 
         return [
             url(
-                r'^delete_selected/',
+                r"^delete_selected/",
                 self.admin_site.admin_view(self.delete_selected_view),
-                name='{}_{}_delete'.format(*info),
+                name="{}_{}_delete".format(*info),
             ),
             url(
-                r'^approve/',
+                r"^approve/",
                 self.admin_site.admin_view(self.approved_view),
-                name='{}_{}_approve'.format(*info),
+                name="{}_{}_approve".format(*info),
             ),
             url(
-                r'^rework/',
+                r"^rework/",
                 self.admin_site.admin_view(self.rework_view),
-                name='{}_{}_rework'.format(*info),
+                name="{}_{}_rework".format(*info),
             ),
             url(
-                r'^publish/',
+                r"^publish/",
                 self.admin_site.admin_view(self.published_view),
-                name='{}_{}_publish'.format(*info),
+                name="{}_{}_publish".format(*info),
             ),
             url(
-                r'^resubmit/',
+                r"^resubmit/",
                 self.admin_site.admin_view(self.resubmit_view),
-                name='{}_{}_resubmit'.format(*info),
+                name="{}_{}_resubmit".format(*info),
             ),
         ] + super().get_urls()
 
     def resubmit_view(self, request):
-        collection_id = request.GET.get('collection_id')
-        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?collection__id__exact={}".format(
-            redirect_url,
-            collection_id
+        collection_id = request.GET.get("collection_id")
+        queryset = ModerationRequest.objects.filter(
+            pk__in=request.GET.get("ids", "").split(",")
         )
-        if request.method != 'POST':
+        redirect_url = reverse(
+            "admin:djangocms_moderation_moderationrequest_changelist"
+        )
+        redirect_url = "{}?collection__id__exact={}".format(redirect_url, collection_id)
+        if request.method != "POST":
             context = dict(
-                ids=request.GET.getlist('ids'),
-                back_url=redirect_url,
-                queryset=queryset,
+                ids=request.GET.getlist("ids"), back_url=redirect_url, queryset=queryset
             )
-            return render(request, 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html', context)
+            return render(
+                request,
+                "admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html",
+                context,
+            )
         else:
             try:
                 collection = ModerationCollection.objects.get(id=int(collection_id))
@@ -387,8 +409,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 if mr.user_can_resubmit(request.user):
                     resubmitted_requests.append(mr)
                     mr.update_status(
-                        action=constants.ACTION_RESUBMITTED,
-                        by_user=request.user,
+                        action=constants.ACTION_RESUBMITTED, by_user=request.user
                     )
 
             if resubmitted_requests:
@@ -398,36 +419,38 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                     moderation_requests=resubmitted_requests,
                     # We can take any action here, as all the requests are in the same
                     # stage of moderation - at the beginning
-                    action_obj=resubmitted_requests[0].get_last_action()
+                    action_obj=resubmitted_requests[0].get_last_action(),
                 )
 
             messages.success(
                 request,
                 ungettext(
-                    '%(count)d request successfully resubmitted for review',
-                    '%(count)d requests successfully resubmitted for review',
-                    len(resubmitted_requests)
-                ) % {
-                    'count': len(resubmitted_requests)
-                },
+                    "%(count)d request successfully resubmitted for review",
+                    "%(count)d requests successfully resubmitted for review",
+                    len(resubmitted_requests),
                 )
+                % {"count": len(resubmitted_requests)},
+            )
         return HttpResponseRedirect(redirect_url)
 
     def published_view(self, request):
-        collection_id = request.GET.get('collection_id')
-        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?collection__id__exact={}".format(
-            redirect_url,
-            collection_id
+        collection_id = request.GET.get("collection_id")
+        queryset = ModerationRequest.objects.filter(
+            pk__in=request.GET.get("ids", "").split(",")
         )
-        if request.method != 'POST':
+        redirect_url = reverse(
+            "admin:djangocms_moderation_moderationrequest_changelist"
+        )
+        redirect_url = "{}?collection__id__exact={}".format(redirect_url, collection_id)
+        if request.method != "POST":
             context = dict(
-                ids=request.GET.getlist('ids'),
-                back_url=redirect_url,
-                queryset=queryset,
+                ids=request.GET.getlist("ids"), back_url=redirect_url, queryset=queryset
             )
-            return render(request, 'admin/djangocms_moderation/moderationrequest/publish_confirmation.html', context)
+            return render(
+                request,
+                "admin/djangocms_moderation/moderationrequest/publish_confirmation.html",
+                context,
+            )
         else:
             try:
                 collection = ModerationCollection.objects.get(id=int(collection_id))
@@ -440,8 +463,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                     if publish_version(mr.version, request.user):
                         num_published_requests += 1
                         mr.update_status(
-                            action=constants.ACTION_FINISHED,
-                            by_user=request.user,
+                            action=constants.ACTION_FINISHED, by_user=request.user
                         )
                     else:
                         # TODO provide some feedback back to the user?
@@ -450,33 +472,35 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             messages.success(
                 request,
                 ungettext(
-                    '%(count)d request successfully published',
-                    '%(count)d requests successfully published',
-                    num_published_requests
-                ) % {
-                    'count': num_published_requests
-                },
+                    "%(count)d request successfully published",
+                    "%(count)d requests successfully published",
+                    num_published_requests,
                 )
+                % {"count": num_published_requests},
+            )
 
             post_bulk_actions(collection)
 
         return HttpResponseRedirect(redirect_url)
 
     def rework_view(self, request):
-        collection_id = request.GET.get('collection_id')
-        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?collection__id__exact={}".format(
-            redirect_url,
-            collection_id
+        collection_id = request.GET.get("collection_id")
+        queryset = ModerationRequest.objects.filter(
+            pk__in=request.GET.get("ids", "").split(",")
         )
-        if request.method != 'POST':
+        redirect_url = reverse(
+            "admin:djangocms_moderation_moderationrequest_changelist"
+        )
+        redirect_url = "{}?collection__id__exact={}".format(redirect_url, collection_id)
+        if request.method != "POST":
             context = dict(
-                ids=request.GET.getlist('ids'),
-                back_url=redirect_url,
-                queryset=queryset,
+                ids=request.GET.getlist("ids"), back_url=redirect_url, queryset=queryset
             )
-            return render(request, 'admin/djangocms_moderation/moderationrequest/rework_confirmation.html', context)
+            return render(
+                request,
+                "admin/djangocms_moderation/moderationrequest/rework_confirmation.html",
+                context,
+            )
         else:
             try:
                 collection = ModerationCollection.objects.get(id=int(collection_id))
@@ -489,8 +513,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 if moderation_request.user_can_take_moderation_action(request.user):
                     rejected_requests.append(moderation_request)
                     moderation_request.update_status(
-                        action=constants.ACTION_REJECTED,
-                        by_user=request.user,
+                        action=constants.ACTION_REJECTED, by_user=request.user
                     )
 
             # Now we need to notify collection reviewers and moderator. TODO task queue?
@@ -506,30 +529,32 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             messages.success(
                 request,
                 ungettext(
-                    '%(count)d request successfully submitted for rework',
-                    '%(count)d requests successfully submitted for rework',
-                    len(rejected_requests)
-                ) % {
-                    'count': len(rejected_requests)
-                },
+                    "%(count)d request successfully submitted for rework",
+                    "%(count)d requests successfully submitted for rework",
+                    len(rejected_requests),
                 )
+                % {"count": len(rejected_requests)},
+            )
         return HttpResponseRedirect(redirect_url)
 
     def approved_view(self, request):
-        collection_id = request.GET.get('collection_id')
-        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?collection__id__exact={}".format(
-            redirect_url,
-            collection_id
+        collection_id = request.GET.get("collection_id")
+        queryset = ModerationRequest.objects.filter(
+            pk__in=request.GET.get("ids", "").split(",")
         )
-        if request.method != 'POST':
+        redirect_url = reverse(
+            "admin:djangocms_moderation_moderationrequest_changelist"
+        )
+        redirect_url = "{}?collection__id__exact={}".format(redirect_url, collection_id)
+        if request.method != "POST":
             context = dict(
-                ids=request.GET.getlist('ids'),
-                back_url=redirect_url,
-                queryset=queryset,
+                ids=request.GET.getlist("ids"), back_url=redirect_url, queryset=queryset
             )
-            return render(request, 'admin/djangocms_moderation/moderationrequest/approve_confirmation.html', context)
+            return render(
+                request,
+                "admin/djangocms_moderation/moderationrequest/approve_confirmation.html",
+                context,
+            )
         else:
             """
             Validate and approve all the selected moderation requests and notify
@@ -558,18 +583,21 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 if mr.user_can_take_moderation_action(request.user):
                     approved_requests.append(mr)
                     mr.update_status(
-                        action=constants.ACTION_APPROVED,
-                        by_user=request.user,
+                        action=constants.ACTION_APPROVED, by_user=request.user
                     )
                     action = mr.get_last_action()
                     if action.to_user_id or action.to_role_id:
                         # We group the moderation requests by step_approved.pk.
                         # Sometimes it can be None, in which case they can be grouped
                         # together and we use "0" as a key
-                        step_approved_key = str(action.step_approved.pk if action.step_approved else 0)
+                        step_approved_key = str(
+                            action.step_approved.pk if action.step_approved else 0
+                        )
                         if step_approved_key not in request_action_mapping:
                             request_action_mapping[step_approved_key] = [mr]
-                            request_action_mapping['action_' + step_approved_key] = action
+                            request_action_mapping[
+                                "action_" + step_approved_key
+                            ] = action
                         else:
                             request_action_mapping[step_approved_key].append(mr)
 
@@ -585,45 +613,49 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 )
 
                 # Notify reviewers
-                for key, moderation_requests in sorted(request_action_mapping.items(), key=lambda x: x[0]):
-                    if not key.startswith('action_'):
+                for key, moderation_requests in sorted(
+                    request_action_mapping.items(), key=lambda x: x[0]
+                ):
+                    if not key.startswith("action_"):
                         notify_collection_moderators(
                             collection=collection,
                             moderation_requests=moderation_requests,
-                            action_obj=request_action_mapping['action_' + key]
+                            action_obj=request_action_mapping["action_" + key],
                         )
 
             messages.success(
                 request,
                 ungettext(
-                    '%(count)d request successfully approved',
-                    '%(count)d requests successfully approved',
-                    len(approved_requests)
-                ) % {
-                    'count': len(approved_requests)
-                },
+                    "%(count)d request successfully approved",
+                    "%(count)d requests successfully approved",
+                    len(approved_requests),
                 )
+                % {"count": len(approved_requests)},
+            )
 
             post_bulk_actions(collection)
 
         return HttpResponseRedirect(redirect_url)
 
     def delete_selected_view(self, request):
-        collection_id = request.GET.get('collection_id')
-        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?collection__id__exact={}".format(
-            redirect_url,
-            collection_id
+        collection_id = request.GET.get("collection_id")
+        queryset = ModerationRequest.objects.filter(
+            pk__in=request.GET.get("ids", "").split(",")
         )
+        redirect_url = reverse(
+            "admin:djangocms_moderation_moderationrequest_changelist"
+        )
+        redirect_url = "{}?collection__id__exact={}".format(redirect_url, collection_id)
 
-        if request.method != 'POST':
+        if request.method != "POST":
             context = dict(
-                ids=request.GET.getlist('ids'),
-                back_url=redirect_url,
-                queryset=queryset,
+                ids=request.GET.getlist("ids"), back_url=redirect_url, queryset=queryset
             )
-            return render(request, 'admin/djangocms_moderation/moderationrequest/delete_confirmation.html', context)
+            return render(
+                request,
+                "admin/djangocms_moderation/moderationrequest/delete_confirmation.html",
+                context,
+            )
         else:
             try:
                 collection = ModerationCollection.objects.get(id=int(collection_id))
@@ -643,43 +675,38 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             messages.success(
                 request,
                 ungettext(
-                    '%(count)d request successfully deleted',
-                    '%(count)d requests successfully deleted',
-                    num_deleted_requests
-                ) % {
-                    'count': num_deleted_requests
-                },
+                    "%(count)d request successfully deleted",
+                    "%(count)d requests successfully deleted",
+                    num_deleted_requests,
                 )
+                % {"count": num_deleted_requests},
+            )
             post_bulk_actions(collection)
 
         return HttpResponseRedirect(redirect_url)
 
 
 class RoleAdmin(admin.ModelAdmin):
-    list_display = ['name', 'user', 'group', 'confirmation_page']
-    fields = ['name', 'user', 'group', 'confirmation_page']
+    list_display = ["name", "user", "group", "confirmation_page"]
+    fields = ["name", "user", "group", "confirmation_page"]
 
 
 class CollectionCommentAdmin(admin.ModelAdmin):
-    list_display = ['date_created', 'message', 'author']
-    fields = ['collection', 'message', 'author']
+    list_display = ["date_created", "message", "author"]
+    fields = ["collection", "message", "author"]
 
     class Media:
-        css = {
-            'all': ('djangocms_moderation/css/comments_changelist.css',)
-        }
+        css = {"all": ("djangocms_moderation/css/comments_changelist.css",)}
 
     def get_changeform_initial_data(self, request):
-        data = {
-            'author': request.user,
-        }
+        data = {"author": request.user}
         # Extract the id from the URL. The id is stored in _changelist_filters
         # by Django so that the request knows where to return to after form submission.
         collection_id = utils.extract_filter_param_from_changelist_url(
-            request, '_changelist_filters', 'collection__id__exact'
+            request, "_changelist_filters", "collection__id__exact"
         )
         if collection_id:
-            data['collection'] = collection_id
+            data["collection"] = collection_id
         else:
             raise Http404
 
@@ -697,7 +724,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         # If we filter by a specific collection, we want to add this collection
         # to the context
-        collection_id = request.GET.get('collection__id__exact')
+        collection_id = request.GET.get("collection__id__exact")
         if collection_id:
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
@@ -706,40 +733,40 @@ class CollectionCommentAdmin(admin.ModelAdmin):
                 raise Http404
             else:
                 extra_context = dict(
-                    collection=collection,
-                    title=_('Collection comments')
+                    collection=collection, title=_("Collection comments")
                 )
         else:
             raise Http404
         return super().changelist_view(request, extra_context)
 
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         # get the collection for the breadcrumb trail
         collection_id = utils.extract_filter_param_from_changelist_url(
-            request, '_changelist_filters', 'collection__id__exact'
+            request, "_changelist_filters", "collection__id__exact"
         )
 
         extra_context = extra_context or dict(
-            show_save_and_add_another=False,
-            show_save_and_continue=False,
+            show_save_and_add_another=False, show_save_and_continue=False
         )
         if object_id:
             try:
-                collection_comment = get_object_or_404(CollectionComment, pk=int(object_id))
+                collection_comment = get_object_or_404(
+                    CollectionComment, pk=int(object_id)
+                )
             except ValueError:
                 raise Http404
             if request.user != collection_comment.author:
-                extra_context['readonly'] = True
+                extra_context["readonly"] = True
 
         if collection_id:
-            extra_context['collection_id'] = collection_id
+            extra_context["collection_id"] = collection_id
         else:
             raise Http404
 
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_delete_permission(self, request, obj=None):
-        return request.user == getattr(obj, 'author', None)
+        return request.user == getattr(obj, "author", None)
 
     def get_readonly_fields(self, request, obj=None):
         if obj and request.user != obj.author:
@@ -747,27 +774,24 @@ class CollectionCommentAdmin(admin.ModelAdmin):
 
 
 class RequestCommentAdmin(admin.ModelAdmin):
-    list_display = ['date_created', 'message', 'get_author']
-    fields = ['moderation_request', 'message', 'author']
+    list_display = ["date_created", "message", "get_author"]
+    fields = ["moderation_request", "message", "author"]
 
     class Media:
-        css = {
-            'all': ('djangocms_moderation/css/comments_changelist.css',)
-        }
+        css = {"all": ("djangocms_moderation/css/comments_changelist.css",)}
 
     def get_author(self, obj):
         return obj.author_name
-    get_author.short_description = _('User')
+
+    get_author.short_description = _("User")
 
     def get_changeform_initial_data(self, request):
-        data = {
-            'author': request.user,
-        }
+        data = {"author": request.user}
         moderation_request_id = utils.extract_filter_param_from_changelist_url(
-            request, '_changelist_filters', 'moderation_request__id__exact'
+            request, "_changelist_filters", "moderation_request__id__exact"
         )
         if moderation_request_id:
-            data['moderation_request'] = moderation_request_id
+            data["moderation_request"] = moderation_request_id
         return data
 
     def get_form(self, request, obj=None, **kwargs):
@@ -782,29 +806,27 @@ class RequestCommentAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         # If we filter by a specific collection, we want to add this collection
         # to the context
-        moderation_request_id = request.GET.get('moderation_request__id__exact')
+        moderation_request_id = request.GET.get("moderation_request__id__exact")
         if moderation_request_id:
             try:
-                moderation_request = ModerationRequest.objects.get(pk=int(moderation_request_id))
+                moderation_request = ModerationRequest.objects.get(
+                    pk=int(moderation_request_id)
+                )
                 collection = moderation_request.collection
                 request._collection = collection
             except (ValueError, ModerationRequest.DoesNotExist):
                 raise Http404
             else:
-                extra_context = dict(
-                    collection=collection,
-                    title=_("Request comments")
-                )
+                extra_context = dict(collection=collection, title=_("Request comments"))
         else:
             # If no collection id, then don't show all requests
             # as each collection's actions, buttons and privileges may differ
             raise Http404
         return super().changelist_view(request, extra_context)
 
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         extra_context = extra_context or dict(
-            show_save_and_add_another=False,
-            show_save_and_continue=False,
+            show_save_and_add_another=False, show_save_and_continue=False
         )
         if object_id:
             try:
@@ -812,19 +834,19 @@ class RequestCommentAdmin(admin.ModelAdmin):
             except ValueError:
                 raise Http404
             if request.user != request_comment.author:
-                extra_context['readonly'] = True
+                extra_context["readonly"] = True
         # for breadcrumb trail
         moderation_request_id = utils.extract_filter_param_from_changelist_url(
-            request, '_changelist_filters', 'moderation_request__id__exact'
+            request, "_changelist_filters", "moderation_request__id__exact"
         )
         if moderation_request_id:
-            extra_context['moderation_request_id'] = moderation_request_id
+            extra_context["moderation_request_id"] = moderation_request_id
             mr = ModerationRequest.objects.get(pk=int(moderation_request_id))
-            extra_context['collection_id'] = mr.collection.id
+            extra_context["collection_id"] = mr.collection.id
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_delete_permission(self, request, obj=None):
-        return request.user == getattr(obj, 'author', None)
+        return request.user == getattr(obj, "author", None)
 
     def get_readonly_fields(self, request, obj=None):
         if obj and request.user != obj.author:
@@ -843,43 +865,35 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
 
 class WorkflowAdmin(admin.ModelAdmin):
     inlines = [WorkflowStepInline]
-    list_display = ['name', 'is_default']
+    list_display = ["name", "is_default"]
     fields = [
-        'name',
-        'is_default',
-        'identifier',
-        'requires_compliance_number',
-        'compliance_number_backend',
+        "name",
+        "is_default",
+        "identifier",
+        "requires_compliance_number",
+        "compliance_number_backend",
     ]
 
 
 class ModerationCollectionAdmin(admin.ModelAdmin):
-
     class Media:
-        js = ('djangocms_moderation/js/actions.js',)
-        css = {
-            'all': ('djangocms_moderation/css/actions.css',)
-        }
+        js = ("djangocms_moderation/js/actions.js",)
+        css = {"all": ("djangocms_moderation/css/actions.css",)}
 
     actions = None  # remove `delete_selected` for now, it will be handled later
-    list_filter = [
-        ModeratorFilter,
-        'status',
-        'date_created',
-        ReviewerFilter,
-    ]
+    list_filter = [ModeratorFilter, "status", "date_created", ReviewerFilter]
     list_display_links = None
 
     def get_list_display(self, request):
         list_display = [
-            'job_id',
-            'name',
-            'author',
-            'workflow',
-            'status',
-            'reviewers',
-            'date_created',
-            'list_display_actions',
+            "job_id",
+            "name",
+            "author",
+            "workflow",
+            "status",
+            "reviewers",
+            "date_created",
+            "list_display_actions",
         ]
         return list_display
 
@@ -890,37 +904,30 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         """Display links to state change endpoints
         """
         return format_html_join(
-            '',
-            '{}',
-            ((action(obj), ) for action in self.get_list_display_actions()),
+            "", "{}", ((action(obj),) for action in self.get_list_display_actions())
         )
-    list_display_actions.short_description = _('actions')
+
+    list_display_actions.short_description = _("actions")
 
     def get_list_display_actions(self):
-        actions = [
-            self.get_edit_link,
-            self.get_requests_link,
-        ]
+        actions = [self.get_edit_link, self.get_requests_link]
         if conf.COLLECTION_COMMENTS_ENABLED:
             actions.append(self.get_comments_link)
         return actions
 
-    def change_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = {'title': _('Modify collection')}
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        extra_context = {"title": _("Modify collection")}
         return super().change_view(
-            request, object_id, form_url, extra_context=extra_context)
+            request, object_id, form_url, extra_context=extra_context
+        )
 
     def get_edit_link(self, obj):
         """Helper function to get the html link to the edit action
         """
         url = reverse(
-            'admin:djangocms_moderation_moderationcollection_change',
-            args=[obj.pk],
+            "admin:djangocms_moderation_moderationcollection_change", args=[obj.pk]
         )
-        return render_to_string(
-            'djangocms_moderation/edit_icon.html',
-            {'url': url}
-        )
+        return render_to_string("djangocms_moderation/edit_icon.html", {"url": url})
 
     def get_requests_link(self, obj):
         """
@@ -928,24 +935,20 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         moderation requests
         """
         url = format_html(
-            '{}?collection__id__exact={}',
-            reverse('admin:djangocms_moderation_moderationrequest_changelist'),
+            "{}?collection__id__exact={}",
+            reverse("admin:djangocms_moderation_moderationrequest_changelist"),
             obj.pk,
         )
-        return render_to_string(
-            'djangocms_moderation/request_icon.html',
-            {'url': url}
-        )
+        return render_to_string("djangocms_moderation/request_icon.html", {"url": url})
 
     def get_comments_link(self, obj):
         edit_url = format_html(
-            '{}?collection__id__exact={}',
-            reverse('admin:djangocms_moderation_collectioncomment_changelist'),
-            obj.pk
+            "{}?collection__id__exact={}",
+            reverse("admin:djangocms_moderation_collectioncomment_changelist"),
+            obj.pk,
         )
         return render_to_string(
-            'djangocms_moderation/comment_icon.html',
-            {'url': edit_url}
+            "djangocms_moderation/comment_icon.html", {"url": edit_url}
         )
 
     def get_urls(self):
@@ -954,41 +957,41 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
         url_patterns = [
             _url(
-                r'^(?P<collection_id>\d+)/submit-for-review/$',
+                r"^(?P<collection_id>\d+)/submit-for-review/$",
                 views.submit_collection_for_moderation,
                 name="cms_moderation_submit_collection_for_moderation",
             ),
             _url(
-                r'^(?P<collection_id>\d+)/cancel-collection/$',
+                r"^(?P<collection_id>\d+)/cancel-collection/$",
                 views.cancel_collection,
                 name="cms_moderation_cancel_collection",
             ),
             _url(
-                r'^item/add-items/$',
+                r"^item/add-items/$",
                 views.add_items_to_collection,
-                name='cms_moderation_items_to_collection',
-            )
+                name="cms_moderation_items_to_collection",
+            ),
         ]
         return url_patterns + super().get_urls()
 
     def get_changeform_initial_data(self, request):
-        return {'author': request.user}
+        return {"author": request.user}
 
     def get_readonly_fields(self, request, obj=None):
-        readonly_fields = ['status']
+        readonly_fields = ["status"]
         if obj:
-            if not request.user.has_perm('djangocms_moderation.can_change_author'):
-                readonly_fields.append('author')
+            if not request.user.has_perm("djangocms_moderation.can_change_author"):
+                readonly_fields.append("author")
             # Author of the collection can change the workflow if the collection
             # is still in the `collecting` state
             if obj.status != constants.COLLECTING or obj.author != request.user:
-                readonly_fields.append('workflow')
+                readonly_fields.append("workflow")
         return readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        if obj and 'author' in self.readonly_fields:
-            form.base_fields['author'].widget = forms.HiddenInput()
+        if obj and "author" in self.readonly_fields:
+            form.base_fields["author"].widget = forms.HiddenInput()
         return form
 
     def has_delete_permission(self, request, obj=None):
@@ -1004,17 +1007,23 @@ class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
 
         url_patterns = [
             _url(
-                r'^moderation-confirmation-page/([0-9]+)/$',
+                r"^moderation-confirmation-page/([0-9]+)/$",
                 views.moderation_confirmation_page,
-                name='cms_moderation_confirmation_page',
-            ),
+                name="cms_moderation_confirmation_page",
+            )
         ]
         return url_patterns + super().get_urls()
 
 
 class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
-    list_display = ['moderation_request', 'for_step', 'submitted_at']
-    fields = ['moderation_request', 'show_user', 'for_step', 'submitted_at', 'form_data']
+    list_display = ["moderation_request", "for_step", "submitted_at"]
+    fields = [
+        "moderation_request",
+        "show_user",
+        "for_step",
+        "submitted_at",
+        "form_data",
+    ]
     readonly_fields = fields
 
     def has_add_permission(self, request):
@@ -1023,30 +1032,36 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-    def change_view(self, request, object_id, form_url='', extra_context=None):
+    def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
-        extra_context['show_save'] = False
-        extra_context['show_save_and_continue'] = False
+        extra_context["show_save"] = False
+        extra_context["show_save_and_continue"] = False
         return super().change_view(
-            request, object_id, form_url, extra_context=extra_context,
+            request, object_id, form_url, extra_context=extra_context
         )
 
     def moderation_request(self, obj):
         return obj.moderation_request_id
-    moderation_request.short_description = _('Request')
+
+    moderation_request.short_description = _("Request")
 
     def show_user(self, obj):
         return obj.get_by_user_name()
-    show_user.short_description = _('By User')
+
+    show_user.short_description = _("By User")
 
     def form_data(self, obj):
         data = obj.get_form_data()
         return format_html_join(
-            '',
-            '<p>{}: <b>{}</b><br />{}: <b>{}</b></p>',
-            ((ugettext('Question'), d['label'], ugettext('Answer'), d['value']) for d in data)
+            "",
+            "<p>{}: <b>{}</b><br />{}: <b>{}</b></p>",
+            (
+                (ugettext("Question"), d["label"], ugettext("Answer"), d["value"])
+                for d in data
+            ),
         )
-    form_data.short_description = _('Form Data')
+
+    form_data.short_description = _("Form Data")
 
 
 admin.site.register(ModerationRequest, ModerationRequestAdmin)
