@@ -381,7 +381,6 @@ class ModerationRequestTreeNode(MP_Node):
 
     class Meta:
         ordering = ('id',)
-        default_permissions = []
 
     def __str__(self):
         return self.id
