@@ -353,7 +353,7 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
             args=(self.collection2.pk,)
         )
         request_change_list_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        self.request_change_list_url = "{}?collection__id__exact={}".format(
+        self.request_change_list_url = "{}?moderation_request__collection__id={}".format(
             request_change_list_url,
             self.collection2.pk
         )
