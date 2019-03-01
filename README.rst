@@ -33,7 +33,7 @@ to perform the application's database migrations.
 Documentation
 =============
 
-We maintain documentation under ``docs`` folder using rst format. HTML documentation can generate using following command
+We maintain documentation under ``docs`` folder using rst format. HTML documentation can be generated using following command
 
 Run::
 
