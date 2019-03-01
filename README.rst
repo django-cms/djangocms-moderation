@@ -33,11 +33,11 @@ to perform the application's database migrations.
 Documentation
 =============
 
-We maintain documentation under ``docs`` folder using rst format. HTML documentation can be generated using following command
+We maintain documentation under ``docs`` folder using rst format. HTML documentation can be generated using the following command
 
 Run::
 
     cd docs/
     make html
 
-This should generate all html files from rst documents under `docs/_build` folder, which can be browsed.
+This should generate all html files from rst documents under the `docs/_build` folder, which can be browsed.
