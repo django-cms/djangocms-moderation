@@ -349,9 +349,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             for child in children:
                 moderation_requests_affected.append(child.moderation_request.pk)
 
-                # Match node id's to moderation ids.
-                # selected = [str(node.moderation_request.pk) for node in queryset.all()]
-
         queryset = ModerationRequest.objects.filter(pk__in=moderation_requests_affected)
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         redirect_url = "{}?moderation_request__collection__id={}".format(

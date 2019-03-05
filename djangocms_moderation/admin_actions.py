@@ -78,21 +78,6 @@ def delete_selected(modeladmin, request, queryset):
     return HttpResponseRedirect(url)
 
 
-    """
-    # TODO: For each moderation request id, if one has a tree structure attached go through each one and remove that!
-    #       What if the item has a tree structure, each one in that list needs to be traversed
-
-    # Match node id's to moderation ids.
-    selected = [str(node.moderation_request.pk) for node in queryset.all()]
-
-    url = "{}?ids={}&collection_id={}".format(
-        reverse('admin:djangocms_moderation_moderationrequest_delete'),
-        ",".join(selected),
-        request._collection.id
-    )
-    return HttpResponseRedirect(url)
-    """
-
 delete_selected.short_description = _('Remove selected')
 
 
