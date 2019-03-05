@@ -331,8 +331,8 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     def delete_selected_view(self, request):
         collection_id = request.GET.get('collection_id')
 
-        # TODO: Use a transaction here to rollback if the nodes are deleted 
-        # but a Moderation request isn't!! What will happen on when POST and not, 
+        # TODO: Use a transaction here to rollback if the nodes are deleted
+        # but a Moderation request isn't!! What will happen on when POST and not,
         # needs investigating
 
         moderation_requests_affected = []
@@ -404,7 +404,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         """
         An internal private helper that generates a return url to this models changeview.
         """
-        # TODO: None of the tests broke when all of the methods that use this method used an incorrect query which broke with the chnages that the treechanges made.
+        # TODO: None of the tests broke when all of the methods that use this method used
+        # an incorrect query which broke with the chnages that the treechanges made.
         # FYI Monika ^^^^
 
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
@@ -486,7 +487,11 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 back_url=redirect_url,
                 queryset=queryset,
             )
-            return render(request, 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html', context)
+            return render(
+                request,
+                'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html',
+                context
+            )
         else:
             try:
                 collection = ModerationCollection.objects.get(id=int(collection_id))

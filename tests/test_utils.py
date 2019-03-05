@@ -9,7 +9,6 @@ from djangocms_moderation.helpers import (
     is_obj_review_locked,
 )
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
-
 from tests.utils.base import BaseTestCase
 
 
