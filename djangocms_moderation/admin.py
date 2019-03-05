@@ -331,7 +331,9 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     def delete_selected_view(self, request):
         collection_id = request.GET.get('collection_id')
 
-        # TODO: Use a transaction here to rollback if the nodes are deleted but a Moderation request isn't!! What will happen on when POST and not, needs investigating
+        # TODO: Use a transaction here to rollback if the nodes are deleted 
+        # but a Moderation request isn't!! What will happen on when POST and not, 
+        # needs investigating
 
         moderation_requests_affected = []
 
@@ -347,8 +349,8 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             for child in children:
                 moderation_requests_affected.append(child.moderation_request.pk)
 
-        # Match node id's to moderation ids.
-        #selected = [str(node.moderation_request.pk) for node in queryset.all()]
+                # Match node id's to moderation ids.
+                # selected = [str(node.moderation_request.pk) for node in queryset.all()]
 
         queryset = ModerationRequest.objects.filter(pk__in=moderation_requests_affected)
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')

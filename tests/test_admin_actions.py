@@ -95,7 +95,8 @@ class AdminActionTest(BaseTestCase):
         self.client.post(response.url)
         self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 0)
 
-        #FIXME: Fails because the changelist delete action now expects to be sent tree node instances rather than Moderation request instances
+        # FIXME: Fails because the changelist delete action now expects to be 
+        # sent tree node instances rather than Moderation request instances
         notify_author_mock.assert_called_once_with(
             collection=self.collection,
             moderation_requests=[self.mr1, self.mr2],

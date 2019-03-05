@@ -77,7 +77,8 @@ def delete_selected(modeladmin, request, queryset):
     )
     return HttpResponseRedirect(url)
 
-"""
+
+    """
     # TODO: For each moderation request id, if one has a tree structure attached go through each one and remove that!
     #       What if the item has a tree structure, each one in that list needs to be traversed
 
