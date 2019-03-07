@@ -25,9 +25,9 @@ def resubmit_selected(modeladmin, request, queryset):
     """
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
-        reverse('admin:djangocms_moderation_moderationrequest_resubmit'),
+        reverse("admin:djangocms_moderation_moderationrequest_resubmit"),
         ",".join(selected),
-        request._collection.id
+        request._collection.id,
     )
     return HttpResponseRedirect(url)
 
@@ -42,22 +42,22 @@ def reject_selected(modeladmin, request, queryset):
     """
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
-        reverse('admin:djangocms_moderation_moderationrequest_rework'),
+        reverse("admin:djangocms_moderation_moderationrequest_rework"),
         ",".join(selected),
-        request._collection.id
+        request._collection.id,
     )
     return HttpResponseRedirect(url)
 
 
-reject_selected.short_description = _('Submit for rework')
+reject_selected.short_description = _("Submit for rework")
 
 
 def approve_selected(modeladmin, request, queryset):
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
-        reverse('admin:djangocms_moderation_moderationrequest_approve'),
+        reverse("admin:djangocms_moderation_moderationrequest_approve"),
         ",".join(selected),
-        request._collection.id
+        request._collection.id,
     )
     return HttpResponseRedirect(url)
 
@@ -73,12 +73,12 @@ def delete_selected(modeladmin, request, queryset):
     url = "{}?ids={}&collection_id={}".format(
         reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
         ",".join(selected),
-        request._collection.id
+        request._collection.id,
     )
     return HttpResponseRedirect(url)
 
 
-delete_selected.short_description = _('Remove selected')
+delete_selected.short_description = _("Remove selected")
 
 
 def publish_selected(modeladmin, request, queryset):
@@ -87,9 +87,9 @@ def publish_selected(modeladmin, request, queryset):
 
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
-        reverse('admin:djangocms_moderation_moderationrequest_publish'),
+        reverse("admin:djangocms_moderation_moderationrequest_publish"),
         ",".join(selected),
-        request._collection.id
+        request._collection.id,
     )
     return HttpResponseRedirect(url)
 
@@ -103,17 +103,20 @@ def convert_queryset_to_version_queryset(queryset):
 
     id_map = defaultdict(list)
     for obj in queryset:
-        model = getattr(obj, 'model', None)
+        model = getattr(obj, "model", None)
         if model is None:
             model = obj._meta.model
 
         from django.db.models.base import ModelBase, Model
+
         model_bases = [ModelBase, Model]
-        if hasattr(model, 'polymorphic_ctype_id'):
+        if hasattr(model, "polymorphic_ctype_id"):
             from polymorphic.base import PolymorphicModelBase
+
             model_bases.append(PolymorphicModelBase)
         model = next(
-            m for m in reversed(model.mro())
+            m
+            for m in reversed(model.mro())
             if (
                 isinstance(m, tuple(model_bases))
                 and m not in model_bases
@@ -131,27 +134,37 @@ def convert_queryset_to_version_queryset(queryset):
 
 def add_items_to_collection(modeladmin, request, queryset):
     """Action to add queryset to moderation collection."""
-    version_ids = convert_queryset_to_version_queryset(queryset).values_list('pk', flat=True)
+    version_ids = convert_queryset_to_version_queryset(queryset).values_list(
+        "pk", flat=True
+    )
     version_ids = [str(x) for x in version_ids]
     if version_ids:
         admin_url = add_url_parameters(
             get_admin_url(
-                name='cms_moderation_items_to_collection',
-                language=request.GET.get('language'),
-                args=()
-            ), version_ids=','.join(version_ids),
-            return_to_url=request.META.get('HTTP_REFERER'))
+                name="cms_moderation_items_to_collection",
+                language=request.GET.get("language"),
+                args=(),
+            ),
+            version_ids=",".join(version_ids),
+            return_to_url=request.META.get("HTTP_REFERER"),
+        )
         return HttpResponseRedirect(admin_url)
     else:
-        modeladmin.message_user(request, _("No suitable items found to add to moderation collection"))
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-add_items_to_collection.short_description = _("Add to moderation collection")  # noqa: E305
+        modeladmin.message_user(
+            request, _("No suitable items found to add to moderation collection")
+        )
+        return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+
+
+add_items_to_collection.short_description = _(
+    "Add to moderation collection"
+)  # noqa: E305
 
 
 def post_bulk_actions(collection):
     if collection.should_be_archived():
         collection.status = constants.ARCHIVED
-        collection.save(update_fields=['status'])
+        collection.save(update_fields=["status"])
 
 
 def publish_version(version, user):

@@ -8,21 +8,31 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('djangocms_moderation', '0008_auto_20181002_1833'),
-    ]
+    dependencies = [("djangocms_moderation", "0008_auto_20181002_1833")]
 
     operations = [
         migrations.AddField(
-            model_name='confirmationformsubmission',
-            name='moderation_request',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='form_submissions', to='djangocms_moderation.ModerationRequest', verbose_name='moderation request'),
+            model_name="confirmationformsubmission",
+            name="moderation_request",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="form_submissions",
+                to="djangocms_moderation.ModerationRequest",
+                verbose_name="moderation request",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='moderationrequestaction',
-            name='moderation_request',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='actions', to='djangocms_moderation.ModerationRequest', verbose_name='moderation_request'),
+            model_name="moderationrequestaction",
+            name="moderation_request",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="actions",
+                to="djangocms_moderation.ModerationRequest",
+                verbose_name="moderation_request",
+            ),
             preserve_default=False,
         ),
     ]

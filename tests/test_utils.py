@@ -18,50 +18,51 @@ class UtilsTestCase(BaseTestCase):
 
     def test_extract_filter_param_from_changelist_url(self):
         mock_request = self.rf.get(
-            '/admin/djangocms_moderation/collectioncomment/add/?_changelist_filters=collection__id__exact%3D1'
+            "/admin/djangocms_moderation/collectioncomment/add/?_changelist_filters=collection__id__exact%3D1"
         )
         collection_id = utils.extract_filter_param_from_changelist_url(
-            mock_request, '_changelist_filters', 'collection__id__exact'
+            mock_request, "_changelist_filters", "collection__id__exact"
         )
-        self.assertEquals(collection_id, '1')
+        self.assertEquals(collection_id, "1")
 
         mock_request = self.rf.get(
-            '/admin/djangocms_moderation/collectioncomment/add/?_changelist_filters=collection__id__exact%3D4'
+            "/admin/djangocms_moderation/collectioncomment/add/?_changelist_filters=collection__id__exact%3D4"
         )
         collection_id = utils.extract_filter_param_from_changelist_url(
-            mock_request, '_changelist_filters', 'collection__id__exact'
+            mock_request, "_changelist_filters", "collection__id__exact"
         )
-        self.assertEquals(collection_id, '4')
+        self.assertEquals(collection_id, "4")
 
         mock_request = self.rf.get(
-            '/admin/djangocms_moderation/requestcomment/add/?_changelist_filters=moderation_request__id__exact%3D1'
+            "/admin/djangocms_moderation/requestcomment/add/?_changelist_filters=moderation_request__id__exact%3D1"
         )
         action_id = utils.extract_filter_param_from_changelist_url(
-            mock_request, '_changelist_filters', 'moderation_request__id__exact'
+            mock_request, "_changelist_filters", "moderation_request__id__exact"
         )
-        self.assertEquals(action_id, '1')
+        self.assertEquals(action_id, "1")
 
         mock_request = self.rf.get(
-            '/admin/djangocms_moderation/requestcomment/add/?_changelist_filters=moderation_request__id__exact%3D2'
+            "/admin/djangocms_moderation/requestcomment/add/?_changelist_filters=moderation_request__id__exact%3D2"
         )
         action_id = utils.extract_filter_param_from_changelist_url(
-            mock_request, '_changelist_filters', 'moderation_request__id__exact'
+            mock_request, "_changelist_filters", "moderation_request__id__exact"
         )
-        self.assertEquals(action_id, '2')
+        self.assertEquals(action_id, "2")
 
     def test_get_active_moderation_request(self):
         self.assertEqual(
             self.moderation_request1,
-            get_active_moderation_request(self.pg1_version.content)
+            get_active_moderation_request(self.pg1_version.content),
         )
         version = PageVersionFactory()
         # Inactive request with this version
         ModerationRequest.objects.create(
-            version=version, collection=self.collection1, is_active=False, author=self.user
+            version=version,
+            collection=self.collection1,
+            is_active=False,
+            author=self.user,
         )
-        self.assertIsNone(
-            get_active_moderation_request(version.content)
-        )
+        self.assertIsNone(get_active_moderation_request(version.content))
 
 
 class TestReviewLock(BaseTestCase):
@@ -74,7 +75,7 @@ class TestReviewLock(BaseTestCase):
         self.assertFalse(is_obj_review_locked(page_content, self.user3))
 
         collection = ModerationCollection.objects.create(
-            author=self.user, name='My collection 1', workflow=self.wf1
+            author=self.user, name="My collection 1", workflow=self.wf1
         )
         collection.add_version(page_version)
         # Now the version is part of the collection so it is review locked
@@ -83,7 +84,7 @@ class TestReviewLock(BaseTestCase):
         self.assertTrue(is_obj_review_locked(page_content, self.user3))
 
         mr = ModerationRequest.objects.get(collection=collection)
-        mr.actions.create(by_user=self.user, action=ACTION_STARTED,)
+        mr.actions.create(by_user=self.user, action=ACTION_STARTED)
 
         # Now we reject the moderation request, which means that `user` can
         # resubmit the changes, the review lock is lifted for them

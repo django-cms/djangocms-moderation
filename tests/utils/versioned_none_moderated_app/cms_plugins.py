@@ -7,5 +7,5 @@ from .models import NoneModeratedPollPlugin as NoneModeratedPoll
 @plugin_pool.register_plugin
 class NoneModeratedPollPlugin(CMSPluginBase):
     model = NoneModeratedPoll
-    name = 'nonemoderatedpoll'
+    name = "nonemoderatedpoll"
     render_plugin = False

@@ -9,21 +9,18 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ('aldryn_forms', '0011_auto_20180110_1300'),
-    ]
+    dependencies = [("aldryn_forms", "0011_auto_20180110_1300")]
 
     operations = [
         migrations.CreateModel(
-            name='ModerationForm',
-            fields=[
-            ],
+            name="ModerationForm",
+            fields=[],
             options={
-                'verbose_name': 'Moderation Form',
-                'verbose_name_plural': 'Moderation Forms',
-                'proxy': True,
-                'indexes': [],
+                "verbose_name": "Moderation Form",
+                "verbose_name_plural": "Moderation Forms",
+                "proxy": True,
+                "indexes": [],
             },
-            bases=('aldryn_forms.formplugin',),
-        ),
+            bases=("aldryn_forms.formplugin",),
+        )
     ]
