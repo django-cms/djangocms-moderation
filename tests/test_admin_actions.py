@@ -3,6 +3,8 @@ import mock
 from django.contrib.admin import ACTION_CHECKBOX_NAME
 from django.urls import reverse
 
+from cms.test_utils.testcases import CMSTestCase
+
 from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import PageVersionFactory
@@ -17,6 +19,7 @@ from djangocms_moderation.models import (
     Workflow,
 )
 
+from .utils import factories
 from .utils.base import BaseTestCase
 
 
@@ -58,57 +61,6 @@ class AdminActionTest(BaseTestCase):
         )
 
         self.client.force_login(self.user)
-
-    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission')
-    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
-    @mock.patch('djangocms_moderation.admin.notify_collection_author')
-    def test_delete_selected(self, notify_author_mock, notify_moderators_mock, mock_has_delete_permission):
-        mock_has_delete_permission.return_value = True
-        self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 2)
-
-        fixtures = [self.mr1, self.mr2]
-        data = {
-            'action': 'delete_selected',
-            ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
-        }
-        # This user is not the collection author
-        self.client.force_login(self.user2)
-        self.client.post(self.url_with_filter, data)
-        # Nothing is deleted
-        self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 2)
-
-        # Now lets try with collection author, but without delete permission
-        mock_has_delete_permission.return_value = False
-        self.client.force_login(self.user)
-        response = self.client.post(self.url_with_filter, data)
-        self.assertEqual(response.status_code, 403)
-        # Nothing is deleted
-        self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 2)
-
-        self.collection.refresh_from_db()
-        self.assertEqual(self.collection.status, constants.IN_REVIEW)
-
-        mock_has_delete_permission.return_value = True
-        self.client.force_login(self.user)
-        response = self.client.post(self.url_with_filter, data)
-        self.assertEqual(response.status_code, 302)
-        self.client.post(response.url)
-        self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 0)
-
-        # FIXME: Fails because the changelist delete action now expects to be
-        # sent tree node instances rather than Moderation request instances
-        notify_author_mock.assert_called_once_with(
-            collection=self.collection,
-            moderation_requests=[self.mr1, self.mr2],
-            action=constants.ACTION_CANCELLED,
-            by_user=self.user,
-        )
-
-        self.assertFalse(notify_moderators_mock.called)
-
-        # All moderation requests were deleted, so collection should be archived
-        self.collection.refresh_from_db()
-        self.assertEqual(self.collection.status, constants.ARCHIVED)
 
     def test_publish_selected(self):
         fixtures = [self.mr1, self.mr2]
@@ -330,3 +282,137 @@ class AdminActionTest(BaseTestCase):
         # Not all request have been fully approved
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
+
+class DeleteSelectedTest(CMSTestCase):
+    def setUp(self):
+        self.user = factories.UserFactory(is_staff=True, is_superuser=True)
+        self.collection = factories.ModerationCollectionFactory(
+            author=self.user, status=constants.IN_REVIEW)
+        self.moderation_request1 = factories.ModerationRequestFactory(
+            collection=self.collection)
+        self.moderation_request2 = factories.ModerationRequestFactory(
+            collection=self.collection)
+        self.root1 = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=self.moderation_request1)
+        self.root2 = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=self.moderation_request2)
+        factories.ChildModerationRequestTreeNodeFactory(
+            moderation_request=self.moderation_request1, parent=self.root1)
+
+    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=True))
+    def test_delete_selected_action_cannot_be_accessed_if_not_collection_author(self):
+        # Login as a user who is not the collection author
+        self.client.force_login(self.get_superuser())
+        # Set up action url
+        url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        url += "?moderation_request__collection__id={}".format(self.collection.pk)
+
+        # Choose the delete_selected action from the dropdown
+        data = {
+            'action': 'delete_selected',
+            ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
+        }
+        response = self.client.post(url, data)
+
+        # The action is not on the page as available to somebody who is not
+        # the author, therefore django will just return 200
+        self.assertEqual(response.status_code, 200)
+
+    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=True))
+    @mock.patch('djangocms_moderation.admin.notify_collection_author')
+    def test_delete_selected_view_cannot_be_accessed_if_not_collection_author(self, notify_author_mock):
+        # Login as a user who is not the collection author
+        self.client.force_login(self.get_superuser())
+        # Set up the url
+        url = reverse('admin:djangocms_moderation_moderationrequesttreenode_delete')
+        url += '?ids={tree_ids}&collection_id={collection_id}'.format(
+            tree_ids=','.join([str(self.root1.pk), str(self.root2.pk)]),
+            collection_id=str(self.collection.pk)
+        )
+
+        # POST directly to the view, don't go through actions
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 403)
+        # Nothing is deleted
+        self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 2)
+        # Collection not modified
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
+        # Notifications not sent
+        self.assertFalse(notify_author_mock.called)
+
+    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=False))
+    def test_delete_selected_action_cannot_be_accessed_without_delete_permission(self):
+        # Login as the collection author
+        self.client.force_login(self.user)
+        # Choose the delete_selected action from the dropdown
+        url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        data = {
+            'action': 'delete_selected',
+            ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 403)
+
+    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=False))
+    @mock.patch('djangocms_moderation.admin.notify_collection_author')
+    def test_delete_selected_view_cannot_be_accessed_without_delete_permission(self, notify_author_mock):
+        # Login as the collection author
+        self.client.force_login(self.user)
+        # Set up url
+        url = reverse('admin:djangocms_moderation_moderationrequesttreenode_delete')
+        url += '?ids={tree_ids}&collection_id={collection_id}'.format(
+            tree_ids=','.join([str(self.root1.pk), str(self.root2.pk)]),
+            collection_id=str(self.collection.pk)
+        )
+
+        # POST directly to the view, don't go through actions
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 403)
+        # Nothing is deleted
+        self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 2)
+        # Collection not modified
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
+        # Notifications not sent
+        self.assertFalse(notify_author_mock.called)
+
+    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=True))
+    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
+    @mock.patch('djangocms_moderation.admin.notify_collection_author')
+    def test_delete_selected_deletes_all_relevant_objects(self, notify_author_mock, notify_moderators_mock):
+        """The selected ModerationRequest and ModerationRequestTreeNode objects should be deleted."""
+        # Login as the collection author
+        self.client.force_login(self.user)
+        # Choose the delete_selected action from the dropdown
+        url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        data = {
+            'action': 'delete_selected',
+            ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 302)
+
+        # Now do the request the delete_selected action has led us to
+        response = self.client.post(response.url)
+        self.assertRedirects(response, url)
+        # And check the requests have indeed been deleted
+        self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 0)
+        # And correct notifications sent out
+        notify_author_mock.assert_called_once_with(
+            collection=self.collection,
+            moderation_requests=[self.moderation_request1, self.moderation_request2],
+            action=constants.ACTION_CANCELLED,
+            by_user=self.user,
+        )
+        self.assertFalse(notify_moderators_mock.called)
+        # All moderation requests were deleted, so collection should be archived
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.ARCHIVED)
