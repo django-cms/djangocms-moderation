@@ -10,12 +10,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
 from adminsortable2.admin import CustomInlineFormSet
 from djangocms_versioning.models import Version
 
-from .constants import (
-    ACTION_CANCELLED,
-    ACTION_REJECTED,
-    ACTION_RESUBMITTED,
-    COLLECTING,
-)
+from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED, COLLECTING
 from .helpers import (
     get_active_moderation_request,
     is_obj_version_unlocked,
@@ -31,19 +26,22 @@ from .models import (
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
-
     def validate_unique(self):
         super().validate_unique()
         # The following fixes a bug in Django where it doesn't validate unique constraint
         # when the parent model in inline relationship has not been saved
         errors = []
-        unique_check = ('role', 'workflow')
+        unique_check = ("role", "workflow")
         selected_roles = []
         forms_to_delete = self.deleted_forms
-        valid_forms = [form for form in self.forms if form.is_valid() and form not in forms_to_delete]
+        valid_forms = [
+            form
+            for form in self.forms
+            if form.is_valid() and form not in forms_to_delete
+        ]
 
         for form in valid_forms:
-            selected_role = form.cleaned_data.get('role')
+            selected_role = form.cleaned_data.get("role")
 
             if not selected_role:
                 continue
@@ -52,7 +50,9 @@ class WorkflowStepInlineFormSet(CustomInlineFormSet):
                 # poke error messages into the right places and mark
                 # the form as invalid
                 errors.append(self.get_unique_error_message(unique_check))
-                form._errors[NON_FIELD_ERRORS] = self.error_class([self.get_form_error()])
+                form._errors[NON_FIELD_ERRORS] = self.error_class(
+                    [self.get_form_error()]
+                )
                 # remove the data from the cleaned_data dict since it was invalid
                 for field in unique_check:
                     if field in form.cleaned_data:
@@ -63,23 +63,19 @@ class WorkflowStepInlineFormSet(CustomInlineFormSet):
 
 class UpdateModerationRequestForm(forms.Form):
     moderator = forms.ModelChoiceField(
-        label=_('moderator'),
-        queryset=get_user_model().objects.none(),
-        required=False,
+        label=_("moderator"), queryset=get_user_model().objects.none(), required=False
     )
     message = forms.CharField(
-        label=_('comment'),
-        required=False,
-        widget=forms.Textarea(),
+        label=_("comment"), required=False, widget=forms.Textarea()
     )
 
     def __init__(self, *args, **kwargs):
-        self.action = kwargs.pop('action')
-        self.language = kwargs.pop('language')
-        self.page = kwargs.pop('page')
-        self.user = kwargs.pop('user')
-        self.workflow = kwargs.pop('workflow')
-        self.active_request = kwargs.pop('active_request')
+        self.action = kwargs.pop("action")
+        self.language = kwargs.pop("language")
+        self.page = kwargs.pop("page")
+        self.user = kwargs.pop("user")
+        self.workflow = kwargs.pop("workflow")
+        self.active_request = kwargs.pop("active_request")
         super().__init__(*args, **kwargs)
         self.configure_moderator_field()
 
@@ -87,8 +83,8 @@ class UpdateModerationRequestForm(forms.Form):
         # For cancelling and rejecting, we don't need to display a moderator
         # field.
         if self.action in (ACTION_CANCELLED, ACTION_REJECTED):
-            self.fields['moderator'].queryset = get_user_model().objects.none()
-            self.fields['moderator'].widget = forms.HiddenInput()
+            self.fields["moderator"].queryset = get_user_model().objects.none()
+            self.fields["moderator"].widget = forms.HiddenInput()
             return
 
         # If the content author is resubmitting the work after a rejected
@@ -103,25 +99,26 @@ class UpdateModerationRequestForm(forms.Form):
         if next_step:
             next_role = next_step.role
             users = next_step.role.get_users_queryset()
-            self.fields['moderator'].empty_label = ugettext('Any {role}').format(role=next_role.name)
-            self.fields['moderator'].queryset = users.exclude(pk=self.user.pk)
+            self.fields["moderator"].empty_label = ugettext("Any {role}").format(
+                role=next_role.name
+            )
+            self.fields["moderator"].queryset = users.exclude(pk=self.user.pk)
         else:
-            self.fields['moderator'].queryset = get_user_model().objects.none()
-            self.fields['moderator'].widget = forms.HiddenInput()
+            self.fields["moderator"].queryset = get_user_model().objects.none()
+            self.fields["moderator"].widget = forms.HiddenInput()
 
     def save(self):
         self.active_request.update_status(
             action=self.action,
             by_user=self.user,
-            to_user=self.cleaned_data.get('moderator'),
-            message=self.cleaned_data['message'],
+            to_user=self.cleaned_data.get("moderator"),
+            message=self.cleaned_data["message"],
         )
 
 
 class CollectionItemsForm(forms.Form):
     collection = forms.ModelChoiceField(
-        queryset=None,  # Populated in __init__
-        required=True,
+        queryset=None, required=True  # Populated in __init__
     )
     versions = forms.ModelMultipleChoiceField(
         queryset=Version.objects.all(),
@@ -132,14 +129,14 @@ class CollectionItemsForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
-        self.fields['collection'].queryset = ModerationCollection.objects.filter(
+        self.fields["collection"].queryset = ModerationCollection.objects.filter(
             status=COLLECTING, author=user
         )
 
     def set_collection_widget(self, request):
         related_modeladmin = admin.site._registry.get(ModerationCollection)
-        dbfield = ModerationRequest._meta.get_field('collection')
-        formfield = self.fields['collection']
+        dbfield = ModerationRequest._meta.get_field("collection")
+        formfield = self.fields["collection"]
         formfield.widget = RelatedFieldWidgetWrapper(
             formfield.widget,
             dbfield.rel,
@@ -154,15 +151,17 @@ class CollectionItemsForm(forms.Form):
         Process objects which are not part of an active moderation request.
         Other objects are ignored.
         """
-        versions = self.cleaned_data['versions']
+        versions = self.cleaned_data["versions"]
 
         eligible_versions = []
         for version in versions:
-            if all([
-                is_registered_for_moderation(version.content),
-                not get_active_moderation_request(version.content),
-                is_obj_version_unlocked(version.content, self.user),
-            ]):
+            if all(
+                [
+                    is_registered_for_moderation(version.content),
+                    not get_active_moderation_request(version.content),
+                    is_obj_version_unlocked(version.content, self.user),
+                ]
+            ):
                 eligible_versions.append(version.pk)
 
         if not eligible_versions:
@@ -172,7 +171,7 @@ class CollectionItemsForm(forms.Form):
                     "or is part of another active moderation request",
                     "Your items are either locked, not enabled for moderation,"
                     "or are part of another active moderation request",
-                    len(versions)
+                    len(versions),
                 )
             )
         return Version.objects.filter(pk__in=eligible_versions)
@@ -180,22 +179,24 @@ class CollectionItemsForm(forms.Form):
 
 class SubmitCollectionForModerationForm(forms.Form):
     moderator = forms.ModelChoiceField(
-        label=_('Select review group'),
+        label=_("Select review group"),
         queryset=get_user_model().objects.none(),
         required=False,
     )
 
     def __init__(self, *args, **kwargs):
-        self.collection = kwargs.pop('collection')
-        self.user = kwargs.pop('user')
+        self.collection = kwargs.pop("collection")
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
         self.configure_moderator_field()
 
     def configure_moderator_field(self):
         next_role = self.collection.workflow.first_step.role
         users = next_role.get_users_queryset().exclude(pk=self.user.pk)
-        self.fields['moderator'].empty_label = ugettext('Any {role}').format(role=next_role.name)
-        self.fields['moderator'].queryset = users
+        self.fields["moderator"].empty_label = ugettext("Any {role}").format(
+            role=next_role.name
+        )
+        self.fields["moderator"].queryset = users
 
     def clean(self):
         if not self.collection.allow_submit_for_review(user=self.user):
@@ -204,15 +205,14 @@ class SubmitCollectionForModerationForm(forms.Form):
 
     def save(self):
         self.collection.submit_for_review(
-            by_user=self.user,
-            to_user=self.cleaned_data.get('moderator'),
+            by_user=self.user, to_user=self.cleaned_data.get("moderator")
         )
 
 
 class CancelCollectionForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        self.collection = kwargs.pop('collection')
-        self.user = kwargs.pop('user')
+        self.collection = kwargs.pop("collection")
+        self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
     def clean(self):
@@ -233,11 +233,8 @@ class CollectionCommentForm(forms.ModelForm):
 
     class Meta:
         model = CollectionComment
-        fields = '__all__'
-        widgets = {
-            'author': forms.HiddenInput(),
-            'collection': forms.HiddenInput(),
-        }
+        fields = "__all__"
+        widgets = {"author": forms.HiddenInput(), "collection": forms.HiddenInput()}
 
 
 class RequestCommentForm(forms.ModelForm):
@@ -249,22 +246,21 @@ class RequestCommentForm(forms.ModelForm):
 
     class Meta:
         model = RequestComment
-        fields = '__all__'
+        fields = "__all__"
         widgets = {
-            'author': forms.HiddenInput(),
-            'moderation_request': forms.HiddenInput(),
+            "author": forms.HiddenInput(),
+            "moderation_request": forms.HiddenInput(),
         }
 
 
 class ModerationRequestActionInlineForm(forms.ModelForm):
-
     class Meta:
         model = ModerationRequestAction
-        fields = ('message',)
+        fields = ("message",)
 
     def clean_message(self):
-        if self.instance and self.cleaned_data['message'] != self.instance.message:
+        if self.instance and self.cleaned_data["message"] != self.instance.message:
             if self.current_user != self.instance.by_user:
-                raise forms.ValidationError(_('You can only change your own comments'))
+                raise forms.ValidationError(_("You can only change your own comments"))
 
-        return self.cleaned_data['message']
+        return self.cleaned_data["message"]

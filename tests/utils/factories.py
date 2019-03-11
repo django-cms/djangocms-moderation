@@ -23,8 +23,7 @@ def get_plugin_position(plugin):
     """Helper function to correctly calculate the plugin position.
     Use this in plugin factory classes
     """
-    offset = plugin.placeholder.get_last_plugin_position(
-        plugin.language) or 0
+    offset = plugin.placeholder.get_last_plugin_position(plugin.language) or 0
     return offset + 1
 
 
@@ -57,7 +56,7 @@ class PollFactory(factory.django.DjangoModelFactory):
 
 class PollContentFactory(factory.django.DjangoModelFactory):
     poll = factory.SubFactory(PollFactory)
-    language = FuzzyChoice(['en', 'fr', 'it'])
+    language = FuzzyChoice(["en", "fr", "it"])
     text = FuzzyText(length=24)
 
     class Meta:
@@ -69,7 +68,7 @@ class PollPluginFactory(factory.django.DjangoModelFactory):
     placeholder = factory.SubFactory(PlaceholderFactory)
     parent = None
     position = factory.LazyAttribute(get_plugin_position)
-    plugin_type = 'PollPlugin'
+    plugin_type = "PollPlugin"
     poll = factory.SubFactory(PollFactory)
 
     class Meta:
@@ -81,6 +80,7 @@ class PollVersionFactory(AbstractVersionFactory):
 
     class Meta:
         model = Version
+
 
 # None Moderated Poll App factories
 
@@ -94,7 +94,7 @@ class NoneModeratedPollFactory(factory.django.DjangoModelFactory):
 
 class NoneModeratedPollContentFactory(factory.django.DjangoModelFactory):
     poll = factory.SubFactory(NoneModeratedPollFactory)
-    language = FuzzyChoice(['en', 'fr', 'it'])
+    language = FuzzyChoice(["en", "fr", "it"])
     text = FuzzyText(length=24)
 
     class Meta:
@@ -113,7 +113,7 @@ class NoneModeratedPollPluginFactory(factory.django.DjangoModelFactory):
     placeholder = factory.SubFactory(PlaceholderFactory)
     parent = None
     position = factory.LazyAttribute(get_plugin_position)
-    plugin_type = 'NoneModeratedPollPlugin'
+    plugin_type = "NoneModeratedPollPlugin"
     poll = factory.SubFactory(NoneModeratedPollFactory)
 
     class Meta:

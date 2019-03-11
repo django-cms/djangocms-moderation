@@ -10,38 +10,35 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('djangocms_moderation', '0010_auto_20181008_1317'),
-    ]
+    dependencies = [("djangocms_moderation", "0010_auto_20181008_1317")]
 
     operations = [
         # AlterUniqueTogether needs to happen before removing field
         migrations.AlterUniqueTogether(
-            name='confirmationformsubmission',
-            unique_together=set([('moderation_request', 'for_step')]),
+            name="confirmationformsubmission",
+            unique_together=set([("moderation_request", "for_step")]),
         ),
-
-        migrations.RemoveField(
-            model_name='confirmationformsubmission',
-            name='request',
-        ),
-        migrations.RemoveField(
-            model_name='moderationrequestaction',
-            name='request',
-        ),
-
+        migrations.RemoveField(model_name="confirmationformsubmission", name="request"),
+        migrations.RemoveField(model_name="moderationrequestaction", name="request"),
         # Removing null=True added in 0009_auto_20181005_1534
         migrations.AlterField(
-            model_name='confirmationformsubmission',
-            name='moderation_request',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
-                                    related_name='form_submissions', to='djangocms_moderation.ModerationRequest',
-                                    verbose_name='moderation request'),
+            model_name="confirmationformsubmission",
+            name="moderation_request",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="form_submissions",
+                to="djangocms_moderation.ModerationRequest",
+                verbose_name="moderation request",
+            ),
         ),
         migrations.AlterField(
-            model_name='moderationrequestaction',
-            name='moderation_request',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='actions',
-                                    to='djangocms_moderation.ModerationRequest', verbose_name='moderation_request'),
+            model_name="moderationrequestaction",
+            name="moderation_request",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="actions",
+                to="djangocms_moderation.ModerationRequest",
+                verbose_name="moderation_request",
+            ),
         ),
     ]
