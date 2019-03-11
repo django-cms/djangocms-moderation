@@ -6,10 +6,18 @@ from cms.models import Placeholder
 
 import factory
 from djangocms_versioning.models import Version
-from djangocms_versioning.test_utils.factories import AbstractVersionFactory, PageVersionFactory
+from djangocms_versioning.test_utils.factories import (
+    AbstractVersionFactory,
+    PageVersionFactory,
+)
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
-from djangocms_moderation.models import ModerationCollection, ModerationRequest, ModerationRequestTreeNode, Workflow
+from djangocms_moderation.models import (
+    ModerationCollection,
+    ModerationRequest,
+    ModerationRequestTreeNode,
+    Workflow,
+)
 
 from .moderated_polls.models import Poll, PollContent, PollPlugin
 from .versioned_none_moderated_app.models import (
