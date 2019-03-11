@@ -1,5 +1,6 @@
 import mock
 
+from django.contrib.admin import ACTION_CHECKBOX_NAME
 from django.contrib.messages import get_messages
 from django.urls import reverse
 
@@ -16,6 +17,7 @@ from djangocms_moderation.utils import get_admin_url
 
 from .utils.base import BaseViewTestCase
 from .utils.factories import PlaceholderFactory, PollPluginFactory, PollVersionFactory
+
 
 
 class CollectionItemsViewTest(BaseViewTestCase):
@@ -507,3 +509,92 @@ class CollectionItemsViewModerationNodesTest(BaseViewTestCase):
                 has_duplicate = True
             moderation_requests_seen.append(node.moderation_request.id)
         self.assertTrue(has_duplicate)
+
+
+class CollectionItemsViewModerationIntegrationTest(BaseViewTestCase):
+
+
+    def test_moderation_workflow_node_deletion(self):
+        """
+        When a page that contains part of a tree is deleted all views work as expected
+
+        Node structure created
+
+        page 1
+            Poll 1
+                Poll 2
+        Page 2
+            Poll 2
+
+        Delete page 1
+        """
+        self.client.force_login(self.user)
+
+        self.collection = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=self.wf1
+        )
+        self.page_1_version = PageVersionFactory(created_by=self.user)
+        language = self.page_1_version.content.language
+        # Populate page
+        page_1_placeholder = PlaceholderFactory(source=self.page_1_version.content)
+
+        # Populate page 1 poll 1 top level plugin (level 1)
+        poll_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_plugin = PollPluginFactory(placeholder=page_1_placeholder, poll=poll_version.content.poll)
+
+        # Populate page 1 poll 2 child of poll 1 (level 2)
+        poll_child_1_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_child_1_plugin = PollPluginFactory(
+            placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll)
+
+        # Populate page 1 poll 3 child of poll 2 (level 3)
+        poll_child_2_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(placeholder=poll_child_1_plugin.placeholder, poll=poll_child_2_version.content.poll)
+
+        # Page 2 setup
+        self.page_2_version = PageVersionFactory(created_by=self.user, content__language=language)
+        page_2_placeholder = PlaceholderFactory(source=self.page_2_version.content)
+        # Populate page 2 poll 3 top level plugin (level 1)
+        PollPluginFactory(placeholder=page_2_placeholder, poll=poll_child_2_version.content.poll)
+
+        # Add both pages to a collection
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url='http://example.com',
+            version_ids=[self.page_1_version.pk, self.page_2_version.pk],
+            collection_id=self.collection.pk
+        )
+        response = self.client.post(
+            path=url,
+            data={
+                'collection': self.collection.pk,
+                'versions': [self.page_1_version.pk, self.page_2_version.pk],
+            },
+        )
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+
+        # remove page 1 from the collection
+        changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+
+        # Choose the delete_selected action from the dropdown
+        data = {
+            'action': 'delete_selected',
+            ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
+        }
+        response = self.client.post(changelist_url, data)
+
+        self.assertEqual(response.status_code, 200)
+
+        # Load the page and check that the page loads and that the correct page exists
+        response = self.client.get(changelist_url)
+        self.assertEqual(response.status_code, 200)
+
+
