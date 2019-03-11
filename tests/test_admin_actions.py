@@ -28,7 +28,7 @@ from .utils.base import BaseTestCase
 class AdminActionTest(BaseTestCase):
 
     def setUp(self):
-        self.wf = Workflow.objects.create(name="Workflow Test",)
+        self.wf = Workflow.objects.create(name="Workflow Test")
         self.collection = ModerationCollection.objects.create(
             author=self.user,
             name="Collection Admin Actions",
@@ -41,21 +41,21 @@ class AdminActionTest(BaseTestCase):
 
         self.mr1 = ModerationRequest.objects.create(
             version=pg1_version, language="en",  collection=self.collection,
-            is_active=True, author=self.collection.author,)
+            is_active=True, author=self.collection.author)
 
-        self.wfst1 = self.wf.steps.create(role=self.role1, is_required=True, order=1,)
-        self.wfst2 = self.wf.steps.create(role=self.role2, is_required=True, order=1,)
+        self.wfst1 = self.wf.steps.create(role=self.role1, is_required=True, order=1)
+        self.wfst2 = self.wf.steps.create(role=self.role2, is_required=True, order=1)
 
         # this moderation request is approved
-        self.mr1.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
+        self.mr1.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
         self.mr1.update_status(constants.ACTION_APPROVED, self.user)
         self.mr1.update_status(constants.ACTION_APPROVED, self.user2)
 
         # this moderation request is not approved
         self.mr2 = ModerationRequest.objects.create(
             version=pg2_version, language="en",  collection=self.collection,
-            is_active=True, author=self.collection.author,)
-        self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
+            is_active=True, author=self.collection.author)
+        self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
 
         self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
         self.url_with_filter = "{}?moderation_request__collection__id={}".format(
@@ -213,18 +213,18 @@ class AdminActionTest(BaseTestCase):
     def test_approve_selected_sends_correct_emails(self, notify_moderators_mock):
         role4 = Role.objects.create(user=self.user)
         # Add two more steps
-        self.wf.steps.create(role=self.role3, is_required=True, order=1,)
-        self.wf.steps.create(role=role4, is_required=True, order=1,)
+        self.wf.steps.create(role=self.role3, is_required=True, order=1)
+        self.wf.steps.create(role=role4, is_required=True, order=1)
         self.user.groups.add(self.group)
 
         # Add one more, partially approved request
         pg3_version = PageVersionFactory()
         self.mr3 = ModerationRequest.objects.create(
             version=pg3_version, language="en",  collection=self.collection,
-            is_active=True, author=self.collection.author,)
-        self.mr3.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
-        self.mr3.update_status(by_user=self.user, action=constants.ACTION_APPROVED,)
-        self.mr3.update_status(by_user=self.user2, action=constants.ACTION_APPROVED,)
+            is_active=True, author=self.collection.author)
+        self.mr3.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
+        self.mr3.update_status(by_user=self.user, action=constants.ACTION_APPROVED)
+        self.mr3.update_status(by_user=self.user2, action=constants.ACTION_APPROVED)
 
         self.user.groups.add(self.group)
 
