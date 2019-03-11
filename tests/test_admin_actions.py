@@ -28,10 +28,10 @@ from .utils.base import BaseTestCase
 class AdminActionTest(BaseTestCase):
 
     def setUp(self):
-        self.wf = Workflow.objects.create(name='Workflow Test',)
+        self.wf = Workflow.objects.create(name="Workflow Test",)
         self.collection = ModerationCollection.objects.create(
             author=self.user,
-            name='Collection Admin Actions',
+            name="Collection Admin Actions",
             workflow=self.wf,
             status=constants.IN_REVIEW,
         )
@@ -40,7 +40,7 @@ class AdminActionTest(BaseTestCase):
         pg2_version = PageVersionFactory()
 
         self.mr1 = ModerationRequest.objects.create(
-            version=pg1_version, language='en',  collection=self.collection,
+            version=pg1_version, language="en",  collection=self.collection,
             is_active=True, author=self.collection.author,)
 
         self.wfst1 = self.wf.steps.create(role=self.role1, is_required=True, order=1,)
@@ -53,11 +53,11 @@ class AdminActionTest(BaseTestCase):
 
         # this moderation request is not approved
         self.mr2 = ModerationRequest.objects.create(
-            version=pg2_version, language='en',  collection=self.collection,
+            version=pg2_version, language="en",  collection=self.collection,
             is_active=True, author=self.collection.author,)
         self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
 
-        self.url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
         self.url_with_filter = "{}?moderation_request__collection__id={}".format(
             self.url, self.collection.pk
         )
@@ -76,7 +76,7 @@ class AdminActionTest(BaseTestCase):
         self.assertEqual(version2.state, DRAFT)
 
         data = {
-            'action': 'publish_selected',
+            "action": "publish_selected",
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
         }
         response = self.client.post(self.url_with_filter, data)
@@ -94,12 +94,12 @@ class AdminActionTest(BaseTestCase):
         self.assertFalse(self.mr1.is_active)
         self.assertTrue(self.mr2.is_active)
 
-    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
-    @mock.patch('djangocms_moderation.admin.notify_collection_author')
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("djangocms_moderation.admin.notify_collection_author")
     def test_approve_selected(self, notify_author_mock, notify_moderators_mock):
         fixtures = [self.mr1, self.mr2]
         data = {
-            'action': 'approve_selected',
+            "action": "approve_selected",
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
         }
         self.assertFalse(self.mr2.is_approved())
@@ -146,12 +146,12 @@ class AdminActionTest(BaseTestCase):
         )
         self.assertFalse(notify_moderators_mock.called)
 
-    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
-    @mock.patch('djangocms_moderation.admin.notify_collection_author')
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("djangocms_moderation.admin.notify_collection_author")
     def test_reject_selected(self, notify_author_mock, notify_moderators_mock):
         fixtures = [self.mr1, self.mr2]
         data = {
-            'action': 'reject_selected',
+            "action": "reject_selected",
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
         }
         self.assertFalse(self.mr2.is_approved())
@@ -177,8 +177,8 @@ class AdminActionTest(BaseTestCase):
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.IN_REVIEW)
 
-    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
-    @mock.patch('djangocms_moderation.admin.notify_collection_author')
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("djangocms_moderation.admin.notify_collection_author")
     def test_resubmit_selected(self, notify_author_mock, notify_moderators_mock):
         self.mr2.update_status(
             action=ACTION_REJECTED,
@@ -187,7 +187,7 @@ class AdminActionTest(BaseTestCase):
 
         fixtures = [self.mr1, self.mr2]
         data = {
-            'action': 'resubmit_selected',
+            "action": "resubmit_selected",
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
         }
         self.assertTrue(self.mr2.is_rejected())
@@ -209,7 +209,7 @@ class AdminActionTest(BaseTestCase):
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.IN_REVIEW)
 
-    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
     def test_approve_selected_sends_correct_emails(self, notify_moderators_mock):
         role4 = Role.objects.create(user=self.user)
         # Add two more steps
@@ -220,7 +220,7 @@ class AdminActionTest(BaseTestCase):
         # Add one more, partially approved request
         pg3_version = PageVersionFactory()
         self.mr3 = ModerationRequest.objects.create(
-            version=pg3_version, language='en',  collection=self.collection,
+            version=pg3_version, language="en",  collection=self.collection,
             is_active=True, author=self.collection.author,)
         self.mr3.actions.create(by_user=self.user, action=constants.ACTION_STARTED,)
         self.mr3.update_status(by_user=self.user, action=constants.ACTION_APPROVED,)
@@ -230,7 +230,7 @@ class AdminActionTest(BaseTestCase):
 
         fixtures = [self.mr1, self.mr2, self.mr3]
         data = {
-            'action': 'approve_selected',
+            "action": "approve_selected",
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
         }
 
@@ -302,17 +302,17 @@ class DeleteSelectedTest(CMSTestCase):
         factories.ChildModerationRequestTreeNodeFactory(
             moderation_request=self.moderation_request1, parent=self.root1)
 
-    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=True))
+    @mock.patch.object(ModerationRequestTreeAdmin, "has_delete_permission", mock.Mock(return_value=True))
     def test_delete_selected_action_cannot_be_accessed_if_not_collection_author(self):
         # Login as a user who is not the collection author
         self.client.force_login(self.get_superuser())
         # Set up action url
-        url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
         url += "?moderation_request__collection__id={}".format(self.collection.pk)
 
         # Choose the delete_selected action from the dropdown
         data = {
-            'action': 'delete_selected',
+            "action": "delete_selected",
             ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
         }
         response = self.client.post(url, data)
@@ -323,15 +323,15 @@ class DeleteSelectedTest(CMSTestCase):
         # (if anything had been deleted it would have been a 302)
         self.assertEqual(response.status_code, 200)
 
-    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=True))
-    @mock.patch('djangocms_moderation.admin.notify_collection_author')
+    @mock.patch.object(ModerationRequestTreeAdmin, "has_delete_permission", mock.Mock(return_value=True))
+    @mock.patch("djangocms_moderation.admin.notify_collection_author")
     def test_delete_selected_view_cannot_be_accessed_if_not_collection_author(self, notify_author_mock):
         # Login as a user who is not the collection author
         self.client.force_login(self.get_superuser())
         # Set up the url
-        url = reverse('admin:djangocms_moderation_moderationrequesttreenode_delete')
-        url += '?ids={tree_ids}&collection_id={collection_id}'.format(
-            tree_ids=','.join([str(self.root1.pk), str(self.root2.pk)]),
+        url = reverse("admin:djangocms_moderation_moderationrequesttreenode_delete")
+        url += "?ids={tree_ids}&collection_id={collection_id}".format(
+            tree_ids=",".join([str(self.root1.pk), str(self.root2.pk)]),
             collection_id=str(self.collection.pk)
         )
 
@@ -347,15 +347,15 @@ class DeleteSelectedTest(CMSTestCase):
         # Notifications not sent
         self.assertFalse(notify_author_mock.called)
 
-    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=False))
+    @mock.patch.object(ModerationRequestTreeAdmin, "has_delete_permission", mock.Mock(return_value=False))
     def test_delete_selected_action_cannot_be_accessed_without_delete_permission(self):
         # Login as the collection author
         self.client.force_login(self.user)
         # Choose the delete_selected action from the dropdown
-        url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
         url += "?moderation_request__collection__id={}".format(self.collection.pk)
         data = {
-            'action': 'delete_selected',
+            "action": "delete_selected",
             ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
         }
 
@@ -363,15 +363,15 @@ class DeleteSelectedTest(CMSTestCase):
 
         self.assertEqual(response.status_code, 403)
 
-    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=False))
-    @mock.patch('djangocms_moderation.admin.notify_collection_author')
+    @mock.patch.object(ModerationRequestTreeAdmin, "has_delete_permission", mock.Mock(return_value=False))
+    @mock.patch("djangocms_moderation.admin.notify_collection_author")
     def test_delete_selected_view_cannot_be_accessed_without_delete_permission(self, notify_author_mock):
         # Login as the collection author
         self.client.force_login(self.user)
         # Set up url
-        url = reverse('admin:djangocms_moderation_moderationrequesttreenode_delete')
-        url += '?ids={tree_ids}&collection_id={collection_id}'.format(
-            tree_ids=','.join([str(self.root1.pk), str(self.root2.pk)]),
+        url = reverse("admin:djangocms_moderation_moderationrequesttreenode_delete")
+        url += "?ids={tree_ids}&collection_id={collection_id}".format(
+            tree_ids=",".join([str(self.root1.pk), str(self.root2.pk)]),
             collection_id=str(self.collection.pk)
         )
 
@@ -387,18 +387,18 @@ class DeleteSelectedTest(CMSTestCase):
         # Notifications not sent
         self.assertFalse(notify_author_mock.called)
 
-    @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=True))
-    @mock.patch('djangocms_moderation.admin.notify_collection_moderators')
-    @mock.patch('djangocms_moderation.admin.notify_collection_author')
+    @mock.patch.object(ModerationRequestTreeAdmin, "has_delete_permission", mock.Mock(return_value=True))
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("djangocms_moderation.admin.notify_collection_author")
     def test_delete_selected_deletes_all_relevant_objects(self, notify_author_mock, notify_moderators_mock):
         """The selected ModerationRequest and ModerationRequestTreeNode objects should be deleted."""
         # Login as the collection author
         self.client.force_login(self.user)
         # Choose the delete_selected action from the dropdown
-        url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
         url += "?moderation_request__collection__id={}".format(self.collection.pk)
         data = {
-            'action': 'delete_selected',
+            "action": "delete_selected",
             ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
         }
         response = self.client.post(url, data)
@@ -444,14 +444,14 @@ class DeletedSelectedTransactionTest(TransactionTestCase):
         self.client.force_login(self.user)
 
         # Generate url and POST data
-        self.url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
         self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
         self.data = {
-            'action': 'delete_selected',
+            "action": "delete_selected",
             ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
         }
 
-    @mock.patch('djangocms_moderation.admin.messages.success')
+    @mock.patch("djangocms_moderation.admin.messages.success")
     def test_deleting_is_wrapped_in_db_transaction(self, messages_mock):
         class FakeError(Exception):
             pass
