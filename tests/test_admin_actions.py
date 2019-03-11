@@ -1,6 +1,7 @@
 import mock
 
 from django.contrib.admin import ACTION_CHECKBOX_NAME
+from django.test import TransactionTestCase
 from django.urls import reverse
 
 from cms.test_utils.testcases import CMSTestCase
@@ -15,6 +16,7 @@ from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
+    ModerationRequestTreeNode,
     Role,
     Workflow,
 )
@@ -316,7 +318,9 @@ class DeleteSelectedTest(CMSTestCase):
         response = self.client.post(url, data)
 
         # The action is not on the page as available to somebody who is not
-        # the author, therefore django will just return 200
+        # the author, therefore django will just return 200 as you're
+        # trying to choose an action that isn't in the dropdown
+        # (if anything had been deleted it would have been a 302)
         self.assertEqual(response.status_code, 200)
 
     @mock.patch.object(ModerationRequestTreeAdmin, 'has_delete_permission', mock.Mock(return_value=True))
@@ -416,3 +420,60 @@ class DeleteSelectedTest(CMSTestCase):
         # All moderation requests were deleted, so collection should be archived
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.ARCHIVED)
+
+
+class DeletedSelectedTransactionTest(TransactionTestCase):
+
+    def setUp(self):
+        # Create db data
+        self.user = factories.UserFactory(is_staff=True, is_superuser=True)
+        self.collection = factories.ModerationCollectionFactory(
+            author=self.user, status=constants.IN_REVIEW)
+        self.moderation_request1 = factories.ModerationRequestFactory(
+            collection=self.collection)
+        self.moderation_request2 = factories.ModerationRequestFactory(
+            collection=self.collection)
+        self.root1 = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=self.moderation_request1)
+        self.root2 = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=self.moderation_request2)
+        factories.ChildModerationRequestTreeNodeFactory(
+            moderation_request=self.moderation_request1, parent=self.root1)
+
+        # Login
+        self.client.force_login(self.user)
+
+        # Generate url and POST data
+        self.url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        self.data = {
+            'action': 'delete_selected',
+            ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
+        }
+
+    @mock.patch('djangocms_moderation.admin.messages.success')
+    def test_deleting_is_wrapped_in_db_transaction(self, messages_mock):
+        class FakeError(Exception):
+            pass
+        # Throw an exception to cause a db rollback.
+        # Throwing FakeError as no actual code will ever throw it and
+        # therefore catching this later in the test will not cover up a
+        # genuine issue
+        messages_mock.side_effect = FakeError
+
+        # Choose the delete_selected action from the dropdown
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, 302)
+
+        # Now do the request the delete_selected action has led us to
+        try:
+            self.client.post(response.url, self.data)
+        except FakeError:
+            # This is what messages_mock should have thrown,
+            # but we don't want the test to throw it.
+            pass
+
+        # Check neither the tree nodes nor the requests have been deleted.
+        # The db transaction should have rolled back.
+        self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 3)
+        self.assertEqual(ModerationRequest.objects.all().count(), 2)

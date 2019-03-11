@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
@@ -329,6 +330,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         return super().changelist_view(request, extra_context)
 
+    @transaction.atomic
     def delete_selected_view(self, request):
         if not self.has_delete_permission(request):
             raise PermissionDenied
@@ -339,10 +341,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         collection = ModerationCollection.objects.get(pk=collection_id)
         if collection.author != request.user:
             raise PermissionDenied
-
-        # TODO: Use a transaction here to rollback if the nodes are deleted
-        # but a Moderation request isn't!! What will happen on when POST and not,
-        # needs investigating
 
         moderation_requests_affected = []
 
