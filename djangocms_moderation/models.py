@@ -338,15 +338,6 @@ class ModerationCollection(models.Model):
 
 
 class ModerationRequestTreeNode(MP_Node):
-    parent = models.ForeignKey(
-        'self',
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        related_name='moderation_request_children',
-        db_index=True,
-    )
-
     moderation_request = models.ForeignKey(
         to='ModerationRequest',
         verbose_name=_('moderation_request'),
@@ -357,7 +348,7 @@ class ModerationRequestTreeNode(MP_Node):
         ordering = ('id',)
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
     @cached_property
     def item(self):

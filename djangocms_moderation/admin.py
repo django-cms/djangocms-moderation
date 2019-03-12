@@ -5,7 +5,9 @@ from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
@@ -343,10 +345,17 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         return super().changelist_view(request, extra_context)
 
+    @transaction.atomic
     def delete_selected_view(self, request):
-        collection_id = request.GET.get('collection_id')
+        if not self.has_delete_permission(request):
+            raise PermissionDenied
 
-        # TODO: Use a transaction here to rollback if the nodes are deleted but the request isn't
+        # TODO: What if this is None
+        collection_id = request.GET.get('collection_id')
+        # TODO: 404?
+        collection = ModerationCollection.objects.get(pk=collection_id)
+        if collection.author != request.user:
+            raise PermissionDenied
 
         moderation_requests_affected = []
 
@@ -366,7 +375,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             _traverse_moderation_nodes(node)
 
         queryset = ModerationRequest.objects.filter(pk__in=moderation_requests_affected)
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
         redirect_url = "{}?moderation_request__collection__id={}".format(
             redirect_url,
             collection_id
@@ -386,7 +395,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                 raise Http404
 
             num_deleted_requests = queryset.count()
-            if num_deleted_requests:  # TODO task queue?
+            if num_deleted_requests:
                 notify_collection_author(
                     collection=collection,
                     moderation_requests=[mr for mr in queryset],
