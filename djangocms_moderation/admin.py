@@ -361,7 +361,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         # For each moderation request id, if one has a tree structure attached go through each one and remove that!
         # Get all of the nodes selected to delete
-        # TODO: What if request.GET.get('ids', '') returns None
         queryset = ModerationRequestTreeNode.objects.filter(pk__in=request.GET.get('ids', '').split(','))
 
         def _traverse_moderation_nodes(node_item):

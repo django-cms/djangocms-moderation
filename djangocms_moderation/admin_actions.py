@@ -66,13 +66,6 @@ def delete_selected(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
         raise PermissionDenied
 
-    # TODO: AFAIK, this case never actually runs as not
-    # displaying the action on the frontend makes django disallow
-    # anybody getting this far. Probably should be deleted so we don't
-    # make an unnecessary query
-    if queryset.exclude(moderation_request__collection__author=request.user).exists():
-        raise PermissionDenied
-
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
         reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
