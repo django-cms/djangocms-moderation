@@ -1,5 +1,6 @@
 import mock
 
+from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.messages import get_messages
 from django.urls import reverse
 
@@ -68,7 +69,7 @@ class CollectionItemsViewAddingRequestsTest(BaseViewTestCase):
             get_admin_url(
                 name="cms_moderation_items_to_collection", language="en", args=()
             ),
-            # not return url specified
+            # no return url specified
             version_ids=pg_version.pk,
             collection_id=self.collection1.pk,
         )
@@ -510,6 +511,15 @@ class CollectionItemsViewTest(CMSTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['form'].initial.keys()), 1)
         self.assertEqual(response.context['form'].initial['versions'].count(), 0)
+
+    def test_collection_widget_gets_set_on_form(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context['form'].fields['collection'].widget.__class__,
+            RelatedFieldWidgetWrapper
+        )
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
