@@ -3,6 +3,7 @@ import mock
 from django.contrib.messages import get_messages
 from django.urls import reverse
 
+from cms.test_utils.testcases import CMSTestCase
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
@@ -18,7 +19,7 @@ from .utils.base import BaseViewTestCase
 from .utils.factories import PlaceholderFactory, PollPluginFactory, PollVersionFactory
 
 
-class CollectionItemsViewTest(BaseViewTestCase):
+class CollectionItemsViewAddingRequestsTest(BaseViewTestCase):
     def setUp(self):
         super().setUp()
         self.client.force_login(self.user)
@@ -430,6 +431,33 @@ class CollectionItemsViewTest(BaseViewTestCase):
             moderation_request=stored_collection.get(version=poll_child_2_version)
         )
         self.assertEqual(nodes.count(), 1)
+
+
+class CollectionItemsViewTest(CMSTestCase):
+    def setUp(self):
+        self.client.force_login(self.get_superuser())
+        self.url = get_admin_url(
+            name="cms_moderation_items_to_collection", language="en", args=()
+        )
+
+    def test_404_if_no_collection_with_specified_id(self):
+        self.url += '?collection_id=15'
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_if_collection_id_not_an_int(self):
+        self.url += '?collection_id=aaa'
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_moderation_requests_empty_in_context_if_no_collection_id_specified(self):
+        response = self.client.get(self.url)
+
+        self.assertListEqual(response.context['moderation_requests'], [])
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):

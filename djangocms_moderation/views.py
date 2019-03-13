@@ -112,12 +112,10 @@ class CollectionItemsView(FormView):
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
             except (ValueError, ModerationCollection.DoesNotExist, TypeError):
-                # TODO: Tests for the 3 cases that cause this
                 raise Http404
             else:
                 moderation_requests = collection.moderation_requests.all()
         else:
-            # TODO: Tests for this case
             moderation_requests = []
 
         model_admin = admin.site._registry[ModerationCollection]
