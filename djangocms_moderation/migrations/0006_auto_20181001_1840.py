@@ -11,19 +11,27 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('djangocms_moderation', '0005_auto_20180919_1348'),
+        ("djangocms_moderation", "0005_auto_20180919_1348"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='moderationcollection',
-            options={'permissions': (('can_change_author', 'Can change collection author'),),
-                     'verbose_name': 'collection'},
+            name="moderationcollection",
+            options={
+                "permissions": (("can_change_author", "Can change collection author"),),
+                "verbose_name": "collection",
+            },
         ),
         migrations.AddField(
-            model_name='moderationrequest',
-            name='author',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='author'),
+            model_name="moderationrequest",
+            name="author",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="+",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="author",
+            ),
             preserve_default=False,
         ),
     ]

@@ -26,34 +26,34 @@ from . import conf, constants  # isort:skip
 @python_2_unicode_compatible
 class ConfirmationPage(models.Model):
     CONTENT_TYPES = (
-        (constants.CONTENT_TYPE_PLAIN, _('Plain')),
-        (constants.CONTENT_TYPE_FORM, _('Form')),
+        (constants.CONTENT_TYPE_PLAIN, _("Plain")),
+        (constants.CONTENT_TYPE_FORM, _("Form")),
     )
 
-    name = models.CharField(verbose_name=_('name'), max_length=50)
-    content = PlaceholderField('confirmation_content')
+    name = models.CharField(verbose_name=_("name"), max_length=50)
+    content = PlaceholderField("confirmation_content")
     content_type = models.CharField(
-        verbose_name=_('Content Type'),
+        verbose_name=_("Content Type"),
         choices=CONTENT_TYPES,
         default=constants.CONTENT_TYPE_FORM,
         max_length=50,
     )
     template = models.CharField(
-        verbose_name=_('Template'),
+        verbose_name=_("Template"),
         choices=conf.CONFIRMATION_PAGE_TEMPLATES,
         default=conf.DEFAULT_CONFIRMATION_PAGE_TEMPLATE,
         max_length=100,
     )
 
     class Meta:
-        verbose_name = _('Confirmation Page')
-        verbose_name_plural = _('Confirmation Pages')
+        verbose_name = _("Confirmation Page")
+        verbose_name_plural = _("Confirmation Pages")
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('admin:cms_moderation_confirmation_page', args=(self.pk,))
+        return reverse("admin:cms_moderation_confirmation_page", args=(self.pk,))
 
     def is_valid(self, active_request, for_step, is_reviewed=False):
         from .helpers import get_form_submission_for_step
@@ -77,36 +77,28 @@ class Role(models.Model):
         unique=True,
     )
     user = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        verbose_name=_('user'),
-        blank=True,
-        null=True,
+        to=settings.AUTH_USER_MODEL, verbose_name=_("user"), blank=True, null=True
     )
-    group = models.ForeignKey(
-        to=Group,
-        verbose_name=_('group'),
-        blank=True,
-        null=True,
-    )
+    group = models.ForeignKey(to=Group, verbose_name=_("group"), blank=True, null=True)
     confirmation_page = models.ForeignKey(
         to=ConfirmationPage,
-        verbose_name=_('confirmation page'),
-        related_name='+',
+        verbose_name=_("confirmation page"),
+        related_name="+",
         blank=True,
         null=True,
         on_delete=models.PROTECT,
     )
 
     class Meta:
-        verbose_name = _('Role')
-        verbose_name_plural = _('Roles')
+        verbose_name = _("Role")
+        verbose_name_plural = _("Roles")
 
     def __str__(self):
         return self.name
 
     def clean(self):
         if self.user_id and self.group_id:
-            message = ugettext('Can\'t pick both user and group. Only one.')
+            message = ugettext("Can't pick both user and group. Only one.")
             raise ValidationError(message)
 
     def user_is_assigned(self, user):
@@ -122,41 +114,38 @@ class Role(models.Model):
 
 @python_2_unicode_compatible
 class Workflow(models.Model):
-    name = models.CharField(
-        verbose_name=_('name'),
-        max_length=120,
-        unique=True,
-    )
-    is_default = models.BooleanField(
-        verbose_name=_('is default'),
-        default=False,
-    )
+    name = models.CharField(verbose_name=_("name"), max_length=120, unique=True)
+    is_default = models.BooleanField(verbose_name=_("is default"), default=False)
     identifier = models.CharField(
-        verbose_name=_('identifier'),
+        verbose_name=_("identifier"),
         max_length=128,
         blank=True,
-        default='',
-        help_text=_('Identifier is a \'free\' field you could use for internal '
-                    'purposes. For example, it could be used as a workflow '
-                    'specific prefix of a compliance number')
+        default="",
+        help_text=_(
+            "Identifier is a 'free' field you could use for internal "
+            "purposes. For example, it could be used as a workflow "
+            "specific prefix of a compliance number"
+        ),
     )
     requires_compliance_number = models.BooleanField(
-        verbose_name=_('requires compliance number?'),
+        verbose_name=_("requires compliance number?"),
         default=False,
-        help_text=_('Does the Compliance number need to be generated before '
-                    'the moderation request is approved? Please select the '
-                    'compliance number backend below')
+        help_text=_(
+            "Does the Compliance number need to be generated before "
+            "the moderation request is approved? Please select the "
+            "compliance number backend below"
+        ),
     )
     compliance_number_backend = models.CharField(
-        verbose_name=_('compliance number backend'),
+        verbose_name=_("compliance number backend"),
         choices=conf.COMPLIANCE_NUMBER_BACKENDS,
         max_length=255,
         default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND,
     )
 
     class Meta:
-        verbose_name = _('Workflow')
-        verbose_name_plural = _('Workflows')
+        verbose_name = _("Workflow")
+        verbose_name_plural = _("Workflows")
 
     def __str__(self):
         return self.name
@@ -171,7 +160,7 @@ class Workflow(models.Model):
             workflows = workflows.exclude(pk=self.pk)
 
         if workflows.exists():
-            message = ugettext('Can\'t have two default workflows, only one is allowed.')
+            message = ugettext("Can't have two default workflows, only one is allowed.")
             raise ValidationError(message)
 
     @cached_property
@@ -181,42 +170,31 @@ class Workflow(models.Model):
 
 @python_2_unicode_compatible
 class WorkflowStep(models.Model):
-    role = models.ForeignKey(
-        to=Role,
-        verbose_name=_('role'),
-    )
-    is_required = models.BooleanField(
-        verbose_name=_('is mandatory'),
-        default=True,
-    )
+    role = models.ForeignKey(to=Role, verbose_name=_("role"))
+    is_required = models.BooleanField(verbose_name=_("is mandatory"), default=True)
     workflow = models.ForeignKey(
-        to=Workflow,
-        verbose_name=_('workflow'),
-        related_name='steps',
+        to=Workflow, verbose_name=_("workflow"), related_name="steps"
     )
     order = models.PositiveIntegerField()
 
     class Meta:
-        ordering = ('order',)
-        unique_together = ('role', 'workflow')
-        verbose_name = _('Step')
-        verbose_name_plural = _('Steps')
+        ordering = ("order",)
+        unique_together = ("role", "workflow")
+        verbose_name = _("Step")
+        verbose_name_plural = _("Steps")
 
     def __str__(self):
         return self.role.name
 
     def get_next(self, cache=True, **kwargs):
-        if cache and hasattr(self, '_next_step'):
+        if cache and hasattr(self, "_next_step"):
             return self._next_step
 
-        field = self._meta.get_field('order')
+        field = self._meta.get_field("order")
 
         try:
             self._next_step = self._get_next_or_previous_by_FIELD(
-                field=field,
-                is_next=True,
-                workflow=self.workflow,
-                **kwargs
+                field=field, is_next=True, workflow=self.workflow, **kwargs
             )
         except WorkflowStep.DoesNotExist:
             self._next_step = None
@@ -227,16 +205,14 @@ class WorkflowStep(models.Model):
 
 
 class ModerationCollection(models.Model):
-    name = models.CharField(verbose_name=_('collection name'), max_length=128)
+    name = models.CharField(verbose_name=_("collection name"), max_length=128)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        verbose_name=_('moderator'),
+        verbose_name=_("moderator"),
         on_delete=models.CASCADE,
     )
     workflow = models.ForeignKey(
-        to=Workflow,
-        verbose_name=_('workflow'),
-        related_name='moderation_collections',
+        to=Workflow, verbose_name=_("workflow"), related_name="moderation_collections"
     )
     status = models.CharField(
         max_length=10,
@@ -249,9 +225,7 @@ class ModerationCollection(models.Model):
 
     class Meta:
         verbose_name = _("collection")
-        permissions = (
-            ("can_change_author", _("Can change collection author")),
-        )
+        permissions = (("can_change_author", _("Can change collection author")),)
 
     def __str__(self):
         return self.name
@@ -293,11 +267,13 @@ class ModerationCollection(models.Model):
         Can this collection be submitted for review?
         :return: <bool>
         """
-        return all([
-            self.author == user,
-            self.status == constants.COLLECTING,
-            self.moderation_requests.exists(),
-        ])
+        return all(
+            [
+                self.author == user,
+                self.status == constants.COLLECTING,
+                self.moderation_requests.exists(),
+            ]
+        )
 
     def submit_for_review(self, by_user, to_user=None):
         """
@@ -306,13 +282,11 @@ class ModerationCollection(models.Model):
         """
         for moderation_request in self.moderation_requests.all():
             action = moderation_request.actions.create(
-                by_user=by_user,
-                to_user=to_user,
-                action=constants.ACTION_STARTED,
+                by_user=by_user, to_user=to_user, action=constants.ACTION_STARTED
             )
         # Lock the collection as it has been now submitted for moderation
         self.status = constants.IN_REVIEW
-        self.save(update_fields=['status'])
+        self.save(update_fields=["status"])
         # It is fine to pass any `action` from any moderation_request.actions
         # above as it will have the same moderators
         notify_collection_moderators(
@@ -322,10 +296,12 @@ class ModerationCollection(models.Model):
         )
 
     def is_cancellable(self, user):
-        return all([
-            self.author == user,
-            self.status not in (constants.ARCHIVED, constants.CANCELLED),
-        ])
+        return all(
+            [
+                self.author == user,
+                self.status not in (constants.ARCHIVED, constants.CANCELLED),
+            ]
+        )
 
     def cancel(self, user):
         """
@@ -335,10 +311,10 @@ class ModerationCollection(models.Model):
             moderation_request.update_status(
                 action=constants.ACTION_CANCELLED,
                 by_user=user,
-                message=_('Cancelled collection'),
+                message=_("Cancelled collection"),
             )
         self.status = constants.CANCELLED
-        self.save(update_fields=['status'])
+        self.save(update_fields=["status"])
 
     def should_be_archived(self):
         """
@@ -360,9 +336,7 @@ class ModerationCollection(models.Model):
         :return: <ModerationRequest>
         """
         return self.moderation_requests.create(
-            version=version,
-            collection=self,
-            author=self.author,
+            version=version, collection=self, author=self.author
         )
 
 
@@ -370,30 +344,21 @@ class ModerationCollection(models.Model):
 class ModerationRequest(models.Model):
     collection = models.ForeignKey(
         to=ModerationCollection,
-        related_name='moderation_requests',
-        on_delete=models.CASCADE
-    )
-    version = models.ForeignKey(
-        to=Version,
-        verbose_name=_('version'),
+        related_name="moderation_requests",
         on_delete=models.CASCADE,
     )
+    version = models.ForeignKey(
+        to=Version, verbose_name=_("version"), on_delete=models.CASCADE
+    )
     language = models.CharField(
-        verbose_name=_('language'),
-        max_length=5,
-        choices=settings.LANGUAGES,
+        verbose_name=_("language"), max_length=5, choices=settings.LANGUAGES
     )
     is_active = models.BooleanField(
-        verbose_name=_('is active'),
-        default=True,
-        db_index=True,
+        verbose_name=_("is active"), default=True, db_index=True
     )
-    date_sent = models.DateTimeField(
-        verbose_name=_('date sent'),
-        auto_now_add=True,
-    )
+    date_sent = models.DateTimeField(verbose_name=_("date sent"), auto_now_add=True)
     compliance_number = models.CharField(
-        verbose_name=_('compliance number'),
+        verbose_name=_("compliance number"),
         max_length=32,
         blank=True,
         null=True,
@@ -402,22 +367,19 @@ class ModerationRequest(models.Model):
     )
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        verbose_name=_('author'),
-        related_name='+',
+        verbose_name=_("author"),
+        related_name="+",
         on_delete=models.CASCADE,
     )
 
     class Meta:
-        verbose_name = _('Request')
-        verbose_name_plural = _('Requests')
-        unique_together = ('collection', 'version',)
-        ordering = ['id']
+        verbose_name = _("Request")
+        verbose_name_plural = _("Requests")
+        unique_together = ("collection", "version")
+        ordering = ["id"]
 
     def __str__(self):
-        return "{} {}".format(
-            self.pk,
-            self.version.pk
-        )
+        return "{} {}".format(self.pk, self.version.pk)
 
     @cached_property
     def workflow(self):
@@ -440,7 +402,7 @@ class ModerationRequest(models.Model):
         return last_action and last_action.action == constants.ACTION_REJECTED
 
     @transaction.atomic
-    def update_status(self, action, by_user, message='', to_user=None):
+    def update_status(self, action, by_user, message="", to_user=None):
         is_approved = action == constants.ACTION_APPROVED
         is_rejected = action == constants.ACTION_REJECTED
 
@@ -463,7 +425,7 @@ class ModerationRequest(models.Model):
             constants.ACTION_REJECTED,
             constants.ACTION_RESUBMITTED,
         )
-        self.save(update_fields=['is_active'])
+        self.save(update_fields=["is_active"])
 
         self.actions.create(
             by_user=by_user,
@@ -482,11 +444,13 @@ class ModerationRequest(models.Model):
         circumstances.
         Lets check for that here
         """
-        return all([
-            self.workflow.requires_compliance_number,
-            not self.compliance_number,
-            self.is_approved(),
-        ])
+        return all(
+            [
+                self.workflow.requires_compliance_number,
+                not self.compliance_number,
+                self.is_approved(),
+            ]
+        )
 
     def get_first_action(self):
         return self.actions.first()
@@ -495,12 +459,9 @@ class ModerationRequest(models.Model):
         return self.actions.last()
 
     def get_pending_steps(self):
-        steps_approved = (
-            self
-            .actions
-            .filter(step_approved__isnull=False, is_archived=False)
-            .values_list('step_approved__pk', flat=True)
-        )
+        steps_approved = self.actions.filter(
+            step_approved__isnull=False, is_archived=False
+        ).values_list("step_approved__pk", flat=True)
         return self.workflow.steps.exclude(pk__in=steps_approved)
 
     def get_pending_required_steps(self):
@@ -510,7 +471,7 @@ class ModerationRequest(models.Model):
         return self.get_pending_required_steps().first()
 
     def user_get_step(self, user):
-        for step in self.get_pending_steps().select_related('role'):
+        for step in self.get_pending_steps().select_related("role"):
             if step.role.user_is_assigned(user):
                 return step
         return None
@@ -535,7 +496,7 @@ class ModerationRequest(models.Model):
             # feedback and resubmit the edits for moderation)
             return False
 
-        pending_steps = self.get_pending_steps().select_related('role')
+        pending_steps = self.get_pending_steps().select_related("role")
         for step in pending_steps.iterator():
             is_assigned = step.role.user_is_assigned(user)
 
@@ -549,7 +510,7 @@ class ModerationRequest(models.Model):
         """
         Is `user` involved in the moderation process at some point?
         """
-        for step in self.workflow.steps.select_related('role__group'):
+        for step in self.workflow.steps.select_related("role__group"):
             if step.role.user_is_assigned(user):
                 return True
         return False
@@ -562,29 +523,26 @@ class ModerationRequest(models.Model):
 
     def set_compliance_number(self):
         self.compliance_number = generate_compliance_number(
-            self.workflow.compliance_number_backend,
-            moderation_request=self,
+            self.workflow.compliance_number_backend, moderation_request=self
         )
-        self.save(update_fields=['compliance_number'])
+        self.save(update_fields=["compliance_number"])
 
 
 @python_2_unicode_compatible
 class ModerationRequestAction(models.Model):
     action = models.CharField(
-        verbose_name=_('status'),
-        max_length=30,
-        choices=constants.ACTION_CHOICES,
+        verbose_name=_("status"), max_length=30, choices=constants.ACTION_CHOICES
     )
     # User who created this action
     by_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        verbose_name=_('by user'),
-        related_name='+',
+        verbose_name=_("by user"),
+        related_name="+",
         on_delete=models.CASCADE,
     )
     to_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        verbose_name=_('to user'),
+        verbose_name=_("to user"),
         blank=True,
         null=True,
         on_delete=models.CASCADE,
@@ -592,35 +550,29 @@ class ModerationRequestAction(models.Model):
     # Role which is next in the moderation flow
     to_role = models.ForeignKey(
         to=Role,
-        verbose_name=_('to role'),
+        verbose_name=_("to role"),
         blank=True,
         null=True,
-        related_name='+',
+        related_name="+",
         on_delete=models.CASCADE,
     )
 
     # This is the step which approved the moderation request
     step_approved = models.ForeignKey(
         to=WorkflowStep,
-        verbose_name=_('step approved'),
+        verbose_name=_("step approved"),
         blank=True,
         null=True,
         on_delete=models.CASCADE,
     )
-    message = models.TextField(
-        verbose_name=_('message'),
-        blank=True,
-    )
+    message = models.TextField(verbose_name=_("message"), blank=True)
     moderation_request = models.ForeignKey(
         to=ModerationRequest,
-        verbose_name=_('moderation_request'),
-        related_name='actions',
+        verbose_name=_("moderation_request"),
+        related_name="actions",
     )
 
-    date_taken = models.DateTimeField(
-        verbose_name=_('date taken'),
-        auto_now_add=True,
-    )
+    date_taken = models.DateTimeField(verbose_name=_("date taken"), auto_now_add=True)
 
     # Action can become "archived" if the moderation request has been rejected
     # and re-assigned to the content author for their resubmission.
@@ -629,23 +581,21 @@ class ModerationRequestAction(models.Model):
     is_archived = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('date_taken',)
-        verbose_name = _('Action')
-        verbose_name_plural = _('Actions')
+        ordering = ("date_taken",)
+        verbose_name = _("Action")
+        verbose_name_plural = _("Actions")
 
     def __str__(self):
-        return "{} - {}".format(
-            self.moderation_request_id, self.get_action_display()
-        )
+        return "{} - {}".format(self.moderation_request_id, self.get_action_display())
 
     def get_by_user_name(self):
         if not self.to_user:
-            return ''
+            return ""
         return self._get_user_name(self.by_user)
 
     def get_to_user_name(self):
         if not self.to_user:
-            return ''
+            return ""
         return self._get_user_name(self.to_user)
 
     def _get_user_name(self, user):
@@ -675,14 +625,9 @@ class ModerationRequestAction(models.Model):
 
 
 class AbstractComment(models.Model):
-    message = models.TextField(
-        blank=True,
-        verbose_name=_('message'),
-    )
+    message = models.TextField(blank=True, verbose_name=_("message"))
     author = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        verbose_name=_('author'),
-        on_delete=models.CASCADE,
+        to=settings.AUTH_USER_MODEL, verbose_name=_("author"), on_delete=models.CASCADE
     )
     date_created = models.DateTimeField(auto_now_add=True)
 
@@ -695,57 +640,50 @@ class AbstractComment(models.Model):
 
 
 class CollectionComment(AbstractComment):
-    collection = models.ForeignKey(
-        to=ModerationCollection,
-        on_delete=models.CASCADE,
-    )
+    collection = models.ForeignKey(to=ModerationCollection, on_delete=models.CASCADE)
 
 
 class RequestComment(AbstractComment):
     moderation_request = models.ForeignKey(
-        to=ModerationRequest,
-        on_delete=models.CASCADE,
+        to=ModerationRequest, on_delete=models.CASCADE
     )
 
 
 class ConfirmationFormSubmission(models.Model):
     moderation_request = models.ForeignKey(
         to=ModerationRequest,
-        verbose_name=_('moderation request'),
-        related_name='form_submissions',
+        verbose_name=_("moderation request"),
+        related_name="form_submissions",
         on_delete=models.CASCADE,
     )
     for_step = models.ForeignKey(
         to=WorkflowStep,
-        verbose_name=_('for step'),
-        related_name='+',
+        verbose_name=_("for step"),
+        related_name="+",
         on_delete=models.CASCADE,
     )
     by_user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        verbose_name=_('by user'),
-        related_name='+',
+        verbose_name=_("by user"),
+        related_name="+",
         on_delete=models.CASCADE,
     )
-    data = models.TextField(
-        blank=True,
-        editable=False,
-    )
+    data = models.TextField(blank=True, editable=False)
     submitted_at = models.DateTimeField(auto_now_add=True)
     confirmation_page = models.ForeignKey(
         to=ConfirmationPage,
-        verbose_name=_('confirmation page'),
-        related_name='+',
+        verbose_name=_("confirmation page"),
+        related_name="+",
         on_delete=models.PROTECT,
     )
 
     def __str__(self):
-        return '{} - {}'.format(self.request_id, self.for_step)
+        return "{} - {}".format(self.request_id, self.for_step)
 
     class Meta:
-        verbose_name = _('Confirmation Form Submission')
-        verbose_name_plural = _('Confirmation Form Submissions')
-        unique_together = ('moderation_request', 'for_step')
+        verbose_name = _("Confirmation Form Submission")
+        verbose_name_plural = _("Confirmation Form Submissions")
+        unique_together = ("moderation_request", "for_step")
 
     def get_by_user_name(self):
         user = self.by_user

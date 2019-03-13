@@ -9,27 +9,24 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('djangocms_versioning', '0010_version_proxies'),
-        ('djangocms_moderation', '0002_auto_20180905_1152'),
+        ("djangocms_versioning", "0010_version_proxies"),
+        ("djangocms_moderation", "0002_auto_20180905_1152"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='moderationrequest',
-            name='version',
-            field=models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, to='djangocms_versioning.Version'),
+            model_name="moderationrequest",
+            name="version",
+            field=models.ForeignKey(
+                default=0,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="djangocms_versioning.Version",
+            ),
             preserve_default=False,
         ),
         migrations.AlterUniqueTogether(
-            name='moderationrequest',
-            unique_together=set([('collection', 'version')]),
+            name="moderationrequest", unique_together=set([("collection", "version")])
         ),
-        migrations.RemoveField(
-            model_name='moderationrequest',
-            name='content_type',
-        ),
-        migrations.RemoveField(
-            model_name='moderationrequest',
-            name='object_id',
-        ),
+        migrations.RemoveField(model_name="moderationrequest", name="content_type"),
+        migrations.RemoveField(model_name="moderationrequest", name="object_id"),
     ]

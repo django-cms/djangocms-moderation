@@ -6,8 +6,12 @@ from django.db import migrations
 
 
 def get_model_classes(apps):
-    confirmation_form_submission = apps.get_model('djangocms_moderation', 'ConfirmationFormSubmission')
-    moderation_request_action = apps.get_model('djangocms_moderation', 'ModerationRequestAction')
+    confirmation_form_submission = apps.get_model(
+        "djangocms_moderation", "ConfirmationFormSubmission"
+    )
+    moderation_request_action = apps.get_model(
+        "djangocms_moderation", "ModerationRequestAction"
+    )
 
     return confirmation_form_submission, moderation_request_action
 
@@ -28,10 +32,10 @@ def reverse_copy_moderation_requests(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('djangocms_moderation', '0009_auto_20181005_1534'),
-    ]
+    dependencies = [("djangocms_moderation", "0009_auto_20181005_1534")]
 
     operations = [
-        migrations.RunPython(forward_copy_moderation_requests, reverse_copy_moderation_requests),
+        migrations.RunPython(
+            forward_copy_moderation_requests, reverse_copy_moderation_requests
+        )
     ]
