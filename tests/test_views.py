@@ -43,8 +43,18 @@ class CollectionItemsViewTest(BaseViewTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn("versions", response.context["form"].errors)
+        # No nodes were created on validation error
+        self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 0)
+        # TODO: Should check ModerationRequest objects also, but difficult
+        # to do in a sensible way without refactoring this test case
+        # considerably (BaseViewTestCase adds a lot of db objects which
+        # this test does not use at all, including ModerationRequest objects)
 
     def test_add_items_to_collection_no_return_url_set(self):
+        # TODO: Honestly *rolls eyes* How silly is it to use a base
+        # test case that creates way too many objects and then deletes
+        # them when they get in the way? Why are people doing this
+        # across this repo so much? Why???
         ModerationRequest.objects.all().delete()
         pg_version = PageVersionFactory(created_by=self.user)
 
@@ -65,13 +75,16 @@ class CollectionItemsViewTest(BaseViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "reloadBrowser")
 
-        self.assertTrue(
-            ModerationRequest.objects.filter(
-                version=pg_version, collection=self.collection1
-            ).exists()
-        )
+        # Moderation requests and related nodes were created
+        moderation_requests = ModerationRequest.objects.filter(
+            version=pg_version, collection=self.collection1)
+        self.assertTrue(moderation_requests.exists())
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=moderation_requests.get())
+        self.assertEqual(nodes.count(), 1)
 
     def test_add_items_to_collection_return_url_set(self):
+        # TODO: Argh, why set up data and then delete it. Again.
         ModerationRequest.objects.all().delete()
         pg1_version = PageVersionFactory(created_by=self.user)
         pg2_version = PageVersionFactory(created_by=self.user)
@@ -101,9 +114,15 @@ class CollectionItemsViewTest(BaseViewTestCase):
 
         moderation_request = ModerationRequest.objects.get(version=pg1_version)
         self.assertEqual(moderation_request.collection, self.collection1)
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=moderation_request)
+        self.assertEqual(nodes.count(), 1)
 
-        moderation_request = ModerationRequest.objects.get(version=pg1_version)
+        moderation_request = ModerationRequest.objects.get(version=pg2_version)
         self.assertEqual(moderation_request.collection, self.collection1)
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=moderation_request)
+        self.assertEqual(nodes.count(), 1)
 
         messages = list(get_messages(response.wsgi_request))
         self.assertIn(
@@ -112,6 +131,9 @@ class CollectionItemsViewTest(BaseViewTestCase):
         )
 
     def test_list_versions_from_collection_id_param(self):
+        # TODO: Argh, why set up data and then delete it. Again. And again.
+        # Oh and this may cause test leaks since the base class uses
+        # setUpTestData to set these up
         ModerationRequest.objects.all().delete()
 
         collection1 = ModerationCollection.objects.create(
@@ -186,24 +208,24 @@ class CollectionItemsViewTest(BaseViewTestCase):
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
         self.assertEqual(stored_collection.count(), 3)
-        self.assertEqual(
-            pg_version,
-            ModerationRequest.objects.get(
-                collection=collection, version=pg_version
-            ).version,
+        mr = ModerationRequest.objects.filter(
+            collection=collection, version=pg_version
         )
-        self.assertEqual(
-            poll_1_version,
-            ModerationRequest.objects.get(
-                collection=collection, version=poll_1_version
-            ).version,
+        nodes = ModerationRequestTreeNode.objects.filter(moderation_request=mr)
+        self.assertEqual(mr.count(), 1)
+        self.assertEqual(nodes.count(), 1)
+        mr1 = ModerationRequest.objects.filter(
+            collection=collection, version=poll_1_version
         )
-        self.assertEqual(
-            poll_2_version,
-            ModerationRequest.objects.get(
-                collection=collection, version=poll_2_version
-            ).version,
+        nodes = ModerationRequestTreeNode.objects.filter(moderation_request=mr1)
+        self.assertEqual(mr1.count(), 1)
+        self.assertEqual(nodes.count(), 1)
+        mr2 = ModerationRequest.objects.filter(
+            collection=collection, version=poll_2_version
         )
+        nodes = ModerationRequestTreeNode.objects.filter(moderation_request=mr2)
+        self.assertEqual(mr2.count(), 1)
+        self.assertEqual(nodes.count(), 1)
 
     def test_add_pages_moderated_duplicated_children_to_collection(self):
         """
@@ -241,19 +263,23 @@ class CollectionItemsViewTest(BaseViewTestCase):
 
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
-        self.assertEqual(stored_collection.count(), 2)
         self.assertEqual(
-            pg_version,
-            ModerationRequest.objects.get(
-                collection=collection, version=pg_version
-            ).version,
+            stored_collection.filter(version=pg_version).count(),
+            1
         )
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=stored_collection.get(version=pg_version)
+        )
+        self.assertEqual(nodes.count(), 1)
         self.assertEqual(
-            poll_version,
-            ModerationRequest.objects.get(
-                collection=collection, version=poll_version
-            ).version,
+            stored_collection.filter(version=poll_version).count(),
+            1
         )
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=stored_collection.get(version=poll_version)
+        )
+        # TODO: Check with Andrew that this should definitely have 2
+        self.assertEqual(nodes.count(), 2)
 
     def test_add_pages_moderated_duplicated_children_to_collection_for_author_only(
         self
@@ -295,6 +321,30 @@ class CollectionItemsViewTest(BaseViewTestCase):
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
         self.assertEqual(stored_collection.count(), 2)
+        self.assertEqual(
+            stored_collection.filter(version=pg_version).count(),
+            1
+        )
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=stored_collection.get(version=pg_version)
+        )
+        self.assertEqual(nodes.count(), 1)
+        self.assertEqual(
+            stored_collection.filter(version=poll_1_version).count(),
+            1
+        )
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=stored_collection.get(version=poll_1_version)
+        )
+        self.assertEqual(nodes.count(), 1)
+        self.assertEqual(
+            stored_collection.filter(version=poll_2_version).count(),
+            0
+        )
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request__version=poll_2_version
+        )
+        self.assertEqual(nodes.count(), 0)
 
     def test_add_pages_moderated_traversed_children_to_collection(self):
         """
@@ -348,6 +398,38 @@ class CollectionItemsViewTest(BaseViewTestCase):
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
         self.assertEqual(stored_collection.count(), 4)
+        self.assertEqual(
+            stored_collection.filter(version=pg_version).count(),
+            1
+        )
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=stored_collection.get(version=pg_version)
+        )
+        self.assertEqual(nodes.count(), 1)
+        self.assertEqual(
+            stored_collection.filter(version=poll_version).count(),
+            1
+        )
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=stored_collection.get(version=poll_version)
+        )
+        self.assertEqual(nodes.count(), 1)
+        self.assertEqual(
+            stored_collection.filter(version=poll_child_1_version).count(),
+            1
+        )
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=stored_collection.get(version=poll_child_1_version)
+        )
+        self.assertEqual(nodes.count(), 1)
+        self.assertEqual(
+            stored_collection.filter(version=poll_child_2_version).count(),
+            1
+        )
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request=stored_collection.get(version=poll_child_2_version)
+        )
+        self.assertEqual(nodes.count(), 1)
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):

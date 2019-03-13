@@ -36,6 +36,7 @@ class CollectionItemsView(FormView):
         return kwargs
 
     def get_initial(self):
+        # TODO: This is not tested, what does it do?
         initial = super().get_initial()
         ids = self.request.GET.get("version_ids", "").split(",")
         ids = [int(x) for x in ids if x.isdigit()]
@@ -62,6 +63,8 @@ class CollectionItemsView(FormView):
             # and the current user is the user who modified the page
             if isinstance(version.content, PageContent) and version.created_by == self.request.user:
                 add_nested_moderated_children_to_collection(collection, version, parent_node=node)
+            # TODO: Tests for when version.content is not a PageContent
+            # TODO: Test for PageContent + different self.request.user
 
         messages.success(
             self.request,
@@ -91,6 +94,7 @@ class CollectionItemsView(FormView):
                 return_to_url = self.request.path
             return HttpResponseRedirect(return_to_url)
 
+        # TODO: Test success template used
         success_template = "djangocms_moderation/request_finalized.html"
         return render(self.request, success_template, {})
 
@@ -108,10 +112,12 @@ class CollectionItemsView(FormView):
             try:
                 collection = ModerationCollection.objects.get(pk=int(collection_id))
             except (ValueError, ModerationCollection.DoesNotExist, TypeError):
+                # TODO: Tests for the 3 cases that cause this
                 raise Http404
             else:
                 moderation_requests = collection.moderation_requests.all()
         else:
+            # TODO: Tests for this case
             moderation_requests = []
 
         model_admin = admin.site._registry[ModerationCollection]
