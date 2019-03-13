@@ -16,7 +16,12 @@ from djangocms_moderation.models import (
 from djangocms_moderation.utils import get_admin_url
 
 from .utils.base import BaseViewTestCase
-from .utils.factories import PlaceholderFactory, PollPluginFactory, PollVersionFactory
+from .utils.factories import (
+    ModerationCollectionFactory,
+    PlaceholderFactory,
+    PollPluginFactory,
+    PollVersionFactory,
+)
 
 
 class CollectionItemsViewAddingRequestsTest(BaseViewTestCase):
@@ -75,6 +80,11 @@ class CollectionItemsViewAddingRequestsTest(BaseViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "reloadBrowser")
+        # check using success template
+        self.assertListEqual(
+            [t.name for t in response.templates],
+            ['djangocms_moderation/request_finalized.html']
+        )
 
         # Moderation requests and related nodes were created
         moderation_requests = ModerationRequest.objects.filter(
@@ -458,6 +468,48 @@ class CollectionItemsViewTest(CMSTestCase):
         response = self.client.get(self.url)
 
         self.assertListEqual(response.context['moderation_requests'], [])
+
+    def test_initial_form_values_when_collection_id_passed(self):
+        collection = ModerationCollectionFactory()
+        pg_version = PageVersionFactory()
+        poll_version = PollVersionFactory()
+        self.url += '?collection_id=' + str(collection.pk)
+        self.url += '&version_ids={},{}'.format(pg_version.pk, poll_version.pk)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['form'].initial.keys()), 2)
+        self.assertEqual(response.context['form'].initial['collection'], str(collection.pk))
+        self.assertQuerysetEqual(
+            response.context['form'].initial['versions'],
+            [pg_version.pk, poll_version.pk],
+            transform=lambda o: o.pk,
+            ordered=False
+        )
+
+    def test_initial_form_values_when_collection_id_not_passed(self):
+        pg_version = PageVersionFactory()
+        poll_version = PollVersionFactory()
+        self.url += '?version_ids={},{}'.format(pg_version.pk, poll_version.pk)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['form'].initial.keys()), 1)
+        self.assertQuerysetEqual(
+            response.context['form'].initial['versions'],
+            [pg_version.pk, poll_version.pk],
+            transform=lambda o: o.pk,
+            ordered=False
+        )
+
+    def test_initial_form_values_when_no_version_ids_passed(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['form'].initial.keys()), 1)
+        self.assertEqual(response.context['form'].initial['versions'].count(), 0)
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):

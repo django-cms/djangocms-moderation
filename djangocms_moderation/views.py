@@ -36,7 +36,6 @@ class CollectionItemsView(FormView):
         return kwargs
 
     def get_initial(self):
-        # TODO: This is not tested, what does it do?
         initial = super().get_initial()
         ids = self.request.GET.get("version_ids", "").split(",")
         ids = [int(x) for x in ids if x.isdigit()]
@@ -94,7 +93,6 @@ class CollectionItemsView(FormView):
                 return_to_url = self.request.path
             return HttpResponseRedirect(return_to_url)
 
-        # TODO: Test success template used
         success_template = "djangocms_moderation/request_finalized.html"
         return render(self.request, success_template, {})
 
