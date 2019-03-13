@@ -43,7 +43,13 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
+    "autoapi.extension",
 ]
+
+# Document Python Code
+autoapi_type = 'python'
+autoapi_dirs = ['../djangocms_moderation']
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

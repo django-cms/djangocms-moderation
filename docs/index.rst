@@ -8,8 +8,26 @@ Welcome to djangocms-moderation's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: User Documentation:
 
+   overview
+   collection
+   comment
+   lock
+   moderation_request
+   moderation_request_action
+   role
+   references
+   workflow
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer Documentation:
+
+   introduction
+   reference
+   internals
 
 
 Indices and tables
