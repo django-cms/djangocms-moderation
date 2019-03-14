@@ -19,11 +19,7 @@ from .forms import (
     SubmitCollectionForModerationForm,
 )
 from .helpers import add_nested_moderated_children_to_collection
-from .models import (
-    ConfirmationPage,
-    ModerationCollection,
-    ModerationRequestTreeNode,
-)
+from .models import ConfirmationPage, ModerationCollection, ModerationRequestTreeNode
 from .utils import get_admin_url
 
 
