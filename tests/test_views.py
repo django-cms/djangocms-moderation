@@ -1,9 +1,9 @@
 import mock
 
-from django.contrib.admin import ACTION_CHECKBOX_NAME
 from django.contrib.messages import get_messages
 from django.urls import reverse
 
+from cms.test_utils.testcases import CMSTestCase
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
@@ -12,12 +12,12 @@ from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
     ModerationRequestTreeNode,
+    Workflow,
 )
 from djangocms_moderation.utils import get_admin_url
 
 from .utils.base import BaseViewTestCase
 from .utils.factories import PlaceholderFactory, PollPluginFactory, PollVersionFactory
-
 
 
 class CollectionItemsViewTest(BaseViewTestCase):
@@ -511,32 +511,33 @@ class CollectionItemsViewModerationNodesTest(BaseViewTestCase):
         self.assertTrue(has_duplicate)
 
 
-class CollectionItemsViewModerationIntegrationTest(BaseViewTestCase):
+class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
+    def setUp(self):
+        self.user = self.get_superuser()
 
     def test_moderation_workflow_node_deletion(self):
         """
-        When a page that contains part of a tree is deleted all views work as expected
+        When a page that contains part of a tree is deleted all views load and work as expected
 
-        Node structure created
+        Node structure created:
 
-        page 1
-            Poll 1
+            Page 1
+                Poll 1
+                    Poll 2
+            Page 2
                 Poll 2
-        Page 2
-            Poll 2
 
-        Delete page 1
+        Remove Page 1 from the collection which should in turn remove Poll 1 and Poll 2 from the entire collection
         """
-        self.client.force_login(self.user)
-
-        self.collection = ModerationCollection.objects.create(
-            author=self.user, name='My collection 1', workflow=self.wf1
+        workflow = Workflow.objects.create(pk=1, name="Workflow 1", is_default=True)
+        collection = ModerationCollection.objects.create(
+            author=self.user, name='My collection 1', workflow=workflow
         )
-        self.page_1_version = PageVersionFactory(created_by=self.user)
-        language = self.page_1_version.content.language
+        page_1_version = PageVersionFactory(created_by=self.user)
+        language = page_1_version.content.language
         # Populate page
-        page_1_placeholder = PlaceholderFactory(source=self.page_1_version.content)
+        page_1_placeholder = PlaceholderFactory(source=page_1_version.content)
 
         # Populate page 1 poll 1 top level plugin (level 1)
         poll_version = PollVersionFactory(created_by=self.user, content__language=language)
@@ -552,8 +553,8 @@ class CollectionItemsViewModerationIntegrationTest(BaseViewTestCase):
         PollPluginFactory(placeholder=poll_child_1_plugin.placeholder, poll=poll_child_2_version.content.poll)
 
         # Page 2 setup
-        self.page_2_version = PageVersionFactory(created_by=self.user, content__language=language)
-        page_2_placeholder = PlaceholderFactory(source=self.page_2_version.content)
+        page_2_version = PageVersionFactory(created_by=self.user, content__language=language)
+        page_2_placeholder = PlaceholderFactory(source=page_2_version.content)
         # Populate page 2 poll 3 top level plugin (level 1)
         PollPluginFactory(placeholder=page_2_placeholder, poll=poll_child_2_version.content.poll)
 
@@ -566,35 +567,63 @@ class CollectionItemsViewModerationIntegrationTest(BaseViewTestCase):
         url = add_url_parameters(
             admin_endpoint,
             return_to_url='http://example.com',
-            version_ids=[self.page_1_version.pk, self.page_2_version.pk],
-            collection_id=self.collection.pk
+            version_ids=[page_1_version.pk, page_2_version.pk],
+            collection_id=collection.pk
         )
+        self.client.force_login(self.user)
         response = self.client.post(
             path=url,
             data={
-                'collection': self.collection.pk,
-                'versions': [self.page_1_version.pk, self.page_2_version.pk],
+                'collection': collection.pk,
+                'versions': [page_1_version.pk, page_2_version.pk],
             },
         )
 
+        # The endpoint url matches expectations
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
+        # The correct amount of moderation requests exist
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=collection).count(),
+            5
+        )
+        # The correct amount of tree nodes exist
+        # Poll is repeated twice and will therefore have an additional entry / treenode
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=collection).count(),
+            6
+        )
 
         # remove page 1 from the collection
         changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
-        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        changelist_url += "?moderation_request__collection__id={}".format(collection.pk)
+        # Choose the delete_selected action from the dropdown mimicking a user selecting the page 1
+        # tree node to delete
+        page_1_moderation_request_treenode = ModerationRequestTreeNode.objects.get(
+            moderation_request__collection=collection,
+            moderation_request__version=page_1_version,
+        )
+        delete_url = "{}?ids={}&collection_id={}".format(
+            reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
+            ",".join([str(page_1_moderation_request_treenode.pk)]),
+            collection.pk,
+        )
 
-        # Choose the delete_selected action from the dropdown
-        data = {
-            'action': 'delete_selected',
-            ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
-        }
-        response = self.client.post(changelist_url, data)
+        response = self.client.post(delete_url, follow=True)
 
         self.assertEqual(response.status_code, 200)
 
-        # Load the page and check that the page loads and that the correct page exists
+        # Load the changelist and check that the page loads without an error
         response = self.client.get(changelist_url)
+
         self.assertEqual(response.status_code, 200)
 
-
+        # Only the page tree node and moderation request entry should exist
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=collection).count(),
+            1
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=collection).count(),
+            1
+        )

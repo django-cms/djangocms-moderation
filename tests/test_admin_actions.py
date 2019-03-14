@@ -83,6 +83,8 @@ class AdminActionTest(BaseTestCase):
         # This user is not the collection author
         self.client.force_login(self.user2)
         self.client.post(self.url_with_filter, data)
+
+        # FIXME: This doesn't work as the action above doesn't even hit the delete selected view^^^^^
         # Nothing is deleted
         self.assertEqual(
             ModerationRequest.objects.filter(collection=self.collection).count(), 2
