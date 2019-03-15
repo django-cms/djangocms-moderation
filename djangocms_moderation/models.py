@@ -299,7 +299,7 @@ class ModerationCollection(models.Model):
             [
                 self.author == user,
                 self.status not in (constants.ARCHIVED, constants.CANCELLED),
-                self.author.has_perm('cancel_collection')
+                self.author.has_perm('djangocms_moderation.cancel_moderationcollection')
             ]
         )
 
