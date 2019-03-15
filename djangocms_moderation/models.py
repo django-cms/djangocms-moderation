@@ -221,7 +221,10 @@ class ModerationCollection(models.Model):
 
     class Meta:
         verbose_name = _("collection")
-        permissions = (("can_change_author", _("Can change collection author")),)
+        permissions = (
+            ("can_change_author", _("Can change collection author")),
+            ("cancel_moderationcollection", _("Can cancel collection")),
+        )
 
     def __str__(self):
         return self.name
@@ -296,6 +299,7 @@ class ModerationCollection(models.Model):
             [
                 self.author == user,
                 self.status not in (constants.ARCHIVED, constants.CANCELLED),
+                self.author.has_perm('cancel_collection')
             ]
         )
 
