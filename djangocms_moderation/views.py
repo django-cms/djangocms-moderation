@@ -2,8 +2,10 @@ from __future__ import unicode_literals
 
 from django.contrib import admin, messages
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _, ungettext
 from django.views.generic import FormView
@@ -26,6 +28,7 @@ from .utils import get_admin_url
 from . import constants  # isort:skip
 
 
+@method_decorator(transaction.atomic, name="post")
 class CollectionItemsView(FormView):
     template_name = "djangocms_moderation/items_to_collection.html"
     form_class = CollectionItemsForm
@@ -60,10 +63,13 @@ class CollectionItemsView(FormView):
 
             # If the version is a page type look at it's contents for draft moderatable objects
             # and the current user is the user who modified the page
-            if isinstance(version.content, PageContent) and version.created_by == self.request.user:
-                add_nested_moderated_children_to_collection(collection, version, parent_node=node)
-            # TODO: Tests for when version.content is not a PageContent
-            # TODO: Test for PageContent + different self.request.user
+            if (
+                isinstance(version.content, PageContent)
+                and version.created_by == self.request.user
+            ):
+                add_nested_moderated_children_to_collection(
+                    collection, version, parent_node=node
+                )
 
         messages.success(
             self.request,
@@ -200,10 +206,11 @@ class SubmitCollectionForModeration(FormView):
             self.request, _("Your collection has been submitted for review")
         )
         # Redirect back to the collection filtered moderation request change list
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = reverse(
+            "admin:djangocms_moderation_moderationrequest_changelist"
+        )
         redirect_url = "{}?moderation_request__collection__id={}".format(
-            redirect_url,
-            self.collection.id
+            redirect_url, self.collection.id
         )
         return HttpResponseRedirect(redirect_url)
 

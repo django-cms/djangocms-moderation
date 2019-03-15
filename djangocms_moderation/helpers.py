@@ -122,8 +122,8 @@ def get_moderation_button_title_and_url(moderation_request):
             "collection_id": moderation_request.collection_id,
         }
     url = "{}?moderation_request__collection__id={}".format(
-        reverse('admin:djangocms_moderation_moderationrequest_changelist'),
-        moderation_request.collection_id
+        reverse("admin:djangocms_moderation_moderationrequest_changelist"),
+        moderation_request.collection_id,
     )
     return button_title, url
 
@@ -191,30 +191,39 @@ def get_moderated_children_from_placeholder(placeholder, language=None):
 # FIXME: When successfully adding items to a collection, a page with many items shows a message
 #        "1 item succesfully added to collection when it was 1*n"
 
+
 def add_nested_moderated_children_to_collection(collection, version, parent_node):
     """
     Finds all of the moderated children and adds them to the collection
     """
     parent = version.content
     for placeholder in parent.get_placeholders():
-        for child_version in get_moderated_children_from_placeholder(placeholder, parent.language):
+        for child_version in get_moderated_children_from_placeholder(
+            placeholder, parent.language
+        ):
 
             # Don't add the version if it's already part of the collection or another users item
             if version.created_by == child_version.created_by:
 
                 try:
-                    moderation_request = collection.moderation_requests.get(version=child_version)
+                    moderation_request = collection.moderation_requests.get(
+                        version=child_version
+                    )
                 except ModerationRequest.DoesNotExist:
                     moderation_request = collection.add_version(child_version)
 
                 node = ModerationRequestTreeNode(moderation_request=moderation_request)
                 parent_node.add_child(instance=node)
 
-                if hasattr(child_version.content, 'placeholder'):
-                    add_nested_moderated_children_to_collection(collection, child_version, node)
+                if hasattr(child_version.content, "placeholder"):
+                    add_nested_moderated_children_to_collection(
+                        collection, child_version, node
+                    )
 
                     continue
 
             # If the child also has children, traverse through that tree
-            if hasattr(child_version.content, 'placeholder'):
-                add_nested_moderated_children_to_collection(collection, child_version, parent_node)
+            if hasattr(child_version.content, "placeholder"):
+                add_nested_moderated_children_to_collection(
+                    collection, child_version, parent_node
+                )

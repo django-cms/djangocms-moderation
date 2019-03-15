@@ -71,7 +71,9 @@ class ModerationAdminTestCase(BaseTestCase):
         self.url_with_filter = "{}?collection__id__exact={}".format(
             self.url, self.collection.pk
         )
-        self.mr_tree_admin = ModerationRequestTreeAdmin(ModerationRequest, admin.AdminSite())
+        self.mr_tree_admin = ModerationRequestTreeAdmin(
+            ModerationRequest, admin.AdminSite()
+        )
         self.mra = ModerationRequestAdmin(ModerationRequest, admin.AdminSite())
         self.mca = ModerationCollectionAdmin(ModerationCollection, admin.AdminSite())
 
@@ -80,13 +82,13 @@ class ModerationAdminTestCase(BaseTestCase):
         mock_request.user = self.user
         mock_request._collection = self.collection
         actions = self.mr_tree_admin.get_actions(request=mock_request)
-        self.assertIn('delete_selected', actions)
+        self.assertIn("delete_selected", actions)
 
         # user2 won't be able to delete requests, as they are not the collection
         # author
         mock_request.user = self.user2
         actions = self.mr_tree_admin.get_actions(request=mock_request)
-        self.assertNotIn('delete_selected', actions)
+        self.assertNotIn("delete_selected", actions)
 
     def test_publish_selected_action_visibility_when_version_is_published(self):
         mock_request = MockRequest()
@@ -101,7 +103,7 @@ class ModerationAdminTestCase(BaseTestCase):
         self.mr1.version._set_publish(self.user)
         self.mr1.version.save()
         actions = self.mr_tree_admin.get_actions(request=mock_request)
-        self.assertNotIn('publish_selected', actions)
+        self.assertNotIn("publish_selected", actions)
 
     def test_publish_selected_action_visibility(self):
         mock_request = MockRequest()
@@ -114,13 +116,13 @@ class ModerationAdminTestCase(BaseTestCase):
         # user2 should not be able to see it
         mock_request.user = self.user2
         actions = self.mr_tree_admin.get_actions(request=mock_request)
-        self.assertNotIn('publish_selected', actions)
+        self.assertNotIn("publish_selected", actions)
 
         # if there are no approved requests, user can't see the button either
         mock_request.user = self.user
         self.mr1.get_last_action().delete()
         actions = self.mr_tree_admin.get_actions(request=mock_request)
-        self.assertNotIn('publish_selected', actions)
+        self.assertNotIn("publish_selected", actions)
 
     def test_approve_and_reject_selected_action_visibility(self):
         mock_request = MockRequest()
@@ -135,14 +137,14 @@ class ModerationAdminTestCase(BaseTestCase):
         # user2 is moderator and there is 1 unapproved request
         mock_request.user = self.user2
         actions = self.mr_tree_admin.get_actions(request=mock_request)
-        self.assertIn('approve_selected', actions)
-        self.assertIn('reject_selected', actions)
+        self.assertIn("approve_selected", actions)
+        self.assertIn("reject_selected", actions)
 
         # now everything is approved, so not even user2 can see the actions
         self.mr2.delete()
         actions = self.mr_tree_admin.get_actions(request=mock_request)
-        self.assertNotIn('approve_selected', actions)
-        self.assertNotIn('reject_selected', actions)
+        self.assertNotIn("approve_selected", actions)
+        self.assertNotIn("reject_selected", actions)
 
     def test_resubmit_selected_action_visibility(self):
         mock_request = MockRequest()
@@ -161,7 +163,7 @@ class ModerationAdminTestCase(BaseTestCase):
         # user2 can't, as they are not the author of the request
         mock_request.user = self.user2
         actions = self.mr_tree_admin.get_actions(request=mock_request)
-        self.assertNotIn('resubmit_selected', actions)
+        self.assertNotIn("resubmit_selected", actions)
 
     def test_in_review_status_is_considered(self):
         mock_request = MockRequest()
@@ -184,7 +186,7 @@ class ModerationAdminTestCase(BaseTestCase):
         self.collection.status = constants.IN_REVIEW
         self.collection.save()
         actions = self.mr_tree_admin.get_actions(request=mock_request)
-        self.assertIn('approve_selected', actions)
+        self.assertIn("approve_selected", actions)
 
     def test_change_list_view_should_respect_conf(self):
         user = User.objects.create(
@@ -210,11 +212,11 @@ class ModerationAdminTestCase(BaseTestCase):
         # test ModerationRequests
         conf.REQUEST_COMMENTS_ENABLED = False
         list_display = self.mr_tree_admin.get_list_display(mock_request)
-        self.assertNotIn('get_comments_link', list_display)
+        self.assertNotIn("get_comments_link", list_display)
 
         conf.REQUEST_COMMENTS_ENABLED = True
         list_display = self.mr_tree_admin.get_list_display(mock_request)
-        self.assertIn('get_comments_link', list_display)
+        self.assertIn("get_comments_link", list_display)
 
         # test ModerationCollections
         conf.COLLECTION_COMMENTS_ENABLED = False

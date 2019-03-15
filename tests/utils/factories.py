@@ -164,7 +164,7 @@ class ModerationCollectionFactory(factory.django.DjangoModelFactory):
 class ModerationRequestFactory(factory.django.DjangoModelFactory):
     collection = factory.SubFactory(ModerationCollectionFactory)
     version = factory.SubFactory(PageVersionFactory)
-    language = 'en'
+    language = "en"
     author = factory.LazyAttribute(lambda o: o.collection.author)
 
     class Meta:
