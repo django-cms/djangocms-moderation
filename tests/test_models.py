@@ -1,6 +1,7 @@
 import json
 from mock import patch
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -503,6 +504,23 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertEqual(str(self.collection1.pk), self.collection1.job_id)
         self.assertEqual(str(self.collection2.pk), self.collection2.job_id)
 
+    def _get_staff_user(self, permissions=[]):
+        USERNAME = 'test'
+
+        if get_user_model().USERNAME_FIELD == 'email':
+            normal_guy = get_user_model().objects.create_user(USERNAME, 'test@test.com', 'test@test.com')
+        else:
+            normal_guy = get_user_model().objects.create_user(USERNAME, 'test@test.com', USERNAME)
+
+        normal_guy.is_staff = True
+        normal_guy.is_active = True
+        perms = Permission.objects.filter(
+            codename__in=permissions
+        )
+        normal_guy.save()
+        normal_guy.user_permissions.set(perms)
+        return normal_guy
+
     def test_is_cancellable(self):
         fixtures = (
             (constants.CANCELLED, False),
@@ -521,6 +539,23 @@ class ModerationCollectionTest(BaseTestCase):
             self.collection1.status = fixture[0]
             self.collection1.save()
             self.assertFalse(self.collection1.is_cancellable(self.user2))
+
+        # Run these fixtures with collection author without cancel permission
+        for fixture in fixtures:
+            # create non-admin, staff user with collection permissions 
+            # excluding cancel_collection permission
+            user_who_cannot_cancel = self._get_staff_user(['change_page', 'change_title', 'add_page', 'add_title', 'delete_page', 'delete_title', 'change_moderationcollection', 'add_moderationcollection', 'delete_moderationcollection'])
+            user_who_can_cancel = self._get_staff_user(['change_page', 'change_title', 'add_page', 'add_title', 'delete_page', 'delete_title',  'change_moderationcollection', 'add_moderationcollection', 'delete_moderationcollection', 'cancel_moderationcollection'])
+
+            # create a collection by each user.
+            collection1 = ModerationCollection.objects.create(
+                author=user_who_cannot_cancel, name="My collection 1", workflow=self.wf1
+            )
+            collection2 = ModerationCollection.objects.create(
+                author=user_who_can_cancel, name="My collection 1", workflow=self.wf1
+            )
+            self.assertFalse(self.collection1.is_cancellable(user_who_cannot_cancel), fixture[1])
+            self.assertTrue(self.collection2.is_cancellable(user_who_can_cancel), fixture[1])
 
     @patch.object(ModerationRequest, "is_approved")
     def test_should_be_archived(self, is_approved_mock):
