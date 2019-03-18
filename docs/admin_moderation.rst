@@ -1,4 +1,4 @@
-The Admin with Moderation
+Admin Moderation
 ==========================
 
 
