@@ -10,8 +10,8 @@ Each :ref:`moderation_request_action` must be assigned to a Role. This allows th
 Reviewer
 ------------------------------------------------
 The Reviewer is responsible for approving / rejecting items in the collection and making comments.
-They have access to the `Approve` and `Submit for rework` :ref:`collection` bulk actions.
+They have access to the `Approve` and `Submit for rework` :ref:`moderation_collection` bulk actions.
 
 Collection author
 ------------------------------------------------
-The collection author is responsible for creating, editing and (usually) publishing the collection. They have access to the `Submit for review` and `Publish` :ref:`collection` bulk actions, as well as the various :ref:`collection` buttons.
+The collection author is responsible for creating, editing and (usually) publishing the collection. They have access to the `Submit for review` and `Publish` :ref:`moderation_collection` bulk actions, as well as the various :ref:`moderation_collection` buttons.

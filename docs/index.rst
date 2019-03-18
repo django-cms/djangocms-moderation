@@ -11,7 +11,7 @@ Welcome to djangocms-moderation's documentation!
    :caption: User Documentation:
 
    overview
-   collection
+   moderation_collection
    comment
    lock
    moderation_request

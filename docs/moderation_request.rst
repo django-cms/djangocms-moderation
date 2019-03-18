@@ -2,7 +2,7 @@
 
 Moderation Request
 ================================================
-While the aim of a :ref:`collection` is to group draft Version objects together. This is achieved via an intermediary model :ref:`moderation_request` which allows meta-data such as approvals, comments, dates and actors to be associated with each draft as it goes through moderation.
+While the aim of a :ref:`moderation_collection` is to group draft Version objects together. This is achieved via an intermediary model :ref:`moderation_request` which allows meta-data such as approvals, comments, dates and actors to be associated with each draft as it goes through moderation.
 
 Conceptually this entity can be thought of as a "request to publish" for a particular draft version. Thus the request tracks the meta-data associated with the moderation process for a particular draft.
 

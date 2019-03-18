@@ -1,4 +1,4 @@
-.. _collection:
+.. _moderation_collection:
 
 Moderation Collection
 ================================================
