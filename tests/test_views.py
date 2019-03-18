@@ -485,8 +485,8 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             collection_id=collection.pk,
         )
         with self.login_user_context(user), mock.patch(
-            "djangocms_moderation.views.add_nested_moderated_children_to_collection"
-        ) as add_nested_moderated_children_to_collection:
+            "djangocms_moderation.models.ModerationCollection._add_nested_children"
+        ) as _add_nested_children:
             response = self.client.post(
                 path=url,
                 data={"collection": collection.pk, "versions": [poll_version.pk]},
@@ -505,7 +505,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         )
         self.assertEqual(stored_collection.filter(version=poll_version).count(), 1)
 
-        add_nested_moderated_children_to_collection.assert_not_called()
+        _add_nested_children.assert_not_called()
 
     def test_adding_page_not_by_the_author_doesnt_trigger_nested_collection_mechanism(
         self
@@ -535,9 +535,8 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         with self.login_user_context(user), mock.patch(
             "djangocms_moderation.forms.is_obj_version_unlocked"
         ), mock.patch(
-            "djangocms_moderation.views.add_nested_moderated_children_to_collection",
-            return_value=True,
-        ) as add_nested_moderated_children_to_collection:
+            "djangocms_moderation.models.ModerationCollection._add_nested_children"
+        ) as _add_nested_children:
             response = self.client.post(
                 path=url,
                 data={"collection": collection.pk, "versions": [page_version.pk]},
@@ -564,7 +563,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             ModerationRequestTreeNode.objects.filter(moderation_request=mr1).count(), 0
         )
 
-        add_nested_moderated_children_to_collection.assert_not_called()
+        _add_nested_children.assert_not_called()
 
 
 class CollectionItemsViewTest(CMSTestCase):

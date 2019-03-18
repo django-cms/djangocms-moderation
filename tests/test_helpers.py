@@ -177,8 +177,10 @@ class ModeratedChildrenTestCase(CMSTestCase):
             placeholder=placeholder, poll=none_moderated_poll_version.content.poll
         )
 
-        moderated_children = get_moderated_children_from_placeholder(
-            placeholder, pg_version.content.language
+        moderated_children = list(
+            get_moderated_children_from_placeholder(
+                placeholder, {"language": pg_version.content.language}
+            )
         )
 
         self.assertEqual(moderated_children, [poll_version])
@@ -214,11 +216,15 @@ class ModeratedChildrenTestCase(CMSTestCase):
             placeholder=pg_2_placeholder, poll=pg_2_poll_version.content.poll
         )
 
-        page_1_moderated_children = get_moderated_children_from_placeholder(
-            pg_1_placeholder, pg_1_version.content.language
+        page_1_moderated_children = list(
+            get_moderated_children_from_placeholder(
+                pg_1_placeholder, {"language": pg_1_version.content.language}
+            )
         )
-        page_2_moderated_children = get_moderated_children_from_placeholder(
-            pg_2_placeholder, pg_2_version.content.language
+        page_2_moderated_children = list(
+            get_moderated_children_from_placeholder(
+                pg_2_placeholder, {"language": pg_2_version.content.language}
+            )
         )
 
         self.assertEqual(page_1_moderated_children, [pg_1_poll_version])

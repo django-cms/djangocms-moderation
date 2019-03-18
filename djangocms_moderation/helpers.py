@@ -139,91 +139,43 @@ def get_all_moderators():
     return User.objects.filter(moderationcollection__author__isnull=False).distinct()
 
 
-def _get_moderatable_version(versionable, field_instance, language):
+def _get_moderatable_version(versionable, grouper, parent_version_filters):
     """
     Private helper to get a specific version from a field instance
     """
     # If the content model is not registered with moderation nothing should be returned
-    if (
-        versionable.content_model
-        not in apps.get_app_config(
-            "djangocms_moderation"
-        ).cms_extension.moderated_models
-    ):
+    if not is_registered_for_moderation(versionable.content_model()):
         return
 
-    filters = {versionable.grouper_field_name: field_instance}
-    if language is not None and "language" in versionable.extra_grouping_fields:
-        filters["language"] = language
-    # Get the draft version if it exists using grouping values
-    return Version.objects.filter_by_grouping_values(versionable, **filters).get(
-        state=DRAFT
-    )
+    filters = {versionable.grouper_field_name: grouper}
+    if (
+        "language" in versionable.extra_grouping_fields
+        and "language" in parent_version_filters
+    ):
+        filters["language"] = parent_version_filters["language"]
+    try:
+        return Version.objects.filter_by_grouping_values(versionable, **filters).get(
+            state=DRAFT
+        )
+    except Version.DoesNotExist:
+        return
 
 
-def get_moderated_children_from_placeholder(placeholder, language=None):
+def get_moderated_children_from_placeholder(placeholder, parent_version_filters):
     """
     Get all moderated children version objects from a placeholder
     """
-    moderatable_child_list = []
-
     for plugin in downcast_plugins(placeholder.get_plugins()):
-
-        plugin_model = plugin.get_plugin_class().model._meta
-        field_list = [
-            f for f in plugin_model.get_fields() if f.is_relation and not f.auto_created
-        ]
-
-        for field in field_list:
-            field_instance = getattr(plugin, field.name)
-            # Skip fields that are not versionable because field_list contains many unrelated fields
+        for field in plugin._meta.get_fields():
+            if not field.is_relation or field.auto_created:
+                continue
+            candidate = getattr(plugin, field.name)
             try:
-                versionable = versionables.for_grouper(field_instance)
+                versionable = versionables.for_grouper(candidate)
             except KeyError:
                 continue
-            version = _get_moderatable_version(versionable, field_instance, language)
+            version = _get_moderatable_version(
+                versionable, candidate, parent_version_filters
+            )
             if version:
-                moderatable_child_list.append(version)
-
-    return moderatable_child_list
-
-
-# FIXME: When successfully adding items to a collection, a page with many items shows a message
-#        "1 item succesfully added to collection when it was 1*n"
-
-
-def add_nested_moderated_children_to_collection(collection, version, parent_node):
-    """
-    Finds all of the moderated children and adds them to the collection
-    """
-    parent = version.content
-    for placeholder in parent.get_placeholders():
-        for child_version in get_moderated_children_from_placeholder(
-            placeholder, parent.language
-        ):
-
-            # Don't add the version if it's already part of the collection or another users item
-            if version.created_by == child_version.created_by:
-
-                try:
-                    moderation_request = collection.moderation_requests.get(
-                        version=child_version
-                    )
-                except ModerationRequest.DoesNotExist:
-                    moderation_request = collection.add_version(child_version)
-
-                node = ModerationRequestTreeNode(moderation_request=moderation_request)
-                parent_node.add_child(instance=node)
-
-                if hasattr(child_version.content, "placeholder"):
-                    add_nested_moderated_children_to_collection(
-                        collection, child_version, node
-                    )
-
-                    continue
-
-            # If the child also has children, traverse through that tree
-            if hasattr(child_version.content, "placeholder"):
-                add_nested_moderated_children_to_collection(
-                    collection, child_version, parent_node
-                )
+                yield version

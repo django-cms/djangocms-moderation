@@ -20,7 +20,6 @@ from .forms import (
     CollectionItemsForm,
     SubmitCollectionForModerationForm,
 )
-from .helpers import add_nested_moderated_children_to_collection
 from .models import ConfirmationPage, ModerationCollection, ModerationRequestTreeNode
 from .utils import get_admin_url
 
@@ -54,31 +53,25 @@ class CollectionItemsView(FormView):
         versions = form.cleaned_data["versions"]
         collection = form.cleaned_data["collection"]
 
+        total_added = 0
         for version in versions:
-            moderation_request = collection.add_version(version)
-
-            # Tree structure
-            node = ModerationRequestTreeNode(moderation_request=moderation_request)
-            ModerationRequestTreeNode.add_root(instance=node)
-
-            # If the version is a page type look at it's contents for draft moderatable objects
-            # and the current user is the user who modified the page
-            if (
+            include_children = (
                 isinstance(version.content, PageContent)
                 and version.created_by == self.request.user
-            ):
-                add_nested_moderated_children_to_collection(
-                    collection, version, parent_node=node
-                )
+            )
+            moderation_request, added_items = collection.add_version(
+                version, include_children=include_children
+            )
+            total_added += added_items
 
         messages.success(
             self.request,
             ungettext(
                 "%(count)d item successfully added to moderation collection",
                 "%(count)d items successfully added to moderation collection",
-                len(versions),
+                total_added,
             )
-            % {"count": len(versions)},
+            % {"count": total_added},
         )
 
         return self._get_success_redirect()
