@@ -530,9 +530,8 @@ class ModerationCollectionTest(BaseTestCase):
             content_type__app_label='djangocms_moderation',
             codename='cancel_moderationcollection'
         ))
-        collection = ModerationCollection.objects.create(
-            author=user_who_can_cancel, name="My collection 1",
-            workflow=self.wf1, status=constants.COLLECTING
+        collection = factories.ModerationCollectionFactory(
+            author=user_who_can_cancel, status=constants.COLLECTING
         )
         self.assertTrue(collection.is_cancellable(user_who_can_cancel))
 
@@ -542,9 +541,8 @@ class ModerationCollectionTest(BaseTestCase):
         user_who_cannot_cancel = factories.UserFactory(is_staff=True)
 
         # create a collection by each user.
-        collection = ModerationCollection.objects.create(
-            author=user_who_cannot_cancel, name="My collection 1",
-            workflow=self.wf1, status=constants.COLLECTING
+        collection = factories.ModerationCollectionFactory(
+            author=user_who_cannot_cancel, status=constants.COLLECTING
         )
         self.assertFalse(collection.is_cancellable(user_who_cannot_cancel))
 
