@@ -372,13 +372,13 @@ class ModerationCollection(models.Model):
 
 class ModerationRequestTreeNode(MP_Node):
     moderation_request = models.ForeignKey(
-        to="ModerationRequest",
-        verbose_name=_("moderation_request"),
+        to='ModerationRequest',
+        verbose_name=_('moderation_request'),
         on_delete=models.CASCADE,
     )
 
     class Meta:
-        ordering = ("id",)
+        ordering = ('id',)
 
     def __str__(self):
         return str(self.id)

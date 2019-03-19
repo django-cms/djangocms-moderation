@@ -199,11 +199,10 @@ class SubmitCollectionForModeration(FormView):
             self.request, _("Your collection has been submitted for review")
         )
         # Redirect back to the collection filtered moderation request change list
-        redirect_url = reverse(
-            "admin:djangocms_moderation_moderationrequest_changelist"
-        )
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
         redirect_url = "{}?moderation_request__collection__id={}".format(
-            redirect_url, self.collection.id
+            redirect_url,
+            self.collection.id
         )
         return HttpResponseRedirect(redirect_url)
 

@@ -68,7 +68,7 @@ def delete_selected(modeladmin, request, queryset):
 
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
-        reverse("admin:djangocms_moderation_moderationrequesttreenode_delete"),
+        reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
         ",".join(selected),
         request._collection.id,
     )
