@@ -1,7 +1,6 @@
 import json
 from mock import patch
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -523,39 +522,34 @@ class ModerationCollectionTest(BaseTestCase):
             self.collection1.save()
             self.assertFalse(self.collection1.is_cancellable(self.user2))
 
-    def test_cancel_permission(self):
-        # create non-admin, staff user with collection permissions 
-        # excluding cancel_collection permission
-        user_who_cannot_cancel = User.objects.create_user(
-            username='joe_new', password='x', email='joe@mata.com'
-        )
-        user_who_cannot_cancel.is_staff = True
-        user_who_cannot_cancel.save()
-
+    def test_can_cancel_permission(self):
+        # create non-admin, staff user with collection permissions and cancel permission
         user_who_can_cancel = User.objects.create_user(
-            username='doe_new', password='x', email='doe@mata.com'
+            username='doe_new', password='x', email='doe@mata.com', is_staff=True
         )
-        user_who_can_cancel.is_staff = True
-        user_who_can_cancel.save()
         user_who_can_cancel.user_permissions.add(Permission.objects.get(
             content_type__app_label='djangocms_moderation',
             codename='cancel_moderationcollection'
         ))
+        collection = ModerationCollection.objects.create(
+            author=user_who_can_cancel, name="My collection 1",
+            workflow=self.wf1, status=constants.COLLECTING
+        )
+        self.assertTrue(collection.is_cancellable(user_who_can_cancel))
+
+    def test_cannot_cancel_permission(self):
+        # create non-admin, staff user with collection permissions 
+        # excluding cancel_collection permission
+        user_who_cannot_cancel = User.objects.create_user(
+            username='joe_new', password='x', email='joe@mata.com', is_staff=True
+        )
 
         # create a collection by each user.
-        collection1 = ModerationCollection.objects.create(
-            author=user_who_cannot_cancel, name="My collection 1", workflow=self.wf1
+        collection = ModerationCollection.objects.create(
+            author=user_who_cannot_cancel, name="My collection 1",
+            workflow=self.wf1, status=constants.COLLECTING
         )
-        collection1.status = constants.COLLECTING
-        collection1.save()
-        collection2 = ModerationCollection.objects.create(
-            author=user_who_can_cancel, name="My collection 1", workflow=self.wf1
-        )
-        collection2.status = constants.COLLECTING
-        collection2.save()
-        self.assertFalse(collection1.is_cancellable(user_who_cannot_cancel), True)
-        self.assertTrue(collection2.is_cancellable(user_who_can_cancel), True)
-
+        self.assertFalse(collection.is_cancellable(user_who_cannot_cancel))
 
     @patch.object(ModerationRequest, "is_approved")
     def test_should_be_archived(self, is_approved_mock):
