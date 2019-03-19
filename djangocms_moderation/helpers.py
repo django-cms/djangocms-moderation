@@ -14,11 +14,7 @@ from djangocms_versioning.models import Version
 
 from .conf import COLLECTION_NAME_LENGTH_LIMIT
 from .constants import COLLECTING
-from .models import (
-    ConfirmationFormSubmission,
-    ModerationRequest,
-    ModerationRequestTreeNode,
-)
+from .models import ConfirmationFormSubmission
 
 
 User = get_user_model()

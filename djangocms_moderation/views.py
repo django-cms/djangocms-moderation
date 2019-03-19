@@ -20,7 +20,7 @@ from .forms import (
     CollectionItemsForm,
     SubmitCollectionForModerationForm,
 )
-from .models import ConfirmationPage, ModerationCollection, ModerationRequestTreeNode
+from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
 
