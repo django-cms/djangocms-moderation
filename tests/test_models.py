@@ -18,6 +18,7 @@ from djangocms_moderation.models import (
 )
 
 from .utils.base import BaseTestCase
+from .utils import factories
 
 
 class RoleTest(BaseTestCase):
@@ -524,9 +525,7 @@ class ModerationCollectionTest(BaseTestCase):
 
     def test_can_cancel_permission(self):
         # create non-admin, staff user with collection permissions and cancel permission
-        user_who_can_cancel = User.objects.create_user(
-            username='doe_new', password='x', email='doe@mata.com', is_staff=True
-        )
+        user_who_can_cancel = factories.UserFactory(is_staff=True)
         user_who_can_cancel.user_permissions.add(Permission.objects.get(
             content_type__app_label='djangocms_moderation',
             codename='cancel_moderationcollection'
@@ -540,9 +539,7 @@ class ModerationCollectionTest(BaseTestCase):
     def test_cannot_cancel_permission(self):
         # create non-admin, staff user with collection permissions 
         # excluding cancel_collection permission
-        user_who_cannot_cancel = User.objects.create_user(
-            username='joe_new', password='x', email='joe@mata.com', is_staff=True
-        )
+        user_who_cannot_cancel = factories.UserFactory(is_staff=True)
 
         # create a collection by each user.
         collection = ModerationCollection.objects.create(

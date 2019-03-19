@@ -3,6 +3,7 @@ import string
 from cms.models import Placeholder
 
 import factory
+from django.contrib.auth.models import User
 from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import AbstractVersionFactory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
@@ -114,3 +115,21 @@ class NoneModeratedPollPluginFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = NoneModeratedPollPlugin
+
+
+class UserFactory(factory.django.DjangoModelFactory):
+    username = FuzzyText(length=12)
+    first_name = factory.Faker("first_name")
+    last_name = factory.Faker("last_name")
+    email = factory.LazyAttribute(
+        lambda u: "%s.%s@example.com" % (u.first_name.lower(), u.last_name.lower())
+    )
+
+    class Meta:
+        model = User
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        manager = cls._get_manager(model_class)
+        return manager.create_user(*args, **kwargs)
+
