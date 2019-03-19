@@ -206,6 +206,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             "</a>",
             object_preview_url,
         )
+
     get_preview_link.short_description = _("Preview")
 
     def get_reviewer(self, obj):
@@ -228,10 +229,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                 status = ugettext('Ready for publishing')
             elif obj.moderation_request.is_rejected():
                 status = ugettext('Pending author rework')
-            elif (
-                obj.moderation_request.is_active
-                and obj.moderation_request.has_pending_step()
-            ):
+            elif obj.moderation_request.is_active and obj.moderation_request.has_pending_step():
                 next_step = obj.moderation_request.get_next_required()
                 role = next_step.role.name
                 status = ugettext('Pending %(role)s approval') % {'role': role}
@@ -243,7 +241,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                     'action': last_action.get_action_display(),
                     'name': user_name,
                 }
-                status = ugettext("%(action)s by %(name)s") % message_data
+                status = ugettext('%(action)s by %(name)s') % message_data
         else:
             status = ugettext('Ready for submission')
         return status
@@ -253,7 +251,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             '<a href="{}?moderation_request__id__exact={}">{}</a>',
             reverse('admin:djangocms_moderation_requestcomment_changelist'),
             obj.moderation_request.id,
-            _('View'),
+            _('View')
         )
 
     get_comments_link.short_description = _("Comments")
@@ -341,7 +339,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             if collection.allow_submit_for_review(user=request.user):
                 submit_for_review_url = reverse(
                     'admin:cms_moderation_submit_collection_for_moderation',
-                    args=(collection_id,),
+                    args=(collection_id,)
                 )
                 extra_context['submit_for_review_url'] = submit_for_review_url
 
@@ -363,7 +361,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         # For each moderation request id, if one has a tree structure attached go through each one and remove that!
         # Get all of the nodes selected to delete
-        queryset = ModerationRequestTreeNode.objects.filter(pk__in=request.GET.get("ids", "").split(","))
+        queryset = ModerationRequestTreeNode.objects.filter(pk__in=request.GET.get('ids', '').split(','))
 
         def _traverse_moderation_nodes(node_item):
             moderation_requests_affected.append(node_item.moderation_request.pk)
@@ -377,7 +375,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             _traverse_moderation_nodes(node)
 
         queryset = ModerationRequest.objects.filter(pk__in=moderation_requests_affected)
-        redirect_url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
         redirect_url = "{}?moderation_request__collection__id={}".format(
             redirect_url,
             collection_id
@@ -385,7 +383,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         if request.method != 'POST':
             context = dict(
-                ids=request.GET.getlist("ids"),
+                ids=request.GET.getlist('ids'),
                 back_url=redirect_url,
                 queryset=queryset,
             )
@@ -411,9 +409,8 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                 ungettext(
                     '%(count)d request successfully deleted',
                     '%(count)d requests successfully deleted',
-                    num_deleted_requests,
-                )
-                % {
+                    num_deleted_requests
+                ) % {
                     'count': num_deleted_requests
                 },
             )
@@ -494,7 +491,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
-        if request.method != "POST":
+        if request.method != 'POST':
             context = dict(
                 ids=request.GET.getlist("ids"), back_url=redirect_url, queryset=queryset
             )
@@ -545,7 +542,9 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
         if request.method != 'POST':
             context = dict(
-                ids=request.GET.getlist("ids"), back_url=redirect_url, queryset=queryset
+                ids=request.GET.getlist("ids"),
+                back_url=redirect_url,
+                queryset=queryset,
             )
             return render(
                 request,

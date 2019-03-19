@@ -40,7 +40,7 @@ class AdminActionTest(BaseTestCase):
         pg2_version = PageVersionFactory()
 
         self.mr1 = ModerationRequest.objects.create(
-            version=pg1_version, language="en", collection=self.collection,
+            version=pg1_version, language="en",  collection=self.collection,
             is_active=True, author=self.collection.author)
 
         self.wfst1 = self.wf.steps.create(role=self.role1, is_required=True, order=1)
@@ -53,7 +53,7 @@ class AdminActionTest(BaseTestCase):
 
         # this moderation request is not approved
         self.mr2 = ModerationRequest.objects.create(
-            version=pg2_version, language="en", collection=self.collection,
+            version=pg2_version, language="en",  collection=self.collection,
             is_active=True, author=self.collection.author)
         self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
 
@@ -182,7 +182,7 @@ class AdminActionTest(BaseTestCase):
     def test_resubmit_selected(self, notify_author_mock, notify_moderators_mock):
         self.mr2.update_status(
             action=ACTION_REJECTED,
-            by_user=self.user,
+            by_user=self.user
         )
 
         fixtures = [self.mr1, self.mr2]
@@ -220,7 +220,7 @@ class AdminActionTest(BaseTestCase):
         # Add one more, partially approved request
         pg3_version = PageVersionFactory()
         self.mr3 = ModerationRequest.objects.create(
-            version=pg3_version, language="en", collection=self.collection,
+            version=pg3_version, language="en",  collection=self.collection,
             is_active=True, author=self.collection.author)
         self.mr3.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
         self.mr3.update_status(by_user=self.user, action=constants.ACTION_APPROVED)
@@ -245,7 +245,7 @@ class AdminActionTest(BaseTestCase):
             notify_moderators_mock.call_args_list[0],
             mock.call(collection=self.collection,
                       moderation_requests=[self.mr1, self.mr3],
-                      action_obj=self.mr1.get_last_action(),
+                      action_obj=self.mr1.get_last_action()
                       )
         )
 
@@ -363,7 +363,7 @@ class DeleteSelectedTest(CMSTestCase):
 
         self.assertEqual(response.status_code, 403)
 
-    @mock.patch.object(ModerationRequestTreeAdmin, "has_delete_permission", mock.Mock(return_value=False),)
+    @mock.patch.object(ModerationRequestTreeAdmin, "has_delete_permission", mock.Mock(return_value=False))
     @mock.patch("djangocms_moderation.admin.notify_collection_author")
     def test_delete_selected_view_cannot_be_accessed_without_delete_permission(self, notify_author_mock):
         # Login as the collection author
@@ -459,7 +459,6 @@ class DeletedSelectedTransactionTest(TransactionTestCase):
     def test_deleting_is_wrapped_in_db_transaction(self, messages_mock):
         class FakeError(Exception):
             pass
-
         # Throw an exception to cause a db rollback.
         # Throwing FakeError as no actual code will ever throw it and
         # therefore catching this later in the test will not cover up a

@@ -145,9 +145,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         self.assertEqual("", link)
 
     @mock.patch("djangocms_moderation.monkeypatch.is_registered_for_moderation", return_value=False)
-    def test_get_publish_link_when_not_registered(
-        self, mock_is_registered_for_moderation
-    ):
+    def test_get_publish_link_when_not_registered(self, mock_is_registered_for_moderation):
         link = self.version_admin._get_publish_link(self.pg1_version, self.mock_request)
         publish_url = reverse(
             "admin:{app}_{model}version_publish".format(

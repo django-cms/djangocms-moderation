@@ -95,7 +95,7 @@ class ModerationAdminTestCase(BaseTestCase):
 
         actions = self.mr_tree_admin.get_actions(request=mock_request)
         # mr1 request is approved so user can see the publish_selected action
-        self.assertIn('publish_selected', actions)
+        self.assertIn("publish_selected", actions)
 
         # Now, when version becomes published, they shouldn't see it
         self.mr1.version._set_publish(self.user)
@@ -109,7 +109,7 @@ class ModerationAdminTestCase(BaseTestCase):
         mock_request._collection = self.collection
         actions = self.mr_tree_admin.get_actions(request=mock_request)
         # mr1 request is approved, so user1 can see the publish selected option
-        self.assertIn('publish_selected', actions)
+        self.assertIn("publish_selected", actions)
 
         # user2 should not be able to see it
         mock_request.user = self.user2
@@ -129,8 +129,8 @@ class ModerationAdminTestCase(BaseTestCase):
         actions = self.mr_tree_admin.get_actions(request=mock_request)
         # mr1 is not a moderator for collection1 so he can't approve or reject
         # anything
-        self.assertNotIn('approve_selected', actions)
-        self.assertNotIn('reject_selected', actions)
+        self.assertNotIn("approve_selected", actions)
+        self.assertNotIn("reject_selected", actions)
 
         # user2 is moderator and there is 1 unapproved request
         mock_request.user = self.user2
@@ -173,7 +173,7 @@ class ModerationAdminTestCase(BaseTestCase):
         actions = self.mr_tree_admin.get_actions(request=mock_request)
         # for self.user, the publish_selected should be available even if
         # collection status is ARCHIVED
-        self.assertIn('publish_selected', actions)
+        self.assertIn("publish_selected", actions)
 
         mock_request.user = self.user2
         actions = self.mr_tree_admin.get_actions(request=mock_request)
