@@ -267,7 +267,6 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         add it to the collection once!
         """
         user = self.get_superuser()
-        workflow = Workflow.objects.create(name="Workflow 1", is_default=True)
         collection = ModerationCollectionFactory(author=user)
 
         page_version = PageVersionFactory(created_by=user)
@@ -322,7 +321,6 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         """
         user = self.get_superuser()
         user2 = UserFactory()
-        workflow = Workflow.objects.create(name="Workflow 1", is_default=True)
         collection = ModerationCollectionFactory(author=user)
 
         page_version = PageVersionFactory(created_by=user)
@@ -382,7 +380,6 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         are added to a collection
         """
         user = self.get_superuser()
-        workflow = Workflow.objects.create(name="Workflow 1", is_default=True)
         collection = ModerationCollectionFactory(author=user)
 
         page_version = PageVersionFactory(created_by=user)
@@ -464,7 +461,6 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
 
     def test_adding_non_page_item_doesnt_trigger_nested_collection_mechanism(self):
         user = self.get_superuser()
-        workflow = Workflow.objects.create(name="Workflow 1", is_default=True)
         collection = ModerationCollectionFactory(author=user)
 
         poll_version = PollVersionFactory(created_by=user)
@@ -508,7 +504,6 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
     ):
         user = self.get_superuser()
         user2 = UserFactory()
-        workflow = Workflow.objects.create(name="Workflow 1", is_default=True)
         collection = ModerationCollectionFactory(author=user)
 
         page_version = PageVersionFactory(created_by=user2)
@@ -716,6 +711,7 @@ class CollectionItemsViewTest(CMSTestCase):
                 has_duplicate = True
             moderation_requests_seen.append(node.moderation_request.id)
         self.assertTrue(has_duplicate)
+
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
     def setUp(self):

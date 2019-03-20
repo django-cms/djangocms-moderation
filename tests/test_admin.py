@@ -15,16 +15,20 @@ from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
-    Workflow,
 )
 
 from .utils.base import BaseTestCase, MockRequest
+from .utils.factories import (
+    ModerationCollectionFactory,
+    RootModerationRequestTreeNodeFactory,
+    WorkflowFactory,
+)
 
 
 class ModerationAdminTestCase(BaseTestCase):
     def setUp(self):
-        self.wf = Workflow.objects.create(name="Workflow Test")
-        self.collection = ModerationCollection.objects.create(
+        self.wf = WorkflowFactory(name="Workflow Test")
+        self.collection = ModerationCollectionFactory(
             author=self.user,
             name="Collection Admin Actions",
             workflow=self.wf,
@@ -34,13 +38,12 @@ class ModerationAdminTestCase(BaseTestCase):
         pg1_version = factories.PageVersionFactory()
         pg2_version = factories.PageVersionFactory()
 
-        self.mr1 = ModerationRequest.objects.create(
-            version=pg1_version,
-            language="en",
-            collection=self.collection,
-            is_active=True,
-            author=self.collection.author,
+        self.mr1n = RootModerationRequestTreeNodeFactory(
+            moderation_request__version=pg1_version,
+            moderation_request__collection=self.collection,
+            moderation_request__is_active=True,
         )
+        self.mr1 = self.mr1n.moderation_request
 
         self.wfst = self.wf.steps.create(role=self.role2, is_required=True, order=1)
 
@@ -56,19 +59,18 @@ class ModerationAdminTestCase(BaseTestCase):
         )
 
         # this moderation request is not approved
-        self.mr2 = ModerationRequest.objects.create(
-            version=pg2_version,
-            language="en",
-            collection=self.collection,
-            is_active=True,
-            author=self.collection.author,
+        self.mr2n = RootModerationRequestTreeNodeFactory(
+            moderation_request__version=pg2_version,
+            moderation_request__collection=self.collection,
+            moderation_request__is_active=True,
         )
+        self.mr2 = self.mr2n.moderation_request
         self.mr2.actions.create(
             to_user=self.user2, by_user=self.user, action=constants.ACTION_STARTED
         )
 
         self.url = reverse("admin:djangocms_moderation_moderationrequest_changelist")
-        self.url_with_filter = "{}?collection__id__exact={}".format(
+        self.url_with_filter = "{}?moderation_request__collection__id={}".format(
             self.url, self.collection.pk
         )
         self.mr_tree_admin = ModerationRequestTreeAdmin(ModerationRequest, admin.AdminSite())
@@ -331,3 +333,18 @@ class ModerationAdminTestCase(BaseTestCase):
         )
         self.assertListEqual(mra_inline.fields, fields)
         self.assertIn("message", fields)
+
+    def test_tree_admin_list_links_to_moderation_request_change_view(self):
+        mock_request = MockRequest()
+        mock_request.user = self.user
+        mock_request._collection = self.collection
+        result = self.mr_tree_admin.get_id(self.mr1n)
+        self.assertIn('get_id', self.mr_tree_admin.get_list_display(mock_request))
+        expected = '<a href="{}">{}</a>'.format(
+            reverse(
+                'admin:djangocms_moderation_moderationrequest_change',
+                args=(self.mr1.pk,),
+            ),
+            self.mr1.pk,
+        )
+        self.assertHTMLEqual(result, expected)
