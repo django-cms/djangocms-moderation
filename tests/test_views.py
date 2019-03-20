@@ -28,7 +28,6 @@ from .utils.factories import (
     PollVersionFactory,
     RootModerationRequestTreeNodeFactory,
     UserFactory,
-    WorkflowFactory,
 )
 
 
@@ -39,11 +38,10 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         as it is already party of a collection
         """
         user = self.get_superuser()
-        workflow = WorkflowFactory(name="Workflow 1", is_default=True)
         existing_collection = ModerationCollectionFactory(
-            author=user, workflow=workflow
+            author=user
         )
-        collection = ModerationCollectionFactory(author=user, workflow=workflow)
+        collection = ModerationCollectionFactory(author=user)
         page_version = PageVersionFactory(created_by=user)
         RootModerationRequestTreeNodeFactory(
             moderation_request__collection=existing_collection,
@@ -71,8 +69,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
 
     def test_add_items_to_collection_no_return_url_set(self):
         user = self.get_superuser()
-        workflow = WorkflowFactory(name="Workflow 1", is_default=True)
-        collection = ModerationCollectionFactory(author=user, workflow=workflow)
+        collection = ModerationCollectionFactory(author=user)
         page_version = PageVersionFactory(created_by=user)
 
         url = add_url_parameters(
@@ -102,7 +99,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         moderation_requests = ModerationRequest.objects.filter(
             version=page_version, collection=collection
         )
-        self.assertTrue(moderation_requests.exists())
+        self.assertEqual(moderation_requests.count(), 1)
         self.assertEqual(
             ModerationRequestTreeNode.objects.filter(
                 moderation_request=moderation_requests.get()
@@ -112,8 +109,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
 
     def test_add_items_to_collection_return_url_set(self):
         user = self.get_superuser()
-        workflow = WorkflowFactory(name="Workflow 1", is_default=True)
-        collection = ModerationCollectionFactory(author=user, workflow=workflow)
+        collection = ModerationCollectionFactory(author=user)
         page1_version = PageVersionFactory(created_by=user)
         page2_version = PageVersionFactory(created_by=user)
 
@@ -167,9 +163,8 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
 
     def test_list_versions_from_collection_id_param(self):
         user = self.get_superuser()
-        workflow = WorkflowFactory(name="Workflow 1", is_default=True)
-        collection1 = ModerationCollectionFactory(author=user, workflow=workflow)
-        collection2 = ModerationCollectionFactory(author=user, workflow=workflow)
+        collection1 = ModerationCollectionFactory(author=user)
+        collection2 = ModerationCollectionFactory(author=user)
 
         page1_version = PageVersionFactory(created_by=user)
         page2_version = PageVersionFactory(created_by=user)
@@ -210,8 +205,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         A page with multiple moderatable children automatically adds them to the collection
         """
         user = self.get_superuser()
-        workflow = WorkflowFactory(name="Workflow 1", is_default=True)
-        collection = ModerationCollectionFactory(author=user, workflow=workflow)
+        collection = ModerationCollectionFactory(author=user)
 
         page_version = PageVersionFactory(created_by=user)
         language = page_version.content.language
@@ -274,7 +268,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         """
         user = self.get_superuser()
         workflow = Workflow.objects.create(name="Workflow 1", is_default=True)
-        collection = ModerationCollectionFactory(author=user, workflow=workflow)
+        collection = ModerationCollectionFactory(author=user)
 
         page_version = PageVersionFactory(created_by=user)
         language = page_version.content.language
@@ -329,7 +323,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         user = self.get_superuser()
         user2 = UserFactory()
         workflow = Workflow.objects.create(name="Workflow 1", is_default=True)
-        collection = ModerationCollectionFactory(author=user, workflow=workflow)
+        collection = ModerationCollectionFactory(author=user)
 
         page_version = PageVersionFactory(created_by=user)
         language = page_version.content.language
@@ -389,7 +383,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         """
         user = self.get_superuser()
         workflow = Workflow.objects.create(name="Workflow 1", is_default=True)
-        collection = ModerationCollectionFactory(author=user, workflow=workflow)
+        collection = ModerationCollectionFactory(author=user)
 
         page_version = PageVersionFactory(created_by=user)
         language = page_version.content.language
@@ -471,9 +465,15 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
     def test_adding_non_page_item_doesnt_trigger_nested_collection_mechanism(self):
         user = self.get_superuser()
         workflow = Workflow.objects.create(name="Workflow 1", is_default=True)
-        collection = ModerationCollectionFactory(author=user, workflow=workflow)
+        collection = ModerationCollectionFactory(author=user)
 
         poll_version = PollVersionFactory(created_by=user)
+        language = poll_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=poll_version.content)
+        poll1_version = PollVersionFactory(created_by=user, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll1_version.content.poll)
 
         admin_endpoint = get_admin_url(
             name="cms_moderation_items_to_collection", language="en", args=()
@@ -484,9 +484,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             version_ids=poll_version.pk,
             collection_id=collection.pk,
         )
-        with self.login_user_context(user), mock.patch(
-            "djangocms_moderation.models.ModerationCollection._add_nested_children"
-        ) as _add_nested_children:
+        with self.login_user_context(user):
             response = self.client.post(
                 path=url,
                 data={"collection": collection.pk, "versions": [poll_version.pk]},
@@ -505,15 +503,13 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         )
         self.assertEqual(stored_collection.filter(version=poll_version).count(), 1)
 
-        _add_nested_children.assert_not_called()
-
     def test_adding_page_not_by_the_author_doesnt_trigger_nested_collection_mechanism(
         self
     ):
         user = self.get_superuser()
         user2 = UserFactory()
         workflow = Workflow.objects.create(name="Workflow 1", is_default=True)
-        collection = ModerationCollectionFactory(author=user, workflow=workflow)
+        collection = ModerationCollectionFactory(author=user)
 
         page_version = PageVersionFactory(created_by=user2)
         language = page_version.content.language
@@ -534,9 +530,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         )
         with self.login_user_context(user), mock.patch(
             "djangocms_moderation.forms.is_obj_version_unlocked"
-        ), mock.patch(
-            "djangocms_moderation.models.ModerationCollection._add_nested_children"
-        ) as _add_nested_children:
+        ):
             response = self.client.post(
                 path=url,
                 data={"collection": collection.pk, "versions": [page_version.pk]},
@@ -562,8 +556,6 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         self.assertEqual(
             ModerationRequestTreeNode.objects.filter(moderation_request=mr1).count(), 0
         )
-
-        _add_nested_children.assert_not_called()
 
 
 class CollectionItemsViewTest(CMSTestCase):
@@ -645,6 +637,85 @@ class CollectionItemsViewTest(CMSTestCase):
             RelatedFieldWidgetWrapper,
         )
 
+    def test_tree_nodes_are_created(self):
+        """
+        Moderation request nodes are created with the correct structure
+
+        Created node structure:
+
+        page_version
+            layer 1
+                layer 2
+            layer 1
+        """
+        user = self.get_superuser()
+        admin_endpoint = get_admin_url(
+            name="cms_moderation_items_to_collection", language="en", args=()
+        )
+        wf1 = Workflow.objects.create(pk=1, name="Workflow 1", is_default=True)
+        collection = ModerationCollection.objects.create(
+            author=user, name="My collection 1", workflow=wf1
+        )
+        page_version = PageVersionFactory(created_by=user)
+        placeholder = PlaceholderFactory(source=page_version.content)
+        language = page_version.content.language
+
+        poll_version = PollVersionFactory(created_by=user, content__language=language)
+        poll_plugin = PollPluginFactory(
+            placeholder=placeholder, poll=poll_version.content.poll
+        )
+
+        poll_child_1_version = PollVersionFactory(
+            created_by=user, content__language=language
+        )
+        poll_child_1_plugin = PollPluginFactory(
+            placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll
+        )
+
+        # Populate page poll child layer 2
+        poll_child_2_version = PollVersionFactory(
+            created_by=user, content__language=language
+        )
+        PollPluginFactory(
+            placeholder=poll_child_1_plugin.placeholder,
+            poll=poll_child_2_version.content.poll,
+        )
+
+        # Same plugin in a different order
+        PollPluginFactory(
+            placeholder=placeholder, poll=poll_child_1_version.content.poll
+        )
+
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url="http://example.com",
+            version_ids=page_version.pk,
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={"collection": collection.pk, "versions": [page_version.pk]},
+            )
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request__collection_id=collection.pk
+        )
+
+        # The correct amount of nodes exist
+        self.assertEqual(nodes.count(), 5)
+
+        # The same Moderation request exists more than once in the list
+        has_duplicate = False
+        moderation_requests_seen = []
+        for node in nodes:
+            if node.moderation_request.id in moderation_requests_seen:
+                has_duplicate = True
+            moderation_requests_seen.append(node.moderation_request.id)
+        self.assertTrue(has_duplicate)
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
     def setUp(self):
@@ -729,88 +800,6 @@ class ModerationRequestChangeListView(BaseViewTestCase):
         self.assertIn("submit_for_review_url", response.context)
 
 
-class CollectionItemsViewModerationNodesTestCase(CMSTestCase):
-    def test_tree_nodes_are_created(self):
-        """
-        Moderation request nodes are created with the correct structure
-
-        Created node structure:
-
-        page_version
-            layer 1
-                layer 2
-            layer 1
-        """
-        user = self.get_superuser()
-        admin_endpoint = get_admin_url(
-            name="cms_moderation_items_to_collection", language="en", args=()
-        )
-        wf1 = Workflow.objects.create(pk=1, name="Workflow 1", is_default=True)
-        collection = ModerationCollection.objects.create(
-            author=user, name="My collection 1", workflow=wf1
-        )
-        page_version = PageVersionFactory(created_by=user)
-        placeholder = PlaceholderFactory(source=page_version.content)
-        language = page_version.content.language
-
-        poll_version = PollVersionFactory(created_by=user, content__language=language)
-        poll_plugin = PollPluginFactory(
-            placeholder=placeholder, poll=poll_version.content.poll
-        )
-
-        poll_child_1_version = PollVersionFactory(
-            created_by=user, content__language=language
-        )
-        poll_child_1_plugin = PollPluginFactory(
-            placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll
-        )
-
-        # Populate page poll child layer 2
-        poll_child_2_version = PollVersionFactory(
-            created_by=user, content__language=language
-        )
-        PollPluginFactory(
-            placeholder=poll_child_1_plugin.placeholder,
-            poll=poll_child_2_version.content.poll,
-        )
-
-        # Same plugin in a different order
-        PollPluginFactory(
-            placeholder=placeholder, poll=poll_child_1_version.content.poll
-        )
-
-        url = add_url_parameters(
-            admin_endpoint,
-            return_to_url="http://example.com",
-            version_ids=page_version.pk,
-            collection_id=collection.pk,
-        )
-        with self.login_user_context(user):
-            response = self.client.post(
-                path=url,
-                data={"collection": collection.pk, "versions": [page_version.pk]},
-            )
-
-        self.assertEqual(302, response.status_code)
-        self.assertEqual(admin_endpoint, response.url)
-
-        nodes = ModerationRequestTreeNode.objects.filter(
-            moderation_request__collection_id=collection.pk
-        )
-
-        # The correct amount of nodes exist
-        self.assertEqual(nodes.count(), 5)
-
-        # The same Moderation request exists more than once in the list
-        has_duplicate = False
-        moderation_requests_seen = []
-        for node in nodes:
-            if node.moderation_request.id in moderation_requests_seen:
-                has_duplicate = True
-            moderation_requests_seen.append(node.moderation_request.id)
-        self.assertTrue(has_duplicate)
-
-
 class TransactionCollectionItemsViewTestCase(TransactionTestCase):
     def setUp(self):
         # Create db data
@@ -858,7 +847,7 @@ class TransactionCollectionItemsViewTestCase(TransactionTestCase):
         # genuine issue
         messages_mock.side_effect = FakeError
 
-        # Now do the request the delete_selected action has led us to
+        # Do the request to add to collection view
         try:
             self.client.post(self.url, self.data)
         except FakeError:
@@ -866,7 +855,7 @@ class TransactionCollectionItemsViewTestCase(TransactionTestCase):
             # but we don't want the test to throw it.
             pass
 
-        # Check neither the tree nodes nor the requests have been deleted.
+        # Check neither the tree nodes nor the requests have been added.
         # The db transaction should have rolled back.
         self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 3)
         self.assertEqual(ModerationRequest.objects.all().count(), 2)

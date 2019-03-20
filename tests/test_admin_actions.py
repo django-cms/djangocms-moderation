@@ -452,7 +452,13 @@ class DeletedSelectedTransactionTest(TransactionTestCase):
         }
 
     def tearDown(self):
-        # clear content type cache for page content's versionable
+        """Clear content type cache for page content's versionable.
+
+        This is necessary, because TransactionTestCase clears the
+        entire database after each test, meaning ContentType objects
+        are recreated with new IDs. Cache kept old IDs, causing
+        inability to retrieve versions for a given object.
+        """
         del self.moderation_request1.version.versionable.content_types
 
     @mock.patch("djangocms_moderation.admin.messages.success")

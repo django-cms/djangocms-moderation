@@ -1,8 +1,9 @@
 from django.db import models
 from django.urls import reverse
+from django.utils.functional import cached_property
 
-from cms.models import CMSPlugin
-from cms.models.fields import PlaceholderField
+from cms.models import CMSPlugin, Placeholder
+from cms.models.fields import PlaceholderRelationField
 
 
 class Poll(models.Model):
@@ -16,7 +17,16 @@ class PollContent(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
     language = models.TextField()
     text = models.TextField()
-    placeholder = PlaceholderField("placeholder")
+    placeholders = PlaceholderRelationField()
+
+    @cached_property
+    def placeholder(self):
+        try:
+            return self.placeholders.get(slot='content')
+        except Placeholder.DoesNotExist:
+            from cms.utils.placeholder import rescan_placeholders_for_obj
+            rescan_placeholders_for_obj(self)
+            return self.placeholders.get(slot='content')
 
     def __str__(self):
         return self.text
@@ -26,6 +36,9 @@ class PollContent(models.Model):
 
     def get_placeholders(self):
         return [self.placeholder]
+
+    def get_template(self):
+        return 'polls/poll_content.html'
 
 
 class Answer(models.Model):
