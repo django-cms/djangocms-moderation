@@ -383,13 +383,6 @@ class ModerationRequestTreeNode(MP_Node):
     def __str__(self):
         return str(self.id)
 
-    @cached_property
-    def item(self):
-        return self.get_item()
-
-    def get_item(self):
-        return ModerationRequest.objects.get(node=self)
-
 
 @python_2_unicode_compatible
 class ModerationRequest(models.Model):
