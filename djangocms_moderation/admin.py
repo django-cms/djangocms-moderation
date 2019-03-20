@@ -126,6 +126,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         resubmit_selected,
     ]
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+    list_display_links = []
 
     def has_add_permission(self, request):
         """
@@ -171,7 +172,14 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         return list_display
 
     def get_id(self, obj):
-        return obj.moderation_request.id
+        return format_html(
+            '<a href="{url}">{id}</a>',
+            url=reverse(
+                'admin:djangocms_moderation_moderationrequest_change',
+                args=(obj.moderation_request_id,),
+            ),
+            id=obj.moderation_request_id,
+        )
     get_id.short_description = _('ID')
 
     def get_content_type(self, obj):
