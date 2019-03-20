@@ -524,7 +524,7 @@ class ModerationCollectionTest(BaseTestCase):
             self.assertFalse(self.collection1.is_cancellable(self.user2))
 
     def test_can_cancel_permission(self):
-        # create non-admin, staff user with collection permissions and cancel permission
+        # create non-admin, staff user with cancel_collection permission
         user_who_can_cancel = factories.UserFactory(is_staff=True)
         user_who_can_cancel.user_permissions.add(Permission.objects.get(
             content_type__app_label='djangocms_moderation',
@@ -536,11 +536,10 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertTrue(collection.is_cancellable(user_who_can_cancel))
 
     def test_cannot_cancel_permission(self):
-        # create non-admin, staff user with collection permissions 
-        # excluding cancel_collection permission
+        # create non-admin, staff user without cancel_collection permission
         user_who_cannot_cancel = factories.UserFactory(is_staff=True)
 
-        # create a collection by each user.
+        # create a collection by user.
         collection = factories.ModerationCollectionFactory(
             author=user_who_cannot_cancel, status=constants.COLLECTING
         )
