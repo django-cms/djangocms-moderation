@@ -1,17 +1,15 @@
 import string
 
+from django.contrib.auth.models import User
+
 from cms.models import Placeholder
 
 import factory
-from django.contrib.auth.models import User
 from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import AbstractVersionFactory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
-from djangocms_moderation.models import (
-    ModerationCollection,
-    Workflow,
-)
+from djangocms_moderation.models import ModerationCollection, Workflow
 
 from .moderated_polls.models import Poll, PollContent, PollPlugin
 from .versioned_none_moderated_app.models import (
@@ -153,4 +151,3 @@ class ModerationCollectionFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = ModerationCollection
-
