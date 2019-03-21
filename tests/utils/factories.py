@@ -1,11 +1,15 @@
 import string
 
+from django.contrib.auth.models import User
+
 from cms.models import Placeholder
 
 import factory
 from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import AbstractVersionFactory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
+
+from djangocms_moderation.models import ModerationCollection, Workflow
 
 from .moderated_polls.models import Poll, PollContent, PollPlugin
 from .versioned_none_moderated_app.models import (
@@ -114,3 +118,36 @@ class NoneModeratedPollPluginFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = NoneModeratedPollPlugin
+
+
+class UserFactory(factory.django.DjangoModelFactory):
+    username = FuzzyText(length=12)
+    first_name = factory.Faker("first_name")
+    last_name = factory.Faker("last_name")
+    email = factory.LazyAttribute(
+        lambda u: "%s.%s@example.com" % (u.first_name.lower(), u.last_name.lower())
+    )
+
+    class Meta:
+        model = User
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        manager = cls._get_manager(model_class)
+        return manager.create_user(*args, **kwargs)
+
+
+class WorkflowFactory(factory.django.DjangoModelFactory):
+    name = FuzzyText(length=12)
+
+    class Meta:
+        model = Workflow
+
+
+class ModerationCollectionFactory(factory.django.DjangoModelFactory):
+    name = FuzzyText(length=12)
+    author = factory.SubFactory(UserFactory)
+    workflow = factory.SubFactory(WorkflowFactory)
+
+    class Meta:
+        model = ModerationCollection
