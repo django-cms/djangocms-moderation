@@ -37,7 +37,7 @@ Glossary
 .. glossary::
 
    Moderation
-      A process by which a draft version goes through an approval process before it can be published.
+      A process by which a draft version (see docs for `djangocms-versioning <https://github.com/divio/djangocms-versioning>`_) goes through an approval process before it can be published.
 
    Moderation Collection
       A collection (or batch) of drafts ready for moderation.
