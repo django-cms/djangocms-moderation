@@ -91,10 +91,10 @@ def get_latest_draft_version(version):
 
 
 def _is_draft_version_review_locked(message):
-    """
-    Checks if draft version is in review
-    """
     def inner(version, user):
+        """
+        Checks if version is a draft and in review
+        """
         draft_version = get_latest_draft_version(version)
         if (
             draft_version
