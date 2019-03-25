@@ -97,6 +97,16 @@ class TestCMSToolbars(BaseTestCase):
 
         self.assertTrue(self._button_exists("Submit for moderation", toolbar.toolbar))
 
+    def test_submit_for_moderation_no_permission(self):
+        user = self.get_standard_user()
+        ModerationRequest.objects.all().delete()
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, user=user, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertFalse(self._button_exists("Submit for moderation", toolbar.toolbar))
+
     def test_submit_for_moderation_version_locked(self):
         ModerationRequest.objects.all().delete()
         version = PageVersionFactory(created_by=self.user2)
@@ -267,6 +277,18 @@ class TestCMSToolbars(BaseTestCase):
         )
         collection_list_url += "?author__id__exact=%s" % self.user.pk
         self.assertTrue(manage_collection_item.url, collection_list_url)
+
+    def test_add_manage_collection_item_to_moderation_menu_no_permission(self):
+        user = self.get_standard_user()
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, preview_mode=True, user=user)
+        toolbar.populate()
+        toolbar.post_template_populate()
+        cms_toolbar = toolbar.toolbar
+        manage_collection_item = self._find_menu_item(
+            "Moderation collections...", cms_toolbar
+        )
+        self.assertIsNone(manage_collection_item)
 
     def test_moderation_collection_changelist_reviewer_filter(self):
 
