@@ -17,7 +17,12 @@ from djangocms_moderation.models import (
 from djangocms_moderation.utils import get_admin_url
 
 from .utils.base import BaseViewTestCase
-from .utils.factories import PlaceholderFactory, PollPluginFactory, PollVersionFactory
+from .utils.factories import (
+    ModerationCollectionFactory,
+    PlaceholderFactory,
+    PollPluginFactory,
+    PollVersionFactory,
+)
 
 
 class CollectionItemsViewTest(BaseViewTestCase):
@@ -530,10 +535,8 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
         Remove Page 1 from the collection which should in turn remove Poll 1 and Poll 2 from the entire collection
         """
-        workflow = Workflow.objects.create(pk=1, name="Workflow 1", is_default=True)
-        collection = ModerationCollection.objects.create(
-            author=self.user, name='My collection 1', workflow=workflow
-        )
+        collection = ModerationCollectionFactory(author=self.user)
+
         page_1_version = PageVersionFactory(created_by=self.user)
         language = page_1_version.content.language
         # Populate page
