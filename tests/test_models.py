@@ -1,9 +1,9 @@
 import json
 from mock import patch
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import (
@@ -17,6 +17,7 @@ from djangocms_moderation.models import (
     WorkflowStep,
 )
 
+from .utils import factories
 from .utils.base import BaseTestCase
 
 
@@ -521,6 +522,28 @@ class ModerationCollectionTest(BaseTestCase):
             self.collection1.status = fixture[0]
             self.collection1.save()
             self.assertFalse(self.collection1.is_cancellable(self.user2))
+
+    def test_can_cancel_permission(self):
+        # create non-admin, staff user with cancel_collection permission
+        user_who_can_cancel = factories.UserFactory(is_staff=True)
+        user_who_can_cancel.user_permissions.add(Permission.objects.get(
+            content_type__app_label='djangocms_moderation',
+            codename='cancel_moderationcollection'
+        ))
+        collection = factories.ModerationCollectionFactory(
+            author=user_who_can_cancel, status=constants.COLLECTING
+        )
+        self.assertTrue(collection.is_cancellable(user_who_can_cancel))
+
+    def test_cannot_cancel_permission(self):
+        # create non-admin, staff user without cancel_collection permission
+        user_who_cannot_cancel = factories.UserFactory(is_staff=True)
+
+        # create a collection by user.
+        collection = factories.ModerationCollectionFactory(
+            author=user_who_cannot_cancel, status=constants.COLLECTING
+        )
+        self.assertFalse(collection.is_cancellable(user_who_cannot_cancel))
 
     @patch.object(ModerationRequest, "is_approved")
     def test_should_be_archived(self, is_approved_mock):
