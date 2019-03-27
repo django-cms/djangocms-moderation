@@ -18,6 +18,7 @@ from djangocms_moderation.models import (
     Role,
     Workflow,
 )
+
 from .utils.factories import ModerationCollectionFactory, UserFactory
 
 
