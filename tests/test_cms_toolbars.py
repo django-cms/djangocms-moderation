@@ -5,6 +5,7 @@ from django.test.client import RequestFactory
 from django.urls import reverse
 
 from cms.middleware.toolbar import ToolbarMiddleware
+from cms.test_utils.testcases import CMSTestCase
 from cms.toolbar.toolbar import CMSToolbar
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory, UserFactory
@@ -17,11 +18,10 @@ from djangocms_moderation.models import (
     Role,
     Workflow,
 )
+from .utils.factories import ModerationCollectionFactory, UserFactory
 
-from .utils.base import BaseTestCase
 
-
-class TestCMSToolbars(BaseTestCase):
+class CMSToolbarsTestCase(CMSTestCase):
     def _get_page_request(self, page, user):
         request = RequestFactory().get("/")
         request.session = {}
@@ -89,9 +89,9 @@ class TestCMSToolbars(BaseTestCase):
                     pass
 
     def test_submit_for_moderation_not_version_locked(self):
-        ModerationRequest.objects.all().delete()
-        version = PageVersionFactory(created_by=self.user)
-        toolbar = self._get_toolbar(version.content, user=self.user, edit_mode=True)
+        user = self.get_superuser()
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, user=user, edit_mode=True)
         toolbar.populate()
         toolbar.post_template_populate()
 
@@ -108,10 +108,11 @@ class TestCMSToolbars(BaseTestCase):
         self.assertFalse(self._button_exists("Submit for moderation", toolbar.toolbar))
 
     def test_submit_for_moderation_version_locked(self):
-        ModerationRequest.objects.all().delete()
-        version = PageVersionFactory(created_by=self.user2)
+        author = self.get_superuser()
+        another_user = UserFactory(is_staff=True, is_superuser=True)
+        version = PageVersionFactory(created_by=author)
         # Same user to version author is logged in
-        toolbar = self._get_toolbar(version.content, user=self.user2, edit_mode=True)
+        toolbar = self._get_toolbar(version.content, user=author, edit_mode=True)
         toolbar.populate()
         toolbar.post_template_populate()
 
@@ -119,7 +120,7 @@ class TestCMSToolbars(BaseTestCase):
         self.assertTrue(self._button_exists("Submit for moderation", toolbar.toolbar))
 
         # Different user to version author is logged in
-        toolbar = self._get_toolbar(version.content, user=self.user, edit_mode=True)
+        toolbar = self._get_toolbar(version.content, user=another_user, edit_mode=True)
         toolbar.populate()
         toolbar.post_template_populate()
 
@@ -127,9 +128,9 @@ class TestCMSToolbars(BaseTestCase):
         self.assertFalse(self._button_exists("Submit for moderation", toolbar.toolbar))
 
     def test_page_in_collection_collection(self):
-        ModerationRequest.objects.all().delete()
         version = PageVersionFactory()
-        self.collection1.add_version(version=version)
+        collection = ModerationCollectionFactory()
+        collection.add_version(version=version)
 
         toolbar = self._get_toolbar(version.content, edit_mode=True)
         toolbar.populate()
@@ -137,19 +138,17 @@ class TestCMSToolbars(BaseTestCase):
 
         self.assertTrue(
             self._button_exists(
-                'In collection "{} ({})"'.format(
-                    self.collection1.name, self.collection1.id
-                ),
+                'In collection "{} ({})"'.format(collection.name, collection.id),
                 toolbar.toolbar,
             )
         )
 
     def test_page_in_collection_moderating(self):
-        ModerationRequest.objects.all().delete()
         version = PageVersionFactory()
-        self.collection1.add_version(version=version)
-        self.collection1.status = constants.IN_REVIEW
-        self.collection1.save()
+        collection = ModerationCollectionFactory()
+        collection.add_version(version=version)
+        collection.status = constants.IN_REVIEW
+        collection.save()
 
         toolbar = self._get_toolbar(version.content, edit_mode=True)
         toolbar.populate()
@@ -157,9 +156,7 @@ class TestCMSToolbars(BaseTestCase):
 
         self.assertTrue(
             self._button_exists(
-                'In moderation "{} ({})"'.format(
-                    self.collection1.name, self.collection1.id
-                ),
+                'In moderation "{} ({})"'.format(collection.name, collection.id),
                 toolbar.toolbar,
             )
         )
@@ -169,10 +166,12 @@ class TestCMSToolbars(BaseTestCase):
         Version lock is in the test requirements, lets make sure it still works
         with moderation
         """
-        ModerationRequest.objects.all().delete()
+        user1 = self.get_superuser()
+        user2 = UserFactory(is_staff=True, is_superuser=True)
+
         # Version created with the same user as toolbar user
-        version = PageVersionFactory(created_by=self.user)
-        toolbar = self._get_toolbar(version.content, user=self.user)
+        version = PageVersionFactory(created_by=user1)
+        toolbar = self._get_toolbar(version.content, user=user1)
         toolbar.populate()
         toolbar.post_template_populate()
 
@@ -182,8 +181,8 @@ class TestCMSToolbars(BaseTestCase):
         self.assertFalse(button[0].disabled)
 
         # Now version user is different to toolbar user
-        version = PageVersionFactory(created_by=self.user2)
-        toolbar = self._get_toolbar(version.content, user=self.user)
+        version = PageVersionFactory(created_by=user2)
+        toolbar = self._get_toolbar(version.content, user=user1)
         toolbar.populate()
         toolbar.post_template_populate()
 
@@ -199,9 +198,11 @@ class TestCMSToolbars(BaseTestCase):
         self.assertTrue(button[0].disabled)
 
     def test_add_edit_button(self):
-        ModerationRequest.objects.all().delete()
-        version = PageVersionFactory(created_by=self.user)
-        toolbar = self._get_toolbar(version.content, user=self.user)
+        user = self.get_superuser()
+        version = PageVersionFactory(created_by=user)
+        collection = ModerationCollectionFactory()
+
+        toolbar = self._get_toolbar(version.content, user=user)
         toolbar.populate()
         toolbar.post_template_populate()
 
@@ -213,10 +214,10 @@ class TestCMSToolbars(BaseTestCase):
 
         # Lets add the version to moderation, the Edit should no longer be
         # clickable
-        self.collection1.add_version(version=version)
+        collection.add_version(version=version)
 
         # refresh the toolbar
-        toolbar = self._get_toolbar(version.content, user=self.user)
+        toolbar = self._get_toolbar(version.content, user=user)
         toolbar.populate()
         toolbar.post_template_populate()
 
@@ -225,7 +226,6 @@ class TestCMSToolbars(BaseTestCase):
         self.assertTrue(button[0].disabled)
 
     def test_add_edit_button_without_toolbar_object(self):
-        ModerationRequest.objects.all().delete()
         toolbar = self._get_toolbar(None)
         toolbar.populate()
         toolbar.post_template_populate()
@@ -238,7 +238,6 @@ class TestCMSToolbars(BaseTestCase):
     )
     def test_publish_buttons_when_unregistered(self, mock_is_registered_for_moderation):
         mock_is_registered_for_moderation.return_value = False
-        ModerationRequest.objects.all().delete()
         version = PageVersionFactory()
         toolbar = self._get_toolbar(version.content, edit_mode=True)
         toolbar.populate()
@@ -252,18 +251,19 @@ class TestCMSToolbars(BaseTestCase):
     def test_add_edit_buttons_when_unregistered(
         self, mock_is_registered_for_moderation
     ):
+        user = self.get_superuser()
         mock_is_registered_for_moderation.return_value = False
-        ModerationRequest.objects.all().delete()
-        version = PageVersionFactory(created_by=self.user)
-        toolbar = self._get_toolbar(version.content, preview_mode=True, user=self.user)
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, preview_mode=True, user=user)
         toolbar.populate()
         toolbar.post_template_populate()
 
         self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
 
     def test_add_manage_collection_item_to_moderation_menu(self):
-        version = PageVersionFactory(created_by=self.user)
-        toolbar = self._get_toolbar(version.content, preview_mode=True, user=self.user)
+        user = self.get_superuser()
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, preview_mode=True, user=user)
         toolbar.populate()
         toolbar.post_template_populate()
         cms_toolbar = toolbar.toolbar
@@ -275,7 +275,7 @@ class TestCMSToolbars(BaseTestCase):
         collection_list_url = reverse(
             "admin:djangocms_moderation_moderationcollection_changelist"
         )
-        collection_list_url += "?author__id__exact=%s" % self.user.pk
+        collection_list_url += "?author__id__exact=%s" % user.pk
         self.assertTrue(manage_collection_item.url, collection_list_url)
 
     def test_add_manage_collection_item_to_moderation_menu_no_permission(self):
