@@ -8,7 +8,7 @@ from cms.middleware.toolbar import ToolbarMiddleware
 from cms.test_utils.testcases import CMSTestCase
 from cms.toolbar.toolbar import CMSToolbar
 
-from djangocms_versioning.test_utils.factories import PageVersionFactory, UserFactory
+from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
 from djangocms_moderation.cms_toolbars import ModerationToolbar
