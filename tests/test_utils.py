@@ -1,7 +1,6 @@
 from django.test.client import RequestFactory
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
-from tests.utils.base import BaseTestCase
 
 from djangocms_moderation import utils
 from djangocms_moderation.constants import ACTION_REJECTED, ACTION_STARTED
@@ -10,6 +9,7 @@ from djangocms_moderation.helpers import (
     is_obj_review_locked,
 )
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
+from tests.utils.base import BaseTestCase
 
 
 class UtilsTestCase(BaseTestCase):
