@@ -10,7 +10,7 @@ Moderation Requests should not be confused with the standard Django request enti
 
 States
 ------------------------------------------------
-Moderation Requests are not in and of themselves stateful however they contain one or more instances of the :ref:`moderation_request_action` entity, which is stateful and the Moderation Request state can be inferred from its `moderation request actions`. They also link to a draft version, which also has states. The inferred states for a request are:
+Moderation Requests do not track state directly, however they contain one or more instances of the :ref:`moderation_request_action` entity, which is stateful and the Moderation Request state can thus be inferred from its `moderation request actions`. These latter also link to a draft version, which also has states. The inferred states for a request are:
 
 Ready for review
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

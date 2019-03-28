@@ -5,7 +5,7 @@ Integrating Moderation
    :maxdepth: 2
    :caption: Contents:
 
-Moderation depends on Versioning (https://github.com/divio/djangocms-versioning), so first install that. The content-type models that should be moderated need to be registered. This can be done in `cms_config.py` file:
+Moderation depends on `Versioning <https://github.com/divio/djangocms-versioning>`_ to be installed. The content-type models that should be moderated need to be registered. This can be done in `cms_config.py` file:
 
 .. code-block:: python
 
