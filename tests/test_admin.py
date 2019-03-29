@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
+from django.test.client import RequestFactory
 from django.urls import reverse
 
 from djangocms_versioning.test_utils import factories
@@ -281,7 +282,7 @@ class ModerationAdminTestCase(BaseTestCase):
         self.collection.status = constants.COLLECTING
         self.collection.save()
 
-        mock_request_author = MockRequest()
+        mock_request_author = RequestFactory()
         mock_request_author.user = self.collection.author
 
         mock_request_non_author = MockRequest()
@@ -315,7 +316,7 @@ class ModerationAdminTestCase(BaseTestCase):
         self.assertListEqual(["status", "workflow"], fields)
 
     def test_get_readonly_fields_for_moderation_request_review_user(self):
-        mock_request_author = MockRequest()
+        mock_request_author = RequestFactory()
         mock_request_author.user = self.user2  # user2 is a reviewer
         mra_inline = self.mra.inlines[0]
         fields = mra_inline.get_readonly_fields(
@@ -324,7 +325,7 @@ class ModerationAdminTestCase(BaseTestCase):
         self.assertListEqual(["show_user", "date_taken", "form_submission"], fields)
 
     def test_get_readonly_fields_for_moderation_request_non_review_user(self):
-        mock_request_author = MockRequest()
+        mock_request_author = RequestFactory()
         mock_request_author.user = self.user3  # user3 is not a reviewer
         mra_inline = self.mra.inlines[0]
         fields = mra_inline.get_readonly_fields(
@@ -334,7 +335,7 @@ class ModerationAdminTestCase(BaseTestCase):
         self.assertIn("message", fields)
 
     def test_tree_admin_list_links_to_moderation_request_change_view(self):
-        mock_request = MockRequest()
+        mock_request = RequestFactory()
         mock_request.user = self.user
         mock_request._collection = self.collection
         result = self.mr_tree_admin.get_id(self.mr1n)
