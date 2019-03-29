@@ -6,8 +6,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
 from django.db import models, transaction
+from django.urls import reverse
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -71,7 +71,11 @@ class ConfirmationPage(models.Model):
 
 @python_2_unicode_compatible
 class Role(models.Model):
-    name = models.CharField(verbose_name=_("name"), max_length=120)
+    name = models.CharField(
+        verbose_name=_('name'),
+        max_length=120,
+        unique=True,
+    )
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, verbose_name=_("user"), blank=True, null=True
     )
@@ -221,7 +225,10 @@ class ModerationCollection(models.Model):
 
     class Meta:
         verbose_name = _("collection")
-        permissions = (("can_change_author", _("Can change collection author")),)
+        permissions = (
+            ("can_change_author", _("Can change collection author")),
+            ("cancel_moderationcollection", _("Can cancel collection")),
+        )
 
     def __str__(self):
         return self.name
@@ -296,6 +303,7 @@ class ModerationCollection(models.Model):
             [
                 self.author == user,
                 self.status not in (constants.ARCHIVED, constants.CANCELLED),
+                self.author.has_perm('djangocms_moderation.cancel_moderationcollection')
             ]
         )
 

@@ -9,3 +9,4 @@ freezegun
 mock
 -e git+git://github.com/divio/djangocms-versioning.git@master#egg=djangocms-versioning
 -e git+git://github.com/FidelityInternational/djangocms-version-locking.git@master#egg=djangocms-version-locking
+pyflakes>=2.1.1

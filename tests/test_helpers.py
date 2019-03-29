@@ -2,7 +2,7 @@ import json
 import mock
 from unittest import skip
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from cms.test_utils.testcases import CMSTestCase
 
