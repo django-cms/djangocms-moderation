@@ -1,3 +1,3 @@
-__version__ = "1.0.17"
+__version__ = "1.0.18"
 
 default_app_config = "djangocms_moderation.apps.ModerationConfig"
