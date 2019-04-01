@@ -647,10 +647,7 @@ class CollectionItemsViewTest(CMSTestCase):
         admin_endpoint = get_admin_url(
             name="cms_moderation_items_to_collection", language="en", args=()
         )
-        wf1 = Workflow.objects.create(pk=1, name="Workflow 1", is_default=True)
-        collection = ModerationCollection.objects.create(
-            author=user, name="My collection 1", workflow=wf1
-        )
+        collection = ModerationCollectionFactory(author=user)
         page_version = PageVersionFactory(created_by=user)
         placeholder = PlaceholderFactory(source=page_version.content)
         language = page_version.content.language
@@ -702,15 +699,17 @@ class CollectionItemsViewTest(CMSTestCase):
 
         # The correct amount of nodes exist
         self.assertEqual(nodes.count(), 5)
-
-        # The same Moderation request exists more than once in the list
-        has_duplicate = False
-        moderation_requests_seen = []
-        for node in nodes:
-            if node.moderation_request.id in moderation_requests_seen:
-                has_duplicate = True
-            moderation_requests_seen.append(node.moderation_request.id)
-        self.assertTrue(has_duplicate)
+        # Tree structure is correct
+        root = ModerationRequestTreeNode.get_root_nodes().get()
+        self.assertEqual(root.moderation_request.version, page_version)
+        self.assertEqual(root.get_children_count(), 4)
+        self.assertEqual(
+            root.get_children().filter(moderation_request__version=poll_version).count(), 1)
+        self.assertEqual(
+            root.get_children().filter(moderation_request__version=poll_child_2_version).count(), 1)
+        # TODO: I thought this should be duplicated as a child and as a grandchild, not twice as the child of the same node?
+        self.assertEqual(
+            root.get_children().filter(moderation_request__version=poll_child_1_version).count(), 2)
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
