@@ -349,6 +349,7 @@ class ModerationCollection(models.Model):
         return moderation_request, added_items
 
     def _add_nested_children(self, version, parent_node):
+        """Helper method which finds moderated children and adds them to the collection"""
         from .helpers import get_moderated_children_from_placeholder
 
         parent = version.content

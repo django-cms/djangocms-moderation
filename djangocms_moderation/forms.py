@@ -141,7 +141,6 @@ class CollectionItemsForm(forms.Form):
             formfield.widget,
             dbfield.rel,
             admin_site=admin.site,
-            # TODO: Don't think there are any tests for this permission stuff
             can_add_related=related_modeladmin.has_add_permission(request),
             can_change_related=related_modeladmin.has_change_permission(request),
             can_delete_related=related_modeladmin.has_delete_permission(request),

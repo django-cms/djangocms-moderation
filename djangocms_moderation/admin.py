@@ -437,10 +437,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         """
         An internal private helper that generates a return url to this models changeview.
         """
-        # TODO: None of the tests broke when all of the methods that use this method used
-        # an incorrect query which broke with the changes that the treechanges made.
-        # FYI Monika ^^^^
-
         redirect_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
         return "{}?moderation_request__collection__id={}".format(
             redirect_url,
