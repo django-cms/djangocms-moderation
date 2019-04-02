@@ -14,7 +14,6 @@ from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
     ModerationRequestTreeNode,
-    Workflow,
 )
 from djangocms_moderation.utils import get_admin_url
 
@@ -707,7 +706,8 @@ class CollectionItemsViewTest(CMSTestCase):
             root.get_children().filter(moderation_request__version=poll_version).count(), 1)
         self.assertEqual(
             root.get_children().filter(moderation_request__version=poll_child_2_version).count(), 1)
-        # TODO: I thought this should be duplicated as a child and as a grandchild, not twice as the child of the same node?
+        # TODO: I thought this should be duplicated as a child and as a
+        # grandchild, not twice as the child of the same node?
         self.assertEqual(
             root.get_children().filter(moderation_request__version=poll_child_1_version).count(), 2)
 
