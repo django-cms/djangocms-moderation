@@ -702,19 +702,28 @@ class CollectionItemsViewTest(CMSTestCase):
         )
 
         # The correct amount of nodes exist
-        self.assertEqual(nodes.count(), 5)
-        # Tree structure is correct
+        self.assertEqual(nodes.count(), 6)
+        # Now assert the tree structure...
+        # Check root refers to correct version & has correct number of children
         root = ModerationRequestTreeNode.get_root_nodes().get()
         self.assertEqual(root.moderation_request.version, page_version)
-        self.assertEqual(root.get_children_count(), 4)
-        self.assertEqual(
-            root.get_children().filter(moderation_request__version=poll_version).count(), 1)
-        self.assertEqual(
-            root.get_children().filter(moderation_request__version=poll_grandchild_version).count(), 1)
-        # TODO: I thought this should be duplicated as a child and as a
-        # grandchild, not twice as the child of the same node?
-        self.assertEqual(
-            root.get_children().filter(moderation_request__version=poll_child_version).count(), 2)
+        self.assertEqual(root.get_children_count(), 2)
+        # Check first child of root has correct tree
+        poll_node = root.get_children().get(moderation_request__version=poll_version)
+        self.assertEqual(poll_node.get_children_count(), 1)
+        poll_child_node = poll_node.get_children().get()
+        self.assertEqual(poll_child_node.moderation_request.version, poll_child_version)
+        self.assertEqual(poll_child_node.get_children_count(), 1)
+        poll_grandchild_node = poll_child_node.get_children().get()
+        self.assertEqual(poll_grandchild_node.moderation_request.version, poll_grandchild_version)
+        # Check second child of root has correct tree
+        poll_child_node2 = root.get_children().get(moderation_request__version=poll_child_version)
+        self.assertNotEqual(poll_child_node, poll_child_node2)
+        self.assertEqual(poll_child_node2.moderation_request.version, poll_child_version)
+        self.assertEqual(poll_child_node2.get_children_count(), 1)
+        poll_grandchild_node2 = poll_child_node2.get_children().get()
+        self.assertNotEqual(poll_grandchild_node, poll_grandchild_node2)
+        self.assertEqual(poll_grandchild_node2.moderation_request.version, poll_grandchild_version)
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
