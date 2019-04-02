@@ -637,10 +637,12 @@ class CollectionItemsViewTest(CMSTestCase):
 
         Created node structure:
 
-        page_version
-            layer 1
-                layer 2
-            layer 1
+        page
+            poll
+                poll_child
+                    poll_grandchild
+            poll_child
+                poll_grandchild
         """
         user = self.get_superuser()
         admin_endpoint = get_admin_url(
@@ -651,30 +653,33 @@ class CollectionItemsViewTest(CMSTestCase):
         placeholder = PlaceholderFactory(source=page_version.content)
         language = page_version.content.language
 
+        # Populate poll
         poll_version = PollVersionFactory(created_by=user, content__language=language)
-        poll_plugin = PollPluginFactory(
+        PollPluginFactory(
             placeholder=placeholder, poll=poll_version.content.poll
         )
 
-        poll_child_1_version = PollVersionFactory(
-            created_by=user, content__language=language
-        )
-        poll_child_1_plugin = PollPluginFactory(
-            placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll
-        )
-
-        # Populate page poll child layer 2
-        poll_child_2_version = PollVersionFactory(
+        # Populate poll child
+        poll_child_version = PollVersionFactory(
             created_by=user, content__language=language
         )
         PollPluginFactory(
-            placeholder=poll_child_1_plugin.placeholder,
-            poll=poll_child_2_version.content.poll,
+            placeholder=poll_version.content.placeholder,
+            poll=poll_child_version.content.poll,
         )
 
-        # Same plugin in a different order
+        # Populate grand child
+        poll_grandchild_version = PollVersionFactory(
+            created_by=user, content__language=language
+        )
         PollPluginFactory(
-            placeholder=placeholder, poll=poll_child_1_version.content.poll
+            placeholder=poll_child_version.content.placeholder,
+            poll=poll_grandchild_version.content.poll,
+        )
+
+        # Add poll_child directly to page as well
+        PollPluginFactory(
+            placeholder=placeholder, poll=poll_child_version.content.poll
         )
 
         url = add_url_parameters(
@@ -705,11 +710,11 @@ class CollectionItemsViewTest(CMSTestCase):
         self.assertEqual(
             root.get_children().filter(moderation_request__version=poll_version).count(), 1)
         self.assertEqual(
-            root.get_children().filter(moderation_request__version=poll_child_2_version).count(), 1)
+            root.get_children().filter(moderation_request__version=poll_grandchild_version).count(), 1)
         # TODO: I thought this should be duplicated as a child and as a
         # grandchild, not twice as the child of the same node?
         self.assertEqual(
-            root.get_children().filter(moderation_request__version=poll_child_1_version).count(), 2)
+            root.get_children().filter(moderation_request__version=poll_child_version).count(), 2)
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
