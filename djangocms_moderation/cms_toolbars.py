@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth import get_permission_codename
 from django.utils.translation import ugettext_lazy as _
 
 from cms.cms_toolbars import ADMIN_MENU_IDENTIFIER
@@ -8,6 +9,7 @@ from djangocms_versioning.cms_toolbars import VersioningToolbar, replace_toolbar
 from djangocms_versioning.models import Version
 
 from . import helpers
+from .models import ModerationCollection, ModerationRequest
 from .utils import get_admin_url
 
 
@@ -64,6 +66,12 @@ class ModerationToolbar(VersioningToolbar):
                 )
             # Check if the object is not version locked to someone else
             elif helpers.is_obj_version_unlocked(self.toolbar.obj, self.request.user):
+                opts = ModerationRequest._meta
+                codename = get_permission_codename("add", opts)
+                if not self.request.user.has_perm(
+                    "{app_label}.{codename}".format(app_label=opts.app_label, codename=codename)
+                ):
+                    return
                 version = Version.objects.get_for_content(self.toolbar.obj)
                 url = add_url_parameters(
                     get_admin_url(
@@ -73,7 +81,6 @@ class ModerationToolbar(VersioningToolbar):
                     ),
                     version_ids=version.pk,
                 )
-
                 self.toolbar.add_modal_button(
                     name=_("Submit for moderation"), url=url, side=self.toolbar.RIGHT
                 )
@@ -82,6 +89,12 @@ class ModerationToolbar(VersioningToolbar):
         """
         Helper method to add moderation menu in the toolbar
         """
+        opts = ModerationCollection._meta
+        codename = get_permission_codename("change", opts)
+        if not self.request.user.has_perm(
+            "{app_label}.{codename}".format(app_label=opts.app_label, codename=codename)
+        ):
+            return
         admin_menu = self.toolbar.get_or_create_menu(ADMIN_MENU_IDENTIFIER)
         url = get_admin_url(
             "djangocms_moderation_moderationcollection_changelist",

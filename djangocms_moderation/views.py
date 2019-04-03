@@ -1,10 +1,10 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin, messages
-from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _, ungettext
