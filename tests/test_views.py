@@ -12,7 +12,6 @@ from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
     ModerationRequestTreeNode,
-    Workflow,
 )
 from djangocms_moderation.utils import get_admin_url
 
@@ -520,6 +519,7 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
     def setUp(self):
         self.user = self.get_superuser()
+        self.client.force_login(self.user)
 
     def test_moderation_workflow_node_deletion(self):
         """
@@ -527,11 +527,12 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
         Node structure created:
 
-            Page 1
-                Poll 1
-                    Poll 2
-            Page 2
-                Poll 2
+            page_1_version
+                poll_version
+                poll_child_1_version
+                poll_child_2_version
+            page_2_version
+                poll_child_2_version
 
         Remove Page 1 from the collection which should in turn remove Poll 1 and Poll 2 from the entire collection
         """
@@ -573,7 +574,6 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
             version_ids=[page_1_version.pk, page_2_version.pk],
             collection_id=collection.pk
         )
-        self.client.force_login(self.user)
         response = self.client.post(
             path=url,
             data={
@@ -595,6 +595,25 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
         self.assertEqual(
             ModerationRequestTreeNode.objects.filter(moderation_request__collection=collection).count(),
             6
+        )
+        # The tree structure is correct
+        root_1 = ModerationRequestTreeNode.get_root_nodes().get(
+            moderation_request__version=page_1_version)
+        self.assertEqual(root_1.get_children_count(), 3)
+        self.assertEqual(
+            root_1.get_children()[0].moderation_request.version, poll_version)
+        self.assertEqual(
+            root_1.get_children()[1].moderation_request.version, poll_child_1_version)
+        self.assertEqual(
+            root_1.get_children()[2].moderation_request.version, poll_child_2_version)
+        root_2 = ModerationRequestTreeNode.get_root_nodes().get(
+            moderation_request__version=page_2_version)
+        self.assertEqual(root_2.get_children_count(), 1)
+        self.assertEqual(
+            root_2.get_children().get().moderation_request.version, poll_child_2_version)
+        self.assertEqual(
+            root_1.get_children()[2].moderation_request,
+            root_2.get_children().get().moderation_request,
         )
 
         # remove page 1 from the collection
