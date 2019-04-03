@@ -334,15 +334,49 @@ class ModerationCollection(models.Model):
                 return False
         return True
 
-    def add_version(self, version):
+    def add_version(self, version, parent=None, include_children=False):
         """
         Add version to the ModerationRequest in this collection.
         Requires validation from .forms.CollectionItemForm
         :return: <ModerationRequest>
         """
-        return self.moderation_requests.create(
+        moderation_request, created = self.moderation_requests.get_or_create(
             version=version, collection=self, author=self.author
         )
+        node = ModerationRequestTreeNode(moderation_request=moderation_request)
+        if parent is None:
+            ModerationRequestTreeNode.add_root(instance=node)
+        else:
+            parent.add_child(instance=node)
+
+        added_items = 1
+
+        if include_children:
+            added_items += self._add_nested_children(version, node)
+
+        return moderation_request, added_items
+
+    def _add_nested_children(self, version, parent_node):
+        """Helper method which finds moderated children and adds them to the collection"""
+        from .helpers import get_moderated_children_from_placeholder
+
+        parent = version.content
+        added_items = 0
+        if not getattr(parent, "get_placeholders", None):
+            return added_items
+        for placeholder in parent.get_placeholders():
+            for child_version in get_moderated_children_from_placeholder(
+                placeholder, version.versionable.grouping_values(parent)
+            ):
+                # Don't add the version if it's already part of the collection or another users item
+                if version.created_by == child_version.created_by:
+                    moderation_request, _added_items = self.add_version(
+                        child_version, parent=parent_node, include_children=True
+                    )
+                else:
+                    _added_items = self._add_nested_children(child_version, parent_node)
+                added_items += _added_items
+        return added_items
 
 
 class ModerationRequestTreeNode(MP_Node):
@@ -357,13 +391,6 @@ class ModerationRequestTreeNode(MP_Node):
 
     def __str__(self):
         return str(self.id)
-
-    @cached_property
-    def item(self):
-        return self.get_item()
-
-    def get_item(self):
-        return ModerationRequest.objects.get(node=self)
 
 
 @python_2_unicode_compatible

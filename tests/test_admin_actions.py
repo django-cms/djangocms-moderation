@@ -451,6 +451,16 @@ class DeletedSelectedTransactionTest(TransactionTestCase):
             ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
         }
 
+    def tearDown(self):
+        """Clear content type cache for page content's versionable.
+
+        This is necessary, because TransactionTestCase clears the
+        entire database after each test, meaning ContentType objects
+        are recreated with new IDs. Cache kept old IDs, causing
+        inability to retrieve versions for a given object.
+        """
+        del self.moderation_request1.version.versionable.content_types
+
     @mock.patch("djangocms_moderation.admin.messages.success")
     def test_deleting_is_wrapped_in_db_transaction(self, messages_mock):
         class FakeError(Exception):

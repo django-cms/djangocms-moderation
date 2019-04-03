@@ -126,6 +126,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         resubmit_selected,
     ]
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
+    list_display_links = []
 
     def has_add_permission(self, request):
         """
@@ -171,7 +172,14 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         return list_display
 
     def get_id(self, obj):
-        return obj.moderation_request.id
+        return format_html(
+            '<a href="{url}">{id}</a>',
+            url=reverse(
+                'admin:djangocms_moderation_moderationrequest_change',
+                args=(obj.moderation_request_id,),
+            ),
+            id=obj.moderation_request_id,
+        )
     get_id.short_description = _('ID')
 
     def get_content_type(self, obj):
@@ -429,11 +437,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         """
         An internal private helper that generates a return url to this models changeview.
         """
-        # TODO: None of the tests broke when all of the methods that use this method used
-        # an incorrect query which broke with the chnages that the treechanges made.
-        # FYI Monika ^^^^
-
-        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
         return "{}?moderation_request__collection__id={}".format(
             redirect_url,
             collection_id
@@ -459,21 +463,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         Hide the delete button from the detail page and prevent a MR from being deleted in the admin.
         """
         return False
-
-    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
-        extra_context = extra_context or dict()
-
-        # get the collection for the breadcrumb trail
-        collection_id = utils.extract_filter_param_from_changelist_url(
-            request, "_changelist_filters", "collection__id__exact"
-        )
-
-        if collection_id:
-            extra_context["collection_id"] = collection_id
-        else:
-            raise Http404
-
-        return super().changeform_view(request, object_id, form_url, extra_context)
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name
@@ -557,7 +546,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
         if request.method != 'POST':
             context = dict(
-                ids=request.GET.getlist('ids'),
+                ids=request.GET.getlist("ids"),
                 back_url=redirect_url,
                 queryset=queryset,
             )
@@ -1001,7 +990,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         moderation requests
         """
         url = format_html(
-            "{}?collection__id__exact={}",
+            "{}?moderation_request__collection__id={}",
             reverse("admin:djangocms_moderation_moderationrequest_changelist"),
             obj.pk,
         )

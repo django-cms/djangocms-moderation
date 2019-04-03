@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin, messages
+from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _, ungettext
 from django.views.generic import FormView
@@ -18,14 +20,14 @@ from .forms import (
     CollectionItemsForm,
     SubmitCollectionForModerationForm,
 )
-from .helpers import add_nested_moderated_children_to_collection
-from .models import ConfirmationPage, ModerationCollection, ModerationRequestTreeNode
+from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
 
 from . import constants  # isort:skip
 
 
+@method_decorator(transaction.atomic, name="post")
 class CollectionItemsView(FormView):
     template_name = "djangocms_moderation/items_to_collection.html"
     form_class = CollectionItemsForm
@@ -51,26 +53,25 @@ class CollectionItemsView(FormView):
         versions = form.cleaned_data["versions"]
         collection = form.cleaned_data["collection"]
 
+        total_added = 0
         for version in versions:
-            moderation_request = collection.add_version(version)
-
-            # Tree structure
-            node = ModerationRequestTreeNode(moderation_request=moderation_request)
-            ModerationRequestTreeNode.add_root(instance=node)
-
-            # If the version is a page type look at it's contents for draft moderatable objects
-            # and the current user is the user who modified the page
-            if isinstance(version.content, PageContent) and version.created_by == self.request.user:
-                add_nested_moderated_children_to_collection(collection, version, parent_node=node)
+            include_children = (
+                isinstance(version.content, PageContent)
+                and version.created_by == self.request.user
+            )
+            moderation_request, added_items = collection.add_version(
+                version, include_children=include_children
+            )
+            total_added += added_items
 
         messages.success(
             self.request,
             ungettext(
                 "%(count)d item successfully added to moderation collection",
                 "%(count)d items successfully added to moderation collection",
-                len(versions),
+                total_added,
             )
-            % {"count": len(versions)},
+            % {"count": total_added},
         )
 
         return self._get_success_redirect()
