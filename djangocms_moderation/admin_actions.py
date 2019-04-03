@@ -66,12 +66,9 @@ def delete_selected(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
         raise PermissionDenied
 
-    if queryset.exclude(collection__author=request.user).exists():
-        raise PermissionDenied
-
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
-        reverse("admin:djangocms_moderation_moderationrequest_delete"),
+        reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
         ",".join(selected),
         request._collection.id,
     )

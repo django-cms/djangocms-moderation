@@ -374,9 +374,7 @@ class ModerationRequestTest(BaseTestCase):
         self.assertEqual(request.compliance_number, expected)
 
     def test_compliance_number_sequential_number_with_identifier_prefix_backend(self):
-        self.wf2.compliance_number_backend = (
-            "djangocms_moderation.backends.sequential_number_with_identifier_prefix_backend"
-        )
+        self.wf2.compliance_number_backend = "djangocms_moderation.backends.sequential_number_with_identifier_prefix_backend"  # noqa:E501
         self.wf2.identifier = "SSO"
 
         request = ModerationRequest.objects.create(

@@ -1,9 +1,11 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin, messages
+from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
 from django.utils.translation import ugettext_lazy as _, ungettext
 from django.views.generic import FormView
@@ -18,7 +20,6 @@ from .forms import (
     CollectionItemsForm,
     SubmitCollectionForModerationForm,
 )
-from .helpers import get_moderated_children_from_placeholder
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
@@ -26,6 +27,7 @@ from .utils import get_admin_url
 from . import constants  # isort:skip
 
 
+@method_decorator(transaction.atomic, name="post")
 class CollectionItemsView(FormView):
     template_name = "djangocms_moderation/items_to_collection.html"
     form_class = CollectionItemsForm
@@ -51,25 +53,25 @@ class CollectionItemsView(FormView):
         versions = form.cleaned_data["versions"]
         collection = form.cleaned_data["collection"]
 
+        total_added = 0
         for version in versions:
-            collection.add_version(version)
-
-            # If the version is a page type look at it's contents for draft moderatable objects
-            # and the current user is the user who modified the page
-            if (
+            include_children = (
                 isinstance(version.content, PageContent)
                 and version.created_by == self.request.user
-            ):
-                self._add_children_to_collection(collection, version)
+            )
+            moderation_request, added_items = collection.add_version(
+                version, include_children=include_children
+            )
+            total_added += added_items
 
         messages.success(
             self.request,
             ungettext(
                 "%(count)d item successfully added to moderation collection",
                 "%(count)d items successfully added to moderation collection",
-                len(versions),
+                total_added,
             )
-            % {"count": len(versions)},
+            % {"count": total_added},
         )
 
         return self._get_success_redirect()
@@ -92,28 +94,6 @@ class CollectionItemsView(FormView):
 
         success_template = "djangocms_moderation/request_finalized.html"
         return render(self.request, success_template, {})
-
-    def _add_children_to_collection(self, collection, version):
-        """
-        Finds all of the moderated children and adds them to the collection
-        """
-        parent = version.content
-        for placeholder in parent.get_placeholders():
-            for child_version in get_moderated_children_from_placeholder(
-                placeholder, parent.language
-            ):
-                # Don't add the version if it's already part of the collection or another users item
-                if (
-                    version.created_by == child_version.created_by
-                    and not collection.moderation_requests.filter(
-                        version=child_version
-                    ).exists()
-                ):
-                    collection.add_version(child_version)
-
-                # If the child also has children, traverse that tree
-                if hasattr(child_version.content, "placeholder"):
-                    self._add_children_to_collection(collection, child_version)
 
     def get_form(self, **kwargs):
         form = super().get_form(**kwargs)
@@ -219,11 +199,10 @@ class SubmitCollectionForModeration(FormView):
             self.request, _("Your collection has been submitted for review")
         )
         # Redirect back to the collection filtered moderation request change list
-        redirect_url = reverse(
-            "admin:djangocms_moderation_moderationrequest_changelist"
-        )
-        redirect_url = "{}?collection__id__exact={}".format(
-            redirect_url, self.collection.id
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        redirect_url = "{}?moderation_request__collection__id={}".format(
+            redirect_url,
+            self.collection.id
         )
         return HttpResponseRedirect(redirect_url)
 
