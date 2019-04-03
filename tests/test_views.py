@@ -304,12 +304,11 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             1,
         )
         self.assertEqual(stored_collection.filter(version=poll_version).count(), 1)
-        # TODO: Check with Andrew that this should definitely have 2
         self.assertEqual(
             ModerationRequestTreeNode.objects.filter(
                 moderation_request=stored_collection.get(version=poll_version)
             ).count(),
-            2,
+            1,
         )
 
     def test_add_pages_moderated_duplicated_children_to_collection_for_author_only(
