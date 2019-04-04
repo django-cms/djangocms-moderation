@@ -14,11 +14,7 @@ from djangocms_versioning.models import Version
 
 from .conf import COLLECTION_NAME_LENGTH_LIMIT
 from .constants import COLLECTING
-from .models import (
-    ConfirmationFormSubmission,
-    ModerationRequest,
-    ModerationRequestTreeNode,
-)
+from .models import ConfirmationFormSubmission
 
 
 User = get_user_model()
@@ -179,36 +175,3 @@ def get_moderated_children_from_placeholder(placeholder, parent_version_filters)
             )
             if version:
                 yield version
-
-
-
-# FIXME: When successfully adding items to a collection, a page with many items shows a message
-#        "1 item succesfully added to collection when it was 1*n"
-
-def add_nested_moderated_children_to_collection(collection, version, parent_node):
-    """
-    Finds all of the moderated children and adds them to the collection
-    """
-    parent = version.content
-    for placeholder in parent.get_placeholders():
-        for child_version in get_moderated_children_from_placeholder(placeholder, parent.language):
-
-            # Don't add the version if it's already part of the collection or another users item
-            if version.created_by == child_version.created_by:
-
-                try:
-                    moderation_request = collection.moderation_requests.get(version=child_version)
-                except ModerationRequest.DoesNotExist:
-                    moderation_request = collection.add_version(child_version)
-
-                node = ModerationRequestTreeNode(moderation_request=moderation_request)
-                parent_node.add_child(instance=node)
-
-                if hasattr(child_version.content, 'placeholder'):
-                    add_nested_moderated_children_to_collection(collection, child_version, node)
-
-                    continue
-
-            # If the child also has children, traverse through that tree
-            if hasattr(child_version.content, 'placeholder'):
-                add_nested_moderated_children_to_collection(collection, child_version, parent_node)

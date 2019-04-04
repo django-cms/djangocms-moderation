@@ -393,27 +393,6 @@ class ModerationRequestTreeNode(MP_Node):
         return str(self.id)
 
 
-class ModerationRequestTreeNode(MP_Node):
-    moderation_request = models.ForeignKey(
-        to='ModerationRequest',
-        verbose_name=_('moderation_request'),
-        on_delete=models.CASCADE,
-    )
-
-    class Meta:
-        ordering = ('id',)
-
-    def __str__(self):
-        return str(self.id)
-
-    @cached_property
-    def item(self):
-        return self.get_item()
-
-    def get_item(self):
-        return ModerationRequest.objects.get(node=self)
-
-
 @python_2_unicode_compatible
 class ModerationRequest(models.Model):
     collection = models.ForeignKey(
