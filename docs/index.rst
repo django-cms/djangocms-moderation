@@ -48,7 +48,7 @@ Glossary
       Each :ref:`moderation_collection` is associated with a :ref:`workflow`. The workflow determines through what steps the moderation process needs to go and may provide a differing moderation UX for each Workflow.
 
    WorkflowStep
-      Each :ref:`workflow` has at least one :ref:`workflowstep`.
+      Each :ref:`workflow` has at least one :ref:`workflow_step`.
 
    Moderation Request Action
       Each :ref:`moderation_request` will have a number of actions associated with it. The number of these is defined as part of the :ref:`workflow`. A :ref:`moderation_request_action` is the action taken by an actor who is part of the moderation process. E.g. "mark as approved", "request rework", "publish".
