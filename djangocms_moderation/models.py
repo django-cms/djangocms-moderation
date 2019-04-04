@@ -340,16 +340,30 @@ class ModerationCollection(models.Model):
         Requires validation from .forms.CollectionItemForm
         :return: <ModerationRequest>
         """
+        added_items = 0
         moderation_request, created = self.moderation_requests.get_or_create(
             version=version, collection=self, author=self.author
         )
-        node = ModerationRequestTreeNode(moderation_request=moderation_request)
-        if parent is None:
-            ModerationRequestTreeNode.add_root(instance=node)
-        else:
-            parent.add_child(instance=node)
+        if created:
+            added_items += 1
 
-        added_items = 1
+        # if no parent and a root node with that moderation request
+        # doesn't exist, it should be created
+        create_root_node = (
+            parent is None and
+            not ModerationRequestTreeNode.get_root_nodes().filter(moderation_request=moderation_request).exists()
+        )
+        # if parent passed and a child node with that moderation request
+        # doesn't exist under the parent, it should be created
+        create_child_node = (
+            parent is not None and
+            not parent.get_children().filter(moderation_request=moderation_request).exists()
+        )
+        node = ModerationRequestTreeNode(moderation_request=moderation_request)
+        if create_root_node:
+            ModerationRequestTreeNode.add_root(instance=node)
+        elif create_child_node:
+            parent.add_child(instance=node)
 
         if include_children:
             added_items += self._add_nested_children(version, node)

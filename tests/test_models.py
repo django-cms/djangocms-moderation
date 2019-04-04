@@ -3,6 +3,7 @@ from mock import patch
 
 from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
+from django.test import TestCase
 from django.urls import reverse
 
 from djangocms_moderation import constants
@@ -12,6 +13,7 @@ from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
     ModerationRequestAction,
+    ModerationRequestTreeNode,
     Role,
     Workflow,
     WorkflowStep,
@@ -657,3 +659,120 @@ class ModerationCollectionTest(BaseTestCase):
         )
         self.assertEqual(1, actions.count())
         self.assertEqual(actions[0].moderation_request, active_request)
+
+
+class AddVersionTestCase(TestCase):
+
+    def setUp(self):
+        self.collection = factories.ModerationCollectionFactory()
+
+    def test_add_version_as_parent(self):
+        version = factories.PollVersionFactory()
+
+        moderation_request, added_items = self.collection.add_version(version)
+
+        self.assertEqual(ModerationRequest.objects.all().count(), 1)
+        self.assertEqual(ModerationRequest.objects.get(), moderation_request)
+        self.assertEqual(moderation_request.version, version)
+        self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.get().moderation_request,
+            moderation_request
+        )
+        self.assertEqual(added_items, 1)
+
+    def test_add_version_with_parent(self):
+        version = factories.PollVersionFactory()
+        parent = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request__collection=self.collection)
+
+        moderation_request, added_items = self.collection.add_version(version, parent)
+
+        self.assertEqual(ModerationRequest.objects.all().count(), 2)
+        self.assertEqual(
+            ModerationRequest.objects.exclude(pk=parent.moderation_request.pk).get(),
+            moderation_request
+        )
+        self.assertEqual(moderation_request.version, version)
+        self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 2)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.exclude(pk=parent.pk).get().moderation_request,
+            moderation_request
+        )
+        self.assertEqual(added_items, 1)
+
+    def test_add_version_duplicate_with_same_parent(self):
+        version = factories.PollVersionFactory()
+        parent = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request__collection=self.collection)
+        child = factories.ChildModerationRequestTreeNodeFactory(
+            parent=parent,
+            moderation_request__version=version,
+            moderation_request__collection=self.collection
+        )
+
+        # Add the same version to the same collection under the same parent
+        moderation_request, added_items = self.collection.add_version(version, parent)
+
+        self.assertEqual(ModerationRequest.objects.all().count(), 2)
+        self.assertQuerysetEqual(
+            ModerationRequest.objects.all(),
+            [parent.moderation_request.pk, child.moderation_request.pk],
+            transform=lambda o: o.pk
+        )
+        self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 2)
+        self.assertQuerysetEqual(
+            ModerationRequestTreeNode.objects.all(),
+            [parent.pk, child.pk],
+            transform=lambda o: o.pk
+        )
+        self.assertEqual(added_items, 0)
+        self.assertEqual(moderation_request, child.moderation_request)
+
+    def test_add_version_duplicate_with_different_parent(self):
+        version = factories.PollVersionFactory()
+        root = factories.RootModerationRequestTreeNodeFactory()
+        child = factories.ChildModerationRequestTreeNodeFactory(
+            parent=root,
+            moderation_request__version=version,
+            moderation_request__collection=self.collection
+        )
+        parent = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request__collection=self.collection)
+
+        # Add the same version to the same collection under a different parent
+        moderation_request, added_items = self.collection.add_version(version, parent)
+
+        self.assertEqual(ModerationRequest.objects.all().count(), 3)
+        self.assertQuerysetEqual(
+            ModerationRequest.objects.all(),
+            [root.moderation_request.pk, child.moderation_request.pk, parent.moderation_request.pk],
+            transform=lambda o: o.pk
+        )
+        all_nodes = ModerationRequestTreeNode.objects.all()
+        self.assertEqual(all_nodes.count(), 4)
+        self.assertIn(parent, all_nodes)
+        self.assertIn(child, all_nodes)
+        self.assertIn(root, all_nodes)
+        added_node = ModerationRequestTreeNode.objects.exclude(
+            pk__in=[child.pk, parent.pk, root.pk]).get()
+        self.assertEqual(added_node.moderation_request, child.moderation_request)
+        self.assertEqual(added_items, 0)
+        self.assertEqual(moderation_request, child.moderation_request)
+
+    def test_add_version_duplicate_for_parent(self):
+        version = factories.PollVersionFactory()
+        parent = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request__collection=self.collection,
+            moderation_request__version=version
+        )
+
+        # Add the same version to the same collection as parent
+        moderation_request, added_items = self.collection.add_version(version)
+
+        self.assertEqual(ModerationRequest.objects.all().count(), 1)
+        self.assertEqual(ModerationRequest.objects.get(), parent.moderation_request)
+        self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 1)
+        self.assertEqual(ModerationRequestTreeNode.objects.get(), parent)
+        self.assertEqual(added_items, 0)
+        self.assertEqual(moderation_request, parent.moderation_request)
