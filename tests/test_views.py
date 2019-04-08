@@ -875,49 +875,38 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
     def setUp(self):
         self.user = self.get_superuser()
         self.client.force_login(self.user)
+        self.collection = ModerationCollectionFactory(author=self.user)
 
-    def test_moderation_workflow_node_deletion(self):
+    def _set_up_initial_page_data(self):
         """
-        When a page that contains part of a tree is deleted all views load and work as expected
-
-        Node structure created:
-
+        This should create the following tree structure when added to collection:
             page_1_version
-                poll_version
-                poll_child_1_version
-                poll_child_2_version
+              poll_version
+                  poll_child_version
             page_2_version
-                poll_child_2_version
-
-        Remove Page 1 from the collection which should in turn remove Poll 1 and Poll 2 from the entire collection
+              poll_child_version
         """
-        collection = ModerationCollectionFactory(author=self.user)
+        # Page 1
+        self.page_1_version = PageVersionFactory(created_by=self.user)
+        language = self.page_1_version.content.language
+        page_1_placeholder = PlaceholderFactory(source=self.page_1_version.content)
+        self.poll_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_plugin = PollPluginFactory(placeholder=page_1_placeholder, poll=self.poll_version.content.poll)
+        self.poll_child_version = PollVersionFactory(created_by=self.user, content__language=language)
+        poll_child_plugin = PollPluginFactory(
+            placeholder=self.poll_version.content.placeholder, poll=self.poll_child_version.content.poll)
 
-        page_1_version = PageVersionFactory(created_by=self.user)
-        language = page_1_version.content.language
-        # Populate page
-        page_1_placeholder = PlaceholderFactory(source=page_1_version.content)
+        # Page 2
+        self.page_2_version = PageVersionFactory(created_by=self.user, content__language=language)
+        page_2_placeholder = PlaceholderFactory(source=self.page_2_version.content)
+        PollPluginFactory(placeholder=page_2_placeholder, poll=self.poll_child_version.content.poll)
 
-        # Populate page 1 poll 1 top level plugin (level 1)
-        poll_version = PollVersionFactory(created_by=self.user, content__language=language)
-        poll_plugin = PollPluginFactory(placeholder=page_1_placeholder, poll=poll_version.content.poll)
-
-        # Populate page 1 poll 2 child of poll 1 (level 2)
-        poll_child_1_version = PollVersionFactory(created_by=self.user, content__language=language)
-        poll_child_1_plugin = PollPluginFactory(
-            placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll)
-
-        # Populate page 1 poll 3 child of poll 2 (level 3)
-        poll_child_2_version = PollVersionFactory(created_by=self.user, content__language=language)
-        PollPluginFactory(placeholder=poll_child_1_plugin.placeholder, poll=poll_child_2_version.content.poll)
-
-        # Page 2 setup
-        page_2_version = PageVersionFactory(created_by=self.user, content__language=language)
-        page_2_placeholder = PlaceholderFactory(source=page_2_version.content)
-        # Populate page 2 poll 3 top level plugin (level 1)
-        PollPluginFactory(placeholder=page_2_placeholder, poll=poll_child_2_version.content.poll)
-
-        # Add both pages to a collection
+    def _add_pages_to_collection(self):
+        """
+        As this is an integration test, adding the pages to collection
+        via an http call. This ensures the tree is exactly how the add
+        http call would create it.
+        """
         admin_endpoint = get_admin_url(
             name='cms_moderation_items_to_collection',
             language='en',
@@ -926,81 +915,94 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
         url = add_url_parameters(
             admin_endpoint,
             return_to_url='http://example.com',
-            version_ids=[page_1_version.pk, page_2_version.pk],
-            collection_id=collection.pk
+            version_ids=[self.page_1_version.pk, self.page_2_version.pk],
+            collection_id=self.collection.pk
         )
         response = self.client.post(
             path=url,
             data={
-                'collection': collection.pk,
-                'versions': [page_1_version.pk, page_2_version.pk],
+                'collection': self.collection.pk,
+                'versions': [self.page_1_version.pk, self.page_2_version.pk],
             },
         )
-
-        # The endpoint url matches expectations
+        # smoke check the response
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
+
+    def test_moderation_workflow_node_deletion(self):
+        """
+        Add pages to a collection to create a tree structure is like so:
+
+            page_1_version
+              poll_version
+                  poll_child_version
+            page_2_version
+              poll_child_version
+
+        Then delete page_2 version, which should make the tree like so:
+
+            page_1_version
+              poll_version
+
+        (i.e. poll_child_version should be removed from both pages)
+        """
+        self._set_up_initial_page_data()
+        self._add_pages_to_collection()
         # The correct amount of moderation requests exist
         self.assertEqual(
-            ModerationRequest.objects.filter(collection=collection).count(),
-            5
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            4
         )
         # The correct amount of tree nodes exist
         # Poll is repeated twice and will therefore have an additional entry / treenode
         self.assertEqual(
-            ModerationRequestTreeNode.objects.filter(moderation_request__collection=collection).count(),
-            6
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            5
         )
-        # The tree structure is correct
+        # The tree structure for page_1_version is correct
         root_1 = ModerationRequestTreeNode.get_root_nodes().get(
-            moderation_request__version=page_1_version)
-        self.assertEqual(root_1.get_children_count(), 3)
+            moderation_request__version=self.page_1_version)
+        self.assertEqual(root_1.get_children_count(), 1)
+        child_1 = root_1.get_children().get()
+        self.assertEqual(child_1.moderation_request.version, self.poll_version)
+        self.assertEqual(child_1.get_children_count(), 1)
+        grandchild = child_1.get_children().get()
         self.assertEqual(
-            root_1.get_children()[0].moderation_request.version, poll_version)
-        self.assertEqual(
-            root_1.get_children()[1].moderation_request.version, poll_child_1_version)
-        self.assertEqual(
-            root_1.get_children()[2].moderation_request.version, poll_child_2_version)
+            grandchild.moderation_request.version, self.poll_child_version)
+        # The tree structure for page_2_version is correct
         root_2 = ModerationRequestTreeNode.get_root_nodes().get(
-            moderation_request__version=page_2_version)
+            moderation_request__version=self.page_2_version)
         self.assertEqual(root_2.get_children_count(), 1)
-        self.assertEqual(
-            root_2.get_children().get().moderation_request.version, poll_child_2_version)
-        self.assertEqual(
-            root_1.get_children()[2].moderation_request,
-            root_2.get_children().get().moderation_request,
-        )
+        child_2 = root_2.get_children().get()
+        self.assertEqual(child_2.moderation_request.version, self.poll_child_version)
+        self.assertEqual(grandchild.moderation_request, child_2.moderation_request)
 
-        # remove page 1 from the collection
-        changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
-        changelist_url += "?moderation_request__collection__id={}".format(collection.pk)
-        # Choose the delete_selected action from the dropdown mimicking a user selecting the page 1
-        # tree node to delete
-        page_1_moderation_request_treenode = ModerationRequestTreeNode.objects.get(
-            moderation_request__collection=collection,
-            moderation_request__version=page_1_version,
-        )
+        # remove page 2 from the collection
         delete_url = "{}?ids={}&collection_id={}".format(
             reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
-            ",".join([str(page_1_moderation_request_treenode.pk)]),
-            collection.pk,
+            ",".join([str(root_2.pk)]),
+            self.collection.pk,
         )
-
         response = self.client.post(delete_url, follow=True)
-
         self.assertEqual(response.status_code, 200)
 
         # Load the changelist and check that the page loads without an error
+        changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
         response = self.client.get(changelist_url)
-
         self.assertEqual(response.status_code, 200)
 
         # Only the page tree node and moderation request entry should exist
         self.assertEqual(
-            ModerationRequest.objects.filter(collection=collection).count(),
-            1
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            2
         )
         self.assertEqual(
-            ModerationRequestTreeNode.objects.filter(moderation_request__collection=collection).count(),
-            1
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            2
         )
+        self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 1)
+        root = ModerationRequestTreeNode.get_root_nodes().get()
+        self.assertEqual(root.moderation_request.version, self.page_1_version)
+        self.assertEqual(root.get_children_count(), 1)
+        self.assertEqual(root.get_children().get().moderation_request.version, self.poll_version)

@@ -35,7 +35,7 @@ HELPER_SETTINGS = {
 def run():
     from djangocms_helper import runner
 
-    runner.cms("djangocms_moderation")
+    runner.cms("djangocms_moderation", extra_args=['tests.test_views.CollectionItemsViewModerationIntegrationTest'])
 
 
 if __name__ == "__main__":
