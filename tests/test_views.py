@@ -1210,7 +1210,7 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
         # Now remove poll_version from the collection
         page_2_root = ModerationRequestTreeNode.get_root_nodes().get(
-            moderation_request__version=self.page_1_version)
+            moderation_request__version=self.page_2_version)
         poll_child_node = page_2_root.get_children().get()
         delete_url = "{}?ids={}&collection_id={}".format(
             reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),

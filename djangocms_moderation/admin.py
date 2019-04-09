@@ -381,12 +381,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         for node in queryset.all():
             _traverse_moderation_nodes(node)
-            #~ moderation_requests_affected.append(node.moderation_request.pk)
-
-            #~ children = node.get_children()
-
-            #~ for child in children:
-                #~ moderation_requests_affected.append(child.moderation_request.pk)
 
         queryset = ModerationRequest.objects.filter(pk__in=moderation_requests_affected)
         redirect_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
