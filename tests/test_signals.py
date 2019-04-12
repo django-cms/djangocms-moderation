@@ -51,7 +51,7 @@ class SignalsTestCase(CMSTestCase):
 
         with signal_tester(submitted_for_review) as env:
             with self.login_user_context(user):
-                response = self.client.post(
+                self.client.post(
                     add_url_parameters(
                         reverse(
                             "admin:djangocms_moderation_moderationrequest_resubmit"

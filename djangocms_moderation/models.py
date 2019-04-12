@@ -20,6 +20,7 @@ from treebeard.mp_tree import MP_Node
 from .emails import notify_collection_moderators
 from .utils import generate_compliance_number
 
+
 from . import conf, constants, signals  # isort:skip
 
 
