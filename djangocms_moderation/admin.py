@@ -21,7 +21,7 @@ from cms.utils.helpers import is_editable_model
 from adminsortable2.admin import SortableInlineAdminMixin
 from treebeard.admin import TreeAdmin
 
-from . import constants
+from . import constants, signals
 from .admin_actions import (
     approve_selected,
     delete_selected,
@@ -526,6 +526,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                     # We can take any action here, as all the requests are in the same
                     # stage of moderation - at the beginning
                     action_obj=resubmitted_requests[0].get_last_action(),
+                )
+                signals.submitted_for_review.send(
+                    sender=collection.__class__,
+                    collection=collection,
+                    moderation_requests=resubmitted_requests,
+                    user=request.user,
+                    rework=True,
                 )
 
             messages.success(

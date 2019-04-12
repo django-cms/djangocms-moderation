@@ -20,8 +20,7 @@ from treebeard.mp_tree import MP_Node
 from .emails import notify_collection_moderators
 from .utils import generate_compliance_number
 
-
-from . import conf, constants  # isort:skip
+from . import conf, constants, signals  # isort:skip
 
 
 @python_2_unicode_compatible
@@ -297,6 +296,13 @@ class ModerationCollection(models.Model):
             collection=self,
             moderation_requests=self.moderation_requests.all(),
             action_obj=action,
+        )
+        signals.submitted_for_review.send(
+            sender=self.__class__,
+            collection=self,
+            moderation_requests=list(self.moderation_requests.all()),
+            user=by_user,
+            rework=False,
         )
 
     def is_cancellable(self, user):
