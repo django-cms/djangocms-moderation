@@ -38,7 +38,10 @@ Arguments sent with this signal:
     .. note::
 
         It's possible for this list to contain only some of the requests
-        belonging to the collection being moderated
+        belonging to the collection being moderated,
+        because only some of the requests required rework.
+
+        This case is only possible for resubmitting after a rework.
 
 ``user``
     A :class:`django.contrib.auth.models.User` instance which triggered
