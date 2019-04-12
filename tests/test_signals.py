@@ -7,6 +7,7 @@ from cms.utils.urlutils import add_url_parameters
 from djangocms_moderation import constants
 from djangocms_moderation.models import ModerationCollection, Role
 from djangocms_moderation.signals import submitted_for_review
+
 from .utils import factories
 
 
@@ -18,7 +19,8 @@ class SignalsTestCase(CMSTestCase):
         """Test that submitting for review emits a signal
         """
         moderation_request = factories.ModerationRequestFactory(
-            collection__status=constants.COLLECTING)
+            collection__status=constants.COLLECTING
+        )
         user = factories.UserFactory()
         reviewer = factories.UserFactory()
 
@@ -41,21 +43,26 @@ class SignalsTestCase(CMSTestCase):
         user = self.get_superuser()
         reviewer = factories.UserFactory()
         moderation_request = factories.ModerationRequestFactory(
-            collection__status=constants.COLLECTING,
-            author=user,
+            collection__status=constants.COLLECTING, author=user
         )
-        moderation_request.collection.workflow.steps.create(role=Role.objects.create(name="Role 1", user=reviewer), order=1)
+        moderation_request.collection.workflow.steps.create(
+            role=Role.objects.create(name="Role 1", user=reviewer), order=1
+        )
         moderation_request.update_status(
-            action=constants.ACTION_REJECTED, by_user=reviewer, to_user=user,
+            action=constants.ACTION_REJECTED, by_user=reviewer, to_user=user
         )
 
         with signal_tester(submitted_for_review) as env:
             with self.login_user_context(user):
-                response = self.client.post(add_url_parameters(
-                    reverse("admin:djangocms_moderation_moderationrequest_resubmit"),
-                    collection_id=moderation_request.collection_id,
-                    ids=moderation_request.pk,
-                ))
+                response = self.client.post(
+                    add_url_parameters(
+                        reverse(
+                            "admin:djangocms_moderation_moderationrequest_resubmit"
+                        ),
+                        collection_id=moderation_request.collection_id,
+                        ids=moderation_request.pk,
+                    )
+                )
 
             self.assertEqual(env.call_count, 1)
 
