@@ -28,6 +28,7 @@ Welcome to djangocms-moderation's documentation!
 
    introduction
    internals
+   signals
 
 
 Glossary
