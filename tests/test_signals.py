@@ -12,9 +12,6 @@ from .utils import factories
 
 
 class SignalsTestCase(CMSTestCase):
-    def setUp(self):
-        self.superuser = self.get_superuser()
-
     def test_submitted_for_review_signal(self):
         """Test that submitting for review emits a signal
         """
