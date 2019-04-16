@@ -15,6 +15,7 @@ from djangocms_versioning.models import Version
 
 from djangocms_moderation import constants
 
+from .models import ModerationRequest, ModerationRequestTreeNode
 from .utils import get_admin_url
 
 
@@ -24,9 +25,14 @@ def resubmit_selected(modeladmin, request, queryset):
     moderation and notify reviewers via email.
     """
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    nodes = ModerationRequestTreeNode.objects.filter(id__in=selected)
+    moderation_request_ids = [
+        str(mr_id)
+        for mr_id in nodes.values_list('moderation_request_id', flat=True)
+    ]
     url = "{}?ids={}&collection_id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_resubmit"),
-        ",".join(selected),
+        ",".join(moderation_request_ids),
         request._collection.id,
     )
     return HttpResponseRedirect(url)
@@ -83,6 +89,11 @@ def publish_selected(modeladmin, request, queryset):
         raise PermissionDenied
 
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    nodes = ModerationRequestTreeNode.objects.filter(id__in=selected)
+    moderation_request_ids = [
+        str(mr_id)
+        for mr_id in nodes.values_list('moderation_request_id', flat=True)
+    ]
     url = "{}?ids={}&collection_id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_publish"),
         ",".join(selected),

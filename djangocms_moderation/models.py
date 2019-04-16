@@ -382,7 +382,7 @@ class ModerationCollection(models.Model):
             for child_version in get_moderated_children_from_placeholder(
                 placeholder, version.versionable.grouping_values(parent)
             ):
-                # Don't add the version if it's already part of the collection or another users item
+                # Don't add the version if it's another users item
                 if version.created_by == child_version.created_by:
                     moderation_request, _added_items = self.add_version(
                         child_version, parent=parent_node, include_children=True
