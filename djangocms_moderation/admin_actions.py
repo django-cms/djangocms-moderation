@@ -47,9 +47,14 @@ def reject_selected(modeladmin, request, queryset):
     the author about these requests
     """
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    nodes = ModerationRequestTreeNode.objects.filter(id__in=selected)
+    moderation_request_ids = [
+        str(mr_id)
+        for mr_id in nodes.values_list('moderation_request_id', flat=True)
+    ]
     url = "{}?ids={}&collection_id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_rework"),
-        ",".join(selected),
+        ",".join(moderation_request_ids),
         request._collection.id,
     )
     return HttpResponseRedirect(url)
@@ -60,9 +65,14 @@ reject_selected.short_description = _("Submit for rework")
 
 def approve_selected(modeladmin, request, queryset):
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    nodes = ModerationRequestTreeNode.objects.filter(id__in=selected)
+    moderation_request_ids = [
+        str(mr_id)
+        for mr_id in nodes.values_list('moderation_request_id', flat=True)
+    ]
     url = "{}?ids={}&collection_id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_approve"),
-        ",".join(selected),
+        ",".join(moderation_request_ids),
         request._collection.id,
     )
     return HttpResponseRedirect(url)
@@ -96,7 +106,7 @@ def publish_selected(modeladmin, request, queryset):
     ]
     url = "{}?ids={}&collection_id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_publish"),
-        ",".join(selected),
+        ",".join(moderation_request_ids),
         request._collection.id,
     )
     return HttpResponseRedirect(url)
