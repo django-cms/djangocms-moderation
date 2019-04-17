@@ -401,7 +401,7 @@ class DeleteSelectedTest(CMSTestCase):
         # Choose the delete_selected action from the dropdown
         data = {
             "action": "delete_selected",
-            ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
+            ACTION_CHECKBOX_NAME: [str(self.root1.pk), str(self.root2.pk)]
         }
         response = self.client.post(url, data)
 
@@ -444,7 +444,7 @@ class DeleteSelectedTest(CMSTestCase):
         url += "?moderation_request__collection__id={}".format(self.collection.pk)
         data = {
             "action": "delete_selected",
-            ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
+            ACTION_CHECKBOX_NAME: [str(self.root1.pk), str(self.root2.pk)]
         }
 
         response = self.client.post(url, data)
@@ -536,7 +536,7 @@ class DeletedSelectedTransactionTest(TransactionTestCase):
         self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
         self.data = {
             "action": "delete_selected",
-            ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
+            ACTION_CHECKBOX_NAME: [str(self.root1.pk), str(self.root2.pk)]
         }
 
     def tearDown(self):
