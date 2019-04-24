@@ -318,6 +318,7 @@ class PublishSelectedTest(CMSTestCase):
 class ResubmitSelectedTest(CMSTestCase):
 
     def setUp(self):
+        # Set up the db data
         self.user = factories.UserFactory(is_staff=True, is_superuser=True)
         self.collection = factories.ModerationCollectionFactory(
             author=self.user, status=constants.IN_REVIEW)
@@ -329,6 +330,8 @@ class ResubmitSelectedTest(CMSTestCase):
             id=1, collection=self.collection)
         self.moderation_request2 = factories.ModerationRequestFactory(
             id=2, collection=self.collection)
+        # Make self.moderation_request2 rejected
+        self.moderation_request2.update_status(action=ACTION_REJECTED, by_user=self.user)
         self.root1 = factories.RootModerationRequestTreeNodeFactory(
             id=4, moderation_request=self.moderation_request1)
         factories.ChildModerationRequestTreeNodeFactory(
@@ -336,38 +339,134 @@ class ResubmitSelectedTest(CMSTestCase):
         self.root2 = factories.RootModerationRequestTreeNodeFactory(
             id=6, moderation_request=self.moderation_request2)
 
-    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
-    @mock.patch("djangocms_moderation.admin.notify_collection_author")
-    def test_resubmit_selected(self, notify_author_mock, notify_moderators_mock):
-        self.moderation_request2.update_status(
-            action=ACTION_REJECTED,
-            by_user=self.user
-        )
         # Login as the collection author
         self.client.force_login(self.user)
-        data = {
+
+        # Set up the url data
+        self.data = {
             "action": "resubmit_selected",
             ACTION_CHECKBOX_NAME: [str(self.root1.pk), str(self.root2.pk)]
         }
+        self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
+        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+
+        # Asserts to check data set up is ok. Ideally wouldn't need them, but
+        # the set up is so complex that it's safer to have them.
         self.assertTrue(self.moderation_request2.is_rejected())
         self.assertTrue(self.moderation_request1.is_approved())
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
 
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("djangocms_moderation.admin.notify_collection_author")
+    @mock.patch("django.contrib.messages.success")
+    def test_resubmit_selected_resubmits_rejected_action(self, messages_mock, notify_author_mock, notify_moderators_mock):
         # Choose the resubmit_selected action from the dropdown
-        url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
-        url += "?moderation_request__collection__id={}".format(self.collection.pk)
-        response = self.client.post(url, data)
-        self.client.post(response.url)
+        response = self.client.post(self.url, self.data)
+        # And follow the redirect to the view that does the resubmit
+        response = self.client.post(response.url)
 
+        # Response is correct
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '1 request successfully resubmitted for review')
+
+        # Rejected request was resubmitted and approved request did not change
         self.assertFalse(self.moderation_request2.is_rejected())
+        self.assertTrue(self.moderation_request2.actions.filter(
+            action=constants.ACTION_RESUBMITTED, by_user=self.user).exists())
         self.assertTrue(self.moderation_request1.is_approved())
+
+        # Collection status has not changed
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
+        # Expected users were notified
         self.assertFalse(notify_author_mock.called)
         notify_moderators_mock.assert_called_once_with(
             collection=self.collection,
             moderation_requests=[self.moderation_request2],
             action_obj=self.moderation_request2.get_last_action(),
         )
-        self.collection.refresh_from_db()
-        self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
+    def test_resubmit_selected_view_when_using_get(self):
+        # Choose the resubmit_selected action from the dropdown
+        response = self.client.post(self.url, self.data)
+        # And follow the redirect (with a GET call) to the view that does the resubmit
+        response = self.client.get(response.url)
+
+        # Smoke test the response. When using a GET call not a lot happens.
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.templates[0].name, 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html')
+
+    def test_404_on_nonexisting_collection(self):
+        # Need to access the view directly to test for this
+        url = reverse("admin:djangocms_moderation_moderationrequest_resubmit")
+        url += "?ids=1,2&collection_id=12342"
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_on_invalid_collection_id(self):
+        # Need to access the view directly to test for this
+        url = reverse("admin:djangocms_moderation_moderationrequest_resubmit")
+        url += "?ids=1,2&collection_id=aaa"
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 404)
+
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("django.contrib.messages.success")
+    @mock.patch("djangocms_moderation.models.ModerationRequest.user_can_resubmit", mock.Mock(return_value=False))
+    def test_view_doesnt_resubmit_when_user_cant_resubmit(self, messages_mock, notify_moderators_mock):
+        # Set up the url (need to access the view directly)
+        url = reverse("admin:djangocms_moderation_moderationrequest_resubmit")
+        url += "?ids=%d,%d&collection_id=%d" % (
+            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+
+        response = self.client.post(url)
+
+        # Check response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '0 requests successfully resubmitted for review')
+        # No actions were resubmitted
+        self.assertFalse(self.moderation_request2.actions.filter(
+            action=constants.ACTION_RESUBMITTED).exists())
+        self.assertEqual(notify_moderators_mock.call_count, 0)
+
+    def test_resubmit_selected_action_cannot_be_accessed_if_not_collection_author(self):
+        # Login as a user who is not the collection author
+        self.client.force_login(self.get_superuser())
+
+        # Choose the resubmit_selected action from the dropdown
+        response = self.client.post(self.url, self.data)
+
+        # The action is not on the page as available to somebody who is not
+        # the author, therefore django will just return 200 as you're
+        # trying to choose an action that isn't in the dropdown
+        # (if anything had been resubmitted it would have been a 302)
+        self.assertEqual(response.status_code, 200)
+
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    def test_resubmit_selected_view_cannot_be_accessed_if_not_collection_author(self, notify_moderators_mock):
+        # Login as a user who is not the collection author
+        self.client.force_login(self.get_superuser())
+        # Set up the url (need to access the view directly)
+        url = reverse("admin:djangocms_moderation_moderationrequest_resubmit")
+        url += "?ids=%d,%d&collection_id=%d" % (
+            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+
+        # POST directly to the view, don't go through actions
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 403)
+        # Nothing is resubmitted
+        self.assertFalse(self.moderation_request2.actions.filter(
+            action=constants.ACTION_RESUBMITTED).exists())
+        # Notifications not sent
+        self.assertFalse(notify_moderators_mock.called)
 
 
 class DeleteSelectedTest(CMSTestCase):

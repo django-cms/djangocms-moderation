@@ -15,7 +15,7 @@ from djangocms_versioning.models import Version
 
 from djangocms_moderation import constants
 
-from .models import ModerationRequest, ModerationRequestTreeNode
+from .models import ModerationRequestTreeNode
 from .utils import get_admin_url
 
 

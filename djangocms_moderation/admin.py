@@ -492,6 +492,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def resubmit_view(self, request):
         collection_id = request.GET.get('collection_id')
+        try:
+            collection = ModerationCollection.objects.get(id=int(collection_id))
+        except (ValueError, ModerationCollection.DoesNotExist):
+            raise Http404
+        if collection.author != request.user:
+            raise PermissionDenied
+
         queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
@@ -505,12 +512,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 context
             )
         else:
-            try:
-                collection = ModerationCollection.objects.get(id=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
-                raise Http404
             resubmitted_requests = []
-
             for mr in queryset.all():
                 if mr.user_can_resubmit(request.user):
                     resubmitted_requests.append(mr)
