@@ -95,9 +95,6 @@ delete_selected.short_description = _("Remove selected")
 
 
 def publish_selected(modeladmin, request, queryset):
-    if request.user != request._collection.author:
-        raise PermissionDenied
-
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
     nodes = ModerationRequestTreeNode.objects.filter(id__in=selected)
     moderation_request_ids = [

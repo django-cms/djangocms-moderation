@@ -546,6 +546,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
+        try:
+            collection = ModerationCollection.objects.get(id=int(collection_id))
+        except (ValueError, ModerationCollection.DoesNotExist):
+            raise Http404
+        if request.user != collection.author:
+            raise PermissionDenied
+
         if request.method != 'POST':
             context = dict(
                 ids=request.GET.getlist("ids"),
@@ -558,11 +565,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 context,
             )
         else:
-            try:
-                collection = ModerationCollection.objects.get(id=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
-                raise Http404
-
             num_published_requests = 0
             for mr in queryset.all():
                 if mr.version_can_be_published():
@@ -571,9 +573,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                         mr.update_status(
                             action=constants.ACTION_FINISHED, by_user=request.user
                         )
-                    else:
-                        # TODO provide some feedback back to the user?
-                        pass
+                    # TODO provide some feedback back to the user if not published?
 
             messages.success(
                 request,

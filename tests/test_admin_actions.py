@@ -256,9 +256,14 @@ class RejectSelectedTest(CMSTestCase):
 class PublishSelectedTest(CMSTestCase):
 
     def setUp(self):
+        # Set up the db data
         self.user = factories.UserFactory(is_staff=True, is_superuser=True)
         self.collection = factories.ModerationCollectionFactory(
             author=self.user, status=constants.IN_REVIEW)
+        self.role1 = Role.objects.create(name="Role 1", user=self.user)
+        self.role2 = Role.objects.create(name="Role 2", user=factories.UserFactory(is_staff=True, is_superuser=True))
+        self.collection.workflow.steps.create(role=self.role1, is_required=True, order=1)
+        self.collection.workflow.steps.create(role=self.role2, is_required=True, order=1)
         # NOTE: Setting ids because we want the ids of the requests to be
         # different to the ids of the nodes. This will give us confidence
         # that the ids of the correct objects are being passed to the
@@ -273,46 +278,190 @@ class PublishSelectedTest(CMSTestCase):
             id=5, moderation_request=self.moderation_request2, parent=self.root1)
         self.root2 = factories.RootModerationRequestTreeNodeFactory(
             id=6, moderation_request=self.moderation_request2)
-
-        role1 = Role.objects.create(name="Role 1", user=self.user)
-        role2 = Role.objects.create(name="Role 2", user=factories.UserFactory(is_staff=True, is_superuser=True))
-        self.collection.workflow.steps.create(role=role1, is_required=True, order=1)
-        self.collection.workflow.steps.create(role=role2, is_required=True, order=1)
-
+        # Request 1 is approved, request 2 is started
         self.moderation_request1.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
         self.moderation_request2.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
-        self.moderation_request1.update_status(constants.ACTION_APPROVED, role1.user)
-        self.moderation_request1.update_status(constants.ACTION_APPROVED, role2.user)
+        self.moderation_request1.update_status(constants.ACTION_APPROVED, self.role1.user)
+        self.moderation_request1.update_status(constants.ACTION_APPROVED, self.role2.user)
 
-    def test_publish_selected(self):
         # Login as the collection author
         self.client.force_login(self.user)
-        # Pre-checks
+
+        # Set up the url data
+        self.data = {
+            "action": "publish_selected",
+            ACTION_CHECKBOX_NAME: [str(self.root1.pk), str(self.root2.pk)]
+        }
+        self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
+        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+
+        # Asserts to check data set up is ok. Ideally wouldn't need them, but
+        # the set up is so complex that it's safer to have them.
         self.assertTrue(self.moderation_request1.is_active)
         self.assertTrue(self.moderation_request2.is_active)
         self.assertEqual(self.moderation_request1.version.state, DRAFT)
         self.assertEqual(self.moderation_request2.version.state, DRAFT)
 
-        data = {
-            "action": "publish_selected",
-            ACTION_CHECKBOX_NAME: [str(self.root1.pk), str(self.root2.pk)]
-        }
-        url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
-        url += "?moderation_request__collection__id={}".format(self.collection.pk)
-        response = self.client.post(url, data)
-        self.client.post(response.url)
-        # After-checks
-        # We can't do refresh_from_db() for Version, as it complains about
+    @mock.patch("django.contrib.messages.success")
+    def test_publish_selected_publishes_approved_request(self, messages_mock):
+        # Select the publish action from the menu
+        response = self.client.post(self.url, self.data)
+        # And now go to the view the action redirects to
+        response = self.client.post(response.url)
+
+        # Response is correct
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '1 request successfully published')
+
+        # Check approved request was published and started request was not
+        # NOTE: We can't do refresh_from_db() for Version, as it complains about
         # `state` field being changed directly
         version1 = Version.objects.get(pk=self.moderation_request1.version.pk)
         version2 = Version.objects.get(pk=self.moderation_request2.version.pk)
         self.moderation_request1.refresh_from_db()
         self.moderation_request2.refresh_from_db()
-
         self.assertEqual(version1.state, PUBLISHED)
         self.assertEqual(version2.state, DRAFT)
         self.assertFalse(self.moderation_request1.is_active)
         self.assertTrue(self.moderation_request2.is_active)
+
+        # Collection still in review as version2 is still draft
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
+    @mock.patch("django.contrib.messages.success")
+    def test_publish_selected_sets_collection_to_archived_if_all_requests_published(self, messages_mock):
+        # Make sure both moderation requests have been approved
+        self.moderation_request2.update_status(constants.ACTION_APPROVED, self.role1.user)
+        self.moderation_request2.update_status(constants.ACTION_APPROVED, self.role2.user)
+
+        # Select the publish action from the menu
+        response = self.client.post(self.url, self.data)
+        # And now go to the view the action redirects to
+        response = self.client.post(response.url)
+
+        # Response is correct
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '2 requests successfully published')
+
+        # Check approved request was published and started request was not
+        # NOTE: We can't do refresh_from_db() for Version, as it complains about
+        # `state` field being changed directly
+        version1 = Version.objects.get(pk=self.moderation_request1.version.pk)
+        version2 = Version.objects.get(pk=self.moderation_request2.version.pk)
+        self.moderation_request1.refresh_from_db()
+        self.moderation_request2.refresh_from_db()
+        self.assertEqual(version1.state, PUBLISHED)
+        self.assertEqual(version2.state, PUBLISHED)
+        self.assertFalse(self.moderation_request1.is_active)
+        self.assertFalse(self.moderation_request2.is_active)
+
+        # Collection still in review as version2 is still draft
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.ARCHIVED)
+
+    def test_publish_selected_view_when_using_get(self):
+        # Choose the publish_selected action from the dropdown
+        response = self.client.post(self.url, self.data)
+        # And follow the redirect (with a GET call) to the view that does the publish
+        response = self.client.get(response.url)
+
+        # Smoke test the response. When using a GET call not a lot happens.
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.templates[0].name,
+            'admin/djangocms_moderation/moderationrequest/publish_confirmation.html'
+        )
+
+    def test_404_on_nonexisting_collection(self):
+        # Need to access the view directly to test for this
+        url = reverse("admin:djangocms_moderation_moderationrequest_publish")
+        url += "?ids=1,2&collection_id=12342"
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_on_invalid_collection_id(self):
+        # Need to access the view directly to test for this
+        url = reverse("admin:djangocms_moderation_moderationrequest_publish")
+        url += "?ids=1,2&collection_id=aaa"
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_publish_selected_action_cannot_be_accessed_if_not_collection_author(self):
+        # Login as a user who is not the collection author
+        self.client.force_login(self.get_superuser())
+
+        # Choose the resubmit_selected action from the dropdown
+        response = self.client.post(self.url, self.data)
+
+        # The action is not on the page as available to somebody who is not
+        # the author, therefore django will just return 200 as you're
+        # trying to choose an action that isn't in the dropdown
+        # (if anything had been resubmitted it would have been a 302)
+        self.assertEqual(response.status_code, 200)
+
+    def test_publish_selected_view_cannot_be_accessed_if_not_collection_author(self):
+        # Login as a user who is not the collection author
+        self.client.force_login(self.get_superuser())
+        # Set up the url (need to access the view directly)
+        url = reverse("admin:djangocms_moderation_moderationrequest_publish")
+        url += "?ids=%d,%d&collection_id=%d" % (
+            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+
+        # POST directly to the view, don't go through actions
+        response = self.client.post(url)
+
+        # Check response
+        self.assertEqual(response.status_code, 403)
+
+        # Nothing is published
+        version1 = Version.objects.get(pk=self.moderation_request1.version.pk)
+        version2 = Version.objects.get(pk=self.moderation_request2.version.pk)
+        self.moderation_request1.refresh_from_db()
+        self.moderation_request2.refresh_from_db()
+        self.assertEqual(version1.state, DRAFT)
+        self.assertEqual(version2.state, DRAFT)
+        self.assertTrue(self.moderation_request1.is_active)
+        self.assertTrue(self.moderation_request2.is_active)
+
+        # Collection still in review
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
+    @mock.patch("django.contrib.messages.success")
+    @mock.patch("djangocms_moderation.models.ModerationRequest.version_can_be_published", mock.Mock(return_value=False))
+    def test_view_doesnt_publish_when_version_cant_be_published(self, messages_mock):
+        # Set up the url (need to access the view directly)
+        url = reverse("admin:djangocms_moderation_moderationrequest_publish")
+        url += "?ids=%d,%d&collection_id=%d" % (
+            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+
+        response = self.client.post(url)
+
+        # Check response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '0 requests successfully published')
+
+        # Nothing is published
+        version1 = Version.objects.get(pk=self.moderation_request1.version.pk)
+        version2 = Version.objects.get(pk=self.moderation_request2.version.pk)
+        self.moderation_request1.refresh_from_db()
+        self.moderation_request2.refresh_from_db()
+        self.assertEqual(version1.state, DRAFT)
+        self.assertEqual(version2.state, DRAFT)
+        self.assertTrue(self.moderation_request1.is_active)
+        self.assertTrue(self.moderation_request2.is_active)
+
+        # Collection still in review
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
 
 
 class ResubmitSelectedTest(CMSTestCase):
@@ -359,7 +508,9 @@ class ResubmitSelectedTest(CMSTestCase):
     @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
     @mock.patch("djangocms_moderation.admin.notify_collection_author")
     @mock.patch("django.contrib.messages.success")
-    def test_resubmit_selected_resubmits_rejected_action(self, messages_mock, notify_author_mock, notify_moderators_mock):
+    def test_resubmit_selected_resubmits_rejected_request(
+        self, messages_mock, notify_author_mock, notify_moderators_mock
+    ):
         # Choose the resubmit_selected action from the dropdown
         response = self.client.post(self.url, self.data)
         # And follow the redirect to the view that does the resubmit
@@ -396,7 +547,10 @@ class ResubmitSelectedTest(CMSTestCase):
 
         # Smoke test the response. When using a GET call not a lot happens.
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.templates[0].name, 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html')
+        self.assertEqual(
+            response.templates[0].name,
+            'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html'
+        )
 
     def test_404_on_nonexisting_collection(self):
         # Need to access the view directly to test for this
