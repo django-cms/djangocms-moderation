@@ -26,10 +26,13 @@ from .utils import factories
 class ApproveSelectedTest(CMSTestCase):
 
     def setUp(self):
-        self.user = factories.UserFactory(is_staff=True, is_superuser=True)
-        self.user2 = factories.UserFactory(is_staff=True, is_superuser=True)
+        # Set up the db data
+        self.role1 = Role.objects.create(name="Role 1", user=factories.UserFactory(is_staff=True, is_superuser=True))
+        self.role2 = Role.objects.create(name="Role 2", user=factories.UserFactory(is_staff=True, is_superuser=True))
         self.collection = factories.ModerationCollectionFactory(
-            author=self.user, status=constants.IN_REVIEW)
+            author=self.role1.user, status=constants.IN_REVIEW)
+        self.collection.workflow.steps.create(role=self.role1, is_required=True, order=1)
+        self.collection.workflow.steps.create(role=self.role2, is_required=True, order=1)
         # NOTE: Setting ids because we want the ids of the requests to be
         # different to the ids of the nodes. This will give us confidence
         # that the ids of the correct objects are being passed to the
@@ -44,148 +47,316 @@ class ApproveSelectedTest(CMSTestCase):
             id=5, moderation_request=self.moderation_request2, parent=self.root1)
         self.root2 = factories.RootModerationRequestTreeNodeFactory(
             id=6, moderation_request=self.moderation_request2)
-
-        self.role1 = Role.objects.create(name="Role 1", user=self.user)
-        self.role2 = Role.objects.create(name="Role 2", user=self.user2)
-        self.collection.workflow.steps.create(role=self.role1, is_required=True, order=1)
-        self.collection.workflow.steps.create(role=self.role2, is_required=True, order=1)
-
-        self.moderation_request1.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
-        self.moderation_request2.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
+        # Request 1 is approved, request 2 is started
+        self.moderation_request1.actions.create(by_user=self.role1.user, action=constants.ACTION_STARTED)
+        self.moderation_request2.actions.create(by_user=self.role1.user, action=constants.ACTION_STARTED)
         self.moderation_request1.update_status(constants.ACTION_APPROVED, self.role1.user)
         self.moderation_request1.update_status(constants.ACTION_APPROVED, self.role2.user)
 
-    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
-    @mock.patch("djangocms_moderation.admin.notify_collection_author")
-    def test_approve_selected(self, notify_author_mock, notify_moderators_mock):
-        # Login as the collection author
-        self.client.force_login(self.user)
-        data = {
+        # Set up the url data
+        self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
+        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        self.data = {
             "action": "approve_selected",
             ACTION_CHECKBOX_NAME: [str(self.root1.pk), str(self.root2.pk)]
         }
+
+        # Asserts to check data set up is ok. Ideally wouldn't need them, but
+        # the set up is so complex that it's safer to have them.
         self.assertFalse(self.moderation_request2.is_approved())
         self.assertTrue(self.moderation_request1.is_approved())
 
-        url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
-        url += "?moderation_request__collection__id={}".format(self.collection.pk)
-        response = self.client.post(url, data)
-        self.client.post(response.url)
+    @mock.patch("django.contrib.messages.success")
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("djangocms_moderation.admin.notify_collection_author")
+    def test_approve_selected(self, notify_author_mock, notify_moderators_mock, messages_mock):
+        # Login as the collection author/role 1
+        self.client.force_login(self.role1.user)
 
+        # Select the approve action from the menu
+        response = self.client.post(self.url, self.data)
+        # And now go to the view the action redirects to. This will
+        # perform step1 of the approval process (as defined in the
+        # workflow in the setUp method)
+        response = self.client.post(response.url)
+
+        # Check response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '1 request successfully approved')
+        messages_mock.reset_mock()
+
+        # Check correct users notified
         notify_author_mock.assert_called_once_with(
             collection=self.collection,
             moderation_requests=[self.moderation_request2],
             action=self.moderation_request2.get_last_action().action,
-            by_user=self.user,
+            by_user=self.role1.user,
         )
         notify_moderators_mock.assert_called_once_with(
             collection=self.collection,
             moderation_requests=[self.moderation_request2],
             action_obj=self.moderation_request2.get_last_action(),
         )
+        # And reset mocks because we'll be needing to check this again
+        # for step2
         notify_author_mock.reset_mock()
         notify_moderators_mock.reset_mock()
 
-        # There are 2 steps so we need to approve both to get mr2 approved
+        # The status of the moderation requests hasn't changed yet
+        # because there are 2 steps to approval and both are needed
+        # for status to change
         self.assertFalse(self.moderation_request2.is_approved())
         self.assertTrue(self.moderation_request1.is_approved())
+
+        # Collection status hasn't changed either
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.IN_REVIEW)
-        self.client.force_login(self.user2)
 
-        response = self.client.post(url, data)
-        self.client.post(response.url)
+        # Now login as the user responsible for approving step2
+        self.client.force_login(self.role2.user)
 
+        # Select the approve action from the menu again
+        response = self.client.post(self.url, self.data)
+        # And now go to the view the action redirects to. This will
+        # perform step2 of the approval process (as defined in the
+        # workflow in the setUp method)
+        response = self.client.post(response.url)
+
+        # Check response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '1 request successfully approved')
+
+        # The status of the previously unapproved request has changed.
+        # The other request stays as it is
         self.assertTrue(self.moderation_request2.is_approved())
         self.assertTrue(self.moderation_request1.is_approved())
+
+        # The collection has been archived as both requests have been
+        # approved now
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.ARCHIVED)
+
+        # Correct users have been notified
         notify_author_mock.assert_called_once_with(
             collection=self.collection,
             moderation_requests=[self.moderation_request2],
             action=self.moderation_request2.get_last_action().action,
-            by_user=self.user2,
+            by_user=self.role2.user,
         )
         self.assertFalse(notify_moderators_mock.called)
 
+    @mock.patch("django.contrib.messages.success")
     @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
-    def test_approve_selected_sends_correct_emails(self, notify_moderators_mock):
+    def test_approve_selected_sends_correct_emails_to_moderators(self, notify_moderators_mock, messages_mock):
+        # Set up additional roles and user
         user3 = factories.UserFactory(is_staff=True, is_superuser=True)
         group = Group.objects.create(name="Group 1")
         user3.groups.add(group)
         role3 = Role.objects.create(name="Role 3", group=group)
-        role4 = Role.objects.create(user=self.user)
-        # Add two more steps
+        role4 = Role.objects.create(user=self.role1.user)
+        # Set up two more steps
         self.collection.workflow.steps.create(role=role3, is_required=True, order=1)
         self.collection.workflow.steps.create(role=role4, is_required=True, order=1)
-        self.user.groups.add(group)
-
-        # Login as the collection author
-        self.client.force_login(self.user)
-
-        # Add one more, partially approved request
+        self.role1.user.groups.add(group)
+        # Set up one more, partially approved request
         moderation_request3 = factories.ModerationRequestFactory(id=3, collection=self.collection)
-        moderation_request3.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
-        moderation_request3.update_status(by_user=self.user, action=constants.ACTION_APPROVED)
-        moderation_request3.update_status(by_user=self.user2, action=constants.ACTION_APPROVED)
+        moderation_request3.actions.create(by_user=self.role1.user, action=constants.ACTION_STARTED)
+        moderation_request3.update_status(by_user=self.role1.user, action=constants.ACTION_APPROVED)
+        moderation_request3.update_status(by_user=self.role2.user, action=constants.ACTION_APPROVED)
         root3 = factories.RootModerationRequestTreeNodeFactory(
             id=7, moderation_request=moderation_request3)
+        self.data[ACTION_CHECKBOX_NAME].append(str(root3.pk))
 
-        data = {
-            "action": "approve_selected",
-            ACTION_CHECKBOX_NAME: [str(self.root1.pk), str(self.root2.pk), str(root3.pk)]
-        }
+        # Login as the collection author/role1 user
+        self.client.force_login(self.role1.user)
+        response = self.client.post(self.url, self.data)
+        response = self.client.post(response.url)
 
-        # First post as `self.user` should notify mr1 and mr2 and mr3 moderators
-        url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
-        url += "?moderation_request__collection__id={}".format(self.collection.pk)
-        response = self.client.post(url, data)
-        # The notify email will be send accordingly. As mr1 and mr3 are in the
+        # Check response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '3 requests successfully approved')
+        messages_mock.reset_mock()
+
+        # First post as role1 user should notify mr1 and mr2 and mr3 moderators
+        # The notify email will be sent accordingly. As mr1 and mr3 are in
         # different stages of approval compared to mr 2,
         # we need to send 2 emails to appropriate moderators
-        self.client.post(response.url)
         self.assertEqual(notify_moderators_mock.call_count, 2)
         self.assertEqual(
             notify_moderators_mock.call_args_list[1],
             mock.call(collection=self.collection,
                       moderation_requests=[self.moderation_request1, moderation_request3],
-                      action_obj=self.moderation_request1.get_last_action()
-                      )
+                      action_obj=self.moderation_request1.get_last_action())
         )
-
         self.assertEqual(
             notify_moderators_mock.call_args_list[0],
             mock.call(collection=self.collection,
                       moderation_requests=[self.moderation_request2],
-                      action_obj=self.moderation_request2.get_last_action(),
-                      )
+                      action_obj=self.moderation_request2.get_last_action())
         )
+        notify_moderators_mock.reset_mock()
+
+        # No moderation requests are approved yet
         self.assertFalse(self.moderation_request1.is_approved())
+        self.assertFalse(self.moderation_request2.is_approved())
         self.assertFalse(moderation_request3.is_approved())
 
-        notify_moderators_mock.reset_mock()
-        response = self.client.post(url, data)
-        self.client.post(response.url)
+        response = self.client.post(self.url, self.data)
+        response = self.client.post(response.url)
+
+        # Check response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '2 requests successfully approved')
+        messages_mock.reset_mock()
+
         # Second post approves m3 and mr1, but as this is the last stage of
         # the approval, there is no need for notification emails anymore
         self.assertEqual(notify_moderators_mock.call_count, 0)
+        # moderation request 1 and 3 are now approved. Moderation request
+        # 2 is not
         self.assertTrue(self.moderation_request1.is_approved())
+        self.assertFalse(self.moderation_request2.is_approved())
         self.assertTrue(moderation_request3.is_approved())
 
-        self.client.force_login(self.user2)
+        # moderation request 2 is not yet approved so collection should
+        # still be in review
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
+        self.client.force_login(self.role2.user)
         # user2 can approve only 1 request, mr2, so one notification email
         # should go out
-        response = self.client.post(url, data)
-        self.client.post(response.url)
+        response = self.client.post(self.url, self.data)
+        response = self.client.post(response.url)
+
+        # Check response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '1 request successfully approved')
+        messages_mock.reset_mock()
+
         notify_moderators_mock.assert_called_once_with(
             collection=self.collection,
             moderation_requests=[self.moderation_request2],
             action_obj=self.moderation_request2.get_last_action(),
         )
+        notify_moderators_mock.reset_mock()
 
-        # Not all request have been fully approved
+        # moderation request 2 is still not yet approved
+        self.assertTrue(self.moderation_request1.is_approved())
+        self.assertFalse(self.moderation_request2.is_approved())
+        self.assertTrue(moderation_request3.is_approved())
+
+        # moderation request 2 is not yet approved so collection should
+        # still be in review
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
+        self.client.force_login(user3)
+        response = self.client.post(self.url, self.data)
+        response = self.client.post(response.url)
+
+        # Check response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '1 request successfully approved')
+        messages_mock.reset_mock()
+
+        notify_moderators_mock.assert_called_once_with(
+            collection=self.collection,
+            moderation_requests=[self.moderation_request2],
+            action_obj=self.moderation_request2.get_last_action(),
+        )
+        notify_moderators_mock.reset_mock()
+
+        self.assertTrue(self.moderation_request1.is_approved())
+        self.assertFalse(self.moderation_request2.is_approved())
+        self.assertTrue(moderation_request3.is_approved())
+
+        # moderation request 2 is not yet approved so collection should
+        # still be in review
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
+        self.client.force_login(self.role1.user)
+        response = self.client.post(self.url, self.data)
+        response = self.client.post(response.url)
+
+        # Check response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '1 request successfully approved')
+        messages_mock.reset_mock()
+
+        self.assertEqual(notify_moderators_mock.call_count, 0)
+
+        self.assertTrue(self.moderation_request1.is_approved())
+        self.assertTrue(self.moderation_request2.is_approved())
+        self.assertTrue(moderation_request3.is_approved())
+
+        # moderation request 2 is now approved so collection should
+        # have been archived
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.status, constants.ARCHIVED)
+
+    def test_404_on_nonexisting_collection(self):
+        self.client.force_login(self.role1.user)
+        # Need to access the view directly to test for this
+        url = reverse("admin:djangocms_moderation_moderationrequest_approve")
+        url += "?ids=1,2&collection_id=12342"
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_on_invalid_collection_id(self):
+        self.client.force_login(self.role1.user)
+        # Need to access the view directly to test for this
+        url = reverse("admin:djangocms_moderation_moderationrequest_approve")
+        url += "?ids=1,2&collection_id=aaa"
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 404)
+
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("django.contrib.messages.success")
+    @mock.patch("djangocms_moderation.models.ModerationRequest.user_can_take_moderation_action", mock.Mock(return_value=False))
+    def test_view_doesnt_approve_when_user_cant_approve(self, messages_mock, notify_moderators_mock):
+        self.client.force_login(self.role1.user)
+        # Set up the url (need to access the view directly)
+        url = reverse("admin:djangocms_moderation_moderationrequest_approve")
+        url += "?ids=%d,%d&collection_id=%d" % (
+            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+
+        response = self.client.post(url)
+
+        # Check response
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(messages_mock.call_args[0][1], '0 requests successfully approved')
+        # No actions were approved
+        self.assertFalse(self.moderation_request2.actions.filter(
+            action=constants.ACTION_RESUBMITTED).exists())
+        self.assertEqual(notify_moderators_mock.call_count, 0)
+
+    def test_approve_view_when_using_get(self):
+        self.client.force_login(self.role1.user)
+        # Choose the approve_selected action from the dropdown
+        response = self.client.post(self.url, self.data)
+        # And follow the redirect (with a GET call) to the view that does the approve
+        response = self.client.get(response.url)
+
+        # Smoke test the response. When using a GET call not a lot happens.
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.templates[0].name,
+            'admin/djangocms_moderation/moderationrequest/approve_confirmation.html'
+        )
 
 
 class RejectSelectedTest(CMSTestCase):
