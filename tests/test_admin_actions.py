@@ -1011,10 +1011,11 @@ class DeleteSelectedTest(CMSTestCase):
         # Notifications not sent
         self.assertFalse(notify_author_mock.called)
 
+    @mock.patch("django.contrib.messages.success")
     @mock.patch.object(ModerationRequestTreeAdmin, "has_delete_permission", mock.Mock(return_value=True))
     @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
     @mock.patch("djangocms_moderation.admin.notify_collection_author")
-    def test_delete_selected_deletes_all_relevant_objects(self, notify_author_mock, notify_moderators_mock):
+    def test_delete_selected_deletes_all_relevant_objects(self, notify_author_mock, notify_moderators_mock, messages_mock):
         """The selected ModerationRequest and ModerationRequestTreeNode objects should be deleted."""
         # Login as the collection author
         self.client.force_login(self.user)
@@ -1031,6 +1032,7 @@ class DeleteSelectedTest(CMSTestCase):
         # Now do the request the delete_selected action has led us to
         response = self.client.post(response.url)
         self.assertRedirects(response, url)
+        self.assertEqual(messages_mock.call_args[0][1], '2 requests successfully deleted')
         # And check the requests have indeed been deleted
         self.assertEqual(ModerationRequest.objects.filter(collection=self.collection).count(), 0)
         # And correct notifications sent out
@@ -1044,6 +1046,28 @@ class DeleteSelectedTest(CMSTestCase):
         # All moderation requests were deleted, so collection should be archived
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.ARCHIVED)
+
+    def test_delete_view_when_using_get(self):
+        # Login as the collection author
+        self.client.force_login(self.user)
+        # Choose the delete_selected action from the dropdown
+        url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
+        url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        data = {
+            "action": "delete_selected",
+            ACTION_CHECKBOX_NAME: [str(self.root1.pk), str(self.root2.pk)]
+        }
+        # Choose the approve_selected action from the dropdown
+        response = self.client.post(url, data)
+        # And follow the redirect (with a GET call) to the view that does the approve
+        response = self.client.get(response.url)
+
+        # Smoke test the response. When using a GET call not a lot happens.
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.templates[0].name,
+            'admin/djangocms_moderation/moderationrequest/delete_confirmation.html'
+        )
 
 
 class DeletedSelectedTransactionTest(TransactionTestCase):
