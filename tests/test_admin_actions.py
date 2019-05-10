@@ -325,7 +325,10 @@ class ApproveSelectedTest(CMSTestCase):
 
     @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
     @mock.patch("django.contrib.messages.success")
-    @mock.patch("djangocms_moderation.models.ModerationRequest.user_can_take_moderation_action", mock.Mock(return_value=False))
+    @mock.patch(
+        "djangocms_moderation.models.ModerationRequest.user_can_take_moderation_action",
+        mock.Mock(return_value=False)
+    )
     def test_view_doesnt_approve_when_user_cant_approve(self, messages_mock, notify_moderators_mock):
         self.client.force_login(self.role1.user)
         # Set up the url (need to access the view directly)
@@ -501,7 +504,10 @@ class RejectSelectedTest(CMSTestCase):
         self.assertEqual(response.status_code, 200)
 
     @mock.patch("django.contrib.messages.success")
-    @mock.patch("djangocms_moderation.models.ModerationRequest.user_can_take_moderation_action", mock.Mock(return_value=False))
+    @mock.patch(
+        "djangocms_moderation.models.ModerationRequest.user_can_take_moderation_action",
+        mock.Mock(return_value=False)
+    )
     @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
     @mock.patch("djangocms_moderation.admin.notify_collection_author")
     def test_view_doesnt_reject_when_user_cant_take_moderation_action(
@@ -1015,7 +1021,9 @@ class DeleteSelectedTest(CMSTestCase):
     @mock.patch.object(ModerationRequestTreeAdmin, "has_delete_permission", mock.Mock(return_value=True))
     @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
     @mock.patch("djangocms_moderation.admin.notify_collection_author")
-    def test_delete_selected_deletes_all_relevant_objects(self, notify_author_mock, notify_moderators_mock, messages_mock):
+    def test_delete_selected_deletes_all_relevant_objects(
+        self, notify_author_mock, notify_moderators_mock, messages_mock
+    ):
         """The selected ModerationRequest and ModerationRequestTreeNode objects should be deleted."""
         # Login as the collection author
         self.client.force_login(self.user)
