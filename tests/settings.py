@@ -4,16 +4,14 @@ HELPER_SETTINGS = {
         "tests.utils.app_2",
         "djangocms_versioning",
         "djangocms_version_locking",
+
+        # the following 4 apps are related
+        "aldryn_forms",
         "filer",
         "easy_thumbnails",
-        "absolute",
-        "aldryn_forms",
         "captcha",
-        "emailit",
+
         "djangocms_text_ckeditor",
-        "djangocms_versioning.test_utils.blogpost",
-        "djangocms_versioning.test_utils.people",
-        "djangocms_versioning.test_utils.text",
         "tests.utils.moderated_polls",
         "tests.utils.versioned_none_moderated_app",
     ],
