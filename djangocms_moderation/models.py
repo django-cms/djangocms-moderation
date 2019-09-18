@@ -18,6 +18,7 @@ from djangocms_versioning.models import Version
 from treebeard.mp_tree import MP_Node
 
 from .emails import notify_collection_moderators
+from .managers import CollectionManager
 from .utils import generate_compliance_number
 
 
@@ -224,6 +225,8 @@ class ModerationCollection(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
+    objects = CollectionManager()
+
     class Meta:
         verbose_name = _("collection")
         permissions = (
@@ -245,25 +248,13 @@ class ModerationCollection(models.Model):
     @property
     def reviewers(self):
         """
-        Find all the reviewers assigned to any moderationrequestaction associated with this collection.
-        If none are associated with a given action,
-        then get the role for the step in the workflow and include all reviewers within that list.
-        """
-        reviewers = set()
-        moderation_requests = self.moderation_requests.all()
-        for mr in moderation_requests:
-            moderation_request_actions = mr.actions.all()
-            reviewers_in_actions = set()
-            for mra in moderation_request_actions:
-                if mra.to_user:
-                    reviewers_in_actions.add(mra.to_user)
-                    reviewers.add(mra.to_user)
+        DEPRECATED - if you need to get a list of reviewers use the following instead
+        obj = ModerationCollection.objects.all().prefetch_reviewers().first()
+        reviewers = ModerationCollection.objects.reviewers(obj)
 
-            if not reviewers_in_actions and self.status != constants.COLLECTING:
-                role = self.workflow.first_step.role
-                users = role.get_users_queryset()
-                for user in users:
-                    reviewers.add(user)
+        The above method makes sure that you won't incur a query overhead
+        """
+        reviewers = self.objects.reviewers(self)
         return ", ".join(map(get_user_model().get_full_name, reviewers))
 
     def allow_submit_for_review(self, user):
@@ -453,7 +444,7 @@ class ModerationRequest(models.Model):
         ordering = ["id"]
 
     def __str__(self):
-        return "{} {}".format(self.pk, self.version.pk)
+        return "{} {}".format(self.pk, self.version_id)
 
     @cached_property
     def workflow(self):
