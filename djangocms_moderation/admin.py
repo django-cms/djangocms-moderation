@@ -586,12 +586,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 context,
             )
         else:
-            num_published_requests = 0
+            published_moderation_requests = []
             for node in treenodes.all():
                 mr = node.moderation_request
                 if mr.version_can_be_published():
                     if publish_version(mr.version, request.user):
-                        num_published_requests += 1
+                        published_moderation_requests.append(mr)
                         mr.update_status(
                             action=constants.ACTION_FINISHED, by_user=request.user
                         )
@@ -604,12 +604,19 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 ungettext(
                     "%(count)d request successfully published",
                     "%(count)d requests successfully published",
-                    num_published_requests,
+                    len(published_moderation_requests),
                 )
-                % {"count": num_published_requests},
+                % {"count": len(published_moderation_requests)},
             )
 
             post_bulk_actions(collection)
+            signals.published.send(
+                sender=self.model,
+                collection=collection,
+                moderator=collection.author,
+                moderation_requests=published_moderation_requests,
+                workflow=collection.workflow
+            )
 
         return HttpResponseRedirect(redirect_url)
 
