@@ -10,9 +10,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
 
-from django_fsm import TransitionNotAllowed
 from djangocms_versioning.models import Version
 
+from django_fsm import TransitionNotAllowed
 from djangocms_moderation import constants
 
 from .utils import get_admin_url
