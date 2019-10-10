@@ -490,14 +490,22 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             ),
         ] + super().get_urls()
 
+    def _get_selected_tree_nodes(self, request):
+        treenodes = ModerationRequestTreeNode.objects.filter(
+            pk__in=request.GET.get('ids', '').split(',')
+        ).select_related('moderation_request')
+        return treenodes
+
     def resubmit_view(self, request):
         collection_id = request.GET.get('collection_id')
-        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+        treenodes = self._get_selected_tree_nodes(request)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
             context = dict(
-                ids=request.GET.getlist("ids"), back_url=redirect_url, queryset=queryset
+                ids=request.GET.getlist("ids"),
+                back_url=redirect_url,
+                queryset=[n.moderation_request for n in treenodes]
             )
             return render(
                 request,
@@ -511,7 +519,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 raise Http404
             resubmitted_requests = []
 
-            for mr in queryset.all():
+            for node in treenodes.all():
+                mr = node.moderation_request
                 if mr.user_can_resubmit(request.user):
                     resubmitted_requests.append(mr)
                     mr.update_status(
@@ -548,14 +557,14 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def published_view(self, request):
         collection_id = request.GET.get('collection_id')
-        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+        treenodes = self._get_selected_tree_nodes(request)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
             context = dict(
                 ids=request.GET.getlist("ids"),
                 back_url=redirect_url,
-                queryset=queryset,
+                queryset=[n.moderation_request for n in treenodes],
             )
             return render(
                 request,
@@ -569,7 +578,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 raise Http404
 
             num_published_requests = 0
-            for mr in queryset.all():
+            for node in treenodes.all():
+                mr = node.moderation_request
                 if mr.version_can_be_published():
                     if publish_version(mr.version, request.user):
                         num_published_requests += 1
@@ -596,12 +606,14 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def rework_view(self, request):
         collection_id = request.GET.get('collection_id')
-        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+        treenodes = self._get_selected_tree_nodes(request)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
             context = dict(
-                ids=request.GET.getlist("ids"), back_url=redirect_url, queryset=queryset
+                ids=request.GET.getlist("ids"),
+                back_url=redirect_url,
+                queryset=[n.moderation_request for n in treenodes]
             )
             return render(
                 request,
@@ -616,7 +628,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
             rejected_requests = []
 
-            for moderation_request in queryset.all():
+            for node in treenodes.all():
+                moderation_request = node.moderation_request
                 if moderation_request.user_can_take_moderation_action(request.user):
                     rejected_requests.append(moderation_request)
                     moderation_request.update_status(
@@ -646,12 +659,14 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def approved_view(self, request):
         collection_id = request.GET.get('collection_id')
-        queryset = ModerationRequest.objects.filter(pk__in=request.GET.get('ids', '').split(','))
+        treenodes = self._get_selected_tree_nodes(request)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
             context = dict(
-                ids=request.GET.getlist("ids"), back_url=redirect_url, queryset=queryset
+                ids=request.GET.getlist("ids"),
+                back_url=redirect_url,
+                queryset=[n.moderation_request for n in treenodes]
             )
             return render(
                 request,
@@ -682,7 +697,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             # Variable we are using to group the requests by action.step_approved
             request_action_mapping = dict()
 
-            for mr in queryset.all():
+            for node in treenodes.all():
+                mr = node.moderation_request
                 if mr.user_can_take_moderation_action(request.user):
                     approved_requests.append(mr)
                     mr.update_status(

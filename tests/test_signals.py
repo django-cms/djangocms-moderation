@@ -42,6 +42,9 @@ class SignalsTestCase(CMSTestCase):
         moderation_request = factories.ModerationRequestFactory(
             collection__status=constants.COLLECTING, author=user
         )
+        self.root = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=moderation_request
+        )
         moderation_request.collection.workflow.steps.create(
             role=Role.objects.create(name="Role 1", user=reviewer), order=1
         )
@@ -57,7 +60,7 @@ class SignalsTestCase(CMSTestCase):
                             "admin:djangocms_moderation_moderationrequest_resubmit"
                         ),
                         collection_id=moderation_request.collection_id,
-                        ids=moderation_request.pk,
+                        ids=self.root.pk,
                     )
                 )
 

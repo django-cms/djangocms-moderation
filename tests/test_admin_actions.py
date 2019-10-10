@@ -40,8 +40,9 @@ class AdminActionTest(BaseTestCase):
         pg2_version = PageVersionFactory()
 
         self.mr1 = ModerationRequest.objects.create(
-            version=pg1_version, language="en",  collection=self.collection,
-            is_active=True, author=self.collection.author)
+            version=pg1_version, language="en", collection=self.collection,
+            is_active=True, author=self.collection.author
+        )
 
         self.wfst1 = self.wf.steps.create(role=self.role1, is_required=True, order=1)
         self.wfst2 = self.wf.steps.create(role=self.role2, is_required=True, order=1)
@@ -53,9 +54,17 @@ class AdminActionTest(BaseTestCase):
 
         # this moderation request is not approved
         self.mr2 = ModerationRequest.objects.create(
-            version=pg2_version, language="en",  collection=self.collection,
-            is_active=True, author=self.collection.author)
+            version=pg2_version, language="en", collection=self.collection,
+            is_active=True, author=self.collection.author
+        )
         self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
+
+        self.root1 = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=self.mr1
+        )
+        self.root2 = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=self.mr2
+        )
 
         self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
         self.url_with_filter = "{}?moderation_request__collection__id={}".format(
@@ -65,8 +74,6 @@ class AdminActionTest(BaseTestCase):
         self.client.force_login(self.user)
 
     def test_publish_selected(self):
-        fixtures = [self.mr1, self.mr2]
-
         # Pre-checks
         version1 = self.mr1.version
         version2 = self.mr2.version
@@ -75,9 +82,11 @@ class AdminActionTest(BaseTestCase):
         self.assertEqual(version1.state, DRAFT)
         self.assertEqual(version2.state, DRAFT)
 
+        # first get selected moderation requests from the moderation request changelist
+        get_resp = self.client.get(self.url_with_filter)
         data = {
             "action": "publish_selected",
-            ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
+            ACTION_CHECKBOX_NAME: [str(f.pk) for f in get_resp.context['cl'].queryset]
         }
         response = self.client.post(self.url_with_filter, data)
         self.client.post(response.url)
@@ -97,14 +106,14 @@ class AdminActionTest(BaseTestCase):
     @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
     @mock.patch("djangocms_moderation.admin.notify_collection_author")
     def test_approve_selected(self, notify_author_mock, notify_moderators_mock):
-        fixtures = [self.mr1, self.mr2]
-        data = {
-            "action": "approve_selected",
-            ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
-        }
         self.assertFalse(self.mr2.is_approved())
         self.assertTrue(self.mr1.is_approved())
 
+        get_resp = self.client.get(self.url_with_filter)
+        data = {
+            "action": "approve_selected",
+            ACTION_CHECKBOX_NAME: [str(f.pk) for f in get_resp.context['cl'].queryset]
+        }
         response = self.client.post(self.url_with_filter, data)
         self.client.post(response.url)
 
@@ -149,15 +158,15 @@ class AdminActionTest(BaseTestCase):
     @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
     @mock.patch("djangocms_moderation.admin.notify_collection_author")
     def test_reject_selected(self, notify_author_mock, notify_moderators_mock):
-        fixtures = [self.mr1, self.mr2]
-        data = {
-            "action": "reject_selected",
-            ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
-        }
         self.assertFalse(self.mr2.is_approved())
         self.assertFalse(self.mr2.is_rejected())
         self.assertTrue(self.mr1.is_approved())
 
+        get_resp = self.client.get(self.url_with_filter)
+        data = {
+            "action": "reject_selected",
+            ACTION_CHECKBOX_NAME: [str(f.pk) for f in get_resp.context['cl'].queryset]
+        }
         response = self.client.post(self.url_with_filter, data)
         self.client.post(response.url)
 
@@ -184,15 +193,14 @@ class AdminActionTest(BaseTestCase):
             action=ACTION_REJECTED,
             by_user=self.user
         )
-
-        fixtures = [self.mr1, self.mr2]
-        data = {
-            "action": "resubmit_selected",
-            ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
-        }
         self.assertTrue(self.mr2.is_rejected())
         self.assertTrue(self.mr1.is_approved())
 
+        get_resp = self.client.get(self.url_with_filter)
+        data = {
+            "action": "resubmit_selected",
+            ACTION_CHECKBOX_NAME: [str(f.pk) for f in get_resp.context['cl'].queryset]
+        }
         response = self.client.post(self.url_with_filter, data)
         self.client.post(response.url)
 
@@ -220,15 +228,21 @@ class AdminActionTest(BaseTestCase):
         # Add one more, partially approved request
         pg3_version = PageVersionFactory()
         self.mr3 = ModerationRequest.objects.create(
-            version=pg3_version, language="en",  collection=self.collection,
-            is_active=True, author=self.collection.author)
+            version=pg3_version, language="en", collection=self.collection,
+            is_active=True, author=self.collection.author
+        )
+        self.root3 = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=self.mr3
+        )
         self.mr3.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
         self.mr3.update_status(by_user=self.user, action=constants.ACTION_APPROVED)
         self.mr3.update_status(by_user=self.user2, action=constants.ACTION_APPROVED)
 
         self.user.groups.add(self.group)
 
-        fixtures = [self.mr1, self.mr2, self.mr3]
+        fixtures = ModerationRequestTreeNode.objects.filter(
+            moderation_request__collection_id=self.collection.pk
+        )
         data = {
             "action": "approve_selected",
             ACTION_CHECKBOX_NAME: [str(f.pk) for f in fixtures]
@@ -397,9 +411,11 @@ class DeleteSelectedTest(CMSTestCase):
         # Choose the delete_selected action from the dropdown
         url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
         url += "?moderation_request__collection__id={}".format(self.collection.pk)
+
+        get_resp = self.client.get(url)
         data = {
             "action": "delete_selected",
-            ACTION_CHECKBOX_NAME: [str(self.moderation_request1.pk), str(self.moderation_request2.pk)]
+            ACTION_CHECKBOX_NAME: [str(f.pk) for f in get_resp.context['cl'].queryset]
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
