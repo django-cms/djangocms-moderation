@@ -6,7 +6,13 @@ confirmation_form_submission = django.dispatch.Signal(
 )
 
 submitted_for_review = django.dispatch.Signal(
-    providing_args=["collection", "moderation_requests", "user", "rework"]
+    providing_args=[
+        "collection",
+        "moderation_requests",
+        "user",
+        "rework",
+        "workflow"
+    ]
 )
 
 published = django.dispatch.Signal(

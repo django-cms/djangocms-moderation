@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -27,7 +27,6 @@ from .admin_actions import (
     delete_selected,
     post_bulk_actions,
     publish_selected,
-    publish_version,
     reject_selected,
     resubmit_selected,
 )
@@ -552,6 +551,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                     moderation_requests=resubmitted_requests,
                     user=request.user,
                     rework=True,
+                    workflow=collection.workflow
                 )
 
             messages.success(
@@ -564,6 +564,49 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 % {"count": len(resubmitted_requests)},
             )
         return HttpResponseRedirect(redirect_url)
+
+    def _publish_flow(self, request, queryset):
+        """Handles the published workflow"""
+        published_moderation_requests = []
+        for mr in queryset.all():
+            if mr.version_can_be_published():
+                mr.version.publish(request.user)
+                published_moderation_requests.append(mr)
+                mr.update_status(
+                    action=constants.ACTION_FINISHED, by_user=request.user
+                )
+
+        messages.success(
+            request,
+            ungettext(
+                "%(count)d request successfully published",
+                "%(count)d requests successfully published",
+                len(published_moderation_requests),
+            )
+            % {"count": len(published_moderation_requests)},
+        )
+        return published_moderation_requests
+
+    def _unpublish_flow(self, request, queryset):
+        unpublished_moderation_requests = []
+        for mr in queryset.all():
+            if mr.version_can_be_unpublished():
+                mr.version.unpublish(request.user)
+                unpublished_moderation_requests.append(mr)
+                mr.update_status(
+                    action=constants.ACTION_FINISHED, by_user=request.user
+                )
+
+        messages.success(
+            request,
+            ungettext(
+                "%(count)d request successfully unpublished",
+                "%(count)d requests successfully unpublished",
+                len(unpublished_moderation_requests),
+            )
+            % {"count": len(unpublished_moderation_requests)},
+        )
+        return unpublished_moderation_requests
 
     def published_view(self, request):
         collection_id = request.GET.get('collection_id')
@@ -578,46 +621,30 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         if request.user != collection.author:
             raise PermissionDenied
 
-        if request.method != 'POST':
+        if request.method not in ['POST', 'GET']:
+            return HttpResponseNotAllowed
+
+        if request.method == 'GET':
             context = self._custom_view_context(request)
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/publish_confirmation.html",
                 context,
             )
+
+        if collection.workflow.is_unpublishing:
+            moderation_requests = self._unpublish_flow(request, treenodes)
         else:
-            published_moderation_requests = []
-            for node in treenodes.all():
-                mr = node.moderation_request
-                if mr.version_can_be_published():
-                    if publish_version(mr.version, request.user):
-                        published_moderation_requests.append(mr)
-                        mr.update_status(
-                            action=constants.ACTION_FINISHED, by_user=request.user
-                        )
-                    else:
-                        # TODO provide some feedback back to the user?
-                        pass
+            moderation_requests = self._publish_flow(request, treenodes)
 
-            messages.success(
-                request,
-                ungettext(
-                    "%(count)d request successfully published",
-                    "%(count)d requests successfully published",
-                    len(published_moderation_requests),
-                )
-                % {"count": len(published_moderation_requests)},
-            )
-
-            post_bulk_actions(collection)
-            signals.published.send(
-                sender=self.model,
-                collection=collection,
-                moderator=collection.author,
-                moderation_requests=published_moderation_requests,
-                workflow=collection.workflow
-            )
-
+        post_bulk_actions(collection)
+        signals.published.send(
+            sender=self.model,
+            collection=collection,
+            moderator=collection.author,
+            moderation_requests=moderation_requests,
+            workflow=collection.workflow
+        )
         return HttpResponseRedirect(redirect_url)
 
     def rework_view(self, request):
@@ -955,6 +982,7 @@ class WorkflowAdmin(admin.ModelAdmin):
     fields = [
         "name",
         "is_default",
+        "is_unpublishing",
         "identifier",
         "requires_compliance_number",
         "compliance_number_backend",

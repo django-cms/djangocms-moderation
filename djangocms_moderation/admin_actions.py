@@ -12,7 +12,6 @@ from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.models import Version
 
-from django_fsm import TransitionNotAllowed
 from djangocms_moderation import constants
 
 from .utils import get_admin_url
@@ -115,9 +114,9 @@ def convert_queryset_to_version_queryset(queryset):
             m
             for m in reversed(model.mro())
             if (
-                isinstance(m, tuple(model_bases))
-                and m not in model_bases
-                and not m._meta.abstract
+                isinstance(m, tuple(model_bases)) and
+                m not in model_bases and not
+                m._meta.abstract
             )
         )
 
@@ -153,20 +152,10 @@ def add_items_to_collection(modeladmin, request, queryset):
         return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
 
-add_items_to_collection.short_description = _(
-    "Add to moderation collection"
-)  # noqa: E305
+add_items_to_collection.short_description = _("Add to moderation collection")
 
 
 def post_bulk_actions(collection):
     if collection.should_be_archived():
         collection.status = constants.ARCHIVED
         collection.save(update_fields=["status"])
-
-
-def publish_version(version, user):
-    try:
-        version.publish(user)
-    except TransitionNotAllowed:
-        return False
-    return True
