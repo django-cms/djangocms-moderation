@@ -496,17 +496,23 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         ).select_related('moderation_request')
         return treenodes
 
+    def _custom_view_context(self, request):
+        treenodes = self._get_selected_tree_nodes(request)
+        collection_id = request.GET.get('collection_id')
+        redirect_url = self._redirect_to_changeview_url(collection_id)
+        return dict(
+            ids=request.GET.getlist("ids"),
+            back_url=redirect_url,
+            queryset=[n.moderation_request for n in treenodes]
+        )
+
     def resubmit_view(self, request):
         collection_id = request.GET.get('collection_id')
         treenodes = self._get_selected_tree_nodes(request)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
-            context = dict(
-                ids=request.GET.getlist("ids"),
-                back_url=redirect_url,
-                queryset=[n.moderation_request for n in treenodes]
-            )
+            context = self._custom_view_context(request)
             return render(
                 request,
                 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html',
@@ -561,11 +567,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
-            context = dict(
-                ids=request.GET.getlist("ids"),
-                back_url=redirect_url,
-                queryset=[n.moderation_request for n in treenodes],
-            )
+            context = self._custom_view_context(request)
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/publish_confirmation.html",
@@ -610,11 +612,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
-            context = dict(
-                ids=request.GET.getlist("ids"),
-                back_url=redirect_url,
-                queryset=[n.moderation_request for n in treenodes]
-            )
+            context = self._custom_view_context(request)
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/rework_confirmation.html",
@@ -663,11 +661,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
-            context = dict(
-                ids=request.GET.getlist("ids"),
-                back_url=redirect_url,
-                queryset=[n.moderation_request for n in treenodes]
-            )
+            context = self._custom_view_context(request)
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/approve_confirmation.html",
