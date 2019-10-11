@@ -42,6 +42,12 @@ class SignalsTestCase(CMSTestCase):
         moderation_request = factories.ModerationRequestFactory(
             collection__status=constants.COLLECTING, author=user
         )
+        moderation_request.collection.author = user
+        moderation_request.collection.save()
+
+        self.root = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=moderation_request
+        )
         moderation_request.collection.workflow.steps.create(
             role=Role.objects.create(name="Role 1", user=reviewer), order=1
         )
@@ -50,16 +56,16 @@ class SignalsTestCase(CMSTestCase):
         )
 
         with signal_tester(submitted_for_review) as env:
-            with self.login_user_context(user):
-                self.client.post(
-                    add_url_parameters(
-                        reverse(
-                            "admin:djangocms_moderation_moderationrequest_resubmit"
-                        ),
-                        collection_id=moderation_request.collection_id,
-                        ids=moderation_request.pk,
-                    )
+            self.client.force_login(user)
+            self.client.post(
+                add_url_parameters(
+                    reverse(
+                        "admin:djangocms_moderation_moderationrequest_resubmit"
+                    ),
+                    collection_id=moderation_request.collection_id,
+                    ids=self.root.pk,
                 )
+            )
 
             self.assertEqual(env.call_count, 1)
 
