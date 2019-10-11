@@ -511,6 +511,14 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         treenodes = self._get_selected_tree_nodes(request)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
+        try:
+            collection = ModerationCollection.objects.get(id=int(collection_id))
+        except (ValueError, ModerationCollection.DoesNotExist):
+            raise Http404
+
+        if collection.author != request.user:
+            raise PermissionDenied
+
         if request.method != 'POST':
             context = self._custom_view_context(request)
             return render(
@@ -519,10 +527,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 context
             )
         else:
-            try:
-                collection = ModerationCollection.objects.get(id=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
-                raise Http404
             resubmitted_requests = []
 
             for node in treenodes.all():
@@ -566,6 +570,14 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         treenodes = self._get_selected_tree_nodes(request)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
+        try:
+            collection = ModerationCollection.objects.get(id=int(collection_id))
+        except (ValueError, ModerationCollection.DoesNotExist):
+            raise Http404
+
+        if request.user != collection.author:
+            raise PermissionDenied
+
         if request.method != 'POST':
             context = self._custom_view_context(request)
             return render(
@@ -574,11 +586,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 context,
             )
         else:
-            try:
-                collection = ModerationCollection.objects.get(id=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
-                raise Http404
-
             num_published_requests = 0
             for node in treenodes.all():
                 mr = node.moderation_request
