@@ -7,6 +7,7 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 
 from cms.test_utils.testcases import CMSTestCase
+from cms.test_utils.util.context_managers import signal_tester
 
 from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.models import Version
@@ -19,6 +20,7 @@ from djangocms_moderation.models import (
     ModerationRequestTreeNode,
     Role,
 )
+from djangocms_moderation.signals import published
 
 from .utils import factories
 
@@ -623,6 +625,27 @@ class PublishSelectedTest(CMSTestCase):
         # Collection still in review as version2 is still draft
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.status, constants.IN_REVIEW)
+
+    def test_signal_when_published(self):
+        """
+        A signal should be sent so further action can be taken when a moderation
+        collection is being published.
+        """
+        data = get_url_data(self, "publish_selected")
+        response = self.client.post(self.url, data)
+
+        with signal_tester(published) as signal:
+            # And now go to the view the action redirects to
+            self.client.post(response.url)
+            args, kwargs = signal.calls[0]
+            published_mr = kwargs['moderation_requests']
+            self.assertEquals(signal.call_count, 1)
+            self.assertEquals(kwargs['sender'], ModerationRequest)
+            self.assertEquals(kwargs['collection'], self.collection)
+            self.assertEquals(kwargs['moderator'], self.collection.author)
+            self.assertEquals(len(published_mr), 1)
+            self.assertEquals(published_mr[0], self.moderation_request1)
+            self.assertEquals(kwargs['workflow'], self.collection.workflow)
 
     @unittest.skip("Skip until collection status bugs fixed")
     @mock.patch("django.contrib.messages.success")
