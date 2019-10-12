@@ -969,6 +969,12 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     actions = None  # remove `delete_selected` for now, it will be handled later
     list_filter = [ModeratorFilter, "status", "date_created", ReviewerFilter]
     list_display_links = None
+    list_per_page = 100
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.prefetch_reviewers()
+        return qs
 
     def get_list_display(self, request):
         list_display = [
@@ -977,7 +983,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             "author",
             "workflow",
             "status",
-            "reviewers",
+            "commaseparated_reviewers",
             "date_created",
             "list_display_actions",
         ]
@@ -985,6 +991,11 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def job_id(self, obj):
         return obj.pk
+
+    def commaseparated_reviewers(self, obj):
+        reviewers = self.model.objects.reviewers(obj)
+        return ", ".join(map(get_user_model().get_full_name, reviewers))
+    commaseparated_reviewers.short_description = _('reviewers')
 
     def list_display_actions(self, obj):
         """Display links to state change endpoints
