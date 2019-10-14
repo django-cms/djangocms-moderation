@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import partial
 
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
@@ -77,7 +78,7 @@ def delete_selected(modeladmin, request, queryset):
 delete_selected.short_description = _("Remove selected")
 
 
-def publish_selected(modeladmin, request, queryset):
+def base_publish(modeladmin, request, queryset):
     if request.user != request._collection.author:
         raise PermissionDenied
 
@@ -90,7 +91,13 @@ def publish_selected(modeladmin, request, queryset):
     return HttpResponseRedirect(url)
 
 
+publish_selected = partial(base_publish)
+publish_selected.__name__ = 'publish_selected'
 publish_selected.short_description = _("Publish selected requests")
+
+unpublish_selected = partial(base_publish)
+unpublish_selected.__name__ = 'unpublish_selected'
+unpublish_selected.short_description = _("Unpublish selected requests")
 
 
 def convert_queryset_to_version_queryset(queryset):
