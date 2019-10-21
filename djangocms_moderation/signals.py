@@ -23,3 +23,12 @@ published = django.dispatch.Signal(
         "workflow"
     ]
 )
+
+unpublished = django.dispatch.Signal(
+    providing_args=[
+        "collection",
+        "moderator",
+        "moderation_requests",
+        "workflow"
+    ]
+)

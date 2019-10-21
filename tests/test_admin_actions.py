@@ -20,7 +20,7 @@ from djangocms_moderation.models import (
     ModerationRequestTreeNode,
     Role,
 )
-from djangocms_moderation.signals import published
+from djangocms_moderation.signals import published, unpublished
 
 from .utils import factories
 
@@ -604,11 +604,6 @@ class UnpublishSelectedTest(CMSTestCase):
 
     @mock.patch("django.contrib.messages.success")
     def test_unpublish_selected_unpublishes_approved_request(self, message_mock):
-
-        # resp = self.client.get(self.url)
-        # import pdb; pdb.set_trace()
-
-        print('correct flow')
         data = get_url_data(self, "unpublish_selected")
         response = self.client.post(self.url, data)
         # And now go to the view the action redirects to
@@ -627,6 +622,27 @@ class UnpublishSelectedTest(CMSTestCase):
         self.assertEqual(version2.state, PUBLISHED)
         self.assertFalse(self.mr1.is_active)
         self.assertTrue(self.mr2.is_active)
+
+    def test_signal_when_unpublished(self):
+        """
+        A signal should be sent so further action can be taken when a moderation
+        collection is being unpublished.
+        """
+        data = get_url_data(self, "unpublish_selected")
+        response = self.client.post(self.url, data)
+
+        with signal_tester(unpublished) as signal:
+            # And now go to the view the action redirects to
+            self.client.post(response.url)
+            args, kwargs = signal.calls[0]
+            published_mr = kwargs['moderation_requests']
+            self.assertEquals(signal.call_count, 1)
+            self.assertEquals(kwargs['sender'], ModerationRequest)
+            self.assertEquals(kwargs['collection'], self.collection)
+            self.assertEquals(kwargs['moderator'], self.collection.author)
+            self.assertEquals(len(published_mr), 1)
+            self.assertEquals(published_mr[0], self.mr1)
+            self.assertEquals(kwargs['workflow'], self.collection.workflow)
 
 
 class PublishSelectedTest(CMSTestCase):

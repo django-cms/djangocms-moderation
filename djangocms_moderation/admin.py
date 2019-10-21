@@ -658,13 +658,22 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             moderation_requests = self._publish_flow(request, treenodes)
 
         post_bulk_actions(collection)
-        signals.published.send(
-            sender=self.model,
-            collection=collection,
-            moderator=collection.author,
-            moderation_requests=moderation_requests,
-            workflow=collection.workflow
-        )
+        if collection.workflow.is_unpublishing:
+            signals.unpublished.send(
+                sender=self.model,
+                collection=collection,
+                moderator=collection.author,
+                moderation_requests=moderation_requests,
+                workflow=collection.workflow
+            )
+        else:
+            signals.published.send(
+                sender=self.model,
+                collection=collection,
+                moderator=collection.author,
+                moderation_requests=moderation_requests,
+                workflow=collection.workflow
+            )
         return HttpResponseRedirect(redirect_url)
 
     def rework_view(self, request):
