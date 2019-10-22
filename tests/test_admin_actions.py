@@ -9,7 +9,7 @@ from django.urls import reverse
 from cms.test_utils.testcases import CMSTestCase
 from cms.test_utils.util.context_managers import signal_tester
 
-from djangocms_versioning.constants import DRAFT, PUBLISHED
+from djangocms_versioning.constants import DRAFT, PUBLISHED, UNPUBLISHED
 from djangocms_versioning.models import Version
 
 from djangocms_moderation import constants
@@ -20,7 +20,7 @@ from djangocms_moderation.models import (
     ModerationRequestTreeNode,
     Role,
 )
-from djangocms_moderation.signals import published
+from djangocms_moderation.signals import published, unpublished
 
 from .utils import factories
 
@@ -551,6 +551,100 @@ class RejectSelectedTest(CMSTestCase):
         self.assertFalse(notify_author_mock.called)
 
 
+class UnpublishSelectedTest(CMSTestCase):
+    def setUp(self):
+        self.user = factories.UserFactory(is_staff=True, is_superuser=True)
+
+        # TODO approving all MR will put the collection in archived status.
+        # So that is the current assumption that it should be correct.
+        self.collection = factories.ModerationCollectionFactory(
+            author=self.user, status=constants.ARCHIVED
+        )
+        self.collection.workflow.is_unpublishing = True
+        self.collection.workflow.save()
+        self.role1 = Role.objects.create(name="Role 1", user=self.user)
+        self.role2 = Role.objects.create(name="Role 2", user=factories.UserFactory(is_staff=True, is_superuser=True))
+        self.collection.workflow.steps.create(role=self.role1, is_required=True, order=1)
+        self.collection.workflow.steps.create(role=self.role2, is_required=True, order=1)
+
+        self.mr1 = factories.ModerationRequestFactory(
+            id=1, collection=self.collection
+        )
+        self.mr2 = factories.ModerationRequestFactory(
+            id=2, collection=self.collection
+        )
+        self.root1 = factories.RootModerationRequestTreeNodeFactory(
+            id=4, moderation_request=self.mr1
+        )
+        factories.ChildModerationRequestTreeNodeFactory(
+            id=5, moderation_request=self.mr2, parent=self.root1
+        )
+        self.root2 = factories.RootModerationRequestTreeNodeFactory(
+            id=6, moderation_request=self.mr2
+        )
+
+        # Request 1 is approved, request 2 is started
+        self.mr1.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
+        self.mr2.actions.create(by_user=self.user, action=constants.ACTION_STARTED)
+        self.mr1.update_status(constants.ACTION_APPROVED, self.role1.user)
+        self.mr1.update_status(constants.ACTION_APPROVED, self.role2.user)
+
+        self.mr1.version.publish(self.user)
+        self.mr2.version.publish(self.user)
+
+        # we need to refresh the db so that version state is reflected correctly
+        self.mr1.refresh_from_db()
+        self.mr2.refresh_from_db()
+
+        # Login as the collection author
+        self.client.force_login(self.user)
+
+        self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
+        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+
+    @mock.patch("django.contrib.messages.success")
+    def test_unpublish_selected_unpublishes_approved_request(self, message_mock):
+        data = get_url_data(self, "unpublish_selected")
+        response = self.client.post(self.url, data)
+        # And now go to the view the action redirects to
+        response = self.client.post(response.url)
+
+        # Response is correct
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, self.url)
+        self.assertEqual(message_mock.call_args[0][1], '1 request successfully unpublished')
+
+        version1 = Version.objects.get(pk=self.mr1.version.pk)
+        version2 = Version.objects.get(pk=self.mr2.version.pk)
+        self.mr1.refresh_from_db()
+        self.mr2.refresh_from_db()
+        self.assertEqual(version1.state, UNPUBLISHED)
+        self.assertEqual(version2.state, PUBLISHED)
+        self.assertFalse(self.mr1.is_active)
+        self.assertTrue(self.mr2.is_active)
+
+    def test_signal_when_unpublished(self):
+        """
+        A signal should be sent so further action can be taken when a moderation
+        collection is being unpublished.
+        """
+        data = get_url_data(self, "unpublish_selected")
+        response = self.client.post(self.url, data)
+
+        with signal_tester(unpublished) as signal:
+            # And now go to the view the action redirects to
+            self.client.post(response.url)
+            args, kwargs = signal.calls[0]
+            published_mr = kwargs['moderation_requests']
+            self.assertEquals(signal.call_count, 1)
+            self.assertEquals(kwargs['sender'], ModerationRequest)
+            self.assertEquals(kwargs['collection'], self.collection)
+            self.assertEquals(kwargs['moderator'], self.collection.author)
+            self.assertEquals(len(published_mr), 1)
+            self.assertEquals(published_mr[0], self.mr1)
+            self.assertEquals(kwargs['workflow'], self.collection.workflow)
+
+
 class PublishSelectedTest(CMSTestCase):
 
     def setUp(self):
@@ -647,6 +741,7 @@ class PublishSelectedTest(CMSTestCase):
             self.assertEquals(published_mr[0], self.moderation_request1)
             self.assertEquals(kwargs['workflow'], self.collection.workflow)
 
+    # TODO Andrew, how is it intended that collection status should change?
     @unittest.skip("Skip until collection status bugs fixed")
     @mock.patch("django.contrib.messages.success")
     def test_publish_selected_sets_collection_to_archived_if_all_requests_published(self, messages_mock):

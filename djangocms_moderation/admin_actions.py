@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import partial
 
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
@@ -12,7 +13,6 @@ from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.models import Version
 
-from django_fsm import TransitionNotAllowed
 from djangocms_moderation import constants
 
 from .utils import get_admin_url
@@ -78,7 +78,7 @@ def delete_selected(modeladmin, request, queryset):
 delete_selected.short_description = _("Remove selected")
 
 
-def publish_selected(modeladmin, request, queryset):
+def base_publish(modeladmin, request, queryset):
     if request.user != request._collection.author:
         raise PermissionDenied
 
@@ -91,7 +91,13 @@ def publish_selected(modeladmin, request, queryset):
     return HttpResponseRedirect(url)
 
 
+publish_selected = partial(base_publish)
+publish_selected.__name__ = 'publish_selected'
 publish_selected.short_description = _("Publish selected requests")
+
+unpublish_selected = partial(base_publish)
+unpublish_selected.__name__ = 'unpublish_selected'
+unpublish_selected.short_description = _("Unpublish selected requests")
 
 
 def convert_queryset_to_version_queryset(queryset):
@@ -115,9 +121,9 @@ def convert_queryset_to_version_queryset(queryset):
             m
             for m in reversed(model.mro())
             if (
-                isinstance(m, tuple(model_bases))
-                and m not in model_bases
-                and not m._meta.abstract
+                isinstance(m, tuple(model_bases)) and
+                m not in model_bases and not
+                m._meta.abstract
             )
         )
 
@@ -153,20 +159,10 @@ def add_items_to_collection(modeladmin, request, queryset):
         return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
 
-add_items_to_collection.short_description = _(
-    "Add to moderation collection"
-)  # noqa: E305
+add_items_to_collection.short_description = _("Add to moderation collection")
 
 
 def post_bulk_actions(collection):
     if collection.should_be_archived():
         collection.status = constants.ARCHIVED
         collection.save(update_fields=["status"])
-
-
-def publish_version(version, user):
-    try:
-        version.publish(user)
-    except TransitionNotAllowed:
-        return False
-    return True

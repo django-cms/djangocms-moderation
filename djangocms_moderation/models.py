@@ -118,6 +118,11 @@ class Role(models.Model):
 class Workflow(models.Model):
     name = models.CharField(verbose_name=_("name"), max_length=120, unique=True)
     is_default = models.BooleanField(verbose_name=_("is default"), default=False)
+    is_unpublishing = models.BooleanField(
+        verbose_name=_("unpublishing workflow"),
+        default=False,
+        help_text=_("This workflow will unpublish assets at the end")
+    )
     identifier = models.CharField(
         verbose_name=_("identifier"),
         max_length=128,
@@ -295,6 +300,7 @@ class ModerationCollection(models.Model):
             moderation_requests=list(self.moderation_requests.all()),
             user=by_user,
             rework=False,
+            workflow=self.workflow
         )
 
     def is_cancellable(self, user):
@@ -461,6 +467,9 @@ class ModerationRequest(models.Model):
 
     def version_can_be_published(self):
         return self.is_approved() and self.version.can_be_published()
+
+    def version_can_be_unpublished(self):
+        return self.is_approved() and self.version.can_be_unpublished()
 
     def is_rejected(self):
         last_action = self.get_last_action()

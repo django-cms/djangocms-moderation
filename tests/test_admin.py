@@ -113,7 +113,7 @@ class ModerationAdminTestCase(BaseTestCase):
         # mr1 request is approved, so user1 can see the publish selected option
         self.assertIn("publish_selected", actions)
 
-        # user2 should not be able to see it
+        # user2 should not be able to see it as user2 is not the author
         mock_request.user = self.user2
         actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertNotIn("publish_selected", actions)
@@ -123,6 +123,23 @@ class ModerationAdminTestCase(BaseTestCase):
         self.mr1.get_last_action().delete()
         actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertNotIn("publish_selected", actions)
+
+    def test_unpublish_selected_action_visibility(self):
+        self.collection.workflow.is_unpublishing = True
+        self.collection.workflow.save()
+        self.mr1.version.publish(self.user)
+        mock_request = MockRequest()
+        mock_request.user = self.user
+        mock_request._collection = self.collection
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
+        # mr1 request is approved, so user1 can see the unpublish selected option
+        self.assertIn("unpublish_selected", actions)
+
+        # if there are no approved requests, user can't see the button either
+        mock_request.user = self.user
+        self.mr1.get_last_action().delete()
+        actions = self.mr_tree_admin.get_actions(request=mock_request)
+        self.assertNotIn("unpublish_selected", actions)
 
     def test_approve_and_reject_selected_action_visibility(self):
         mock_request = MockRequest()

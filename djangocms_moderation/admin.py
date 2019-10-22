@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseNotAllowed, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -27,9 +27,9 @@ from .admin_actions import (
     delete_selected,
     post_bulk_actions,
     publish_selected,
-    publish_version,
     reject_selected,
     resubmit_selected,
+    unpublish_selected,
 )
 from .emails import notify_collection_author, notify_collection_moderators
 from .filters import ModeratorFilter, ReviewerFilter
@@ -120,6 +120,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
     actions = [  # filtered out in `self.get_actions`
         delete_selected,
+        unpublish_selected,
         publish_selected,
         approve_selected,
         reject_selected,
@@ -290,31 +291,50 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                 )  # publish_selected, approve_selected, reject_selected, resubmit_selected
             else:
                 # If the collection is archived, then no other action than
-                # `publish_selected` is possible.
+                # `publish_selected` or `unpublish_selected` is possible.
                 _max_to_keep = 1  # publish_selected
 
             for mr in collection.moderation_requests.all().select_related("version"):
                 if len(actions_to_keep) == _max_to_keep:
                     break  # We have found all the actions, so no need to loop anymore
-                if "publish_selected" not in actions_to_keep:
-                    if (
-                        request.user == collection.author
-                        and mr.version_can_be_published()
-                    ):
-                        actions_to_keep.append("publish_selected")
-                if (
-                    collection.status == constants.IN_REVIEW
-                    and "approve_selected" not in actions_to_keep
-                ):
-                    if mr.user_can_take_moderation_action(request.user):
-                        actions_to_keep.append("approve_selected")
-                        actions_to_keep.append("reject_selected")
-                if (
-                    collection.status == constants.IN_REVIEW
-                    and "resubmit_selected" not in actions_to_keep
-                ):
-                    if mr.user_can_resubmit(request.user):
-                        actions_to_keep.append("resubmit_selected")
+
+                publish_condition = all([
+                    "publish_selected" not in actions_to_keep,
+                    request.user == collection.author,
+                    collection.workflow.is_unpublishing is False,
+                    mr.version_can_be_published()
+                ])
+
+                unpublish_condition = all([
+                    "unpublish_selected" not in actions_to_keep,
+                    collection.workflow.is_unpublishing is True,
+                    mr.version_can_be_unpublished()
+                ])
+
+                approve_condition = all([
+                    "approve_selected" not in actions_to_keep,
+                    collection.status == constants.IN_REVIEW,
+                    mr.user_can_take_moderation_action(request.user)
+                ])
+
+                resubmit_condition = all([
+                    "resubmit_selected" not in actions_to_keep,
+                    collection.status == constants.IN_REVIEW,
+                    mr.user_can_resubmit(request.user)
+                ])
+
+                if unpublish_condition:
+                    actions_to_keep.append("unpublish_selected")
+
+                if publish_condition:
+                    actions_to_keep.append("publish_selected")
+
+                if approve_condition:
+                    actions_to_keep.append("approve_selected")
+                    actions_to_keep.append("reject_selected")
+
+                if resubmit_condition:
+                    actions_to_keep.append("resubmit_selected")
 
         # Only collection author can delete moderation requests
         if collection.author == request.user:
@@ -496,31 +516,30 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         ).select_related('moderation_request')
         return treenodes
 
-    def _custom_view_context(self, request):
+    def _custom_view_context(self, request, collection):
         treenodes = self._get_selected_tree_nodes(request)
-        collection_id = request.GET.get('collection_id')
-        redirect_url = self._redirect_to_changeview_url(collection_id)
+        redirect_url = self._redirect_to_changeview_url(collection.pk)
         return dict(
             ids=request.GET.getlist("ids"),
             back_url=redirect_url,
-            queryset=[n.moderation_request for n in treenodes]
+            queryset=[n.moderation_request for n in treenodes],
+            collection=collection
         )
 
     def resubmit_view(self, request):
         collection_id = request.GET.get('collection_id')
-        treenodes = self._get_selected_tree_nodes(request)
-        redirect_url = self._redirect_to_changeview_url(collection_id)
-
         try:
             collection = ModerationCollection.objects.get(id=int(collection_id))
         except (ValueError, ModerationCollection.DoesNotExist):
             raise Http404
+        treenodes = self._get_selected_tree_nodes(request)
+        redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if collection.author != request.user:
             raise PermissionDenied
 
         if request.method != 'POST':
-            context = self._custom_view_context(request)
+            context = self._custom_view_context(request, collection)
             return render(
                 request,
                 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html',
@@ -528,7 +547,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             )
         else:
             resubmitted_requests = []
-
             for node in treenodes.all():
                 mr = node.moderation_request
                 if mr.user_can_resubmit(request.user):
@@ -552,6 +570,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                     moderation_requests=resubmitted_requests,
                     user=request.user,
                     rework=True,
+                    workflow=collection.workflow
                 )
 
             messages.success(
@@ -565,81 +584,118 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             )
         return HttpResponseRedirect(redirect_url)
 
+    def _publish_flow(self, request, queryset):
+        """Handles the published workflow"""
+        published_moderation_requests = []
+        for node in queryset.all():
+            mr = node.moderation_request
+            if mr.version_can_be_published():
+                mr.version.publish(request.user)
+                published_moderation_requests.append(mr)
+                mr.update_status(
+                    action=constants.ACTION_FINISHED, by_user=request.user
+                )
+
+        messages.success(
+            request,
+            ungettext(
+                "%(count)d request successfully published",
+                "%(count)d requests successfully published",
+                len(published_moderation_requests),
+            )
+            % {"count": len(published_moderation_requests)},
+        )
+        return published_moderation_requests
+
+    def _unpublish_flow(self, request, queryset):
+        unpublished_moderation_requests = []
+        for node in queryset.all():
+            mr = node.moderation_request
+            if mr.version_can_be_unpublished():
+                mr.version.unpublish(request.user)
+                unpublished_moderation_requests.append(mr)
+                mr.update_status(
+                    action=constants.ACTION_FINISHED, by_user=request.user
+                )
+
+        messages.success(
+            request,
+            ungettext(
+                "%(count)d request successfully unpublished",
+                "%(count)d requests successfully unpublished",
+                len(unpublished_moderation_requests),
+            )
+            % {"count": len(unpublished_moderation_requests)},
+        )
+        return unpublished_moderation_requests
+
     def published_view(self, request):
         collection_id = request.GET.get('collection_id')
-        treenodes = self._get_selected_tree_nodes(request)
-        redirect_url = self._redirect_to_changeview_url(collection_id)
-
         try:
             collection = ModerationCollection.objects.get(id=int(collection_id))
         except (ValueError, ModerationCollection.DoesNotExist):
             raise Http404
+        treenodes = self._get_selected_tree_nodes(request)
+        redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.user != collection.author:
             raise PermissionDenied
 
-        if request.method != 'POST':
-            context = self._custom_view_context(request)
+        if request.method not in ['POST', 'GET']:
+            return HttpResponseNotAllowed
+
+        if request.method == 'GET':
+            context = self._custom_view_context(request, collection)
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/publish_confirmation.html",
                 context,
             )
+
+        if collection.workflow.is_unpublishing:
+            moderation_requests = self._unpublish_flow(request, treenodes)
         else:
-            published_moderation_requests = []
-            for node in treenodes.all():
-                mr = node.moderation_request
-                if mr.version_can_be_published():
-                    if publish_version(mr.version, request.user):
-                        published_moderation_requests.append(mr)
-                        mr.update_status(
-                            action=constants.ACTION_FINISHED, by_user=request.user
-                        )
-                    else:
-                        # TODO provide some feedback back to the user?
-                        pass
+            moderation_requests = self._publish_flow(request, treenodes)
 
-            messages.success(
-                request,
-                ungettext(
-                    "%(count)d request successfully published",
-                    "%(count)d requests successfully published",
-                    len(published_moderation_requests),
-                )
-                % {"count": len(published_moderation_requests)},
+        post_bulk_actions(collection)
+        if collection.workflow.is_unpublishing:
+            signals.unpublished.send(
+                sender=self.model,
+                collection=collection,
+                moderator=collection.author,
+                moderation_requests=moderation_requests,
+                workflow=collection.workflow
             )
-
-            post_bulk_actions(collection)
+        else:
             signals.published.send(
                 sender=self.model,
                 collection=collection,
                 moderator=collection.author,
-                moderation_requests=published_moderation_requests,
+                moderation_requests=moderation_requests,
                 workflow=collection.workflow
             )
-
         return HttpResponseRedirect(redirect_url)
 
     def rework_view(self, request):
         collection_id = request.GET.get('collection_id')
+        try:
+            collection = ModerationCollection.objects.get(id=int(collection_id))
+        except (ValueError, ModerationCollection.DoesNotExist):
+            raise Http404
+
         treenodes = self._get_selected_tree_nodes(request)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
-            context = self._custom_view_context(request)
+            context = self._custom_view_context(request, collection)
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/rework_confirmation.html",
                 context,
             )
         else:
-            try:
-                collection = ModerationCollection.objects.get(id=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
-                raise Http404
 
             rejected_requests = []
-
             for node in treenodes.all():
                 moderation_request = node.moderation_request
                 if moderation_request.user_can_take_moderation_action(request.user):
@@ -671,11 +727,15 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def approved_view(self, request):
         collection_id = request.GET.get('collection_id')
+        try:
+            collection = ModerationCollection.objects.get(id=int(collection_id))
+        except (ValueError, ModerationCollection.DoesNotExist):
+            raise Http404
         treenodes = self._get_selected_tree_nodes(request)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
-            context = self._custom_view_context(request)
+            context = self._custom_view_context(request, collection)
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/approve_confirmation.html",
@@ -696,10 +756,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             and some in the second, then the reviewers we need to notify are
             different per request, depending on which stage the request is in
             """
-            try:
-                collection = ModerationCollection.objects.get(id=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
-                raise Http404
 
             approved_requests = []
             # Variable we are using to group the requests by action.step_approved
@@ -955,6 +1011,7 @@ class WorkflowAdmin(admin.ModelAdmin):
     fields = [
         "name",
         "is_default",
+        "is_unpublishing",
         "identifier",
         "requires_compliance_number",
         "compliance_number_backend",
