@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import partial
 
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
@@ -153,9 +154,11 @@ def add_items_to_collection(modeladmin, request, queryset):
         return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
 
-add_items_to_collection.short_description = _(
-    "Add to moderation collection"
-)  # noqa: E305
+add_items_to_collection.short_description = _("Add to moderation collection")
+
+add_item_to_unpublish_collection = partial(add_items_to_collection)
+add_item_to_unpublish_collection.__name__ = 'add_item_to_unpublish_collection'
+add_item_to_unpublish_collection.short_description = _('Add items to a collection to unpublish')
 
 
 def post_bulk_actions(collection):
