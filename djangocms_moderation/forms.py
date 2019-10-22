@@ -10,7 +10,6 @@ from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
 from adminsortable2.admin import CustomInlineFormSet
 from djangocms_versioning.models import Version
 
-
 from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED, COLLECTING
 from .helpers import (
     get_active_moderation_request,
