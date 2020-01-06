@@ -136,10 +136,13 @@ class CollectionItemsForm(forms.Form):
     def set_collection_widget(self, request):
         related_modeladmin = admin.site._registry.get(ModerationCollection)
         dbfield = ModerationRequest._meta.get_field("collection")
+
+        remote_field = dbfield.rel if hasattr(dbfield, 'rel') else dbfield.remote_field
+
         formfield = self.fields["collection"]
         formfield.widget = RelatedFieldWidgetWrapper(
             formfield.widget,
-            dbfield.rel,
+            remote_field,
             admin_site=admin.site,
             can_add_related=related_modeladmin.has_add_permission(request),
             can_change_related=related_modeladmin.has_change_permission(request),

@@ -3,3 +3,7 @@ coverage
 pyflakes>=2.1.1
 flake8
 isort
+python-dateutil
+mock
+cachetools
+django_polymorphic==2.0.3
