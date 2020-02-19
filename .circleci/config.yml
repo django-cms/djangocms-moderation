@@ -37,10 +37,6 @@ py36default: &py36default
    - run: docker load -i /tmp/images/py36.tar || true
    - run: docker run py36 tox -e $CIRCLE_STAGE
 
-py34_requires: &py34_requires
-  requires:
-    - py34_base
-
 py35_requires: &py35_requires
   requires:
     - py35_base
@@ -50,19 +46,6 @@ py36_requires: &py36_requires
     - py36_base
 
 jobs:
-  py34_base:
-    docker:
-      - image: circleci/python:3.4
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: false
-      - run: docker build -f .circleci/Dockerfile --build-arg PYTHON_VERSION=3.4 -t py34 .
-      - run: mkdir images
-      - run: docker save -o images/py34.tar py34
-      - persist_to_workspace:
-         root: images
-         paths: py34.tar
   py36_base:
     docker:
       - image: circleci/python:3.6
@@ -106,8 +89,6 @@ jobs:
          at: /tmp/images
      - run: docker load -i /tmp/images/py35.tar || true
      - run: docker run py35 gulp lint
-  py34-dj111-sqlite-cms4:
-    <<: *py34default
   py35-dj111-sqlite-cms4:
     <<: *py35default
   py36-dj111-sqlite-cms4:
@@ -125,7 +106,6 @@ workflows:
   version: 2
   build:
     jobs:
-      - py34_base
       - py35_base
       - py36_base
       - flake8:
@@ -137,9 +117,6 @@ workflows:
       - eslint:
           requires:
             - py35_base
-      - py34-dj111-sqlite-cms4:
-          requires:
-            - py34_base
       - py35-dj111-sqlite-cms4:
           requires:
             - py35_base
