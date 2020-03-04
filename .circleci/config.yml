@@ -1,17 +1,5 @@
 version: 2.0
 
-py34default: &py34default
-  docker:
-    - image: circleci/python:3.4
-  steps:
-   - setup_remote_docker:
-       docker_layer_caching: false
-   - checkout
-   - attach_workspace:
-       at: /tmp/images
-   - run: docker load -i /tmp/images/py34.tar || true
-   - run: docker run py34 tox -e $CIRCLE_STAGE
-
 py35default: &py35default
   docker:
     - image: circleci/python:3.5
@@ -93,11 +81,15 @@ jobs:
     <<: *py35default
   py36-dj111-sqlite-cms4:
     <<: *py36default
-  py34-dj20-sqlite-cms4:
-    <<: *py34default
+
   py35-dj20-sqlite-cms4:
     <<: *py35default
   py36-dj20-sqlite-cms4:
+    <<: *py36default
+
+  py35-dj22-sqlite-cms4:
+    <<: *py35default
+  py36-dj22-sqlite-cms4:
     <<: *py36default
 
 #######################
@@ -123,12 +115,18 @@ workflows:
       - py36-dj111-sqlite-cms4:
           requires:
             - py36_base
-      - py34-dj20-sqlite-cms4:
-          requires:
-            - py34_base
+
       - py35-dj20-sqlite-cms4:
           requires:
             - py35_base
       - py36-dj20-sqlite-cms4:
+          requires:
+            - py36_base
+
+
+      - py35-dj22-sqlite-cms4:
+          requires:
+            - py35_base
+      - py36-dj22-sqlite-cms4:
           requires:
             - py36_base

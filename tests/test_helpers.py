@@ -3,11 +3,13 @@ import mock
 from unittest import skip
 
 from django.urls import reverse
+from django.template.defaultfilters import truncatechars
 
 from cms.test_utils.testcases import CMSTestCase
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
+from djangocms_moderation.conf import COLLECTION_NAME_LENGTH_LIMIT
 from djangocms_moderation.constants import COLLECTING, IN_REVIEW
 from djangocms_moderation.helpers import (
     get_form_submission_for_step,
@@ -123,17 +125,20 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
         self.collection.name = "Very long collection name so long wow!"
         self.collection.save()
         title, url = get_moderation_button_title_and_url(self.mr)
+
+        expected_title = truncatechars(self.collection.name, COLLECTION_NAME_LENGTH_LIMIT)
         self.assertEqual(
             title,
             # By default, truncate will shorten the name
-            'In collection "Very long collection ... ({})"'.format(self.collection.id),
+            'In collection "{} ({})"'.format(expected_title, self.collection.id),
         )
         with mock.patch("djangocms_moderation.helpers.COLLECTION_NAME_LENGTH_LIMIT", 3):
             title, url = get_moderation_button_title_and_url(self.mr)
+            expected_title = truncatechars(self.collection.name, 3)
             self.assertEqual(
                 title,
                 # As the limit is only 3, the truncate will produce `...`
-                'In collection "... ({})"'.format(self.collection.id),
+                'In collection "{} ({})"'.format(expected_title, self.collection.id),
             )
 
         with mock.patch(

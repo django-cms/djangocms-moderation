@@ -82,7 +82,7 @@ class ModerationAdminTestCase(BaseTestCase):
         mock_request.user = self.user
         mock_request._collection = self.collection
         actions = self.mr_tree_admin.get_actions(request=mock_request)
-        self.assertIn("delete_selected", actions)
+        self.assertIn("remove_selected", actions)
 
         # user2 won't be able to delete requests, as they are not the collection
         # author
