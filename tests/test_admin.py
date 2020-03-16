@@ -83,12 +83,14 @@ class ModerationAdminTestCase(BaseTestCase):
         mock_request._collection = self.collection
         actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertIn("remove_selected", actions)
+        self.assertNotIn("delete_selected", actions)
 
         # user2 won't be able to delete requests, as they are not the collection
         # author
         mock_request.user = self.user2
         actions = self.mr_tree_admin.get_actions(request=mock_request)
         self.assertNotIn("delete_selected", actions)
+        self.assertNotIn("remove_selected", actions)
 
     def test_publish_selected_action_visibility_when_version_is_published(self):
         mock_request = MockRequest()

@@ -137,6 +137,7 @@ class CollectionItemsForm(forms.Form):
         related_modeladmin = admin.site._registry.get(ModerationCollection)
         dbfield = ModerationRequest._meta.get_field("collection")
 
+        # Django 2.2 requires `remote_field` instead of `rel`.
         remote_field = dbfield.rel if hasattr(dbfield, 'rel') else dbfield.remote_field
 
         formfield = self.fields["collection"]

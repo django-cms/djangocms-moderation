@@ -5,16 +5,13 @@ import djangocms_moderation
 
 INSTALL_REQUIREMENTS = [
     "Django>=1.11,<3.0",
-    "django-cms>=3.4.2",
+    "django-cms",
     "django-sekizai>=0.7",
     "django-admin-sortable2>=0.6.4",
 ]
 
 TEST_REQUIREMENTS = [
-    "aldryn-forms",
-    "django-cms",
-    "pillow<=5.4.1",  # Requirement for tests to pass in python 3.4
-    "lxml<=4.3.5",  # Requirement for tests to pass in python 3.4
+    "django_polymorphic==2.0.3",
     "cachetools",
     "mock",
     "djangocms-text-ckeditor",
@@ -48,7 +45,6 @@ setup(
     tests_require=TEST_REQUIREMENTS,
     test_suite="tests.settings.run",
     dependency_links=[
-        "https://github.com/divio/aldryn-forms/tarball/master#egg=aldryn-forms-5.0.1",
         "https://github.com/divio/django-cms/tarball/release/4.0.x#egg=django-cms-4.0.0",
         "https://github.com/divio/djangocms-versioning/tarball/master#egg=djangocms-versioning-0.0.23",
         "https://github.com/FidelityInternational/djangocms-version-locking/tarball/master#egg=djangocms-version-locking-0.0.13", # noqa

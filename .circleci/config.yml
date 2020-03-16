@@ -58,7 +58,7 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: false
-      - run: docker build -f .circleci/Dockerfile --build-arg PYTHON_VERSION=3.6 -t py37 .
+      - run: docker build -f .circleci/Dockerfile --build-arg PYTHON_VERSION=3.7 -t py37 .
       - run: mkdir images
       - run: docker save -o images/py37.tar py37
       - persist_to_workspace:
