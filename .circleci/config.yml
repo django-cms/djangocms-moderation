@@ -25,6 +25,19 @@ py36default: &py36default
    - run: docker load -i /tmp/images/py36.tar || true
    - run: docker run py36 tox -e $CIRCLE_STAGE
 
+py37default: &py37default
+  docker:
+    - image: circleci/python:3.7
+  steps:
+   - setup_remote_docker:
+       docker_layer_caching: false
+   - checkout
+   - attach_workspace:
+       at: /tmp/images
+   - run: docker load -i /tmp/images/py37.tar || true
+   - run: docker run py37 tox -e $CIRCLE_STAGE
+
+
 py35_requires: &py35_requires
   requires:
     - py35_base
@@ -33,7 +46,25 @@ py36_requires: &py36_requires
   requires:
     - py36_base
 
+py37_requires: &py37_requires
+  requires:
+    - py37_base
+
 jobs:
+  py37_base:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - run: docker build -f .circleci/Dockerfile --build-arg PYTHON_VERSION=3.6 -t py37 .
+      - run: mkdir images
+      - run: docker save -o images/py37.tar py37
+      - persist_to_workspace:
+         root: images
+         paths: py37.tar
+
   py36_base:
     docker:
       - image: circleci/python:3.6
@@ -81,16 +112,23 @@ jobs:
     <<: *py35default
   py36-dj111-sqlite-cms4:
     <<: *py36default
+  py37-dj111-sqlite-cms4:
+    <<: *py37default
 
   py35-dj20-sqlite-cms4:
     <<: *py35default
   py36-dj20-sqlite-cms4:
     <<: *py36default
+  py37-dj20-sqlite-cms4:
+    <<: *py37default
 
   py35-dj22-sqlite-cms4:
     <<: *py35default
   py36-dj22-sqlite-cms4:
     <<: *py36default
+  py37-dj22-sqlite-cms4:
+    <<: *py37default
+
 
 #######################
 
@@ -100,6 +138,7 @@ workflows:
     jobs:
       - py35_base
       - py36_base
+      - py37_base
       - flake8:
           requires:
             - py35_base
@@ -115,6 +154,9 @@ workflows:
       - py36-dj111-sqlite-cms4:
           requires:
             - py36_base
+      - py37-dj111-sqlite-cms4:
+          requires:
+            - py37_base
 
       - py35-dj20-sqlite-cms4:
           requires:
@@ -122,7 +164,9 @@ workflows:
       - py36-dj20-sqlite-cms4:
           requires:
             - py36_base
-
+      - py37-dj20-sqlite-cms4:
+          requires:
+            - py37_base
 
       - py35-dj22-sqlite-cms4:
           requires:
@@ -130,3 +174,6 @@ workflows:
       - py36-dj22-sqlite-cms4:
           requires:
             - py36_base
+      - py37-dj22-sqlite-cms4:
+          requires:
+            - py37_base
