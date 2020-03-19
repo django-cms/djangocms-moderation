@@ -79,9 +79,11 @@ class Role(models.Model):
         unique=True,
     )
     user = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL, verbose_name=_("user"), blank=True, null=True
+        to=settings.AUTH_USER_MODEL, verbose_name=_("user"), blank=True, null=True, on_delete=models.CASCADE
     )
-    group = models.ForeignKey(to=Group, verbose_name=_("group"), blank=True, null=True)
+    group = models.ForeignKey(
+        to=Group, verbose_name=_("group"), blank=True, null=True, on_delete=models.CASCADE
+    )
     confirmation_page = models.ForeignKey(
         to=ConfirmationPage,
         verbose_name=_("confirmation page"),
@@ -172,10 +174,15 @@ class Workflow(models.Model):
 
 @python_2_unicode_compatible
 class WorkflowStep(models.Model):
-    role = models.ForeignKey(to=Role, verbose_name=_("role"))
+    role = models.ForeignKey(
+        to=Role, verbose_name=_("role"), on_delete=models.CASCADE
+    )
     is_required = models.BooleanField(verbose_name=_("is mandatory"), default=True)
     workflow = models.ForeignKey(
-        to=Workflow, verbose_name=_("workflow"), related_name="steps"
+        to=Workflow,
+        verbose_name=_("workflow"),
+        related_name="steps",
+        on_delete=models.CASCADE
     )
     order = models.PositiveIntegerField()
 
@@ -214,7 +221,8 @@ class ModerationCollection(models.Model):
         on_delete=models.CASCADE,
     )
     workflow = models.ForeignKey(
-        to=Workflow, verbose_name=_("workflow"), related_name="moderation_collections"
+        to=Workflow, verbose_name=_("workflow"), related_name="moderation_collections",
+        on_delete=models.CASCADE
     )
     status = models.CharField(
         max_length=10,
@@ -635,6 +643,7 @@ class ModerationRequestAction(models.Model):
         to=ModerationRequest,
         verbose_name=_("moderation_request"),
         related_name="actions",
+        on_delete=models.CASCADE
     )
 
     date_taken = models.DateTimeField(verbose_name=_("date taken"), auto_now_add=True)

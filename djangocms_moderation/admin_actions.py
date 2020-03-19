@@ -63,6 +63,9 @@ def approve_selected(modeladmin, request, queryset):
     return HttpResponseRedirect(url)
 
 
+approve_selected.short_description = _("Approve")
+
+
 def delete_selected(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
         raise PermissionDenied
@@ -77,6 +80,7 @@ def delete_selected(modeladmin, request, queryset):
 
 
 delete_selected.short_description = _("Remove selected")
+delete_selected.__name__ = 'remove_selected'
 
 
 def publish_selected(modeladmin, request, queryset):

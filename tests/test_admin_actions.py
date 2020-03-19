@@ -1009,7 +1009,7 @@ class DeleteSelectedTest(CMSTestCase):
         # Login as the collection author
         self.client.force_login(self.user)
         # Choose the delete_selected action from the dropdown
-        data = get_url_data(self, "delete_selected")
+        data = get_url_data(self, "remove_selected")
         response = self.client.post(self.url, data)
 
         self.assertEqual(response.status_code, 403)
@@ -1049,7 +1049,7 @@ class DeleteSelectedTest(CMSTestCase):
         # Login as the collection author
         self.client.force_login(self.user)
         # Choose the delete_selected action from the dropdown
-        data = get_url_data(self, "delete_selected")
+        data = get_url_data(self, "remove_selected")
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
 
@@ -1074,10 +1074,9 @@ class DeleteSelectedTest(CMSTestCase):
     def test_delete_view_when_using_get(self):
         # Login as the collection author
         self.client.force_login(self.user)
-        # Choose the delete_selected action from the dropdown
 
-        # Choose the approve_selected action from the dropdown
-        data = get_url_data(self, "delete_selected")
+        # Choose the delete_selected action from the dropdown
+        data = get_url_data(self, "remove_selected")
         response = self.client.post(self.url, data)
         # And follow the redirect (with a GET call) to the view that does the approve
         response = self.client.get(response.url)

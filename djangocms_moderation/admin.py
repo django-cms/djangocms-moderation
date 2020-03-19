@@ -318,7 +318,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         # Only collection author can delete moderation requests
         if collection.author == request.user:
-            actions_to_keep.append("delete_selected")
+            actions_to_keep.append("remove_selected")
 
         return {key: value for key, value in actions.items() if key in actions_to_keep}
 
