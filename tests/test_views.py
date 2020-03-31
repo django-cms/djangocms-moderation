@@ -243,21 +243,21 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         )
         self.assertEqual(mr.count(), 1)
         self.assertEqual(
-            ModerationRequestTreeNode.objects.filter(moderation_request=mr).count(), 1
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr.first()).count(), 1
         )
         mr1 = ModerationRequest.objects.filter(
             collection=collection, version=poll1_version
         )
         self.assertEqual(mr1.count(), 1)
         self.assertEqual(
-            ModerationRequestTreeNode.objects.filter(moderation_request=mr1).count(), 1
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr1.first()).count(), 1
         )
         mr2 = ModerationRequest.objects.filter(
             collection=collection, version=poll2_version
         )
         self.assertEqual(mr2.count(), 1)
         self.assertEqual(
-            ModerationRequestTreeNode.objects.filter(moderation_request=mr2).count(), 1
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr2.first()).count(), 1
         )
 
     def test_add_pages_moderated_duplicated_children_to_collection(self):
@@ -540,14 +540,14 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         )
         self.assertEqual(mr.count(), 1)
         self.assertEqual(
-            ModerationRequestTreeNode.objects.filter(moderation_request=mr).count(), 1
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr.first()).count(), 1
         )
         mr1 = ModerationRequest.objects.filter(
             collection=collection, version=poll1_version
         )
         self.assertEqual(mr1.count(), 0)
         self.assertEqual(
-            ModerationRequestTreeNode.objects.filter(moderation_request=mr1).count(), 0
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr1.first()).count(), 0
         )
 
 

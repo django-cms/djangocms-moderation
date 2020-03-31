@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import partial
 
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
@@ -10,9 +11,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
 
-from django_fsm import TransitionNotAllowed
 from djangocms_versioning.models import Version
 
+from django_fsm import TransitionNotAllowed
 from djangocms_moderation import constants
 
 from .utils import get_admin_url
@@ -62,6 +63,9 @@ def approve_selected(modeladmin, request, queryset):
     return HttpResponseRedirect(url)
 
 
+approve_selected.short_description = _("Approve")
+
+
 def delete_selected(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
         raise PermissionDenied
@@ -76,6 +80,7 @@ def delete_selected(modeladmin, request, queryset):
 
 
 delete_selected.short_description = _("Remove selected")
+delete_selected.__name__ = 'remove_selected'
 
 
 def publish_selected(modeladmin, request, queryset):
@@ -143,19 +148,21 @@ def add_items_to_collection(modeladmin, request, queryset):
                 args=(),
             ),
             version_ids=",".join(version_ids),
-            return_to_url=request.META.get("HTTP_REFERER"),
+            return_to_url=request.META.get("HTTP_REFERER", ""),
         )
         return HttpResponseRedirect(admin_url)
     else:
         modeladmin.message_user(
             request, _("No suitable items found to add to moderation collection")
         )
-        return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+        return HttpResponseRedirect(request.META.get("HTTP_REFERER", ""))
 
 
-add_items_to_collection.short_description = _(
-    "Add to moderation collection"
-)  # noqa: E305
+add_items_to_collection.short_description = _("Add to moderation collection")
+
+add_item_to_unpublish_collection = partial(add_items_to_collection)
+add_item_to_unpublish_collection.__name__ = 'add_item_to_unpublish_collection'
+add_item_to_unpublish_collection.short_description = _('Add items to a collection to unpublish')
 
 
 def post_bulk_actions(collection):
