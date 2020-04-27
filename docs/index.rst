@@ -16,6 +16,7 @@ Welcome to djangocms-moderation's documentation!
    lock
    moderation_request
    moderation_request_action
+   notifications
    role
    references
    workflow

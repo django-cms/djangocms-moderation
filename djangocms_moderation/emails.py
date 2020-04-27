@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
+from .conf import EMAIL_NOTIFICATIONS_FAIL_SILENTLY
 from .utils import get_absolute_url
 
 
@@ -48,7 +49,9 @@ def _send_email(
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=recipients,
     )
-    return message.send()
+    return message.send(
+        fail_silently=EMAIL_NOTIFICATIONS_FAIL_SILENTLY
+    )
 
 
 def notify_collection_author(collection, moderation_requests, action, by_user):
