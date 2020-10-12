@@ -550,6 +550,37 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             ModerationRequestTreeNode.objects.filter(moderation_request=mr1.first()).count(), 0
         )
 
+    def test_collection_with_redirect_url_query_string_parameter_sanitisation(self):
+        user = self.get_superuser()
+        collection = ModerationCollectionFactory(author=user)
+        page1_version = PageVersionFactory(created_by=user)
+        page2_version = PageVersionFactory(created_by=user)
+
+        redirect_to_url = f"""{reverse(
+            "admin:djangocms_moderation_moderationcollection_changelist"
+        )}?=<script>alert('attack!')</script>"""
+
+        url = add_url_parameters(
+            get_admin_url(
+                name="cms_moderation_items_to_collection", language="en", args=()
+            ),
+            return_to_url=redirect_to_url,
+            version_ids=",".join(str(x) for x in [page1_version.pk, page2_version.pk]),
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={
+                    "collection": collection.pk,
+                    "versions": [page1_version.pk, page2_version.pk],
+                },
+                follow=False,
+            )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertNotIn(response.url, "<script>alert('attack!')</script>")
+
 
 class CollectionItemsViewTest(CMSTestCase):
     def setUp(self):
