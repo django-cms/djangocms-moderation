@@ -6,5 +6,9 @@ isort
 python-dateutil
 mock
 cachetools
-# Please note that aldryn-forms version 5 can only be used with django >2 and deprecates <2 completely. Version 5 is only available on master, not yet on pypi. 
+django-filer<2.0.0
+django-classy-tags<2.0.0
+django-sekizai<2.0.0
+# Please note that aldryn-forms version 5 can only be used with django >2 and deprecates <2 completely. Version 5 is only available on master, not yet on pypi.
 https://github.com/divio/aldryn-forms/archive/master.zip
+https://github.com/divio/djangocms-text-ckeditor/tarball/support/4.0.x#egg=djangocms-text-ckeditor
