@@ -579,7 +579,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             )
 
         self.assertEqual(response.status_code, 302)
-        self.assertNotIn(response.url, "<script>alert('attack!')</script>")
+        self.assertIn("%3F%3D%3Cscript%3Ealert%28%27attack%21%27%29%3C/script%3E", response.url)
 
 
 class CollectionItemsViewTest(CMSTestCase):
