@@ -11,16 +11,8 @@ INSTALL_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
-    "django_polymorphic==2.0.3",
-    "cachetools",
-    "mock",
-    "djangocms-text-ckeditor",
     "djangocms-version-locking",
     "djangocms-versioning",
-    "djangocms_helper",
-    "factory-boy",
-    "django-simple-captcha",
-    "python-dateutil>=2.4"
 ]
 
 setup(
@@ -48,6 +40,5 @@ setup(
         "https://github.com/divio/django-cms/tarball/release/4.0.x#egg=django-cms-4.0.0",
         "https://github.com/divio/djangocms-versioning/tarball/master#egg=djangocms-versioning-0.0.23",
         "https://github.com/FidelityInternational/djangocms-version-locking/tarball/master#egg=djangocms-version-locking-0.0.13", # noqa
-        "https://github.com/divio/djangocms-text-ckeditor/tarball/support/4.0.x#egg=djangocms-text-ckeditor-4.0.x"
     ]
 )
