@@ -5,7 +5,6 @@ Changelog
 Unreleased
 ==========
 
-
 1.0.27 (2021-03-10)
 ==================
 * Wrapped the publish view logic in a transaction to prevent inconsistent ModerationRequest states in the future.
