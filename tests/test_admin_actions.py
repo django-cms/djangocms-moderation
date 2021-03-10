@@ -650,7 +650,7 @@ class PublishSelectedTest(CMSTestCase):
     @unittest.skip("Skip until collection status bugs fixed")
     @mock.patch("django.contrib.messages.success")
     def test_publish_selected_sets_collection_to_archived_if_all_requests_published(self, messages_mock):
-        # Won't work because the approved_view sets the ARCHIVED state prior to hwo this test is setup
+        # Won't work because the approved_view sets the ARCHIVED state prior to how this test is setup
         self.moderation_request2.update_status(constants.ACTION_APPROVED, self.role1.user)
         self.moderation_request2.update_status(constants.ACTION_APPROVED, self.role2.user)
 
