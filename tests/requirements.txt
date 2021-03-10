@@ -20,3 +20,4 @@ aldryn-forms<6.0.0
 # Get the lastest cms v4 compatible djangocms-text-ckeditor
 https://github.com/divio/djangocms-text-ckeditor/tarball/support/4.0.x#egg=djangocms-text-ckeditor
 https://github.com/divio/djangocms-versioning/tarball/master#egg=djangocms-versioning
+https://github.com/FidelityInternational/djangocms-version-locking/tarball/master#egg=djangocms-version-locking
