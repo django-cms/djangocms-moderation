@@ -598,7 +598,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                             action=constants.ACTION_FINISHED, by_user=request.user
                         )
                     else:
-                        # TODO Consider providing some feedback back to the user?
+                        # TODO provide some feedback back to the user?
                         pass
 
             messages.success(
