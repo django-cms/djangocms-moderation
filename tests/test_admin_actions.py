@@ -572,8 +572,7 @@ class PublishSelectedTest(CMSTestCase):
             id=2, collection=self.collection)
         self.root1 = factories.RootModerationRequestTreeNodeFactory(
             id=4, moderation_request=self.moderation_request1)
-        factories.ChildModerationRequestTreeNodeFactory(
-            id=5, moderation_request=self.moderation_request2, parent=self.root1)
+
         self.root2 = factories.RootModerationRequestTreeNodeFactory(
             id=6, moderation_request=self.moderation_request2)
         # Request 1 is approved, request 2 is started
@@ -595,6 +594,7 @@ class PublishSelectedTest(CMSTestCase):
         self.assertTrue(self.moderation_request2.is_active)
         self.assertEqual(self.moderation_request1.version.state, DRAFT)
         self.assertEqual(self.moderation_request2.version.state, DRAFT)
+        self.assertTrue(self.moderation_request1.is_approved())
 
     @mock.patch("django.contrib.messages.success")
     def test_publish_selected_publishes_approved_request(self, messages_mock):
@@ -650,7 +650,7 @@ class PublishSelectedTest(CMSTestCase):
     @unittest.skip("Skip until collection status bugs fixed")
     @mock.patch("django.contrib.messages.success")
     def test_publish_selected_sets_collection_to_archived_if_all_requests_published(self, messages_mock):
-        # Make sure both moderation requests have been approved
+        # Won't work because the approved_view sets the ARCHIVED state prior to how this test is setup
         self.moderation_request2.update_status(constants.ACTION_APPROVED, self.role1.user)
         self.moderation_request2.update_status(constants.ACTION_APPROVED, self.role2.user)
 

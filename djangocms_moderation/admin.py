@@ -565,9 +565,9 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             )
         return HttpResponseRedirect(redirect_url)
 
+    @transaction.atomic
     def published_view(self, request):
         collection_id = request.GET.get('collection_id')
-        treenodes = self._get_selected_tree_nodes(request)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         try:
@@ -586,6 +586,8 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 context,
             )
         else:
+            treenodes = self._get_selected_tree_nodes(request)
+
             published_moderation_requests = []
             for node in treenodes.all():
                 mr = node.moderation_request

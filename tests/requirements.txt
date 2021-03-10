@@ -15,7 +15,9 @@ cachetools
 django-filer<2.0.0
 django-classy-tags<2.0.0
 django-sekizai<2.0.0
-# Please note that aldryn-forms version 5 can only be used with django >2 and deprecates <2 completely. Version 5 is only available on master, not yet on pypi.
-https://github.com/divio/aldryn-forms/archive/master.zip
+# Please note that aldryn-forms version 5 can only be used with django >2 and deprecates <2 completely.
+aldryn-forms<6.0.0
 # Get the lastest cms v4 compatible djangocms-text-ckeditor
 https://github.com/divio/djangocms-text-ckeditor/tarball/support/4.0.x#egg=djangocms-text-ckeditor
+https://github.com/divio/djangocms-versioning/tarball/master#egg=djangocms-versioning
+https://github.com/FidelityInternational/djangocms-version-locking/tarball/master#egg=djangocms-version-locking
