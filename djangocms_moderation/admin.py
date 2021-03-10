@@ -506,42 +506,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             queryset=[n.moderation_request for n in treenodes]
         )
 
-    @transaction.atomic
-    def _publish_requests(self, request, collection):
-        treenodes = self._get_selected_tree_nodes(request)
-        published_moderation_requests = []
-
-        for node in treenodes.all():
-            mr = node.moderation_request
-            if mr.version_can_be_published():
-                if publish_version(mr.version, request.user):
-                    published_moderation_requests.append(mr)
-                    mr.update_status(
-                        action=constants.ACTION_FINISHED, by_user=request.user
-                    )
-                else:
-                    # TODO provide some feedback back to the user?
-                    pass
-
-        messages.success(
-            request,
-            ungettext(
-                "%(count)d request successfully published",
-                "%(count)d requests successfully published",
-                len(published_moderation_requests),
-            )
-            % {"count": len(published_moderation_requests)},
-        )
-
-        post_bulk_actions(collection)
-        signals.published.send(
-            sender=self.model,
-            collection=collection,
-            moderator=collection.author,
-            moderation_requests=published_moderation_requests,
-            workflow=collection.workflow
-        )
-
     def resubmit_view(self, request):
         collection_id = request.GET.get('collection_id')
         treenodes = self._get_selected_tree_nodes(request)
@@ -601,6 +565,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             )
         return HttpResponseRedirect(redirect_url)
 
+    @transaction.atomic
     def published_view(self, request):
         collection_id = request.GET.get('collection_id')
         redirect_url = self._redirect_to_changeview_url(collection_id)
@@ -621,7 +586,39 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 context,
             )
         else:
-            self._publish_requests(request, collection)
+            treenodes = self._get_selected_tree_nodes(request)
+
+            published_moderation_requests = []
+            for node in treenodes.all():
+                mr = node.moderation_request
+                if mr.version_can_be_published():
+                    if publish_version(mr.version, request.user):
+                        published_moderation_requests.append(mr)
+                        mr.update_status(
+                            action=constants.ACTION_FINISHED, by_user=request.user
+                        )
+                    else:
+                        # TODO Consider providing some feedback back to the user?
+                        pass
+
+            messages.success(
+                request,
+                ungettext(
+                    "%(count)d request successfully published",
+                    "%(count)d requests successfully published",
+                    len(published_moderation_requests),
+                )
+                % {"count": len(published_moderation_requests)},
+            )
+
+            post_bulk_actions(collection)
+            signals.published.send(
+                sender=self.model,
+                collection=collection,
+                moderator=collection.author,
+                moderation_requests=published_moderation_requests,
+                workflow=collection.workflow
+            )
 
         return HttpResponseRedirect(redirect_url)
 
