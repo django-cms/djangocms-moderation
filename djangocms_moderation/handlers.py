@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
 
-import json
-
 from django.dispatch import receiver
+
+import json
 
 from .models import ConfirmationFormSubmission
 from .signals import confirmation_form_submission

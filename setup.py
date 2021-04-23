@@ -8,6 +8,7 @@ INSTALL_REQUIREMENTS = [
     "django-cms",
     "django-sekizai>=0.7",
     "django-admin-sortable2>=0.6.4",
+    'django-treebeard>=4.3,<4.5',
 ]
 
 setup(

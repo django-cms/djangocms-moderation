@@ -1,7 +1,5 @@
 from __future__ import unicode_literals
 
-import json
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -14,6 +12,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 
 from cms.models.fields import PlaceholderField
 
+import json
 from djangocms_versioning.models import Version
 from treebeard.mp_tree import MP_Node
 

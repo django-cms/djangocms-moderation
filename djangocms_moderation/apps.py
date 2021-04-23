@@ -10,5 +10,5 @@ class ModerationConfig(AppConfig):
 
     def ready(self):
         import djangocms_moderation.handlers  # noqa: F401
-        import djangocms_moderation.signals  # noqa: F401
         import djangocms_moderation.monkeypatch  # noqa: F401
+        import djangocms_moderation.signals  # noqa: F401

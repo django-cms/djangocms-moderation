@@ -1,6 +1,5 @@
-from django.core.management.base import BaseCommand, CommandError
-
-from djangocms_versioning import constants as versioning_constants
+from django import constants as versioning_constants
+from django.core.management.base import BaseCommand
 
 from djangocms_moderation import constants as moderation_constants
 from djangocms_moderation.models import ModerationRequest
