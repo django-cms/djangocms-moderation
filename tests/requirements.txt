@@ -3,7 +3,6 @@ coverage
 djangocms_helper
 django_polymorphic==2.0.3
 cachetools
-mock
 factory-boy
 django-simple-captcha
 python-dateutil>=2.4
