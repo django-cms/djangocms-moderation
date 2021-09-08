@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django import forms
+from django.apps import apps
 from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
@@ -117,6 +118,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     """
     class Media:
         js = ("djangocms_moderation/js/actions.js",)
+        css = {"all": ("djangocms_moderation/css/actions.css",)}
 
     actions = [  # filtered out in `self.get_actions`
         delete_selected,
@@ -166,10 +168,43 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             'get_preview_link',
             'get_status',
             'get_reviewer',
+            self._list_actions(request),
         ]
-        if conf.REQUEST_COMMENTS_ENABLED:
-            list_display.append("get_comments_link")
         return list_display
+
+    def _list_actions(self, request):
+        """
+        A closure that makes it possible to pass request object to
+        list action button functions.
+        """
+
+        def list_actions(obj):
+            """Display links to state change endpoints
+            """
+            return format_html_join(
+                "",
+                "{}",
+                ((action(obj, request),) for action in self.get_list_actions()),
+            )
+
+        list_actions.short_description = _("Actions")
+        return list_actions
+
+    def get_list_actions(self):
+        """
+        Collect rendered actions from implemented methods and return as list
+        """
+        action_list = []
+        if conf.REQUEST_COMMENTS_ENABLED:
+            action_list.append(self._get_comments_link)
+
+        # Get any configured additional actions
+        moderation_config = apps.get_app_config("djangocms_moderation")
+        additional_actions = moderation_config.cms_extension.moderation_collection_admin_actions
+        if additional_actions:
+            action_list += additional_actions
+
+        return action_list
 
     def get_id(self, obj):
         return format_html(
@@ -254,15 +289,15 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             status = ugettext('Ready for submission')
         return status
 
-    def get_comments_link(self, obj):
-        return format_html(
-            '<a href="{}?moderation_request__id__exact={}">{}</a>',
-            reverse('admin:djangocms_moderation_requestcomment_changelist'),
+    def _get_comments_link(self, obj, request):
+        comments_endpoint = format_html(
+            "{}?moderation_request__id__exact={}",
+            reverse("admin:djangocms_moderation_requestcomment_changelist"),
             obj.moderation_request.id,
-            _('View')
         )
-
-    get_comments_link.short_description = _("Comments")
+        return render_to_string(
+            "djangocms_moderation/comment_icon.html", {"url": comments_endpoint}
+        )
 
     def get_actions(self, request):
         """
