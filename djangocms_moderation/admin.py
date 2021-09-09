@@ -168,6 +168,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             'get_preview_link',
             'get_status',
             'get_reviewer',
+            'get_expiry_date',
             self._list_actions(request),
         ]
         return list_display
@@ -205,6 +206,13 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             action_list += additional_actions
 
         return action_list
+
+    def get_expiry_date(self, obj):
+        version = obj.moderation_request.version
+
+        if hasattr(version, "contentexpiry"):
+            return version.contentexpiry.expires
+    get_expiry_date.short_description = _('Expires')
 
     def get_id(self, obj):
         return format_html(
