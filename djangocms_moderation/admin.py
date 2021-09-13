@@ -160,6 +160,9 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         ] + super().get_urls()
 
     def get_list_display(self, request):
+
+        additional_fields = self._register_configured_calculated_fields(request)
+
         list_display = [
             'get_id',
             'get_content_type',
@@ -168,7 +171,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             'get_preview_link',
             'get_status',
             'get_reviewer',
-            'get_expiry_date',
+            *additional_fields,
             self._list_actions(request),
         ]
         return list_display
@@ -207,12 +210,16 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         return action_list
 
-    def get_expiry_date(self, obj):
-        version = obj.moderation_request.version
+    def _register_configured_calculated_fields(self, request):
+        fields = []
+        moderation_config = apps.get_app_config("djangocms_moderation")
+        additional_fields = moderation_config.cms_extension.moderation_collection_admin_fields
 
-        if hasattr(version, "contentexpiry"):
-            return version.contentexpiry.expires
-    get_expiry_date.short_description = _('Expires')
+        for field in additional_fields:
+            fields.append(field.__name__)
+            setattr(self, field.__name__, field)
+
+        return fields
 
     def get_id(self, obj):
         return format_html(
