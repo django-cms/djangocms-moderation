@@ -172,43 +172,31 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             'get_status',
             'get_reviewer',
             *additional_fields,
-            self._list_actions(request),
+            'list_display_actions',
         ]
         return list_display
 
-    def _list_actions(self, request):
+    def list_display_actions(self, obj):
+        """Display links to state change endpoints
         """
-        A closure that makes it possible to pass request object to
-        list action button functions.
-        """
+        return format_html_join(
+            "", "{}", ((action(obj),) for action in self.get_list_display_actions())
+        )
 
-        def list_actions(obj):
-            """Display links to state change endpoints
-            """
-            return format_html_join(
-                "",
-                "{}",
-                ((action(obj, request),) for action in self.get_list_actions()),
-            )
+    list_display_actions.short_description = _("actions")
 
-        list_actions.short_description = _("Actions")
-        return list_actions
-
-    def get_list_actions(self):
-        """
-        Collect rendered actions from implemented methods and return as list
-        """
-        action_list = []
+    def get_list_display_actions(self):
+        actions = []
         if conf.REQUEST_COMMENTS_ENABLED:
-            action_list.append(self._get_comments_link)
+            actions.append(self.get_comments_link)
 
         # Get any configured additional actions
         moderation_config = apps.get_app_config("djangocms_moderation")
         additional_actions = moderation_config.cms_extension.moderation_collection_admin_actions
         if additional_actions:
-            action_list += additional_actions
+            actions += additional_actions
 
-        return action_list
+        return actions
 
     def _register_configured_calculated_fields(self, request):
         fields = []
@@ -304,7 +292,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             status = ugettext('Ready for submission')
         return status
 
-    def _get_comments_link(self, obj, request):
+    def get_comments_link(self, obj):
         comments_endpoint = format_html(
             "{}?moderation_request__id__exact={}",
             reverse("admin:djangocms_moderation_requestcomment_changelist"),

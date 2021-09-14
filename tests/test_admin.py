@@ -213,26 +213,28 @@ class ModerationAdminTestCase(BaseTestCase):
 
         # test ModerationRequests
         conf.REQUEST_COMMENTS_ENABLED = False
-        list_display = self.mr_tree_admin.get_list_display(mock_request)
-        self.assertNotIn("get_comments_link", list_display)
+        mra_buttons = []
+        for action in self.mr_tree_admin.get_list_display_actions():
+            mra_buttons.append(action.__name__)
+        self.assertNotIn("get_comments_link", mra_buttons)
 
         conf.REQUEST_COMMENTS_ENABLED = True
-        list_display = self.mr_tree_admin.get_list_display(mock_request)
-        self.assertIn("get_comments_link", list_display)
+        mra_buttons = []
+        for action in self.mr_tree_admin.get_list_display_actions():
+            mra_buttons.append(action.__name__)
+        self.assertIn("get_comments_link", mra_buttons)
 
         # test ModerationCollections
         conf.COLLECTION_COMMENTS_ENABLED = False
         mca_buttons = []
         for action in self.mca.get_list_display_actions():
             mca_buttons.append(action.__name__)
-        list_display = self.mca.get_list_display_actions()
         self.assertNotIn("get_comments_link", mca_buttons)
 
         conf.COLLECTION_COMMENTS_ENABLED = True
         mca_buttons = []
         for action in self.mca.get_list_display_actions():
             mca_buttons.append(action.__name__)
-        list_display = self.mca.get_list_display_actions()
         self.assertIn("get_comments_link", mca_buttons)
 
     def test_change_moderation_collection_author_permission(self):
