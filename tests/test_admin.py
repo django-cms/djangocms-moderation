@@ -18,6 +18,7 @@ from djangocms_moderation.models import ModerationCollection, ModerationRequest
 from .utils.base import BaseTestCase, MockRequest
 from .utils.factories import (
     ModerationCollectionFactory,
+    PollVersionFactory,
     RootModerationRequestTreeNodeFactory,
     WorkflowFactory,
 )
@@ -352,3 +353,62 @@ class ModerationAdminTestCase(BaseTestCase):
             self.mr1.pk,
         )
         self.assertHTMLEqual(result, expected)
+
+
+class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
+    def setUp(self):
+        self.wf = WorkflowFactory(name="Workflow Test")
+        self.collection = ModerationCollectionFactory(
+            author=self.user,
+            name="Collection Admin Actions",
+            workflow=self.wf,
+            status=constants.IN_REVIEW,
+        )
+
+        poll1_version = PollVersionFactory()
+
+        self.mr1n = RootModerationRequestTreeNodeFactory(
+            moderation_request__version=poll1_version,
+            moderation_request__collection=self.collection,
+            moderation_request__is_active=True,
+        )
+        self.mr1 = self.mr1n.moderation_request
+
+        self.wfst = self.wf.steps.create(role=self.role2, is_required=True, order=1)
+
+        # this moderation request is approved
+        self.mr1.actions.create(
+            to_user=self.user2, by_user=self.user, action=constants.ACTION_STARTED
+        )
+        self.mr1action2 = self.mr1.actions.create(
+            by_user=self.user,
+            to_user=self.user2,
+            action=constants.ACTION_APPROVED,
+            step_approved=self.wfst,
+        )
+
+        self.url = reverse("admin:djangocms_moderation_moderationrequest_changelist")
+        self.url_with_filter = "{}?moderation_request__collection__id={}".format(
+            self.url, self.collection.pk
+        )
+        self.mr_tree_admin = ModerationRequestTreeAdmin(
+            ModerationRequest, admin.AdminSite()
+        )
+        self.mra = ModerationRequestAdmin(ModerationRequest, admin.AdminSite())
+        self.mca = ModerationCollectionAdmin(ModerationCollection, admin.AdminSite())
+
+    def test_tree_admin_change_list_shows_additional_configured_actions(self):
+        mra_buttons = []
+
+        for action in self.mr_tree_admin.get_list_display_actions():
+            mra_buttons.append(action.__name__)
+
+        self.assertIn("get_poll_additional_changelist_action", mra_buttons)
+
+    def test_tree_admin_change_list_shows_additional_configured_fields(self):
+        mock_request = RequestFactory()
+        mock_request.user = self.user
+        mock_request._collection = self.collection
+
+        self.assertIn("get_poll_additional_changelist_field",
+                      self.mr_tree_admin.get_list_display(mock_request))
