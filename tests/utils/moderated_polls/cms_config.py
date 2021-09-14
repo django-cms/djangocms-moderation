@@ -7,23 +7,20 @@ from .models import PollContent
 
 
 def get_poll_additional_changelist_action(obj):
-    return f"Custom poll link {obj.pk}"
+    return f"Custom poll action {obj.pk}"
 
 
 def get_poll_additional_changelist_field(obj):
-    version = obj.moderation_request.version
-
-    if hasattr(version, "contentexpiry"):
-        return version.contentexpiry.expires
-get_poll_additional_changelist_field.short_description = "Expires"
+    return f"Custom poll link {obj.pk}"
+get_poll_additional_changelist_field.short_description = "Custom Link"
 
 
 class PollsCMSConfig(CMSAppConfig):
     djangocms_moderation_enabled = True
     # Moderation configuration
     moderated_models = (PollContent,)
-    moderation_collection_admin_actions = [get_poll_additional_changelist_action]
-    moderation_collection_admin_fields = [get_poll_additional_changelist_field]
+    moderation_request_changelist_actions = [get_poll_additional_changelist_action]
+    moderation_request_changelist_fields = [get_poll_additional_changelist_field]
     # Versioning configuration
     djangocms_versioning_enabled = True
     versioning = [
@@ -35,4 +32,3 @@ class PollsCMSConfig(CMSAppConfig):
             copy_function=default_copy,
         )
     ]
-

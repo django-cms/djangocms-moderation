@@ -7,14 +7,14 @@ from cms.models import PageContent
 class ModerationExtension(CMSAppExtension):
     def __init__(self):
         self.moderated_models = []
-        self.moderation_collection_admin_actions = []
-        self.moderation_collection_admin_fields = []
+        self.moderation_request_changelist_actions = []
+        self.moderation_request_changelist_fields = []
 
-    def handle_moderation_collection_admin_actions(self, moderation_collection_admin_actions):
-        self.moderation_collection_admin_actions.extend(moderation_collection_admin_actions)
+    def handle_moderation_request_changelist_actions(self, moderation_request_changelist_actions):
+        self.moderation_request_changelist_actions.extend(moderation_request_changelist_actions)
 
-    def handle_moderation_collection_admin_fields(self, moderation_collection_admin_fields):
-        self.moderation_collection_admin_fields.extend(moderation_collection_admin_fields)
+    def handle_moderation_request_changelist_fields(self, moderation_request_changelist_fields):
+        self.moderation_request_changelist_fields.extend(moderation_request_changelist_fields)
 
     def configure_app(self, cms_config):
         versioning_enabled = getattr(cms_config, "djangocms_versioning_enabled", False)
@@ -25,11 +25,11 @@ class ModerationExtension(CMSAppExtension):
 
         self.moderated_models.extend(moderated_models)
 
-        if hasattr(cms_config, "moderation_collection_admin_actions"):
-            self.handle_moderation_collection_admin_actions(cms_config.moderation_collection_admin_actions)
+        if hasattr(cms_config, "moderation_request_changelist_actions"):
+            self.handle_moderation_request_changelist_actions(cms_config.moderation_request_changelist_actions)
 
-        if hasattr(cms_config, "moderation_collection_admin_fields"):
-            self.handle_moderation_collection_admin_fields(cms_config.moderation_collection_admin_fields)
+        if hasattr(cms_config, "moderation_request_changelist_fields"):
+            self.handle_moderation_request_changelist_fields(cms_config.moderation_request_changelist_fields)
 
 
 class CoreCMSAppConfig(CMSAppConfig):

@@ -160,9 +160,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         ] + super().get_urls()
 
     def get_list_display(self, request):
-
-        additional_fields = self._register_configured_calculated_fields(request)
-
+        additional_fields = self._get_configured_fields(request)
         list_display = [
             'get_id',
             'get_content_type',
@@ -192,16 +190,16 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         # Get any configured additional actions
         moderation_config = apps.get_app_config("djangocms_moderation")
-        additional_actions = moderation_config.cms_extension.moderation_collection_admin_actions
+        additional_actions = moderation_config.cms_extension.moderation_request_changelist_actions
         if additional_actions:
             actions += additional_actions
 
         return actions
 
-    def _register_configured_calculated_fields(self, request):
+    def _get_configured_fields(self, request):
         fields = []
         moderation_config = apps.get_app_config("djangocms_moderation")
-        additional_fields = moderation_config.cms_extension.moderation_collection_admin_fields
+        additional_fields = moderation_config.cms_extension.moderation_request_changelist_fields
 
         for field in additional_fields:
             fields.append(field.__name__)
