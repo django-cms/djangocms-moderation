@@ -19,11 +19,14 @@ Moderation depends on `Versioning <https://github.com/divio/djangocms-versioning
         # generate url as required
         return obj.get_absolute_url()
 
-    def stories_about_intelligent_cats(request, version, *args, **kwargs):
-        return version.content.cat_stories
+    def get_blog_additional_changelist_action(obj):
+        return "Custom moderation action"
 
+    def get_blog_additional_changelist_field(obj):
+        return "Custom moderation field"
+    get_poll_additional_changelist_field.short_description = "Custom Field"
 
-     class BlogCMSConfig(CMSAppConfig):
+    class BlogCMSConfig(CMSAppConfig):
         djangocms_versioning_enabled = True  # -- 1
         djangocms_moderation_enabled = True  # -- 2
         versioning = [
@@ -37,8 +40,17 @@ Moderation depends on `Versioning <https://github.com/divio/djangocms-versioning
         moderated_models = [   # -- 4
           PostContent,
         ]
+        moderation_request_changelist_actions = [   # -- 5
+            get_blog_additional_changelist_action
+        ]
+        moderation_request_changelist_fields = [   # -- 6
+            get_blog_additional_changelist_field
+        ]
+
 
 1. This must be set to True for Versioning to read app's CMS config.
 2. This must be set to True for Moderation to read app's CMS config.
 3. `versioning` attribute takes a list of `VersionableItem` objects. See `djangocms_versioning` documentation for details.
 4. `moderated_models` attribute takes a list of moderatable model objects.
+5. `moderation_request_changelist_actions` attribute takes a list of actions that are added to the action field in the Moderation Request Changelist admin view
+6. `moderation_request_changelist_fields` attribute takes a list of admin fields that are added to the display list in the Moderation Request Changelist admin view
