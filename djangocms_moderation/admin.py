@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django import forms
+from django.apps import apps
 from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
@@ -117,6 +118,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     """
     class Media:
         js = ("djangocms_moderation/js/actions.js",)
+        css = {"all": ("djangocms_moderation/css/actions.css",)}
 
     actions = [  # filtered out in `self.get_actions`
         delete_selected,
@@ -158,6 +160,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         ] + super().get_urls()
 
     def get_list_display(self, request):
+        additional_fields = self._get_configured_fields(request)
         list_display = [
             'get_id',
             'get_content_type',
@@ -166,10 +169,43 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             'get_preview_link',
             'get_status',
             'get_reviewer',
+            *additional_fields,
+            'list_display_actions',
         ]
-        if conf.REQUEST_COMMENTS_ENABLED:
-            list_display.append("get_comments_link")
         return list_display
+
+    def list_display_actions(self, obj):
+        """Display links to state change endpoints
+        """
+        return format_html_join(
+            "", "{}", ((action(obj),) for action in self.get_list_display_actions())
+        )
+
+    list_display_actions.short_description = _("actions")
+
+    def get_list_display_actions(self):
+        actions = []
+        if conf.REQUEST_COMMENTS_ENABLED:
+            actions.append(self.get_comments_link)
+
+        # Get any configured additional actions
+        moderation_config = apps.get_app_config("djangocms_moderation")
+        additional_actions = moderation_config.cms_extension.moderation_request_changelist_actions
+        if additional_actions:
+            actions += additional_actions
+
+        return actions
+
+    def _get_configured_fields(self, request):
+        fields = []
+        moderation_config = apps.get_app_config("djangocms_moderation")
+        additional_fields = moderation_config.cms_extension.moderation_request_changelist_fields
+
+        for field in additional_fields:
+            fields.append(field.__name__)
+            setattr(self, field.__name__, field)
+
+        return fields
 
     def get_id(self, obj):
         return format_html(
@@ -255,14 +291,14 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         return status
 
     def get_comments_link(self, obj):
-        return format_html(
-            '<a href="{}?moderation_request__id__exact={}">{}</a>',
-            reverse('admin:djangocms_moderation_requestcomment_changelist'),
+        comments_endpoint = format_html(
+            "{}?moderation_request__id__exact={}",
+            reverse("admin:djangocms_moderation_requestcomment_changelist"),
             obj.moderation_request.id,
-            _('View')
         )
-
-    get_comments_link.short_description = _("Comments")
+        return render_to_string(
+            "djangocms_moderation/comment_icon.html", {"url": comments_endpoint}
+        )
 
     def get_actions(self, request):
         """
