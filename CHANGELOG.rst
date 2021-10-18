@@ -4,7 +4,12 @@ Changelog
 
 Unreleased
 ==========
+
+
+1.0.28 (2021-10-18)
+===================
 * Configuration options added to the cms_config to allow a third party to add fields and actions to the Moderation Request Changelist admin view.
+* Flake8 code formatting error fixes
 
 1.0.27 (2021-03-10)
 ===================
