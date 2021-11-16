@@ -1,29 +1,5 @@
 version: 2.0
 
-py35default: &py35default
-  docker:
-    - image: circleci/python:3.5
-  steps:
-   - setup_remote_docker:
-       docker_layer_caching: false
-   - checkout
-   - attach_workspace:
-       at: /tmp/images
-   - run: docker load -i /tmp/images/py35.tar || true
-   - run: docker run py35 tox -e $CIRCLE_STAGE
-
-
-py36default: &py36default
-  docker:
-    - image: circleci/python:3.6
-  steps:
-   - setup_remote_docker:
-       docker_layer_caching: false
-   - checkout
-   - attach_workspace:
-       at: /tmp/images
-   - run: docker load -i /tmp/images/py36.tar || true
-   - run: docker run py36 tox -e $CIRCLE_STAGE
 
 py37default: &py37default
   docker:
@@ -37,18 +13,43 @@ py37default: &py37default
    - run: docker load -i /tmp/images/py37.tar || true
    - run: docker run py37 tox -e $CIRCLE_STAGE
 
+py38default: &py38default
+  docker:
+    - image: circleci/python:3.8
+  steps:
+   - setup_remote_docker:
+       docker_layer_caching: false
+   - checkout
+   - attach_workspace:
+       at: /tmp/images
+   - run: docker load -i /tmp/images/py38.tar || true
+   - run: docker run py38 tox -e $CIRCLE_STAGE
 
-py35_requires: &py35_requires
-  requires:
-    - py35_base
+py39default: &py39default
+  docker:
+    - image: circleci/python:3.9
+  steps:
+   - setup_remote_docker:
+       docker_layer_caching: false
+   - checkout
+   - attach_workspace:
+       at: /tmp/images
+   - run: docker load -i /tmp/images/py39.tar || true
+   - run: docker run py39 tox -e $CIRCLE_STAGE
 
-py36_requires: &py36_requires
-  requires:
-    - py36_base
 
 py37_requires: &py37_requires
   requires:
     - py37_base
+
+py38_requires: &py38_requires
+  requires:
+    - py38_base
+
+py39_requires: &py39_requires
+  requires:
+    - py39_base
+
 
 jobs:
   py37_base:
@@ -65,70 +66,63 @@ jobs:
          root: images
          paths: py37.tar
 
-  py36_base:
+  py38_base:
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.8
     steps:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: false
-      - run: docker build -f .circleci/Dockerfile --build-arg PYTHON_VERSION=3.6 -t py36 .
+      - run: docker build -f .circleci/Dockerfile --build-arg PYTHON_VERSION=3.8 -t py38 .
       - run: mkdir images
-      - run: docker save -o images/py36.tar py36
+      - run: docker save -o images/py38.tar py38
       - persist_to_workspace:
          root: images
-         paths: py36.tar
+         paths: py38.tar
 
-  py35_base:
+  py39_base:
     docker:
-      - image: circleci/python:3.5
+      - image: circleci/python:3.9
     steps:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: false
-      - run: docker build -f .circleci/Dockerfile --build-arg PYTHON_VERSION=3.5 -t py35 .
+      - run: docker build -f .circleci/Dockerfile --build-arg PYTHON_VERSION=3.9 -t py39 .
       - run: mkdir images
-      - run: docker save -o images/py35.tar py35
+      - run: docker save -o images/py39.tar py39
       - persist_to_workspace:
          root: images
-         paths: py35.tar
+         paths: py39.tar
 
   flake8:
-    <<: *py35default
+    <<: *py38default
   isort:
-    <<: *py35default
+    <<: *py38default
   eslint:
     docker:
-      - image: circleci/python:3.5
+      - image: circleci/python:3.8
     steps:
      - setup_remote_docker:
          docker_layer_caching: false
      - checkout
      - attach_workspace:
          at: /tmp/images
-     - run: docker load -i /tmp/images/py35.tar || true
-     - run: docker run py35 gulp lint
-  py35-dj111-sqlite-cms4:
-    <<: *py35default
-  py36-dj111-sqlite-cms4:
-    <<: *py36default
-  py37-dj111-sqlite-cms4:
-    <<: *py37default
+     - run: docker load -i /tmp/images/py38.tar || true
+     - run: docker run py38 gulp lint
 
-  py35-dj20-sqlite-cms4:
-    <<: *py35default
-  py36-dj20-sqlite-cms4:
-    <<: *py36default
-  py37-dj20-sqlite-cms4:
-    <<: *py37default
-
-  py35-dj22-sqlite-cms4:
-    <<: *py35default
-  py36-dj22-sqlite-cms4:
-    <<: *py36default
   py37-dj22-sqlite-cms4:
     <<: *py37default
+  py38-dj22-sqlite-cms4:
+    <<: *py38default
+  py39-dj22-sqlite-cms4:
+    <<: *py39default
 
+  py37-dj32-sqlite-cms4:
+    <<: *py37default
+  py38-dj32-sqlite-cms4:
+    <<: *py38default
+  py39-dj32-sqlite-cms4:
+    <<: *py39default
 
 #######################
 
@@ -136,44 +130,35 @@ workflows:
   version: 2
   build:
     jobs:
-      - py35_base
-      - py36_base
       - py37_base
+      - py38_base
+      - py39_base
       - flake8:
           requires:
-            - py35_base
+            - py38_base
       - isort:
           requires:
-            - py35_base
+            - py38_base
       - eslint:
           requires:
-            - py35_base
-      - py35-dj111-sqlite-cms4:
-          requires:
-            - py35_base
-      - py36-dj111-sqlite-cms4:
-          requires:
-            - py36_base
-      - py37-dj111-sqlite-cms4:
-          requires:
-            - py37_base
-
-      - py35-dj20-sqlite-cms4:
-          requires:
-            - py35_base
-      - py36-dj20-sqlite-cms4:
-          requires:
-            - py36_base
-      - py37-dj20-sqlite-cms4:
-          requires:
-            - py37_base
-
-      - py35-dj22-sqlite-cms4:
-          requires:
-            - py35_base
-      - py36-dj22-sqlite-cms4:
-          requires:
-            - py36_base
+            - py38_base
+      # django 2.2
       - py37-dj22-sqlite-cms4:
           requires:
             - py37_base
+      - py38-dj22-sqlite-cms4:
+          requires:
+            - py38_base
+      - py39-dj22-sqlite-cms4:
+          requires:
+            - py39_base
+      # django 3.2
+      - py37-dj32-sqlite-cms4:
+          requires:
+            - py37_base
+      - py38-dj32-sqlite-cms4:
+          requires:
+            - py38_base
+      - py39-dj32-sqlite-cms4:
+          requires:
+            - py39_base

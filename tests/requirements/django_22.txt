@@ -1,0 +1,5 @@
+-r requirements_base.txt
+
+django-filer<2.0.0
+django-classy-tags<2.0.0
+django-sekizai<2.0.0

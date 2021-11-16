@@ -1,22 +1,18 @@
-tox
-coverage
-djangocms_helper
-django_polymorphic==2.0.3
+aldryn-forms
 cachetools
-factory-boy
+coverage
+django_polymorphic==2.0.3
 django-simple-captcha
-python-dateutil>=2.4
-pyflakes>=2.1.1
+djangocms_helper
+factory-boy
 flake8
 isort
 mock
-cachetools
-django-filer<2.0.0
-django-classy-tags<2.0.0
-django-sekizai<2.0.0
-# Please note that aldryn-forms version 5 can only be used with django >2 and deprecates <2 completely.
-aldryn-forms<6.0.0
-# Get the lastest cms v4 compatible djangocms-text-ckeditor
+python-dateutil>=2.4
+pyflakes>=2.1.1
+tox
+
+# Unreleased django-cms 4.0.x changes
 https://github.com/divio/djangocms-text-ckeditor/tarball/support/4.0.x#egg=djangocms-text-ckeditor
 https://github.com/divio/djangocms-versioning/tarball/master#egg=djangocms-versioning
 https://github.com/FidelityInternational/djangocms-version-locking/tarball/master#egg=djangocms-version-locking

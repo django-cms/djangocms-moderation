@@ -4,7 +4,7 @@ import djangocms_moderation
 
 
 INSTALL_REQUIREMENTS = [
-    "Django>=1.11,<3.0",
+    "Django>=2.2,<3.3",
     "django-cms",
     "django-sekizai>=0.7",
     "django-admin-sortable2>=0.6.4",
