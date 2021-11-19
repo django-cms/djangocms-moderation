@@ -1,3 +1,6 @@
--r requirements_base.txt
+-r ./requirements_base.txt
 
 Django>=3.2,<4.0
+aldryn-forms
+django-classy-tags
+django-sekizai

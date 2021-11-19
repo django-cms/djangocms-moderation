@@ -1,10 +1,7 @@
-aldryn-forms
 cachetools
 coverage
 django_polymorphic==2.0.3
-django-classy-tags
 django-filer
-django-sekizai
 django-simple-captcha
 djangocms_helper
 factory-boy
