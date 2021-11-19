@@ -36,8 +36,3 @@ jobs:
         with:
           linters: isort
           run: isort -c -rc -df ./
-# TODO: Fix eslint
-#  eslint:
-#    runs-on: ubuntu-latest
-#    steps:
-
