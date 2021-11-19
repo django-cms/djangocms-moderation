@@ -1,5 +1,0 @@
--r requirements_base.txt
-
-django-filer
-django-classy-tags
-django-sekizai
