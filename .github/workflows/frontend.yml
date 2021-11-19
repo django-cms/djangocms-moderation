@@ -18,5 +18,4 @@ jobs:
     - run: npm install
     - run: npm install -g gulp@3.9.1
     - run: |
-          gulp tests:unit
           gulp lint
