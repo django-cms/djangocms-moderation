@@ -37,4 +37,3 @@ class CoreCMSAppConfig(CMSAppConfig):
     djangocms_versioning_enabled = True
     moderated_models = [PageContent]
     versioning = []
-
