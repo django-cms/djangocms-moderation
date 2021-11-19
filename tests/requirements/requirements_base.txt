@@ -18,4 +18,5 @@ https://github.com/Aiky30/django-cms/archive/feature/cms-4-django-32-support.zip
 https://github.com/Aiky30/djangocms-text-ckeditor/archive/feature/cms-40-django-30-support-.zip
 # FIXME: Unreleased 3.2 changes - https://github.com/django-cms/djangocms-versioning/tarball/master#egg=djangocms-versioning
 https://github.com/Aiky30/djangocms-versioning/tarball/feature/django-32-compat#egg=djangocms-versioning
-https://github.com/FidelityInternational/djangocms-version-locking/tarball/master#egg=djangocms-version-locking
+# FIXME: Unreleased 3.2 changes - https://github.com/FidelityInternational/djangocms-version-locking/tarball/master#egg=djangocms-version-locking
+https://github.com/Aiky30/djangocms-version-locking/tarball/feature/django-32-compat#egg=djangocms-version-locking
