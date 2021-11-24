@@ -12,6 +12,8 @@ def get_poll_additional_changelist_action(obj):
 
 def get_poll_additional_changelist_field(obj):
     return f"Custom poll link {obj.pk}"
+
+
 get_poll_additional_changelist_field.short_description = "Custom Link"
 
 

@@ -1,0 +1,7 @@
+-r requirements_base.txt
+
+Django>=2.2,<3.0
+django-filer
+django-classy-tags
+django-sekizai
+aldryn-forms

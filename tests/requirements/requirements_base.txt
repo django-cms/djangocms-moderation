@@ -1,0 +1,17 @@
+cachetools
+coverage
+django_polymorphic==2.0.3
+django-simple-captcha
+djangocms_helper
+factory-boy
+flake8
+isort
+mock
+pyflakes>=2.1.1
+python-dateutil>=2.4
+
+# Unreleased django-cms 4.0 compatible packages
+https://github.com/django-cms/django-cms/tarball/release/4.0.x#egg=django-cms
+https://github.com/django-cms/djangocms-text-ckeditor/tarball/support/4.0.x#egg=djangocms-text-ckeditor
+https://github.com/django-cms/djangocms-versioning/tarball/master#egg=djangocms-versioning
+https://github.com/FidelityInternational/djangocms-version-locking/tarball/master#egg=djangocms-version-locking
