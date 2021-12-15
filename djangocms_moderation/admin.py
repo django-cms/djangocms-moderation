@@ -1,6 +1,5 @@
 from django import forms
 from django.apps import apps
-from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -9,9 +8,9 @@ from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
-from django.urls import reverse
+from django.urls import re_path, reverse
 from django.utils.html import format_html, format_html_join
-from django.utils.translation import gettext, gettext_lazy as _, ungettext
+from django.utils.translation import gettext, gettext_lazy as _, ngettext
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
@@ -150,7 +149,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         info = self.model._meta.app_label, self.model._meta.model_name
 
         return [
-            url(
+            re_path(
                 r'^delete_selected/',
                 self.admin_site.admin_view(self.delete_selected_view),
                 name='{}_{}_delete'.format(*info),
@@ -448,7 +447,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             queryset.delete()
             messages.success(
                 request,
-                ungettext(
+                ngettext(
                     '%(count)d request successfully deleted',
                     '%(count)d requests successfully deleted',
                     num_deleted_requests
@@ -502,22 +501,22 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         info = self.model._meta.app_label, self.model._meta.model_name
 
         return [
-            url(
+            re_path(
                 r"^approve/",
                 self.admin_site.admin_view(self.approved_view),
                 name="{}_{}_approve".format(*info),
             ),
-            url(
+            re_path(
                 r"^rework/",
                 self.admin_site.admin_view(self.rework_view),
                 name="{}_{}_rework".format(*info),
             ),
-            url(
+            re_path(
                 r"^publish/",
                 self.admin_site.admin_view(self.published_view),
                 name="{}_{}_publish".format(*info),
             ),
-            url(
+            re_path(
                 r"^resubmit/",
                 self.admin_site.admin_view(self.resubmit_view),
                 name="{}_{}_resubmit".format(*info),
@@ -590,7 +589,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
             messages.success(
                 request,
-                ungettext(
+                ngettext(
                     "%(count)d request successfully resubmitted for review",
                     "%(count)d requests successfully resubmitted for review",
                     len(resubmitted_requests),
@@ -637,7 +636,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
             messages.success(
                 request,
-                ungettext(
+                ngettext(
                     "%(count)d request successfully published",
                     "%(count)d requests successfully published",
                     len(published_moderation_requests),
@@ -696,7 +695,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
             messages.success(
                 request,
-                ungettext(
+                ngettext(
                     "%(count)d request successfully submitted for rework",
                     "%(count)d requests successfully submitted for rework",
                     len(rejected_requests),
@@ -788,7 +787,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
             messages.success(
                 request,
-                ungettext(
+                ngettext(
                     "%(count)d request successfully approved",
                     "%(count)d requests successfully approved",
                     len(approved_requests),
@@ -1086,7 +1085,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):
-            return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
+            return re_path(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
 
         url_patterns = [
             _url(
@@ -1136,7 +1135,7 @@ class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):
-            return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
+            return re_path(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
 
         url_patterns = [
             _url(

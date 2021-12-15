@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy as _
 
 from . import constants, helpers
@@ -22,7 +22,7 @@ class ModeratorFilter(admin.SimpleListFilter):
         options = []
         for user in helpers.get_all_moderators():
             options.append(
-                (force_text(user.pk), user.get_full_name() or user.get_username())
+                (force_str(user.pk), user.get_full_name() or user.get_username())
             )
         return options
 
@@ -44,7 +44,7 @@ class ReviewerFilter(admin.SimpleListFilter):
         # collect all unique users from the three queries
         for user in helpers.get_all_reviewers():
             options.append(
-                (force_text(user.pk), user.get_full_name() or user.get_username())
+                (force_str(user.pk), user.get_full_name() or user.get_username())
             )
         return options
 
@@ -78,7 +78,7 @@ class ReviewerFilter(admin.SimpleListFilter):
         }
         for lookup, title in self.lookup_choices:
             yield {
-                "selected": self.value() == force_text(lookup),
+                "selected": self.value() == force_str(lookup),
                 "query_string": changelist.get_query_string(
                     {self.parameter_name: lookup}, []
                 ),

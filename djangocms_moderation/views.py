@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url, urlquote
-from django.utils.translation import gettext_lazy as _, ungettext
+from django.utils.translation import gettext_lazy as _, ngettext
 from django.views.generic import FormView
 
 from cms.models import PageContent
@@ -64,7 +64,7 @@ class CollectionItemsView(FormView):
 
         messages.success(
             self.request,
-            ungettext(
+            ngettext(
                 "%(count)d item successfully added to moderation collection",
                 "%(count)d items successfully added to moderation collection",
                 total_added,

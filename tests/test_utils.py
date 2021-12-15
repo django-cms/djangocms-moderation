@@ -23,7 +23,7 @@ class UtilsTestCase(BaseTestCase):
         collection_id = utils.extract_filter_param_from_changelist_url(
             mock_request, "_changelist_filters", "collection__id__exact"
         )
-        self.assertEquals(collection_id, "1")
+        self.assertEqual(collection_id, "1")
 
         mock_request = self.rf.get(
             "/admin/djangocms_moderation/collectioncomment/add/?_changelist_filters=collection__id__exact%3D4"
@@ -31,7 +31,7 @@ class UtilsTestCase(BaseTestCase):
         collection_id = utils.extract_filter_param_from_changelist_url(
             mock_request, "_changelist_filters", "collection__id__exact"
         )
-        self.assertEquals(collection_id, "4")
+        self.assertEqual(collection_id, "4")
 
         mock_request = self.rf.get(
             "/admin/djangocms_moderation/requestcomment/add/?_changelist_filters=moderation_request__id__exact%3D1"
@@ -39,7 +39,7 @@ class UtilsTestCase(BaseTestCase):
         action_id = utils.extract_filter_param_from_changelist_url(
             mock_request, "_changelist_filters", "moderation_request__id__exact"
         )
-        self.assertEquals(action_id, "1")
+        self.assertEqual(action_id, "1")
 
         mock_request = self.rf.get(
             "/admin/djangocms_moderation/requestcomment/add/?_changelist_filters=moderation_request__id__exact%3D2"
@@ -47,7 +47,7 @@ class UtilsTestCase(BaseTestCase):
         action_id = utils.extract_filter_param_from_changelist_url(
             mock_request, "_changelist_filters", "moderation_request__id__exact"
         )
-        self.assertEquals(action_id, "2")
+        self.assertEqual(action_id, "2")
 
     def test_get_active_moderation_request(self):
         self.assertEqual(
