@@ -1,9 +1,8 @@
 cachetools
 coverage
-django_polymorphic==2.0.3
 django-filer
 django-simple-captcha
-djangocms_helper
+django-app-helper
 factory-boy
 flake8
 isort

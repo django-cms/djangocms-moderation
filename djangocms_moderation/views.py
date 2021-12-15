@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from django.contrib import admin, messages
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
