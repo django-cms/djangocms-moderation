@@ -1,7 +1,7 @@
 import mock
 import unittest
 
-from django.contrib.admin import ACTION_CHECKBOX_NAME
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.auth.models import Group
 from django.test import TransactionTestCase
 from django.urls import reverse

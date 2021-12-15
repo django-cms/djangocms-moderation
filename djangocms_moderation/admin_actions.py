@@ -1,13 +1,13 @@
 from collections import defaultdict
 from functools import partial
 
-from django.contrib import admin
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import reverse
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from cms.utils.urlutils import add_url_parameters
 
@@ -24,7 +24,7 @@ def resubmit_selected(modeladmin, request, queryset):
     Validate and re-submit all the selected moderation requests for
     moderation and notify reviewers via email.
     """
-    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_resubmit"),
         ",".join(selected),
@@ -41,7 +41,7 @@ def reject_selected(modeladmin, request, queryset):
     Validate and reject all the selected moderation requests and notify
     the author about these requests
     """
-    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_rework"),
         ",".join(selected),
@@ -54,7 +54,7 @@ reject_selected.short_description = _("Submit for rework")
 
 
 def approve_selected(modeladmin, request, queryset):
-    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_approve"),
         ",".join(selected),
@@ -70,7 +70,7 @@ def delete_selected(modeladmin, request, queryset):
     if not modeladmin.has_delete_permission(request):
         raise PermissionDenied
 
-    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
         reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
         ",".join(selected),
@@ -87,7 +87,7 @@ def publish_selected(modeladmin, request, queryset):
     if request.user != request._collection.author:
         raise PermissionDenied
 
-    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
     url = "{}?ids={}&collection_id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_publish"),
         ",".join(selected),

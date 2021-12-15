@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.urls import reverse
 from django.utils.functional import cached_property
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import gettext, gettext_lazy as _
 
 from cms.models.fields import PlaceholderField
 
@@ -97,7 +97,7 @@ class Role(models.Model):
 
     def clean(self):
         if self.user_id and self.group_id:
-            message = ugettext("Can't pick both user and group. Only one.")
+            message = gettext("Can't pick both user and group. Only one.")
             raise ValidationError(message)
 
     def user_is_assigned(self, user):
@@ -158,7 +158,7 @@ class Workflow(models.Model):
             workflows = workflows.exclude(pk=self.pk)
 
         if workflows.exists():
-            message = ugettext("Can't have two default workflows, only one is allowed.")
+            message = gettext("Can't have two default workflows, only one is allowed.")
             raise ValidationError(message)
 
     @cached_property

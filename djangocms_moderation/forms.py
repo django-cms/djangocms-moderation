@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
 from django.forms.forms import NON_FIELD_ERRORS
-from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
+from django.utils.translation import gettext, gettext_lazy as _, ungettext
 
 from adminsortable2.admin import CustomInlineFormSet
 from djangocms_versioning.models import Version
@@ -97,7 +97,7 @@ class UpdateModerationRequestForm(forms.Form):
         if next_step:
             next_role = next_step.role
             users = next_step.role.get_users_queryset()
-            self.fields["moderator"].empty_label = ugettext("Any {role}").format(
+            self.fields["moderator"].empty_label = gettext("Any {role}").format(
                 role=next_role.name
             )
             self.fields["moderator"].queryset = users.exclude(pk=self.user.pk)
@@ -195,7 +195,7 @@ class SubmitCollectionForModerationForm(forms.Form):
     def configure_moderator_field(self):
         next_role = self.collection.workflow.first_step.role
         users = next_role.get_users_queryset().exclude(pk=self.user.pk)
-        self.fields["moderator"].empty_label = ugettext("Any {role}").format(
+        self.fields["moderator"].empty_label = gettext("Any {role}").format(
             role=next_role.name
         )
         self.fields["moderator"].queryset = users

@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
-from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
+from django.utils.translation import gettext, gettext_lazy as _, ungettext
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
@@ -76,7 +76,7 @@ class ModerationRequestActionInline(admin.TabularInline):
 
     def show_user(self, obj):
         _name = obj.get_by_user_name()
-        return ugettext("By {user}").format(user=_name)
+        return gettext("By {user}").format(user=_name)
 
     show_user.short_description = _("Status")
 
@@ -268,13 +268,13 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         if last_action:
             if obj.moderation_request.version_can_be_published():
-                status = ugettext('Ready for publishing')
+                status = gettext('Ready for publishing')
             elif obj.moderation_request.is_rejected():
-                status = ugettext('Pending author rework')
+                status = gettext('Pending author rework')
             elif obj.moderation_request.is_active and obj.moderation_request.has_pending_step():
                 next_step = obj.moderation_request.get_next_required()
                 role = next_step.role.name
-                status = ugettext('Pending %(role)s approval') % {'role': role}
+                status = gettext('Pending %(role)s approval') % {'role': role}
             elif not obj.moderation_request.version.can_be_published():
                 status = obj.moderation_request.version.get_state_display()
             else:
@@ -283,9 +283,9 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                     'action': last_action.get_action_display(),
                     'name': user_name,
                 }
-                status = ugettext('%(action)s by %(name)s') % message_data
+                status = gettext('%(action)s by %(name)s') % message_data
         else:
-            status = ugettext('Ready for submission')
+            status = gettext('Ready for submission')
         return status
 
     def get_comments_link(self, obj):
@@ -1189,7 +1189,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
             "",
             "<p>{}: <b>{}</b><br />{}: <b>{}</b></p>",
             (
-                (ugettext("Question"), d["label"], ugettext("Answer"), d["value"])
+                (gettext("Question"), d["label"], gettext("Answer"), d["value"])
                 for d in data
             ),
         )

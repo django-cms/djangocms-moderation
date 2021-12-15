@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth import get_permission_codename
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from cms.cms_toolbars import ADMIN_MENU_IDENTIFIER
 from cms.utils.urlutils import add_url_parameters
