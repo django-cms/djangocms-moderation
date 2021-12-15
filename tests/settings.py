@@ -1,4 +1,5 @@
 HELPER_SETTINGS = {
+    "SECRET_KEY": "moderationtestsuitekey",
     "INSTALLED_APPS": [
         "tests.utils.app_1",
         "tests.utils.app_2",

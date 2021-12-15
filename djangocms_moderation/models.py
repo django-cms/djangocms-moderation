@@ -22,7 +22,6 @@ from .utils import generate_compliance_number
 from . import conf, constants, signals  # isort:skip
 
 
-@python_2_unicode_compatible
 class ConfirmationPage(models.Model):
     CONTENT_TYPES = (
         (constants.CONTENT_TYPE_PLAIN, _("Plain")),
@@ -68,7 +67,6 @@ class ConfirmationPage(models.Model):
         return True
 
 
-@python_2_unicode_compatible
 class Role(models.Model):
     name = models.CharField(
         verbose_name=_('name'),
@@ -113,7 +111,6 @@ class Role(models.Model):
         return self.group.user_set.all()
 
 
-@python_2_unicode_compatible
 class Workflow(models.Model):
     name = models.CharField(verbose_name=_("name"), max_length=120, unique=True)
     is_default = models.BooleanField(verbose_name=_("is default"), default=False)
@@ -169,7 +166,6 @@ class Workflow(models.Model):
         return self.steps.first()
 
 
-@python_2_unicode_compatible
 class WorkflowStep(models.Model):
     role = models.ForeignKey(
         to=Role, verbose_name=_("role"), on_delete=models.CASCADE
@@ -410,7 +406,6 @@ class ModerationRequestTreeNode(MP_Node):
         return str(self.id)
 
 
-@python_2_unicode_compatible
 class ModerationRequest(models.Model):
     collection = models.ForeignKey(
         to=ModerationCollection,
@@ -598,7 +593,6 @@ class ModerationRequest(models.Model):
         self.save(update_fields=["compliance_number"])
 
 
-@python_2_unicode_compatible
 class ModerationRequestAction(models.Model):
     action = models.CharField(
         verbose_name=_("status"), max_length=30, choices=constants.ACTION_CHOICES
