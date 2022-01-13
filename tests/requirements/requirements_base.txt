@@ -1,6 +1,9 @@
+aldryn-forms
 cachetools
 coverage
+django-classy-tags
 django-filer
+django-sekizai
 django-simple-captcha
 django-app-helper
 factory-boy
