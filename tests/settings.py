@@ -28,6 +28,7 @@ HELPER_SETTINGS = {
         "djangocms_moderation": None,
         "aldryn_forms": None,
     },
+    "DEFAULT_AUTO_FIELD": "django.db.models.AutoField",
 }
 
 
