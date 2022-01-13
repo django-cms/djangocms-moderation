@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from django.contrib.auth import get_permission_codename
 from django.utils.translation import gettext_lazy as _
 
