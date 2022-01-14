@@ -622,7 +622,7 @@ class ModerationCollectionTest(BaseTestCase):
 
         self.collection1.refresh_from_db()
         # Collection should lock itself
-        self.assertEquals(self.collection1.status, constants.IN_REVIEW)
+        self.assertEqual(self.collection1.status, constants.IN_REVIEW)
         # We will now have 2 actions with status STARTED.
         self.assertEqual(
             2,
@@ -652,7 +652,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.collection1.cancel(self.user)
 
         self.collection1.refresh_from_db()
-        self.assertEquals(self.collection1.status, constants.CANCELLED)
+        self.assertEqual(self.collection1.status, constants.CANCELLED)
 
         # Only 1 active request will be cancelled
         actions = ModerationRequestAction.objects.filter(

@@ -1,4 +1,5 @@
 HELPER_SETTINGS = {
+    "SECRET_KEY": "moderationtestsuitekey",
     "INSTALLED_APPS": [
         "tests.utils.app_1",
         "tests.utils.app_2",
@@ -27,6 +28,7 @@ HELPER_SETTINGS = {
         "djangocms_moderation": None,
         "aldryn_forms": None,
     },
+    "DEFAULT_AUTO_FIELD": "django.db.models.AutoField",
 }
 
 

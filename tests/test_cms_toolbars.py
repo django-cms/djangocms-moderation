@@ -28,7 +28,7 @@ class CMSToolbarsTestCase(CMSTestCase):
         request.session = {}
         request.user = user
         request.current_page = page
-        mid = ToolbarMiddleware()
+        mid = ToolbarMiddleware(request)
         mid.process_request(request)
         if hasattr(request, "toolbar"):
             request.toolbar.populate()

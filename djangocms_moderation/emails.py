@@ -1,11 +1,9 @@
-from __future__ import unicode_literals
-
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.urls import reverse
-from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
+from django.utils.encoding import force_str
+from django.utils.translation import gettext_lazy as _
 
 from .conf import EMAIL_NOTIFICATIONS_FAIL_SILENTLY
 from .utils import get_absolute_url
@@ -40,7 +38,7 @@ def _send_email(
     template = "djangocms_moderation/emails/moderation-request/{}".format(template)
 
     # TODO What language should the email be sent in? e.g. `with force_language(lang):`
-    subject = force_text(subject)
+    subject = force_str(subject)
     content = render_to_string(template, context)
 
     message = EmailMessage(

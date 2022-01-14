@@ -1,10 +1,9 @@
-from __future__ import unicode_literals
+from functools import lru_cache
+from urllib.parse import parse_qs, urljoin
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.utils.lru_cache import lru_cache
 from django.utils.module_loading import import_string
-from django.utils.six.moves.urllib.parse import parse_qs, urljoin
 from django.utils.translation import override as force_language
 
 from cms.utils.urlutils import admin_reverse

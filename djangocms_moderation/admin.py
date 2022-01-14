@@ -1,8 +1,5 @@
-from __future__ import unicode_literals
-
 from django import forms
 from django.apps import apps
-from django.conf.urls import url
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -11,9 +8,9 @@ from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
-from django.urls import reverse
+from django.urls import re_path, reverse
 from django.utils.html import format_html, format_html_join
-from django.utils.translation import ugettext, ugettext_lazy as _, ungettext
+from django.utils.translation import gettext, gettext_lazy as _, ngettext
 
 from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
@@ -78,7 +75,7 @@ class ModerationRequestActionInline(admin.TabularInline):
 
     def show_user(self, obj):
         _name = obj.get_by_user_name()
-        return ugettext("By {user}").format(user=_name)
+        return gettext("By {user}").format(user=_name)
 
     show_user.short_description = _("Status")
 
@@ -152,7 +149,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         info = self.model._meta.app_label, self.model._meta.model_name
 
         return [
-            url(
+            re_path(
                 r'^delete_selected/',
                 self.admin_site.admin_view(self.delete_selected_view),
                 name='{}_{}_delete'.format(*info),
@@ -270,13 +267,13 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         if last_action:
             if obj.moderation_request.version_can_be_published():
-                status = ugettext('Ready for publishing')
+                status = gettext('Ready for publishing')
             elif obj.moderation_request.is_rejected():
-                status = ugettext('Pending author rework')
+                status = gettext('Pending author rework')
             elif obj.moderation_request.is_active and obj.moderation_request.has_pending_step():
                 next_step = obj.moderation_request.get_next_required()
                 role = next_step.role.name
-                status = ugettext('Pending %(role)s approval') % {'role': role}
+                status = gettext('Pending %(role)s approval') % {'role': role}
             elif not obj.moderation_request.version.can_be_published():
                 status = obj.moderation_request.version.get_state_display()
             else:
@@ -285,9 +282,9 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                     'action': last_action.get_action_display(),
                     'name': user_name,
                 }
-                status = ugettext('%(action)s by %(name)s') % message_data
+                status = gettext('%(action)s by %(name)s') % message_data
         else:
-            status = ugettext('Ready for submission')
+            status = gettext('Ready for submission')
         return status
 
     def get_comments_link(self, obj):
@@ -450,7 +447,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             queryset.delete()
             messages.success(
                 request,
-                ungettext(
+                ngettext(
                     '%(count)d request successfully deleted',
                     '%(count)d requests successfully deleted',
                     num_deleted_requests
@@ -504,22 +501,22 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         info = self.model._meta.app_label, self.model._meta.model_name
 
         return [
-            url(
+            re_path(
                 r"^approve/",
                 self.admin_site.admin_view(self.approved_view),
                 name="{}_{}_approve".format(*info),
             ),
-            url(
+            re_path(
                 r"^rework/",
                 self.admin_site.admin_view(self.rework_view),
                 name="{}_{}_rework".format(*info),
             ),
-            url(
+            re_path(
                 r"^publish/",
                 self.admin_site.admin_view(self.published_view),
                 name="{}_{}_publish".format(*info),
             ),
-            url(
+            re_path(
                 r"^resubmit/",
                 self.admin_site.admin_view(self.resubmit_view),
                 name="{}_{}_resubmit".format(*info),
@@ -592,7 +589,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
             messages.success(
                 request,
-                ungettext(
+                ngettext(
                     "%(count)d request successfully resubmitted for review",
                     "%(count)d requests successfully resubmitted for review",
                     len(resubmitted_requests),
@@ -639,7 +636,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
             messages.success(
                 request,
-                ungettext(
+                ngettext(
                     "%(count)d request successfully published",
                     "%(count)d requests successfully published",
                     len(published_moderation_requests),
@@ -698,7 +695,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
             messages.success(
                 request,
-                ungettext(
+                ngettext(
                     "%(count)d request successfully submitted for rework",
                     "%(count)d requests successfully submitted for rework",
                     len(rejected_requests),
@@ -790,7 +787,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
             messages.success(
                 request,
-                ungettext(
+                ngettext(
                     "%(count)d request successfully approved",
                     "%(count)d requests successfully approved",
                     len(approved_requests),
@@ -1088,7 +1085,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):
-            return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
+            return re_path(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
 
         url_patterns = [
             _url(
@@ -1138,7 +1135,7 @@ class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
 
     def get_urls(self):
         def _url(regex, fn, name, **kwargs):
-            return url(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
+            return re_path(regex, self.admin_site.admin_view(fn), kwargs=kwargs, name=name)
 
         url_patterns = [
             _url(
@@ -1191,7 +1188,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
             "",
             "<p>{}: <b>{}</b><br />{}: <b>{}</b></p>",
             (
-                (ugettext("Question"), d["label"], ugettext("Answer"), d["value"])
+                (gettext("Question"), d["label"], gettext("Answer"), d["value"])
                 for d in data
             ),
         )

@@ -1,7 +1,7 @@
 import mock
 import unittest
 
-from django.contrib.admin import ACTION_CHECKBOX_NAME
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.auth.models import Group
 from django.test import TransactionTestCase
 from django.urls import reverse
@@ -639,13 +639,13 @@ class PublishSelectedTest(CMSTestCase):
             self.client.post(response.url)
             args, kwargs = signal.calls[0]
             published_mr = kwargs['moderation_requests']
-            self.assertEquals(signal.call_count, 1)
-            self.assertEquals(kwargs['sender'], ModerationRequest)
-            self.assertEquals(kwargs['collection'], self.collection)
-            self.assertEquals(kwargs['moderator'], self.collection.author)
-            self.assertEquals(len(published_mr), 1)
-            self.assertEquals(published_mr[0], self.moderation_request1)
-            self.assertEquals(kwargs['workflow'], self.collection.workflow)
+            self.assertEqual(signal.call_count, 1)
+            self.assertEqual(kwargs['sender'], ModerationRequest)
+            self.assertEqual(kwargs['collection'], self.collection)
+            self.assertEqual(kwargs['moderator'], self.collection.author)
+            self.assertEqual(len(published_mr), 1)
+            self.assertEqual(published_mr[0], self.moderation_request1)
+            self.assertEqual(kwargs['workflow'], self.collection.workflow)
 
     @unittest.skip("Skip until collection status bugs fixed")
     @mock.patch("django.contrib.messages.success")

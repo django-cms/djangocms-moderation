@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import json
 
 from django.conf import settings
@@ -8,9 +6,8 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.urls import reverse
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import gettext, gettext_lazy as _
 
 from cms.models.fields import PlaceholderField
 
@@ -25,7 +22,6 @@ from .utils import generate_compliance_number
 from . import conf, constants, signals  # isort:skip
 
 
-@python_2_unicode_compatible
 class ConfirmationPage(models.Model):
     CONTENT_TYPES = (
         (constants.CONTENT_TYPE_PLAIN, _("Plain")),
@@ -71,7 +67,6 @@ class ConfirmationPage(models.Model):
         return True
 
 
-@python_2_unicode_compatible
 class Role(models.Model):
     name = models.CharField(
         verbose_name=_('name'),
@@ -102,7 +97,7 @@ class Role(models.Model):
 
     def clean(self):
         if self.user_id and self.group_id:
-            message = ugettext("Can't pick both user and group. Only one.")
+            message = gettext("Can't pick both user and group. Only one.")
             raise ValidationError(message)
 
     def user_is_assigned(self, user):
@@ -116,7 +111,6 @@ class Role(models.Model):
         return self.group.user_set.all()
 
 
-@python_2_unicode_compatible
 class Workflow(models.Model):
     name = models.CharField(verbose_name=_("name"), max_length=120, unique=True)
     is_default = models.BooleanField(verbose_name=_("is default"), default=False)
@@ -164,7 +158,7 @@ class Workflow(models.Model):
             workflows = workflows.exclude(pk=self.pk)
 
         if workflows.exists():
-            message = ugettext("Can't have two default workflows, only one is allowed.")
+            message = gettext("Can't have two default workflows, only one is allowed.")
             raise ValidationError(message)
 
     @cached_property
@@ -172,7 +166,6 @@ class Workflow(models.Model):
         return self.steps.first()
 
 
-@python_2_unicode_compatible
 class WorkflowStep(models.Model):
     role = models.ForeignKey(
         to=Role, verbose_name=_("role"), on_delete=models.CASCADE
@@ -413,7 +406,6 @@ class ModerationRequestTreeNode(MP_Node):
         return str(self.id)
 
 
-@python_2_unicode_compatible
 class ModerationRequest(models.Model):
     collection = models.ForeignKey(
         to=ModerationCollection,
@@ -601,7 +593,6 @@ class ModerationRequest(models.Model):
         self.save(update_fields=["compliance_number"])
 
 
-@python_2_unicode_compatible
 class ModerationRequestAction(models.Model):
     action = models.CharField(
         verbose_name=_("status"), max_length=30, choices=constants.ACTION_CHOICES

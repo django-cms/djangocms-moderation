@@ -14,3 +14,4 @@ venv
 node_modules/
 yarn.lock
 docs/_build/
+venv*
