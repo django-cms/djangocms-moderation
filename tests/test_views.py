@@ -6,7 +6,7 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 
 from cms.test_utils.testcases import CMSTestCase
-from cms.utils.urlutils import add_url_parameters
+from cms.utils.urlutils import add_url_parameters, admin_reverse
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
@@ -550,15 +550,20 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             ModerationRequestTreeNode.objects.filter(moderation_request=mr1.first()).count(), 0
         )
 
-    def test_collection_with_redirect_url_query_string_parameter_sanitisation(self):
+    def test_collection_with_redirect_url_query_redirect_sanitisation(self):
+        """
+        Reflected XSS Protection by ensuring that harmful characters are encoded
+
+        When a collection is succesful a redirect occurs back to the grouper in versioning,
+        this functionality should continue to function even when sanitised!
+        """
         user = self.get_superuser()
         collection = ModerationCollectionFactory(author=user)
         page1_version = PageVersionFactory(created_by=user)
         page2_version = PageVersionFactory(created_by=user)
-
-        redirect_to_url = f"""{reverse(
-            "admin:djangocms_moderation_moderationcollection_changelist"
-        )}?=<script>alert('attack!')</script>"""
+        opts = page1_version.versionable.version_model_proxy._meta
+        redirect_to_url = admin_reverse(f"{opts.app_label}_{opts.model_name}_changelist")
+        redirect_to_url += f"?page={page1_version.content.page.id}&<script>alert('attack!')</script>"
 
         url = add_url_parameters(
             get_admin_url(
@@ -578,9 +583,19 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
                 follow=False,
             )
 
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("%3F%3D%3Cscript%3Ealert%28%27attack%21%27%29%3C/script%3E", response.url)
+        messages = [message.message for message in list(get_messages(response.wsgi_request))]
 
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("%3Cscript%3Ealert%28%27attack%21%27%29%3C/script%3E", response.url)
+        self.assertIn(f"?page={page1_version.content.page.id}", response.url)
+        self.assertIn(
+            "2 items successfully added to moderation collection",
+            messages,
+        )
+        self.assertNotIn(
+            "Perhaps it was deleted",
+            messages,
+        )
 
 class CollectionItemsViewTest(CMSTestCase):
     def setUp(self):
