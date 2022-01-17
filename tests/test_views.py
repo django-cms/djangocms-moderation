@@ -597,6 +597,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             messages,
         )
 
+
 class CollectionItemsViewTest(CMSTestCase):
     def setUp(self):
         self.client.force_login(self.get_superuser())
