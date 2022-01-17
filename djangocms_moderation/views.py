@@ -6,7 +6,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
-from django.utils.http import is_safe_url, urlquote
+from django.utils.http import is_safe_url
 from django.utils.translation import gettext_lazy as _, ngettext
 from django.views.generic import FormView
 
