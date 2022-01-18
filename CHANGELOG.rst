@@ -4,7 +4,7 @@ Changelog
 
 Unreleased
 ==========
-
+* Pin the following packages to a python 3.6 compatible version matching this release stream: django-admin-sortable2, djangocms-text-ckeditor, djangocms-version-locking and djangocms-versioning.  
 
 1.0.28 (2021-10-18)
 ===================
