@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Refactor flawed add to collection XSS redirect sanitisation added in 1.0.26
 
 
 1.0.28 (2021-10-18)
