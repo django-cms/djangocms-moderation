@@ -1,232 +1,117 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+from django.contrib.auth import get_permission_codename
+from django.utils.translation import gettext_lazy as _
 
-from django.utils.functional import cached_property
-from django.utils.translation import ugettext_lazy as _
+from cms.cms_toolbars import ADMIN_MENU_IDENTIFIER
+from cms.utils.urlutils import add_url_parameters
 
-from cms.api import get_page_draft
-from cms.toolbar.items import (
-    Button,
-    Dropdown,
-    DropdownToggleButton,
-    ModalButton,
-)
-from cms.toolbar_base import CMSToolbar
-from cms.toolbar_pool import toolbar_pool
-from cms.utils import page_permissions
+from djangocms_versioning.cms_toolbars import VersioningToolbar, replace_toolbar
+from djangocms_versioning.models import Version
 
-from .helpers import get_active_moderation_request, is_moderation_enabled
-from .models import PageModeration
-from .monkeypatches import set_current_language
+from . import helpers
+from .models import ModerationCollection, ModerationRequest
 from .utils import get_admin_url
 
 
-from . import conf  # isort:skip
-
-
-try:
-    PageToolbar = toolbar_pool.toolbars['cms.cms_toolbars.PageToolbar']
-except:  # noqa: F722
-    from cms.cms_toolbars import PageToolbar
-
-
-class ExtendedPageToolbar(PageToolbar):
+class ModerationToolbar(VersioningToolbar):
     class Media:
-        js = ('djangocms_moderation/js/dist/bundle.moderation.min.js',)
-        css = {
-            'all': ('djangocms_moderation/css/moderation.css',)
-        }
+        # Media keeps all the settings from the parent class, so we only need
+        # to add moderation media here
+        # https://docs.djangoproject.com/en/2.1/topics/forms/media/#extend
+        js = ("djangocms_moderation/js/dist/bundle.moderation.min.js",)
+        css = {"all": ("djangocms_moderation/css/moderation.css",)}
 
-    def __init__(self, *args, **kwargs):
-        super(ExtendedPageToolbar, self).__init__(*args, **kwargs)
-        set_current_language(self.current_lang)
+    def _add_publish_button(self):
+        """
+        Disable djangocms_versioning publish button if we can moderate content object
+        """
+        if not helpers.is_registered_for_moderation(self.toolbar.obj):
+            return super()._add_publish_button()
 
-    @cached_property
-    def moderation_request(self):
-        if not self.page:
-            return None
-        return get_active_moderation_request(self.page, self.current_lang)
+    def _add_edit_button(self, disabled=False):
+        """
+        Add edit button if we can moderate content object
+        Or add a disabled edit button when object is 'Review locked'
+        """
+        # can we moderate content object?
+        # return early to avoid further DB calls below
+        if not helpers.is_registered_for_moderation(self.toolbar.obj):
+            return super()._add_edit_button(disabled=disabled)
 
-    @cached_property
-    def moderation_workflow(self):
-        if not self.page:
-            return None
-        if self.moderation_request:
-            return self.moderation_request.workflow
-        return None
+        # yes we can! but is it locked?
+        if helpers.is_obj_review_locked(self.toolbar.obj, self.request.user):
+            disabled = True
 
-    @cached_property
-    def is_moderation_enabled(self):
-        if not self.page:
-            return False
-        return is_moderation_enabled(self.page)
+        # disabled if locked, else default to false
+        return super()._add_edit_button(disabled=disabled)
 
-    def get_cancel_moderation_button(self):
-        cancel_request_url = get_admin_url(
-            name='cms_moderation_cancel_request',
+    def _add_moderation_buttons(self):
+        """
+        Add submit for moderation button if we can moderate content object
+        and toolbar is in edit mode
+
+        Display the collection name when object is in moderation
+        """
+        if not helpers.is_registered_for_moderation(self.toolbar.obj):
+            return
+
+        if self._is_versioned() and self.toolbar.edit_mode_active:
+            moderation_request = helpers.get_active_moderation_request(self.toolbar.obj)
+            if moderation_request:
+                title, url = helpers.get_moderation_button_title_and_url(
+                    moderation_request
+                )
+                self.toolbar.add_sideframe_button(
+                    name=title, url=url, side=self.toolbar.RIGHT
+                )
+            # Check if the object is not version locked to someone else
+            elif helpers.is_obj_version_unlocked(self.toolbar.obj, self.request.user):
+                opts = ModerationRequest._meta
+                codename = get_permission_codename("add", opts)
+                if not self.request.user.has_perm(
+                    "{app_label}.{codename}".format(app_label=opts.app_label, codename=codename)
+                ):
+                    return
+                version = Version.objects.get_for_content(self.toolbar.obj)
+                url = add_url_parameters(
+                    get_admin_url(
+                        name="cms_moderation_items_to_collection",
+                        language=self.current_lang,
+                        args=(),
+                    ),
+                    version_ids=version.pk,
+                )
+                self.toolbar.add_modal_button(
+                    name=_("Submit for moderation"), url=url, side=self.toolbar.RIGHT
+                )
+
+    def _add_moderation_menu(self):
+        """
+        Helper method to add moderation menu in the toolbar
+        """
+        opts = ModerationCollection._meta
+        codename = get_permission_codename("change", opts)
+        if not self.request.user.has_perm(
+            "{app_label}.{codename}".format(app_label=opts.app_label, codename=codename)
+        ):
+            return
+        admin_menu = self.toolbar.get_or_create_menu(ADMIN_MENU_IDENTIFIER)
+        url = get_admin_url(
+            "djangocms_moderation_moderationcollection_changelist",
             language=self.current_lang,
-            args=(self.page.pk, self.current_lang),
+            args=(),
         )
-        return ModalButton(name=_('Cancel request'), url=cancel_request_url)
+        # if the current user is a moderator or reviewer, then create a link
+        # which will filter to show only collections for that user's attention
+        if helpers.get_all_moderators().filter(pk=self.request.user.id).exists():
+            url += "?moderator=%s" % self.request.user.id
+        elif helpers.get_all_reviewers().filter(pk=self.request.user.id).exists():
+            url += "?reviewer=%s" % self.request.user.id
+        admin_menu.add_sideframe_item(_("Moderation collections"), url=url, position=3)
 
-    def user_can_publish(self):
-        moderation_request = self.moderation_request
-        user = self.request.user
-
-        if moderation_request and moderation_request.user_can_take_moderation_action(user):
-            return True
-        return super(ExtendedPageToolbar, self).user_can_publish()
-
-    def add_publish_button(self, classes=('cms-btn-action', 'cms-btn-publish', 'cms-btn-publish-active',)):
-        """
-        Lets work out what button should we display to the user.
-        We need to consider the moderation, e.g. if it is enabled,
-        we need to display moderation buttons instead of publish ones
-        """
-        page = self.page
-
-        if not self.user_can_publish() or not self.is_moderation_enabled:
-            # Page has no pending changes
-            # OR user has no permission to publish
-            # OR page has disabled moderation
-            return super(ExtendedPageToolbar, self).add_publish_button(classes)
-
-        moderation_request = self.moderation_request
-
-        if moderation_request and moderation_request.is_approved():
-            return super(ExtendedPageToolbar, self).add_publish_button(classes)
-        elif moderation_request:
-            # We have an active moderation request ongoing.
-            user = self.request.user
-            container = Dropdown(side=self.toolbar.RIGHT)
-            container.add_primary_button(
-                DropdownToggleButton(name=_('Moderation'))
-            )
-
-            if page.is_published(self.current_lang):
-                container.buttons.append(
-                    Button(name=_('View differences'), url='#', extra_classes=('js-cms-moderation-view-diff',))
-                )
-
-            if moderation_request.user_can_resubmit(user):
-                # This is a content author, able to edit and resubmit the
-                # changes for another moderation cycle
-                resubmit_request_url = get_admin_url(
-                    name='cms_moderation_resubmit_request',
-                    language=self.current_lang,
-                    args=(page.pk, self.current_lang),
-                )
-                container.buttons.append(
-                    ModalButton(name=_('Resubmit changes for moderation'), url=resubmit_request_url)
-                )
-            elif moderation_request.user_can_take_moderation_action(user):
-                # Now we have a moderator, able to Approve or Reject changes
-                approve_request_url = get_admin_url(
-                    name='cms_moderation_approve_request',
-                    language=self.current_lang,
-                    args=(page.pk, self.current_lang),
-                )
-                container.buttons.append(
-                    ModalButton(name=_('Approve changes'), url=approve_request_url)
-                )
-
-                reject_request_url = get_admin_url(
-                    name='cms_moderation_reject_request',
-                    language=self.current_lang,
-                    args=(page.pk, self.current_lang),
-                )
-                container.buttons.append(
-                    ModalButton(name=_('Send for rework'), url=reject_request_url)
-                )
-
-            # Anyone should be able to cancel the moderation request
-            container.buttons.append(self.get_cancel_moderation_button())
-
-            if moderation_request.user_can_view_comments(user):
-                comment_url = get_admin_url(
-                    name='cms_moderation_comments',
-                    language=self.current_lang,
-                    args=(page.pk, self.current_lang),
-                )
-                container.buttons.append(
-                    ModalButton(name=_('View comments'), url=comment_url)
-                )
-
-            self.toolbar.add_item(container)
-        else:
-            if conf.ENABLE_WORKFLOW_OVERRIDE:
-                view_name = 'cms_moderation_select_new_moderation'
-            else:
-                view_name = 'cms_moderation_new_request'
-
-            new_request_url = get_admin_url(
-                name=view_name,
-                language=self.current_lang,
-                args=(page.pk, self.current_lang),
-            )
-            self.toolbar.add_modal_button(
-                name=_('Submit for moderation'),
-                url=new_request_url,
-                side=self.toolbar.RIGHT,
-            )
-
-    def get_publish_button(self, classes=None):
-        if not self.is_moderation_enabled:
-            return super(ExtendedPageToolbar, self).get_publish_button(classes)
-
-        button = super(ExtendedPageToolbar, self).get_publish_button(['cms-btn-publish'])
-        container = Dropdown(side=self.toolbar.RIGHT)
-        container.add_primary_button(
-            DropdownToggleButton(name=_('Moderation'))
-        )
-        container.buttons.extend(button.buttons)
-        container.buttons.append(self.get_cancel_moderation_button())
-        return container
+    def post_template_populate(self):
+        super().post_template_populate()
+        self._add_moderation_buttons()
+        self._add_moderation_menu()
 
 
-class PageModerationToolbar(CMSToolbar):
-
-    def populate(self):
-        """ Adds Moderation link to Page Toolbar Menu
-        """
-        # always use draft if we have a page
-        page = get_page_draft(self.request.current_page)
-
-        if page:
-            can_change = page_permissions.user_can_change_page(self.request.user, page)
-        else:
-            can_change = False
-
-        if not can_change:
-            return
-
-        page_menu = self.toolbar.get_menu('page')
-
-        if not page_menu or page_menu.disabled:
-            return
-
-        try:
-            extension = PageModeration.objects.get(extended_object_id=page.pk)
-        except PageModeration.DoesNotExist:
-            extension = None
-
-        opts = PageModeration._meta
-
-        url_args = []
-
-        if extension:
-            url_name = '{}_{}_{}'.format(opts.app_label, opts.model_name, 'change')
-            url_args.append(extension.pk)
-        else:
-            url_name = '{}_{}_{}'.format(opts.app_label, opts.model_name, 'add')
-
-        url = get_admin_url(url_name, self.current_lang, args=url_args)
-
-        if not extension:
-            url += '?extended_object=%s' % page.pk
-        not_edit_mode = not self.toolbar.edit_mode_active
-        page_menu.add_modal_item(_('Moderation'), url=url, disabled=not_edit_mode)
-
-
-toolbar_pool.toolbars['cms.cms_toolbars.PageToolbar'] = ExtendedPageToolbar
-toolbar_pool.register(PageModerationToolbar)
+replace_toolbar(VersioningToolbar, ModerationToolbar)

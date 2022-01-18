@@ -1,0 +1,99 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block content %}
+<form action="" method="post">
+{% csrf_token %}
+<div>
+    <h2>
+        {% if form.initial.versions %}
+            {% if form.initial.versions|length > 1 %}
+               {% trans "Add items to collection" %}
+            {% else %}
+                {% blocktrans with form.initial.versions.0.content as content_name %}
+                   Add '{{ content_name }}' to collection
+                {% endblocktrans %}
+            {% endif %}
+        {% else %}
+            {% trans 'No items to add' %}
+        {% endif %}
+    </h2>
+    {% if form.non_field_errors %}
+        <div>{{ form.non_field_errors }}</div>
+    {% endif %}
+    <div class="form-row">
+        <div class="related-widget-wrapper widget-wrapper-links-2">
+            {{ form.versions }}
+            {{ form.versions.errors }}
+            {{ form.collection.label_tag }}
+            {{ form.collection.errors }}
+            {{ form.collection }}
+        </div>
+    </div>
+    <!-- List of collection objects -->
+    {% if moderation_requests %}
+        <p>
+            {% trans 'The selected collection currently contains the following items:' %}
+        </p>
+        <div class="results">
+         <table>
+            <thead>
+                <tr>
+                    <th>{% trans "Content Type" %}</th>
+                    <th>{% trans "Identifier" %}</th>
+                    <th>{% trans "Author" %}</th>
+                    <th>{% trans "Edit Date" %}</th>
+                    <th>{% trans "Version #" %}</th>
+                    <th>{% trans "Status" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for mr in moderation_requests %}
+                <tr class="row1 djangocms_moderation_collections_1">
+                    <td>{{ mr.version.content_type|title }}</td>
+                    <td>{{ mr.version.content }}</td>
+                    <td>{{ mr.version.created_by }}</td>
+                    <td>{{ mr.version.created }}</td>
+                    <td>{{ mr.version.number }}</td>
+                    <td>{{ mr.version.get_state_display }} </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% elif collection_id %}
+        <p>
+            {% trans 'This collection contains no items yet' %}
+        </p>
+    {% endif %}
+    <div class="submit-row">
+        <input type="submit" value="{% trans 'Submit' %}" class="default" name="_save">
+    </div>
+</div>
+</form>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script type="text/javascript">
+    (function($) {
+        $(function() {
+            var collection_sel = $('#id_collection');
+            collection_sel.data('prev', collection_sel.val());
+            collection_sel.on('change', function() {
+                var jqThis = $(this);
+                var newUrl;
+                if (location.href.indexOf('collection_id') === -1) {
+                    newUrl = location.href + '&collection_id=' + jqThis.val();
+                } else {
+                    newUrl = location.href.replace(
+                        "collection_id="+jqThis.data("prev"),
+                        "collection_id="+jqThis.val()
+                    );
+                }
+                location.href = newUrl;
+            });
+        });
+    })(django.jQuery);
+</script>
+{% endblock %}

@@ -1,431 +1,1276 @@
-import json
-from mock import patch
+import mock
 
-from django.contrib.auth.models import User
-from django.utils.translation import ugettext_lazy as _
+from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
+from django.contrib.messages import get_messages
+from django.test import TransactionTestCase
+from django.urls import reverse
 
+from cms.test_utils.testcases import CMSTestCase
 from cms.utils.urlutils import add_url_parameters
 
-from djangocms_moderation import constants
-from djangocms_moderation.forms import (
-    ModerationRequestForm,
-    SelectModerationForm,
-    UpdateModerationRequestForm,
-)
+from djangocms_versioning.test_utils.factories import PageVersionFactory
+
 from djangocms_moderation.models import (
-    ConfirmationFormSubmission,
-    ConfirmationPage,
+    ModerationCollection,
+    ModerationRequest,
+    ModerationRequestTreeNode,
 )
 from djangocms_moderation.utils import get_admin_url
 
-from .utils import BaseViewTestCase
+from .utils.base import BaseViewTestCase
+from .utils.factories import (
+    ChildModerationRequestTreeNodeFactory,
+    ModerationCollectionFactory,
+    ModerationRequestFactory,
+    PlaceholderFactory,
+    PollPluginFactory,
+    PollVersionFactory,
+    RootModerationRequestTreeNodeFactory,
+    UserFactory,
+)
 
 
-class ModerationRequestViewTest(BaseViewTestCase):
-
-    def _assert_render(self, response, page, action, workflow, active_request, form_cls, title):
-        view = response.context_data['view']
-        form = response.context_data['adminform']
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template_name[0], 'djangocms_moderation/request_form.html')
-        self.assertEqual(view.language, 'en')
-        self.assertEqual(view.page, page)
-        self.assertEqual(view.action, action)
-        self.assertEqual(view.workflow, workflow)
-        self.assertEqual(view.active_request, active_request)
-        self.assertEqual(response.context_data['title'], title)
-        self.assertIsInstance(form, form_cls)
-
-    def test_new_request_view_with_form(self):
-        response = self.client.get(
+class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
+    def test_no_eligible_items_to_add_to_collection(self):
+        """
+        We try add page_version to a collection but expect it to fail
+        as it is already party of a collection
+        """
+        user = self.get_superuser()
+        existing_collection = ModerationCollectionFactory(
+            author=user
+        )
+        collection = ModerationCollectionFactory(author=user)
+        page_version = PageVersionFactory(created_by=user)
+        RootModerationRequestTreeNodeFactory(
+            moderation_request__collection=existing_collection,
+            moderation_request__version=page_version,
+        )
+        url = add_url_parameters(
             get_admin_url(
-                name='cms_moderation_new_request',
-                language='en',
-                args=(self.pg2.pk, 'en')
-            )
-        )
-        self._assert_render(
-            response=response,
-            page=self.pg2,
-            action=constants.ACTION_STARTED,
-            active_request=None,
-            workflow=self.wf1,
-            form_cls=ModerationRequestForm,
-            title=_('Submit for moderation')
-        )
-
-    def test_new_request_view_with_form_workflow_passed_param(self):
-        response = self.client.get(
-            '{}?{}'.format(
-                get_admin_url(
-                    name='cms_moderation_new_request',
-                    language='en',
-                    args=(self.pg2.pk, 'en')
-                ),
-                'workflow={}'.format(self.wf2.pk)
-            )
-        )
-        self._assert_render(
-            response=response,
-            page=self.pg2,
-            action=constants.ACTION_STARTED,
-            active_request=None,
-            workflow=self.wf2,
-            form_cls=ModerationRequestForm,
-            title=_('Submit for moderation')
-        )
-
-    def test_cancel_request_view_with_form(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_cancel_request',
-            language='en',
-            args=(self.pg1.pk, 'en')
-        ))
-        self._assert_render(
-            response=response,
-            page=self.pg1,
-            action=constants.ACTION_CANCELLED,
-            active_request=self.moderation_request1,
-            workflow=self.wf1,
-            form_cls=UpdateModerationRequestForm,
-            title=_('Cancel request')
-        )
-
-    def test_reject_request_view_with_form(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_reject_request',
-            language='en',
-            args=(self.pg1.pk, 'en')
-        ))
-        self._assert_render(
-            response=response,
-            page=self.pg1,
-            action=constants.ACTION_REJECTED,
-            active_request=self.moderation_request1,
-            workflow=self.wf1,
-            form_cls=UpdateModerationRequestForm,
-            title=_('Send for rework')
-        )
-
-    def test_resubmit_request_view_with_form(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_resubmit_request',
-            language='en',
-            args=(self.pg1.pk, 'en')
-        ))
-        self._assert_render(
-            response=response,
-            page=self.pg1,
-            action=constants.ACTION_RESUBMITTED,
-            active_request=self.moderation_request1,
-            workflow=self.wf1,
-            form_cls=UpdateModerationRequestForm,
-            title=_('Resubmit changes')
-        )
-
-    def test_approve_request_view_with_form(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_approve_request',
-            language='en',
-            args=(self.pg1.pk, 'en')
-        ))
-        self._assert_render(
-            response=response,
-            page=self.pg1,
-            action=constants.ACTION_APPROVED,
-            active_request=self.moderation_request1,
-            workflow=self.wf1,
-            form_cls=UpdateModerationRequestForm,
-            title=_('Approve changes')
-        )
-
-    def test_get_form_kwargs(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_new_request',
-            language='en',
-            args=(self.pg2.pk, 'en')
-        ))
-        view = response.context_data['view']
-        kwargs = view.get_form_kwargs()
-        self.assertEqual(kwargs.get('action'), view.action)
-        self.assertEqual(kwargs.get('language'), view.language)
-        self.assertEqual(kwargs.get('page'), view.page)
-        self.assertEqual(kwargs.get('user'), view.request.user)
-        self.assertEqual(kwargs.get('workflow'), view.workflow)
-        self.assertEqual(kwargs.get('active_request'), view.active_request)
-
-    def test_form_valid(self):
-        response = self.client.post(get_admin_url(
-            name='cms_moderation_new_request',
-            language='en',
-            args=(self.pg2.pk, 'en')
-        ), {'moderator': '', 'message': 'Some review message'})
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'reloadBrowser')  # check html part
-
-    def test_throws_error_moderation_already_exists(self):
-        response = self.client.get('{}?{}'.format(
-            get_admin_url(
-                name='cms_moderation_new_request',
-                language='en',
-                args=(self.pg1.pk, 'en')
+                name="cms_moderation_items_to_collection", language="en", args=()
             ),
-            'workflow={}'.format(self.wf1.pk)  # pg1 => active request
-        ))
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'Page already has an active moderation request.')
-
-    def test_throws_error_invalid_workflow_passed(self):
-        response = self.client.get('{}?{}'.format(
-            get_admin_url(
-                name='cms_moderation_new_request',
-                language='en',
-                args=(self.pg2.pk, 'en')
-            ),
-            'workflow=10'  # pg2 => no active requests, 10 => workflow does not exist
-        ))
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'No moderation workflow exists for page.')
-
-    def test_throws_no_active_moderation_request(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_cancel_request',
-            language='en',
-            args=(self.pg2.pk, 'en')  # pg2 => no active requests
-        ))
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'Page does not have an active moderation request.')
-
-    def test_throws_error_already_approved(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_approve_request',
-            language='en',
-            args=(self.pg3.pk, 'en')  # pg3 => active request with all approved steps
-        ))
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'Moderation request has already been approved.')
-
-    def test_throws_error_forbidden_user(self):
-        from django.contrib.auth.models import User
-        user = User.objects.create_user(username='test1', email='test1@test.com', password='test1', is_staff=True)
-        self.client.force_login(user)
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_approve_request',
-            language='en',
-            args=(self.pg1.pk, 'en')  # pg1 => active request
-        ))
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.content, b'User is not allowed to update request.')
-
-    @patch('djangocms_moderation.views.get_page_moderation_workflow', return_value=None)
-    def test_throws_error_if_workflow_has_not_been_resolved(self, mock_gpmw):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_new_request',
-            language='en',
-            args=(self.pg2.pk, 'en')
-        ))
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, b'No moderation workflow exists for page.')
-
-    def _create_confirmation_page(self, moderation_request):
-        # First delete all the form submissions for the passed moderation_request
-        # This will make sure there are no form submissions
-        # attached with the passed moderation_request
-        moderation_request.form_submissions.all().delete()
-        self.cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
+            return_to_url="http://example.com",
+            version_ids=page_version.pk,
+            collection_id=collection.pk,
         )
-        self.role1.confirmation_page = self.cp
-        self.role1.save()
-
-    def test_redirects_to_confirmation_page_if_invalid_check(self):
-        self._create_confirmation_page(self.moderation_request1)
-        response = self.client.get(
-            get_admin_url(
-                name='cms_moderation_approve_request',
-                language='en',
-                args=(self.pg1.pk, 'en')
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={"collection": collection.pk, "versions": page_version.pk},
+                follow=False,
             )
-        )
-        redirect_url = add_url_parameters(
-            self.cp.get_absolute_url(),
-            content_view=True,
-            page=self.pg1.pk,
-            language='en',
-        )
-        self.assertEqual(response.status_code, 302)  # redirection
-        self.assertEqual(response.url, redirect_url)
-
-    def test_does_not_redirect_to_confirmation_page_if_valid_check(self):
-        self._create_confirmation_page(self.moderation_request1)
-        ConfirmationFormSubmission.objects.create(
-            request=self.moderation_request1,
-            for_step=self.wf1st1,
-            by_user=self.user,
-            data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
-            confirmation_page=self.cp,
-        )
-        response = self.client.get(
-            get_admin_url(
-                name='cms_moderation_approve_request',
-                language='en',
-                args=(self.pg1.pk, 'en')
-            )
-        )
-        self._assert_render(
-            response=response,
-            page=self.pg1,
-            action=constants.ACTION_APPROVED,
-            active_request=self.moderation_request1,
-            workflow=self.wf1,
-            form_cls=UpdateModerationRequestForm,
-            title=_('Approve changes')
-        )
-
-    def test_renders_all_form_submissions(self):
-        self._create_confirmation_page(self.moderation_request1)
-        ConfirmationFormSubmission.objects.create(
-            request=self.moderation_request1,
-            for_step=self.wf1st1,
-            by_user=self.user,
-            data=json.dumps([{'label': 'Question 1', 'answer': 'Yes'}]),
-            confirmation_page=self.cp,
-        )
-        response = self.client.get(
-            get_admin_url(
-                name='cms_moderation_approve_request',
-                language='en',
-                args=(self.pg1.pk, 'en')
-            )
-        )
-        form_submissions = response.context_data['form_submissions']
-        results = ConfirmationFormSubmission.objects.filter(request=self.moderation_request1)
-        self.assertQuerysetEqual(form_submissions, results, transform=lambda x: x, ordered=False)
-
-
-class SelectModerationViewTest(BaseViewTestCase):
-
-    def test_renders_view_with_form(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_select_new_moderation',
-            language='en',
-            args=(self.pg1.pk, 'en')
-        ))
-        view = response.context_data['view']
-        form = response.context_data['adminform']
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.template_name[0], 'djangocms_moderation/select_workflow_form.html')
-        self.assertEqual(view.page_id, str(self.pg1.pk))
-        self.assertEqual(view.current_lang, 'en')
-        self.assertIsInstance(form, SelectModerationForm)
+        self.assertIn("versions", response.context["form"].errors)
+        # No new nodes were created on validation error
+        self.assertEqual(ModerationRequest.objects.all().count(), 1)
+        self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 1)
 
-    def test_get_form_kwargs(self):
-        response = self.client.get(get_admin_url(
-            name='cms_moderation_select_new_moderation',
-            language='en',
-            args=(self.pg1.pk, 'en')
-        ))
-        view = response.context_data['view']
-        kwargs = view.get_form_kwargs()
-        self.assertEqual(kwargs.get('page'), self.pg1)
+    def test_add_items_to_collection_no_return_url_set(self):
+        user = self.get_superuser()
+        collection = ModerationCollectionFactory(author=user)
+        page_version = PageVersionFactory(created_by=user)
 
-    def test_form_valid(self):
-        response = self.client.post(get_admin_url(
-            name='cms_moderation_select_new_moderation',
-            language='en',
-            args=(self.pg1.pk, 'en')
-        ), {'workflow': self.wf2.pk})
-        form_valid_redirect_url = '{}?{}'.format(
+        url = add_url_parameters(
             get_admin_url(
-                name='cms_moderation_new_request',
-                language='en',
-                args=(self.pg1.pk, 'en')
+                name="cms_moderation_items_to_collection", language="en", args=()
             ),
-            'workflow={}'.format(self.wf2.pk)
+            # no return url specified
+            version_ids=page_version.pk,
+            collection_id=collection.pk,
         )
-        self.assertEqual(response.url, form_valid_redirect_url)
-
-
-class ModerationCommentsViewTest(BaseViewTestCase):
-
-    def test_comment_list(self):
-        response = self.client.get(
-            get_admin_url(
-                name='cms_moderation_comments',
-                language='en',
-                args=(self.pg3.pk, 'en')
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={"collection": collection.pk, "versions": [page_version.pk]},
+                follow=False,
             )
-        )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context_data['object_list'].count(), 3)
-
-    def test_comment_list_protected(self):
-        new_user = User.objects.create_superuser(
-            username='new_user', email='new_user@test.com', password='test'
+        self.assertContains(response, "reloadBrowser")
+        # check using success template
+        self.assertListEqual(
+            [t.name for t in response.templates],
+            ["djangocms_moderation/request_finalized.html"],
         )
-        self.client.force_login(new_user)
 
-        response = self.client.get(
+        # Moderation requests and related nodes were created
+        moderation_requests = ModerationRequest.objects.filter(
+            version=page_version, collection=collection
+        )
+        self.assertEqual(moderation_requests.count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=moderation_requests.get()
+            ).count(),
+            1,
+        )
+
+    def test_add_items_to_collection_return_url_set(self):
+        user = self.get_superuser()
+        collection = ModerationCollectionFactory(author=user)
+        page1_version = PageVersionFactory(created_by=user)
+        page2_version = PageVersionFactory(created_by=user)
+
+        redirect_to_url = reverse(
+            "admin:djangocms_moderation_moderationcollection_changelist"
+        )
+
+        url = add_url_parameters(
             get_admin_url(
-                name='cms_moderation_comments',
-                language='en',
-                args=(self.pg3.pk, 'en')
+                name="cms_moderation_items_to_collection", language="en", args=()
+            ),
+            return_to_url=redirect_to_url,
+            version_ids=",".join(str(x) for x in [page1_version.pk, page2_version.pk]),
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={
+                    "collection": collection.pk,
+                    "versions": [page1_version.pk, page2_version.pk],
+                },
+                follow=False,
             )
+
+        self.assertEqual(response.status_code, 302)
+
+        moderation_request = ModerationRequest.objects.get(version=page1_version)
+        self.assertEqual(moderation_request.collection, collection)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=moderation_request
+            ).count(),
+            1,
         )
 
-        self.assertEqual(response.status_code, 403)
+        moderation_request = ModerationRequest.objects.get(version=page2_version)
+        self.assertEqual(moderation_request.collection, collection)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=moderation_request
+            ).count(),
+            1,
+        )
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertIn(
+            "2 items successfully added to moderation collection",
+            [message.message for message in messages],
+        )
+
+    def test_list_versions_from_collection_id_param(self):
+        user = self.get_superuser()
+        collection1 = ModerationCollectionFactory(author=user)
+        collection2 = ModerationCollectionFactory(author=user)
+
+        page1_version = PageVersionFactory(created_by=user)
+        page2_version = PageVersionFactory(created_by=user)
+
+        RootModerationRequestTreeNodeFactory(
+            moderation_request__collection=collection1,
+            moderation_request__version=page1_version,
+        )
+        RootModerationRequestTreeNodeFactory(
+            moderation_request__collection=collection2,
+            moderation_request__version=page2_version,
+        )
+
+        new_version = PageVersionFactory(created_by=user)
+        url = add_url_parameters(
+            get_admin_url(
+                name="cms_moderation_items_to_collection", language="en", args=()
+            ),
+            return_to_url="http://example.com",
+            version_ids=new_version.pk,
+            collection_id=collection1.pk,
+        )
+
+        with self.login_user_context(user):
+            response = self.client.get(url)
+        mr1 = ModerationRequest.objects.get(
+            version=page1_version, collection=collection1
+        )
+        mr2 = ModerationRequest.objects.get(
+            version=page2_version, collection=collection2
+        )
+        # mr1 is in the list as it belongs to collection1
+        self.assertIn(mr1, response.context_data["moderation_requests"])
+        self.assertNotIn(mr2, response.context_data["moderation_requests"])
+
+    def test_add_pages_moderated_children_to_collection(self):
+        """
+        A page with multiple moderatable children automatically adds them to the collection
+        """
+        user = self.get_superuser()
+        collection = ModerationCollectionFactory(author=user)
+
+        page_version = PageVersionFactory(created_by=user)
+        language = page_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=page_version.content)
+        poll1_version = PollVersionFactory(created_by=user, content__language=language)
+        poll2_version = PollVersionFactory(created_by=user, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll1_version.content.poll)
+        PollPluginFactory(placeholder=placeholder, poll=poll2_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name="cms_moderation_items_to_collection", language="en", args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url="http://example.com",
+            version_ids=page_version.pk,
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={"collection": collection.pk, "versions": [page_version.pk]},
+                follow=False,
+            )
+
+        # Match collection and versions in the DB
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.count(), 3)
+        mr = ModerationRequest.objects.filter(
+            collection=collection, version=page_version
+        )
+        self.assertEqual(mr.count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr.first()).count(), 1
+        )
+        mr1 = ModerationRequest.objects.filter(
+            collection=collection, version=poll1_version
+        )
+        self.assertEqual(mr1.count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr1.first()).count(), 1
+        )
+        mr2 = ModerationRequest.objects.filter(
+            collection=collection, version=poll2_version
+        )
+        self.assertEqual(mr2.count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr2.first()).count(), 1
+        )
+
+    def test_add_pages_moderated_duplicated_children_to_collection(self):
+        """
+        A page with multiple instances of the same version added to the collection should only
+        add it to the collection once!
+        """
+        user = self.get_superuser()
+        collection = ModerationCollectionFactory(author=user)
+
+        page_version = PageVersionFactory(created_by=user)
+        language = page_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=page_version.content)
+        poll_version = PollVersionFactory(created_by=user, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll_version.content.poll)
+        PollPluginFactory(placeholder=placeholder, poll=poll_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name="cms_moderation_items_to_collection", language="en", args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url="http://example.com",
+            version_ids=page_version.pk,
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={"collection": collection.pk, "versions": [page_version.pk]},
+            )
+
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.filter(version=page_version).count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=page_version)
+            ).count(),
+            1,
+        )
+        self.assertEqual(stored_collection.filter(version=poll_version).count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll_version)
+            ).count(),
+            1,
+        )
+
+    def test_add_pages_moderated_duplicated_children_to_collection_for_author_only(
+        self
+    ):
+        """
+        A page with moderatable children created by different authors only automatically adds the current users items
+        """
+        user = self.get_superuser()
+        user2 = UserFactory()
+        collection = ModerationCollectionFactory(author=user)
+
+        page_version = PageVersionFactory(created_by=user)
+        language = page_version.content.language
+        # Populate page
+        placeholder = PlaceholderFactory(source=page_version.content)
+        poll1_version = PollVersionFactory(created_by=user, content__language=language)
+        poll2_version = PollVersionFactory(created_by=user2, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll1_version.content.poll)
+        PollPluginFactory(placeholder=placeholder, poll=poll2_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name="cms_moderation_items_to_collection", language="en", args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url="http://example.com",
+            version_ids=page_version.pk,
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={"collection": collection.pk, "versions": [page_version.pk]},
+            )
+
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.count(), 2)
+        self.assertEqual(stored_collection.filter(version=page_version).count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=page_version)
+            ).count(),
+            1,
+        )
+        self.assertEqual(stored_collection.filter(version=poll1_version).count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll1_version)
+            ).count(),
+            1,
+        )
+        self.assertEqual(stored_collection.filter(version=poll2_version).count(), 0)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request__version=poll2_version
+            ).count(),
+            0,
+        )
+
+    def test_add_pages_moderated_traversed_children_to_collection(self):
+        """
+        A page with moderatable children that also have moderatable children: child within a child
+        are added to a collection
+        """
+        user = self.get_superuser()
+        collection = ModerationCollectionFactory(author=user)
+
+        page_version = PageVersionFactory(created_by=user)
+        language = page_version.content.language
+        # Populate page
+        placeholder = PlaceholderFactory(source=page_version.content)
+        poll_version = PollVersionFactory(created_by=user, content__language=language)
+        poll_plugin = PollPluginFactory(
+            placeholder=placeholder, poll=poll_version.content.poll
+        )
+        # Populate page poll child layer 1
+        poll_child_1_version = PollVersionFactory(
+            created_by=user, content__language=language
+        )
+        poll_child_1_plugin = PollPluginFactory(
+            placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll
+        )
+        # Populate page poll child layer 2
+        poll_child_2_version = PollVersionFactory(
+            created_by=user, content__language=language
+        )
+        PollPluginFactory(
+            placeholder=poll_child_1_plugin.placeholder,
+            poll=poll_child_2_version.content.poll,
+        )
+
+        admin_endpoint = get_admin_url(
+            name="cms_moderation_items_to_collection", language="en", args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url="http://example.com",
+            version_ids=page_version.pk,
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={"collection": collection.pk, "versions": [page_version.pk]},
+            )
+
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.count(), 4)
+        self.assertEqual(stored_collection.filter(version=page_version).count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=page_version)
+            ).count(),
+            1,
+        )
+        self.assertEqual(stored_collection.filter(version=poll_version).count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll_version)
+            ).count(),
+            1,
+        )
+        self.assertEqual(
+            stored_collection.filter(version=poll_child_1_version).count(), 1
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll_child_1_version)
+            ).count(),
+            1,
+        )
+        self.assertEqual(
+            stored_collection.filter(version=poll_child_2_version).count(), 1
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll_child_2_version)
+            ).count(),
+            1,
+        )
+
+    def test_adding_non_page_item_doesnt_trigger_nested_collection_mechanism(self):
+        user = self.get_superuser()
+        collection = ModerationCollectionFactory(author=user)
+
+        poll_version = PollVersionFactory(created_by=user)
+        language = poll_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=poll_version.content)
+        poll1_version = PollVersionFactory(created_by=user, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll1_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name="cms_moderation_items_to_collection", language="en", args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url="http://example.com",
+            version_ids=poll_version.pk,
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={"collection": collection.pk, "versions": [poll_version.pk]},
+            )
+
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.filter(version=poll_version).count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll_version)
+            ).count(),
+            1,
+        )
+        self.assertEqual(stored_collection.filter(version=poll_version).count(), 1)
+
+    def test_adding_page_not_by_the_author_doesnt_trigger_nested_collection_mechanism(
+        self
+    ):
+        user = self.get_superuser()
+        user2 = UserFactory()
+        collection = ModerationCollectionFactory(author=user)
+
+        page_version = PageVersionFactory(created_by=user2)
+        language = page_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=page_version.content)
+        poll1_version = PollVersionFactory(created_by=user2, content__language=language)
+        PollPluginFactory(placeholder=placeholder, poll=poll1_version.content.poll)
+
+        admin_endpoint = get_admin_url(
+            name="cms_moderation_items_to_collection", language="en", args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url="http://example.com",
+            version_ids=page_version.pk,
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user), mock.patch(
+            "djangocms_moderation.forms.is_obj_version_unlocked"
+        ):
+            response = self.client.post(
+                path=url,
+                data={"collection": collection.pk, "versions": [page_version.pk]},
+                follow=False,
+            )
+
+        # Match collection and versions in the DB
+        stored_collection = ModerationRequest.objects.filter(collection=collection)
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        self.assertEqual(stored_collection.count(), 1)
+        mr = ModerationRequest.objects.filter(
+            collection=collection, version=page_version
+        )
+        self.assertEqual(mr.count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr.first()).count(), 1
+        )
+        mr1 = ModerationRequest.objects.filter(
+            collection=collection, version=poll1_version
+        )
+        self.assertEqual(mr1.count(), 0)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr1.first()).count(), 0
+        )
+
+    def test_collection_with_redirect_url_query_string_parameter_sanitisation(self):
+        user = self.get_superuser()
+        collection = ModerationCollectionFactory(author=user)
+        page1_version = PageVersionFactory(created_by=user)
+        page2_version = PageVersionFactory(created_by=user)
+
+        redirect_to_url = f"""{reverse(
+            "admin:djangocms_moderation_moderationcollection_changelist"
+        )}?=<script>alert('attack!')</script>"""
+
+        url = add_url_parameters(
+            get_admin_url(
+                name="cms_moderation_items_to_collection", language="en", args=()
+            ),
+            return_to_url=redirect_to_url,
+            version_ids=",".join(str(x) for x in [page1_version.pk, page2_version.pk]),
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={
+                    "collection": collection.pk,
+                    "versions": [page1_version.pk, page2_version.pk],
+                },
+                follow=False,
+            )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("%3F%3D%3Cscript%3Ealert%28%27attack%21%27%29%3C/script%3E", response.url)
 
 
-class ModerationConfirmationPageTest(BaseViewTestCase):
+class CollectionItemsViewTest(CMSTestCase):
+    def setUp(self):
+        self.client.force_login(self.get_superuser())
+        self.url = get_admin_url(
+            name="cms_moderation_items_to_collection", language="en", args=()
+        )
+
+    def test_404_if_no_collection_with_specified_id(self):
+        self.url += "?collection_id=15"
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_if_collection_id_not_an_int(self):
+        self.url += "?collection_id=aaa"
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_moderation_requests_empty_in_context_if_no_collection_id_specified(self):
+        response = self.client.get(self.url)
+
+        self.assertListEqual(response.context["moderation_requests"], [])
+
+    def test_initial_form_values_when_collection_id_passed(self):
+        collection = ModerationCollectionFactory()
+        pg_version = PageVersionFactory()
+        poll_version = PollVersionFactory()
+        self.url += "?collection_id=" + str(collection.pk)
+        self.url += "&version_ids={},{}".format(pg_version.pk, poll_version.pk)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["form"].initial.keys()), 2)
+        self.assertEqual(
+            response.context["form"].initial["collection"], str(collection.pk)
+        )
+        self.assertQuerysetEqual(
+            response.context["form"].initial["versions"],
+            [pg_version.pk, poll_version.pk],
+            transform=lambda o: o.pk,
+            ordered=False,
+        )
+
+    def test_initial_form_values_when_collection_id_not_passed(self):
+        pg_version = PageVersionFactory()
+        poll_version = PollVersionFactory()
+        self.url += "?version_ids={},{}".format(pg_version.pk, poll_version.pk)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["form"].initial.keys()), 1)
+        self.assertQuerysetEqual(
+            response.context["form"].initial["versions"],
+            [pg_version.pk, poll_version.pk],
+            transform=lambda o: o.pk,
+            ordered=False,
+        )
+
+    def test_initial_form_values_when_no_version_ids_passed(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["form"].initial.keys()), 1)
+        self.assertEqual(response.context["form"].initial["versions"].count(), 0)
+
+    def test_collection_widget_gets_set_on_form(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["form"].fields["collection"].widget.__class__,
+            RelatedFieldWidgetWrapper,
+        )
+
+    def test_tree_nodes_are_created(self):
+        """
+        Moderation request nodes are created with the correct structure
+
+        Created node structure:
+
+        page
+            poll
+                poll_child
+                    poll_grandchild
+            poll_child
+                poll_grandchild
+        """
+        user = self.get_superuser()
+        admin_endpoint = get_admin_url(
+            name="cms_moderation_items_to_collection", language="en", args=()
+        )
+        collection = ModerationCollectionFactory(author=user)
+        page_version = PageVersionFactory(created_by=user)
+        placeholder = PlaceholderFactory(source=page_version.content)
+        language = page_version.content.language
+
+        # Populate poll
+        poll_version = PollVersionFactory(created_by=user, content__language=language)
+        PollPluginFactory(
+            placeholder=placeholder, poll=poll_version.content.poll
+        )
+
+        # Populate poll child
+        poll_child_version = PollVersionFactory(
+            created_by=user, content__language=language
+        )
+        PollPluginFactory(
+            placeholder=poll_version.content.placeholder,
+            poll=poll_child_version.content.poll,
+        )
+
+        # Populate grand child
+        poll_grandchild_version = PollVersionFactory(
+            created_by=user, content__language=language
+        )
+        PollPluginFactory(
+            placeholder=poll_child_version.content.placeholder,
+            poll=poll_grandchild_version.content.poll,
+        )
+
+        # Add poll_child directly to page as well
+        PollPluginFactory(
+            placeholder=placeholder, poll=poll_child_version.content.poll
+        )
+
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url="http://example.com",
+            version_ids=page_version.pk,
+            collection_id=collection.pk,
+        )
+        with self.login_user_context(user):
+            response = self.client.post(
+                path=url,
+                data={"collection": collection.pk, "versions": [page_version.pk]},
+            )
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+
+        nodes = ModerationRequestTreeNode.objects.filter(
+            moderation_request__collection_id=collection.pk
+        )
+
+        # The correct amount of nodes exist
+        self.assertEqual(nodes.count(), 6)
+        # Now assert the tree structure...
+        # Check root refers to correct version & has correct number of children
+        root = ModerationRequestTreeNode.get_root_nodes().get()
+        self.assertEqual(root.moderation_request.version, page_version)
+        self.assertEqual(root.get_children().count(), 2)
+        # Check first child of root has correct tree
+        poll_node = root.get_children().get(moderation_request__version=poll_version)
+        self.assertEqual(poll_node.get_children().count(), 1)
+        poll_child_node = poll_node.get_children().get()
+        self.assertEqual(poll_child_node.moderation_request.version, poll_child_version)
+        self.assertEqual(poll_child_node.get_children().count(), 1)
+        poll_grandchild_node = poll_child_node.get_children().get()
+        self.assertEqual(poll_grandchild_node.moderation_request.version, poll_grandchild_version)
+        # Check second child of root has correct tree
+        poll_child_node2 = root.get_children().get(moderation_request__version=poll_child_version)
+        self.assertNotEqual(poll_child_node, poll_child_node2)
+        self.assertEqual(poll_child_node2.moderation_request.version, poll_child_version)
+        self.assertEqual(poll_child_node2.get_children().count(), 1)
+        poll_grandchild_node2 = poll_child_node2.get_children().get()
+        self.assertNotEqual(poll_grandchild_node, poll_grandchild_node2)
+        self.assertEqual(poll_grandchild_node2.moderation_request.version, poll_grandchild_version)
+
+
+class SubmitCollectionForModerationViewTest(BaseViewTestCase):
+    def setUp(self):
+        super(SubmitCollectionForModerationViewTest, self).setUp()
+        self.url = reverse(
+            "admin:cms_moderation_submit_collection_for_moderation",
+            args=(self.collection2.pk,),
+        )
+        request_change_list_url = reverse(
+            "admin:djangocms_moderation_moderationrequest_changelist"
+        )
+        self.request_change_list_url = "{}?moderation_request__collection__id={}".format(
+            request_change_list_url, self.collection2.pk
+        )
+
+    @mock.patch.object(ModerationCollection, "submit_for_review")
+    def test_submit_collection_for_moderation(self, submit_mock):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(self.url)
+        assert submit_mock.called
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(self.request_change_list_url, response.url)
+
+
+class CancelCollectionViewTest(BaseViewTestCase):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse(
+            "admin:cms_moderation_cancel_collection", args=(self.collection2.pk,)
+        )
+        self.collection_change_list_url = reverse(
+            "admin:djangocms_moderation_moderationcollection_changelist"
+        )
+
+    @mock.patch.object(ModerationCollection, "cancel")
+    def test_submit_collection_for_moderation(self, cancel_mock):
+        response = self.client.get(self.url)
+        self.assertEqual(200, response.status_code)
+
+        response = self.client.post(self.url)
+        assert cancel_mock.called
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(self.collection_change_list_url, response.url)
+
+
+class ModerationRequestChangeListView(BaseViewTestCase):
+    def setUp(self):
+        super(ModerationRequestChangeListView, self).setUp()
+        self.collection_submit_url = reverse(
+            "admin:cms_moderation_submit_collection_for_moderation",
+            args=(self.collection2.pk,),
+        )
+        self.url = reverse("admin:djangocms_moderation_moderationrequest_changelist")
+        self.url_with_filter = "{}?moderation_request__collection__id={}".format(
+            self.url, self.collection2.pk
+        )
+
+    def test_change_list_view_should_404_if_not_filtered(self):
+        response = self.client.get(self.url)
+        self.assertEqual(404, response.status_code)
+
+        response = self.client.get(self.url_with_filter)
+        self.assertEqual(200, response.status_code)
+
+    def test_change_list_view_should_contain_collection_object(self):
+        response = self.client.get(self.url_with_filter)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(response.context["collection"], self.collection2)
+
+    @mock.patch.object(ModerationCollection, "allow_submit_for_review")
+    def test_change_list_view_should_contain_submit_collection_url(
+        self, allow_submit_mock
+    ):
+        allow_submit_mock.return_value = False
+        response = self.client.get(self.url_with_filter)
+        self.assertNotIn("submit_for_review_url", response.context)
+
+        allow_submit_mock.return_value = True
+        response = self.client.get(self.url_with_filter)
+        self.assertIn("submit_for_review_url", response.context)
+
+
+class TransactionCollectionItemsViewTestCase(TransactionTestCase):
+    def setUp(self):
+        # Create db data
+        self.user = UserFactory(is_staff=True, is_superuser=True)
+        self.collection = ModerationCollectionFactory(author=self.user)
+        self.moderation_request1 = ModerationRequestFactory(collection=self.collection)
+        self.moderation_request2 = ModerationRequestFactory(collection=self.collection)
+        self.root1 = RootModerationRequestTreeNodeFactory(
+            moderation_request=self.moderation_request1
+        )
+        self.root2 = RootModerationRequestTreeNodeFactory(
+            moderation_request=self.moderation_request2
+        )
+        ChildModerationRequestTreeNodeFactory(
+            moderation_request=self.moderation_request1, parent=self.root1
+        )
+
+        self.page_version = PageVersionFactory(created_by=self.user)
+
+        # Login
+        self.client.force_login(self.user)
+
+        # Generate url and POST data
+        self.url = add_url_parameters(
+            reverse("admin:cms_moderation_items_to_collection"),
+            return_to_url="http://example.com",
+            version_ids=self.page_version,
+            collection_id=self.collection.pk,
+        )
+
+        self.data = {"collection": self.collection.pk, "versions": self.page_version.pk}
+
+    def tearDown(self):
+        # clear content type cache for page content's versionable
+        del self.moderation_request1.version.versionable.content_types
+
+    @mock.patch("djangocms_moderation.admin.messages.success")
+    def test_add_to_collection_view_is_wrapped_in_db_transaction(self, messages_mock):
+        class FakeError(Exception):
+            pass
+
+        # Throw an exception to cause a db rollback.
+        # Throwing FakeError as no actual code will ever throw it and
+        # therefore catching this later in the test will not cover up a
+        # genuine issue
+        messages_mock.side_effect = FakeError
+
+        # Do the request to add to collection view
+        try:
+            self.client.post(self.url, self.data)
+        except FakeError:
+            # This is what messages_mock should have thrown,
+            # but we don't want the test to throw it.
+            pass
+
+        # Check neither the tree nodes nor the requests have been added.
+        # The db transaction should have rolled back.
+        self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 3)
+        self.assertEqual(ModerationRequest.objects.all().count(), 2)
+
+
+class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
     def setUp(self):
-        super(ModerationConfirmationPageTest, self).setUp()
-        self.cp = ConfirmationPage.objects.create(
-            name='Checklist Form',
-        )
+        self.user = self.get_superuser()
+        self.client.force_login(self.user)
+        self.collection = ModerationCollectionFactory(author=self.user)
+        self._set_up_initial_page_data()
 
-    def test_renders_build_view(self):
-        response = self.client.get(self.cp.get_absolute_url())
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.templates[0].name, self.cp.template)
-        self.assertEqual(
-            response.context['CONFIRMATION_BASE_TEMPLATE'],
-            'djangocms_moderation/base_confirmation_build.html',
-        )
+    def _set_up_initial_page_data(self):
+        """
+        This should create the following tree structure when added to collection:
+            page_1_version
+              poll_version
+                  poll_child_version
+            page_2_version
+              poll_child_version
+        """
+        # Page 1
+        self.page_1_version = PageVersionFactory(created_by=self.user)
+        language = self.page_1_version.content.language
+        page_1_placeholder = PlaceholderFactory(source=self.page_1_version.content)
+        self.poll_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(placeholder=page_1_placeholder, poll=self.poll_version.content.poll)
+        self.poll_child_version = PollVersionFactory(created_by=self.user, content__language=language)
+        PollPluginFactory(
+            placeholder=self.poll_version.content.placeholder, poll=self.poll_child_version.content.poll)
 
-    def test_renders_content_view(self):
-        response = self.client.get(
-            add_url_parameters(
-                self.cp.get_absolute_url(),
-                content_view=True,
-                page=self.pg1.pk,
-                language='en',
-            )
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.templates[0].name, self.cp.template)
-        self.assertEqual(response.context['CONFIRMATION_BASE_TEMPLATE'], 'djangocms_moderation/base_confirmation.html')
+        # Page 2
+        self.page_2_version = PageVersionFactory(created_by=self.user, content__language=language)
+        page_2_placeholder = PlaceholderFactory(source=self.page_2_version.content)
+        PollPluginFactory(placeholder=page_2_placeholder, poll=self.poll_child_version.content.poll)
 
-    def test_renders_post_view(self):
+    def _add_pages_to_collection(self):
+        """
+        As this is an integration test, adding the pages to collection
+        via an http call. This ensures the tree is exactly how the add
+        http call would create it.
+        """
+        admin_endpoint = get_admin_url(
+            name='cms_moderation_items_to_collection',
+            language='en',
+            args=()
+        )
+        url = add_url_parameters(
+            admin_endpoint,
+            return_to_url='http://example.com',
+            version_ids=[self.page_1_version.pk, self.page_2_version.pk],
+            collection_id=self.collection.pk
+        )
         response = self.client.post(
-            add_url_parameters(
-                self.cp.get_absolute_url(),
-                content_view=True,
-                page=self.pg1.pk,
-                language='en',
-            )
+            path=url,
+            data={
+                'collection': self.collection.pk,
+                'versions': [self.page_1_version.pk, self.page_2_version.pk],
+            },
         )
+        # smoke check the response
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(admin_endpoint, response.url)
+        # The correct amount of moderation requests has been created
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            4
+        )
+        # The correct amount of tree nodes has been created
+        # Poll is repeated twice and will therefore have an additional node
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            5
+        )
+        # The tree structure for page_1_version is correct
+        root_1 = ModerationRequestTreeNode.get_root_nodes().get(
+            moderation_request__version=self.page_1_version)
+        self.assertEqual(root_1.get_children().count(), 1)
+        child_1 = root_1.get_children().get()
+        self.assertEqual(child_1.moderation_request.version, self.poll_version)
+        self.assertEqual(child_1.get_children().count(), 1)
+        grandchild = child_1.get_children().get()
+        self.assertEqual(
+            grandchild.moderation_request.version, self.poll_child_version)
+        # The tree structure for page_2_version is correct
+        root_2 = ModerationRequestTreeNode.get_root_nodes().get(
+            moderation_request__version=self.page_2_version)
+        self.assertEqual(root_2.get_children().count(), 1)
+        child_2 = root_2.get_children().get()
+        self.assertEqual(child_2.moderation_request.version, self.poll_child_version)
+        self.assertEqual(grandchild.moderation_request, child_2.moderation_request)
+
+    def test_moderation_workflow_node_deletion_1(self):
+        """
+        Add pages to a collection to create a tree structure like so:
+
+            page_1_version
+              poll_version
+                  poll_child_version
+            page_2_version
+              poll_child_version
+
+        Then delete page_2 version, which should make the tree like so:
+
+            page_1_version
+              poll_version
+
+        (i.e. poll_child_version should be removed from both pages)
+        """
+        # Do an http call to add all the versions to collection
+        # and assert the created tree is what is in the docstring
+        self._add_pages_to_collection()
+
+        # Now remove page_2_version from the collection
+        page_2_root = ModerationRequestTreeNode.get_root_nodes().get(
+            moderation_request__version=self.page_2_version)
+        delete_url = "{}?ids={}&collection_id={}".format(
+            reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
+            ",".join([str(page_2_root.pk)]),
+            self.collection.pk,
+        )
+        response = self.client.post(delete_url, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.templates[0].name, self.cp.template)
-        self.assertEqual(response.context['CONFIRMATION_BASE_TEMPLATE'], 'djangocms_moderation/base_confirmation.html')
-        self.assertTrue(response.context['submitted'])
-        redirect_url = add_url_parameters(
-            get_admin_url(
-                name='cms_moderation_approve_request',
-                language='en',
-                args=(self.pg1.pk, 'en'),
-            ),
-            reviewed=True,
+
+        # Load the changelist and check that the page loads without an error
+        changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        response = self.client.get(changelist_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check the data
+        # The whole of the page_2_version tree should have been removed.
+        # Additionally, poll_child_version should have been removed from
+        # the page_1_version tree.
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            2
         )
-        self.assertEqual(response.context['redirect_url'], redirect_url)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            2
+        )
+        self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 1)
+        root = ModerationRequestTreeNode.get_root_nodes().get()
+        self.assertEqual(root.moderation_request.version, self.page_1_version)
+        self.assertEqual(root.get_children().count(), 1)
+        self.assertEqual(root.get_children().get().moderation_request.version, self.poll_version)
+
+    def test_moderation_workflow_node_deletion_2(self):
+        """
+        Add pages to a collection to create a tree structure like so:
+
+            page_1_version
+              poll_version
+                  poll_child_version
+            page_2_version
+              poll_child_version
+
+        Then delete page_1_version, which should make the tree like so:
+
+            page_2_version
+
+        (i.e. poll_child_version should be removed from both pages)
+        """
+        # Do an http call to add all the versions to collection
+        # and assert the created tree is what is in the docstring
+        self._add_pages_to_collection()
+
+        # Now remove page_1_version from the collection
+        page_1_root = ModerationRequestTreeNode.get_root_nodes().get(
+            moderation_request__version=self.page_1_version)
+        delete_url = "{}?ids={}&collection_id={}".format(
+            reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
+            ",".join([str(page_1_root.pk)]),
+            self.collection.pk,
+        )
+        response = self.client.post(delete_url, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        # Load the changelist and check that the page loads without an error
+        changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        response = self.client.get(changelist_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check the data
+        # The whole of the page_1_version tree should have been removed.
+        # Additionally, poll_child_version should have been removed from
+        # the page_2_version tree.
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            1
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            1
+        )
+        self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 1)
+        root = ModerationRequestTreeNode.get_root_nodes().get()
+        self.assertEqual(root.moderation_request.version, self.page_2_version)
+        self.assertEqual(root.get_children().count(), 0)
+
+    def test_moderation_workflow_node_deletion_3(self):
+        """
+        Add pages to a collection to create a tree structure like so:
+
+            page_1_version
+              poll_version
+                  poll_child_version
+            page_2_version
+              poll_child_version
+
+        Then delete poll_version, which should make the tree like so:
+
+            page_1_version
+            page_2_version
+
+        (i.e. poll_child_version should be removed from both pages)
+        """
+        # Do an http call to add all the versions to collection
+        # and assert the created tree is what is in the docstring
+        self._add_pages_to_collection()
+
+        # Now remove poll_version from the collection
+        page_1_root = ModerationRequestTreeNode.get_root_nodes().get(
+            moderation_request__version=self.page_1_version)
+        poll_1_node = page_1_root.get_children().get()
+        delete_url = "{}?ids={}&collection_id={}".format(
+            reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
+            ",".join([str(poll_1_node.pk)]),
+            self.collection.pk,
+        )
+        response = self.client.post(delete_url, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        # Load the changelist and check that the page loads without an error
+        changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        response = self.client.get(changelist_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check the data
+        # Only the roots (page_1_version and page_2_version) should remain
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            2
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            2
+        )
+        self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 2)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__version=self.page_1_version).count(),
+            1
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__version=self.page_2_version).count(),
+            1
+        )
+
+    def test_moderation_workflow_node_deletion_4(self):
+        """
+        Add pages to a collection to create a tree structure like so:
+
+            page_1_version
+              poll_version
+                  poll_child_version
+            page_2_version
+              poll_child_version
+
+        Then delete poll_child_version from the page 1 tree, which should make the tree like so:
+
+            page_1_version
+              poll_version
+            page_2_version
+
+        (i.e. poll_child_version should be removed from both pages)
+        """
+        # Do an http call to add all the versions to collection
+        # and assert the created tree is what is in the docstring
+        self._add_pages_to_collection()
+
+        # Now remove poll_version from the collection
+        page_1_root = ModerationRequestTreeNode.get_root_nodes().get(
+            moderation_request__version=self.page_1_version)
+        poll_grandchild_node = page_1_root.get_children().get().get_children().get()
+        delete_url = "{}?ids={}&collection_id={}".format(
+            reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
+            ",".join([str(poll_grandchild_node.pk)]),
+            self.collection.pk,
+        )
+        response = self.client.post(delete_url, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        # Load the changelist and check that the page loads without an error
+        changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        response = self.client.get(changelist_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check the data
+        # Only the roots (page_1_version and page_2_version) should remain
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            3
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            3
+        )
+        self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 2)
+        root_1 = ModerationRequestTreeNode.get_root_nodes().filter(
+            moderation_request__version=self.page_1_version).get()
+        root_2 = ModerationRequestTreeNode.get_root_nodes().filter(
+            moderation_request__version=self.page_2_version).get()
+        self.assertEqual(root_1.get_children().count(), 1)
+        self.assertEqual(root_2.get_children().count(), 0)
+        self.assertEqual(root_1.get_children().get().moderation_request.version, self.poll_version)
+
+    def test_moderation_workflow_node_deletion_5(self):
+        """
+        Add pages to a collection to create a tree structure like so:
+
+            page_1_version
+              poll_version
+                  poll_child_version
+            page_2_version
+              poll_child_version
+
+        Then delete poll_child_version from the page 2 tree, which should make the tree like so:
+
+            page_1_version
+              poll_version
+            page_2_version
+
+        (i.e. poll_child_version should be removed from both pages)
+        """
+        # Do an http call to add all the versions to collection
+        # and assert the created tree is what is in the docstring
+        self._add_pages_to_collection()
+
+        # Now remove poll_version from the collection
+        page_2_root = ModerationRequestTreeNode.get_root_nodes().get(
+            moderation_request__version=self.page_2_version)
+        poll_child_node = page_2_root.get_children().get()
+        delete_url = "{}?ids={}&collection_id={}".format(
+            reverse('admin:djangocms_moderation_moderationrequesttreenode_delete'),
+            ",".join([str(poll_child_node.pk)]),
+            self.collection.pk,
+        )
+        response = self.client.post(delete_url, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        # Load the changelist and check that the page loads without an error
+        changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
+        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        response = self.client.get(changelist_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Check the data
+        # Only the roots (page_1_version and page_2_version) should remain
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            3
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            3
+        )
+        self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 2)
+        root_1 = ModerationRequestTreeNode.get_root_nodes().filter(
+            moderation_request__version=self.page_1_version).get()
+        root_2 = ModerationRequestTreeNode.get_root_nodes().filter(
+            moderation_request__version=self.page_2_version).get()
+        self.assertEqual(root_1.get_children().count(), 1)
+        self.assertEqual(root_2.get_children().count(), 0)
+        self.assertEqual(root_1.get_children().get().moderation_request.version, self.poll_version)

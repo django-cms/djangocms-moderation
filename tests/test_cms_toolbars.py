@@ -1,157 +1,386 @@
-from mock import patch
+import mock
 
+from django.contrib.auth.models import Permission, User
 from django.test.client import RequestFactory
-from django.utils.encoding import force_text
+from django.urls import reverse
 
-from cms.api import create_page, publish_page
-from cms.constants import PUBLISHER_STATE_DIRTY
 from cms.middleware.toolbar import ToolbarMiddleware
-from cms.toolbar.items import ButtonList, Dropdown, ModalItem
-from cms.utils.conf import get_cms_setting
+from cms.test_utils.testcases import CMSTestCase
+from cms.toolbar.toolbar import CMSToolbar
 
-from djangocms_moderation.models import PageModeration
-from djangocms_moderation.utils import get_admin_url
+from djangocms_versioning.test_utils.factories import PageVersionFactory
 
-from .utils import BaseViewTestCase
+from djangocms_moderation import constants
+from djangocms_moderation.cms_toolbars import ModerationToolbar
+from djangocms_moderation.models import (
+    ModerationCollection,
+    ModerationRequest,
+    Role,
+    Workflow,
+)
+
+from .utils.factories import ModerationCollectionFactory, UserFactory
 
 
-class BaseToolbarTest(BaseViewTestCase):
-
-    def setup_toolbar(self, page, user, is_edit_mode=True):
-        page.set_publisher_state('en', state=PUBLISHER_STATE_DIRTY)  # make page dirty
-
-        if is_edit_mode:
-            edit_mode = get_cms_setting('CMS_TOOLBAR_URL__EDIT_ON')
-        else:
-            edit_mode = get_cms_setting('CMS_TOOLBAR_URL__EDIT_OFF')
-
-        request = RequestFactory().get('{}?{}'.format(page.get_absolute_url('en'), edit_mode))
-        request.current_page = page
+class CMSToolbarsTestCase(CMSTestCase):
+    def _get_page_request(self, page, user):
+        request = RequestFactory().get("/")
+        request.session = {}
         request.user = user
-        request.session = self.client.session
-        ToolbarMiddleware().process_request(request)
-        self.toolbar = request.toolbar
-        self.toolbar.populate()
-        self.toolbar.post_template_populate()
-        self.toolbar_left_items = self.toolbar.get_left_items()
-        self.toolbar_right_items = self.toolbar.get_right_items()
+        request.current_page = page
+        mid = ToolbarMiddleware(request)
+        mid.process_request(request)
+        if hasattr(request, "toolbar"):
+            request.toolbar.populate()
+        return request
 
-
-class ExtendedPageToolbarTest(BaseToolbarTest):
-
-    def test_show_publish_button_if_moderation_disabled_for_page(self):
-        self.wf1.is_default = False
-        self.wf1.save()  # making all workflows not default, therefore by design moderation is disabled
-        new_page = create_page(title='New Page', template='page.html', language='en', published=True,)
-        self.setup_toolbar(new_page, self.user)
-        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
-        self.assertTrue([button for button in buttons if force_text(button.name) == 'Publish page changes'])
-
-    def test_show_resubmit_button_if_moderation_request_is_rejected(self):
-        self.setup_toolbar(self.pg5, self.user)
-        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
-        self.assertEqual(len(buttons), 4)
-        self.assertEqual(force_text(buttons[0].name), 'View differences')
-        self.assertEqual(force_text(buttons[1].name), 'Resubmit changes for moderation')
-        self.assertEqual(force_text(buttons[2].name), 'Cancel request')
-        self.assertEqual(force_text(buttons[3].name), 'View comments')
-
-    def test_show_moderation_dropdown_if_moderation_request_non_published_page(self):
-        self.setup_toolbar(self.pg1, self.user)
-        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
-        self.assertEqual(len(buttons), 4)
-        # View difference button is not present
-        self.assertEqual(force_text(buttons[0].name), 'Approve changes')
-        self.assertEqual(force_text(buttons[1].name), 'Send for rework')
-        self.assertEqual(force_text(buttons[2].name), 'Cancel request')
-        self.assertEqual(force_text(buttons[3].name), 'View comments')
-
-    def test_show_moderation_dropdown_if_moderation_request_previously_published_page(self):
-        self.setup_toolbar(self.pg5, self.user)
-        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
-        self.assertEqual(len(buttons), 4)
-        # View difference button is present
-        self.assertEqual(force_text(buttons[0].name), 'View differences')
-        self.assertEqual(force_text(buttons[1].name), 'Resubmit changes for moderation')
-        self.assertEqual(force_text(buttons[2].name), 'Cancel request')
-        self.assertEqual(force_text(buttons[3].name), 'View comments')
-
-    def test_show_moderation_dropdown_with_no_actions_for_non_role_user(self):
-        self.setup_toolbar(self.pg1, self.user3)
-        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
-        self.assertEqual(len(buttons), 2)
-        # `self.pg1` has never been published so we don't show View diff button
-        self.assertEqual(force_text(buttons[0].name), 'Cancel request')
-        self.assertEqual(force_text(buttons[1].name), 'View comments')
-
-    def test_show_submit_for_moderation_button_if_page_is_dirty(self):
-        new_page = create_page(title='New Page', template='page.html', language='en', published=True,)
-        self.setup_toolbar(new_page, self.user)
-        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
-        self.assertTrue([button for button in buttons if force_text(button.name) == 'Submit for moderation'])
-
-    def test_submit_for_moderation_button_with_default_settings(self):
-        new_page = create_page(title='New Page', template='page.html', language='en', published=True,)
-        self.setup_toolbar(new_page, self.user)
-        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
-        submit_for_moderation_button = [
-            button for button in buttons if force_text(button.name) == 'Submit for moderation'
-        ][0]
-        url = get_admin_url(
-            name='cms_moderation_new_request',
-            language='en',
-            args=(new_page.pk, 'en'),
+    def _get_toolbar(self, content_obj, user=None, **kwargs):
+        """Helper method to set up the toolbar
+        """
+        if not user:
+            user = UserFactory(is_staff=True)
+        request = self._get_page_request(
+            page=content_obj.page if content_obj else None, user=user
         )
-        self.assertEqual(submit_for_moderation_button.url, url)
-
-    @patch('djangocms_moderation.conf.ENABLE_WORKFLOW_OVERRIDE', True)
-    def test_submit_for_moderation_button_with_override_settings(self):
-        new_page = create_page(title='New Page', template='page.html', language='en', published=True,)
-        self.setup_toolbar(new_page, self.user)
-        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, ButtonList)], [])
-        submit_for_moderation_button = [
-            button for button in buttons if force_text(button.name) == 'Submit for moderation'
-        ][0]
-        url = get_admin_url(
-            name='cms_moderation_select_new_moderation',
-            language='en',
-            args=(new_page.pk, 'en'),
+        cms_toolbar = CMSToolbar(request)
+        toolbar = ModerationToolbar(
+            cms_toolbar.request, toolbar=cms_toolbar, is_current_app=True, app_path="/"
         )
-        self.assertEqual(submit_for_moderation_button.url, url)
+        toolbar.toolbar.set_object(content_obj)
+        if kwargs.get("edit_mode", False):
+            toolbar.toolbar.edit_mode_active = True
+            toolbar.toolbar.content_mode_active = False
+            toolbar.toolbar.structure_mode_active = False
+        elif kwargs.get("structure_mode", False):
+            toolbar.toolbar.edit_mode_active = False
+            toolbar.toolbar.content_mode_active = False
+            toolbar.toolbar.structure_mode_active = True
+        elif kwargs.get("preview_mode", False):
+            toolbar.toolbar.edit_mode_active = False
+            toolbar.toolbar.content_mode_active = True
+            toolbar.toolbar.structure_mode_active = False
+        return toolbar
 
-    def test_publish_button_after_moderation_request_approved(self):
-        self.setup_toolbar(self.pg3, self.user)  # pg3 => moderation request is approved
-        publish_page(page=self.pg3, user=self.user, language="en")
-        buttons = sum([item.buttons for item in self.toolbar_right_items if isinstance(item, Dropdown)], [])
-        self.assertEqual(len(buttons), 2)
-        self.assertEqual(force_text(buttons[0].name), 'Publish page changes')
-        self.assertEqual(force_text(buttons[1].name), 'Cancel request')
+    def _find_buttons(self, callable_or_name, toolbar):
+        found = []
 
+        if callable(callable_or_name):
+            func = callable_or_name
+        else:
 
-class PageModerationToolbarTest(BaseToolbarTest):
+            def func(button):
+                return button.name == callable_or_name
 
-    def test_moderation_menu_add_rendered(self):
-        new_page = create_page(title='New Page', template='page.html', language='en',)
-        self.setup_toolbar(new_page, self.user)
-        page_menu = self.toolbar.menus['page']
-        opts = PageModeration._meta
-        url = get_admin_url(
-            name='{}_{}_{}'.format(opts.app_label, opts.model_name, 'add'),
-            language='en',
-            args=[],
+        for button_list in toolbar.get_right_items():
+            found = found + [button for button in button_list.buttons if func(button)]
+        return found
+
+    def _button_exists(self, callable_or_name, toolbar):
+        found = self._find_buttons(callable_or_name, toolbar)
+        return bool(len(found))
+
+    def _find_menu_item(self, name, toolbar):
+        for left_item in toolbar.get_left_items():
+            for menu_item in left_item.items:
+                try:
+                    if menu_item.name == name:
+                        return menu_item
+                # Break item has no attribute `name`
+                except AttributeError:
+                    pass
+
+    def test_submit_for_moderation_not_version_locked(self):
+        user = self.get_superuser()
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, user=user, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertTrue(self._button_exists("Submit for moderation", toolbar.toolbar))
+
+    def test_submit_for_moderation_no_permission(self):
+        user = self.get_standard_user()
+        ModerationRequest.objects.all().delete()
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, user=user, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertFalse(self._button_exists("Submit for moderation", toolbar.toolbar))
+
+    def test_submit_for_moderation_version_locked(self):
+        author = self.get_superuser()
+        another_user = UserFactory(is_staff=True, is_superuser=True)
+        version = PageVersionFactory(created_by=author)
+        # Same user to version author is logged in
+        toolbar = self._get_toolbar(version.content, user=author, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        # Submit for moderation button has been added
+        self.assertTrue(self._button_exists("Submit for moderation", toolbar.toolbar))
+
+        # Different user to version author is logged in
+        toolbar = self._get_toolbar(version.content, user=another_user, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        # No Submit for moderation button has been added
+        self.assertFalse(self._button_exists("Submit for moderation", toolbar.toolbar))
+
+    def test_page_in_collection_collection(self):
+        version = PageVersionFactory()
+        collection = ModerationCollectionFactory()
+        collection.add_version(version=version)
+
+        toolbar = self._get_toolbar(version.content, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertTrue(
+            self._button_exists(
+                'In collection "{} ({})"'.format(collection.name, collection.id),
+                toolbar.toolbar,
+            )
         )
-        url += '?extended_object=%s' % new_page.pk
-        self.assertEqual(len(page_menu.find_items(ModalItem, url=url)), 1)
 
-    def test_moderation_menu_change_rendered(self):
-        new_page = create_page(title='New Page', template='page.html', language='en',)
-        extension = PageModeration.objects.create(extended_object=new_page, enabled=True, workflow=self.wf1,)
-        self.setup_toolbar(new_page, self.user)
-        page_menu = self.toolbar.menus['page']
-        opts = PageModeration._meta
-        url = get_admin_url(
-            name='{}_{}_{}'.format(opts.app_label, opts.model_name, 'change'),
-            language='en',
-            args=[extension.pk],
+    def test_page_in_collection_moderating(self):
+        version = PageVersionFactory()
+        collection = ModerationCollectionFactory()
+        collection.add_version(version=version)
+        collection.status = constants.IN_REVIEW
+        collection.save()
+
+        toolbar = self._get_toolbar(version.content, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertTrue(
+            self._button_exists(
+                'In moderation "{} ({})"'.format(collection.name, collection.id),
+                toolbar.toolbar,
+            )
         )
-        self.assertEqual(len(page_menu.find_items(ModalItem, url=url)), 1)
+
+    def test_add_edit_button_with_version_lock(self):
+        """
+        Version lock is in the test requirements, lets make sure it still works
+        with moderation
+        """
+        user1 = self.get_superuser()
+        user2 = UserFactory(is_staff=True, is_superuser=True)
+
+        # Version created with the same user as toolbar user
+        version = PageVersionFactory(created_by=user1)
+        toolbar = self._get_toolbar(version.content, user=user1)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
+        # Edit button should be clickable
+        button = self._find_buttons("Edit", toolbar.toolbar)
+        self.assertFalse(button[0].disabled)
+
+        # Now version user is different to toolbar user
+        version = PageVersionFactory(created_by=user2)
+        toolbar = self._get_toolbar(version.content, user=user1)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertTrue(
+            self._button_exists(
+                lambda button: button.name.endswith("Edit"), toolbar.toolbar
+            )
+        )
+        # Edit button should not be clickable
+        button = self._find_buttons(
+            lambda button: button.name.endswith("Edit"), toolbar.toolbar
+        )
+        self.assertTrue(button[0].disabled)
+
+    def test_add_edit_button(self):
+        user = self.get_superuser()
+        version = PageVersionFactory(created_by=user)
+        collection = ModerationCollectionFactory()
+
+        toolbar = self._get_toolbar(version.content, user=user)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        # We can see the Edit button, as the version hasn't been submitted
+        # to the moderation (collection) yet
+        self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
+        button = self._find_buttons("Edit", toolbar.toolbar)
+        self.assertFalse(button[0].disabled)
+
+        # Lets add the version to moderation, the Edit should no longer be
+        # clickable
+        collection.add_version(version=version)
+
+        # refresh the toolbar
+        toolbar = self._get_toolbar(version.content, user=user)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
+        button = self._find_buttons("Edit", toolbar.toolbar)
+        self.assertTrue(button[0].disabled)
+
+    def test_add_edit_button_without_toolbar_object(self):
+        toolbar = self._get_toolbar(None)
+        toolbar.populate()
+        toolbar.post_template_populate()
+        # We shouldn't see Edit button when there is no toolbar object set.
+        # Some of the custom views in some apps dont have toolbar.obj
+        self.assertFalse(self._button_exists("Edit", toolbar.toolbar))
+
+    @mock.patch(
+        "djangocms_moderation.cms_toolbars.helpers.is_registered_for_moderation"
+    )
+    def test_publish_buttons_when_unregistered(self, mock_is_registered_for_moderation):
+        mock_is_registered_for_moderation.return_value = False
+        version = PageVersionFactory()
+        toolbar = self._get_toolbar(version.content, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertTrue(self._button_exists("Publish", toolbar.toolbar))
+
+    @mock.patch(
+        "djangocms_moderation.cms_toolbars.helpers.is_registered_for_moderation"
+    )
+    def test_add_edit_buttons_when_unregistered(
+        self, mock_is_registered_for_moderation
+    ):
+        user = self.get_superuser()
+        mock_is_registered_for_moderation.return_value = False
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, preview_mode=True, user=user)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
+
+    def test_add_manage_collection_item_to_moderation_menu(self):
+        user = self.get_superuser()
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, preview_mode=True, user=user)
+        toolbar.populate()
+        toolbar.post_template_populate()
+        cms_toolbar = toolbar.toolbar
+        manage_collection_item = self._find_menu_item(
+            "Moderation collections...", cms_toolbar
+        )
+        self.assertIsNotNone(manage_collection_item)
+
+        collection_list_url = reverse(
+            "admin:djangocms_moderation_moderationcollection_changelist"
+        )
+        collection_list_url += "?author__id__exact=%s" % user.pk
+        self.assertTrue(manage_collection_item.url, collection_list_url)
+
+    def test_add_manage_collection_item_to_moderation_menu_no_permission(self):
+        user = self.get_standard_user()
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, preview_mode=True, user=user)
+        toolbar.populate()
+        toolbar.post_template_populate()
+        cms_toolbar = toolbar.toolbar
+        manage_collection_item = self._find_menu_item(
+            "Moderation collections...", cms_toolbar
+        )
+        self.assertIsNone(manage_collection_item)
+
+    def test_moderation_collection_changelist_reviewer_filter(self):
+
+        reviewer = User.objects.create_user(
+            username="test_reviewer",
+            email="test_reviewer@test.com",
+            password="test_reviewer",
+            is_staff=True,
+        )
+
+        # add reviewer permissions
+        perms = [
+            "change_moderationcollection",
+            "change_moderationrequest",
+            "change_moderationrequestaction",
+            "add_collectioncomment",
+            "change_collectioncomment",
+            "use_structure",
+            "view_page",
+        ]
+
+        for perm in perms:
+            permObj = Permission.objects.get(codename=perm)
+            reviewer.user_permissions.add(permObj)
+
+        moderator = User.objects.create_user(
+            username="test_non_reviewer",
+            email="test_non_reviewer@test.com",
+            password="test_non_reviewer",
+            is_staff=True,
+            is_superuser=True,
+        )
+
+        role = Role.objects.create(name="Role Review", user=reviewer)
+        pg = PageVersionFactory()
+        wf = Workflow.objects.create(name="Workflow Review Test")
+        collection = ModerationCollection.objects.create(
+            author=moderator,
+            name="Collection Admin Actions Review",
+            workflow=wf,
+            status=constants.IN_REVIEW,
+        )
+
+        mr = ModerationRequest.objects.create(
+            version=pg,
+            language="en",
+            collection=collection,
+            is_active=True,
+            author=collection.author,
+        )
+
+        wfst = wf.steps.create(role=role, is_required=True, order=1)
+
+        # this moderation request is approved
+        mr.actions.create(
+            to_user=reviewer, by_user=moderator, action=constants.ACTION_STARTED
+        )
+        mr.actions.create(
+            by_user=moderator,
+            to_user=reviewer,
+            action=constants.ACTION_APPROVED,
+            step_approved=wfst,
+        )
+
+        # test that the moderation url in the cms_toolbar has the correct filtered URL
+        url = reverse("admin:djangocms_moderation_moderationcollection_changelist")
+        with self.login_user_context(moderator):
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            toolbar = self._get_toolbar(pg.content, preview_mode=True, user=moderator)
+            toolbar.populate()
+            toolbar.post_template_populate()
+            manage_collection_item = self._find_menu_item(
+                "Moderation collections...", toolbar.toolbar
+            )
+            self.assertEqual(
+                manage_collection_item.url,
+                "/en/admin/djangocms_moderation/moderationcollection/?moderator="
+                + str(moderator.pk),
+            )
+        with self.login_user_context(reviewer):
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            toolbar = self._get_toolbar(pg.content, preview_mode=True, user=reviewer)
+            toolbar.populate()
+            toolbar.post_template_populate()
+            manage_collection_item = self._find_menu_item(
+                "Moderation collections...", toolbar.toolbar
+            )
+            self.assertEqual(
+                manage_collection_item.url,
+                "/en/admin/djangocms_moderation/moderationcollection/?reviewer="
+                + str(reviewer.pk),
+            )
