@@ -4,6 +4,9 @@ Changelog
 
 Unreleased
 ==========
+
+1.0.29 (2022-01-18)
+===================
 * fix: Refactor flawed add to collection XSS redirect sanitisation added in 1.0.26
 * Pin the following packages to a python 3.6 compatible version matching this release stream: django-admin-sortable2, djangocms-text-ckeditor, djangocms-version-locking and djangocms-versioning.
 
