@@ -14,4 +14,4 @@ python-dateutil>=2.4
 https://github.com/django-cms/django-cms/tarball/release/4.0.x#egg=django-cms
 https://github.com/django-cms/djangocms-text-ckeditor/tarball/support/4.0.x#egg=djangocms-text-ckeditor
 https://github.com/django-cms/djangocms-versioning/tarball/release/0.0.x#egg=djangocms-versioning
-https://github.com/FidelityInternational/djangocms-version-locking/tarball/master#egg=djangocms-version-locking
+https://github.com/FidelityInternational/djangocms-version-locking/tarball/release/0.0.x#egg=djangocms-version-locking
