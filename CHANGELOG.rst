@@ -4,7 +4,7 @@ Changelog
 
 Unreleased
 ==========
-
+* Pin versioning to a python 3.6 compatible version matching this release stream
 
 1.0.28 (2021-10-18)
 ===================
