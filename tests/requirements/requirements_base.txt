@@ -1,5 +1,6 @@
 cachetools
 coverage
+django-admin-sortable2<1.0
 django_polymorphic==2.0.3
 django-simple-captcha
 djangocms_helper
