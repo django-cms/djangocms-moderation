@@ -61,3 +61,24 @@ class PollPlugin(CMSPlugin):
 
     def __str__(self):
         return str(self.poll)
+
+
+class NestedPoll(models.Model):
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.poll
+
+
+class NestedPollPlugin(CMSPlugin):
+    cmsplugin_ptr = models.OneToOneField(
+        CMSPlugin,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s",
+        parent_link=True,
+    )
+
+    nested_poll = models.ForeignKey(NestedPoll, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.nested_poll)

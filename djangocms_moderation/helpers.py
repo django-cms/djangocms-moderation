@@ -165,6 +165,10 @@ def get_moderated_children_from_placeholder(placeholder, parent_version_filters)
         for field in plugin._meta.get_fields():
             if not field.is_relation or field.auto_created:
                 continue
+            """
+            Plugin: Some plugin
+            field.name: link
+            """
             candidate = getattr(plugin, field.name)
             try:
                 versionable = versionables.for_grouper(candidate)
