@@ -158,7 +158,10 @@ def _get_moderatable_version(versionable, grouper, parent_version_filters):
 
 
 def _get_nested_moderated_children_from_placeholder(instance, placeholder, parent_version_filters):
-
+    """
+    Find all nested versionable objects, traverses through all attached models until it finds
+    any models that are versioned.
+    """
     for field in instance._meta.get_fields():
         if not field.is_relation or field.auto_created:
             continue
@@ -184,6 +187,8 @@ def _get_nested_moderated_children_from_placeholder(instance, placeholder, paren
 
 
 def get_moderated_children_from_placeholder(placeholder, parent_version_filters):
+    """
+    Get all moderated children version objects from a placeholder
+    """
     for plugin in downcast_plugins(placeholder.get_plugins()):
         yield from _get_nested_moderated_children_from_placeholder(plugin, placeholder, parent_version_filters)
-
