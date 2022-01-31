@@ -249,7 +249,7 @@ class ModeratedChildrenTestCase(CMSTestCase):
         poll_version = PollVersionFactory(
             created_by=self.user, content__language=language
         )
-        nested_plugin = NestedPollPluginFactory(placeholder=placeholder, nested_poll__poll=poll_version.content.poll)
+        NestedPollPluginFactory(placeholder=placeholder, nested_poll__poll=poll_version.content.poll)
 
         moderated_children = list(
             get_moderated_children_from_placeholder(

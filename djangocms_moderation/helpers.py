@@ -170,12 +170,42 @@ def get_moderated_children_from_placeholder(placeholder, parent_version_filters)
             field.name: link
             """
             candidate = getattr(plugin, field.name)
+
+            # Break early if the field is the placeholder
+            if candidate == placeholder or not candidate:
+                continue
+
             try:
                 versionable = versionables.for_grouper(candidate)
             except KeyError:
+
+                for child_field in candidate._meta.get_fields():
+                    if not child_field.is_relation or child_field.auto_created and child_field != field and child_field != placeholder:
+                        continue
+
+                    nested_candidate = getattr(candidate, child_field.name)
+
+                    # Break early if the field is the placeholder
+                    if nested_candidate == placeholder or not nested_candidate:
+                        continue
+
+                    try:
+                        versionable = versionables.for_grouper(nested_candidate)
+                    except KeyError:
+                        continue
+
+                    version = _get_moderatable_version(
+                        versionable, nested_candidate, parent_version_filters
+                    )
+                    if version:
+                        yield version
+
                 continue
+
             version = _get_moderatable_version(
                 versionable, candidate, parent_version_filters
             )
             if version:
                 yield version
+
+
