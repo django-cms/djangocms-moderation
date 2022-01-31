@@ -157,55 +157,33 @@ def _get_moderatable_version(versionable, grouper, parent_version_filters):
         return
 
 
+def _get_nested_moderated_children_from_placeholder(instance, placeholder, parent_version_filters):
+
+    for field in instance._meta.get_fields():
+        if not field.is_relation or field.auto_created:
+            continue
+
+        candidate = getattr(instance, field.name)
+
+        # Break early if the field is the placeholder
+        if candidate == placeholder or not candidate:
+            continue
+
+        try:
+            versionable = versionables.for_grouper(candidate)
+        except KeyError:
+            yield from _get_nested_moderated_children_from_placeholder(candidate, placeholder, parent_version_filters)
+
+            continue
+
+        version = _get_moderatable_version(
+            versionable, candidate, parent_version_filters
+        )
+        if version:
+            yield version
+
+
 def get_moderated_children_from_placeholder(placeholder, parent_version_filters):
-    """
-    Get all moderated children version objects from a placeholder
-    """
     for plugin in downcast_plugins(placeholder.get_plugins()):
-        for field in plugin._meta.get_fields():
-            if not field.is_relation or field.auto_created:
-                continue
-            """
-            Plugin: Some plugin
-            field.name: link
-            """
-            candidate = getattr(plugin, field.name)
-
-            # Break early if the field is the placeholder
-            if candidate == placeholder or not candidate:
-                continue
-
-            try:
-                versionable = versionables.for_grouper(candidate)
-            except KeyError:
-
-                for child_field in candidate._meta.get_fields():
-                    if not child_field.is_relation or child_field.auto_created and child_field != field and child_field != placeholder:
-                        continue
-
-                    nested_candidate = getattr(candidate, child_field.name)
-
-                    # Break early if the field is the placeholder
-                    if nested_candidate == placeholder or not nested_candidate:
-                        continue
-
-                    try:
-                        versionable = versionables.for_grouper(nested_candidate)
-                    except KeyError:
-                        continue
-
-                    version = _get_moderatable_version(
-                        versionable, nested_candidate, parent_version_filters
-                    )
-                    if version:
-                        yield version
-
-                continue
-
-            version = _get_moderatable_version(
-                versionable, candidate, parent_version_filters
-            )
-            if version:
-                yield version
-
+        yield from _get_nested_moderated_children_from_placeholder(plugin, placeholder, parent_version_filters)
 
