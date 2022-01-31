@@ -168,7 +168,7 @@ def _get_nested_moderated_children_from_placeholder(instance, placeholder, paren
 
         candidate = getattr(instance, field.name)
 
-        # Break early if the field is the placeholder
+        # Break early if the field is a placeholder or None
         if candidate == placeholder or not candidate:
             continue
 
