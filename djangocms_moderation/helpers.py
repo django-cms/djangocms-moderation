@@ -177,7 +177,9 @@ def _get_nested_moderated_children_from_placeholder_plugin(instance, placeholder
         try:
             versionable = versionables.for_grouper(candidate)
         except KeyError:
-            yield from _get_nested_moderated_children_from_placeholder_plugin(candidate, placeholder, parent_version_filters)
+            yield from _get_nested_moderated_children_from_placeholder_plugin(
+                candidate, placeholder, parent_version_filters
+            )
             continue
 
         version = _get_moderatable_version(
