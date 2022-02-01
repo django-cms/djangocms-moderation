@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from cms.utils.plugins import downcast_plugins
+from cms.models import CMSPlugin
 
 from djangocms_versioning import versionables
 from djangocms_versioning.constants import DRAFT
@@ -168,15 +169,15 @@ def _get_nested_moderated_children_from_placeholder(instance, placeholder, paren
 
         candidate = getattr(instance, field.name)
 
-        # Break early if the field is a placeholder or None
-        if candidate == placeholder or not candidate:
+        # Break early if the field is None, a placeholder, or is a CMSPlugin instance
+        # We do this to save unnecessary processing
+        if not candidate or candidate == placeholder or isinstance(candidate, CMSPlugin):
             continue
 
         try:
             versionable = versionables.for_grouper(candidate)
         except KeyError:
             yield from _get_nested_moderated_children_from_placeholder(candidate, placeholder, parent_version_filters)
-
             continue
 
         version = _get_moderatable_version(
