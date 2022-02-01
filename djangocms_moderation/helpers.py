@@ -6,8 +6,8 @@ from django.template.defaultfilters import truncatechars
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from cms.utils.plugins import downcast_plugins
 from cms.models import CMSPlugin
+from cms.utils.plugins import downcast_plugins
 
 from djangocms_versioning import versionables
 from djangocms_versioning.constants import DRAFT

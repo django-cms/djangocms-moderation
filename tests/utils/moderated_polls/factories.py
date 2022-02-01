@@ -2,12 +2,18 @@ import factory
 
 from factory.django import DjangoModelFactory
 
-from .models import NestedPoll, NestedPollPlugin
+from .models import (
+    DeeplyNestedPoll,
+    DeeplyNestedPollPlugin,
+    NestedPoll,
+    NestedPollPlugin,
+)
+
 from ..factories import (
-    get_plugin_position,
-    get_plugin_language,
     PlaceholderFactory,
     PollFactory,
+    get_plugin_language,
+    get_plugin_position,
 )
 
 
@@ -28,3 +34,22 @@ class NestedPollPluginFactory(DjangoModelFactory):
 
     class Meta:
         model = NestedPollPlugin
+
+
+class DeeplyNestedPollFactory(DjangoModelFactory):
+    nested_poll = factory.SubFactory(NestedPollFactory)
+
+    class Meta:
+        model = DeeplyNestedPoll
+
+
+class DeeplyNestedPollPluginFactory(DjangoModelFactory):
+    language = factory.LazyAttribute(get_plugin_language)
+    placeholder = factory.SubFactory(PlaceholderFactory)
+    parent = None
+    position = factory.LazyAttribute(get_plugin_position)
+    plugin_type = "DeeplyNestedPollPlugin"
+    deeply_nested_poll = factory.SubFactory(DeeplyNestedPollFactory)
+
+    class Meta:
+        model = DeeplyNestedPollPlugin

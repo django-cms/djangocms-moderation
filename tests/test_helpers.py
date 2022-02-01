@@ -33,7 +33,7 @@ from .utils.factories import (
     PollPluginFactory,
     PollVersionFactory,
 )
-from .utils.moderated_polls.factories import NestedPollPluginFactory
+from .utils.moderated_polls.factories import DeeplyNestedPollPluginFactory, NestedPollPluginFactory
 
 
 @skip("Confirmation page feature doesn't support 1.0.x yet")
@@ -236,9 +236,10 @@ class ModeratedChildrenTestCase(CMSTestCase):
         self.assertEqual(page_1_moderated_children, [pg_1_poll_version])
         self.assertEqual(page_2_moderated_children, [pg_2_poll_version])
 
-    def test_get_moderated_children_from_placeholder_has_only_registered_model(self):
+    def test_get_moderated_children_from_placeholder_gets_nested_models(self):
         """
-        The moderated model is the only model registered with moderation
+        Versionable models that are nested inside a custom plugin model
+        can be found when adding to a collection.
         """
         pg_version = PageVersionFactory(created_by=self.user)
         language = pg_version.content.language
@@ -249,7 +250,36 @@ class ModeratedChildrenTestCase(CMSTestCase):
         poll_version = PollVersionFactory(
             created_by=self.user, content__language=language
         )
+        # Nested versioned poll
         NestedPollPluginFactory(placeholder=placeholder, nested_poll__poll=poll_version.content.poll)
+
+        moderated_children = list(
+            get_moderated_children_from_placeholder(
+                placeholder, {"language": pg_version.content.language}
+            )
+        )
+
+        self.assertEqual(moderated_children, [poll_version])
+
+    def test_get_moderated_children_from_placeholder_gets_deeply_nested_models(self):
+        """
+        Versionable models that are deeply nested inside a custom plugin model
+        can be found when adding to a collection.
+        """
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        # Moderated plugin
+        poll_version = PollVersionFactory(
+            created_by=self.user, content__language=language
+        )
+        # Deeply nested versioned poll
+        DeeplyNestedPollPluginFactory(
+            placeholder=placeholder,
+            deeply_nested_poll__nested_poll__poll=poll_version.content.poll
+        )
 
         moderated_children = list(
             get_moderated_children_from_placeholder(
