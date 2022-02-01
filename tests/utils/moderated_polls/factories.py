@@ -2,18 +2,17 @@ import factory
 
 from factory.django import DjangoModelFactory
 
-from .models import (
-    DeeplyNestedPoll,
-    DeeplyNestedPollPlugin,
-    NestedPoll,
-    NestedPollPlugin,
-)
-
 from ..factories import (
     PlaceholderFactory,
     PollFactory,
     get_plugin_language,
     get_plugin_position,
+)
+from .models import (
+    DeeplyNestedPoll,
+    DeeplyNestedPollPlugin,
+    NestedPoll,
+    NestedPollPlugin,
 )
 
 

@@ -33,7 +33,10 @@ from .utils.factories import (
     PollPluginFactory,
     PollVersionFactory,
 )
-from .utils.moderated_polls.factories import DeeplyNestedPollPluginFactory, NestedPollPluginFactory
+from .utils.moderated_polls.factories import (
+    DeeplyNestedPollPluginFactory,
+    NestedPollPluginFactory,
+)
 
 
 @skip("Confirmation page feature doesn't support 1.0.x yet")
