@@ -4,6 +4,10 @@ Changelog
 
 Unreleased
 ==========
+
+
+1.0.30 (2022-02-03)
+===================
 * fix: Add to collection should automatically add deeply nested draft versioned objects #205
 
 1.0.29 (2022-01-18)
