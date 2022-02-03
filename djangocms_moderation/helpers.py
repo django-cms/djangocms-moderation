@@ -6,6 +6,7 @@ from django.template.defaultfilters import truncatechars
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 
+from cms.models import CMSPlugin
 from cms.utils.plugins import downcast_plugins
 
 from djangocms_versioning import versionables
@@ -157,21 +158,40 @@ def _get_moderatable_version(versionable, grouper, parent_version_filters):
         return
 
 
+def _get_nested_moderated_children_from_placeholder_plugin(instance, placeholder, parent_version_filters):
+    """
+    Find all nested versionable objects, traverses through all attached models until it finds
+    any models that are versioned.
+    """
+    for field in instance._meta.get_fields():
+        if not field.is_relation or field.auto_created:
+            continue
+
+        candidate = getattr(instance, field.name)
+
+        # Break early if the field is None, a placeholder, or is a CMSPlugin instance
+        # We do this to save unnecessary processing
+        if not candidate or candidate == placeholder or isinstance(candidate, CMSPlugin):
+            continue
+
+        try:
+            versionable = versionables.for_grouper(candidate)
+        except KeyError:
+            yield from _get_nested_moderated_children_from_placeholder_plugin(
+                candidate, placeholder, parent_version_filters
+            )
+            continue
+
+        version = _get_moderatable_version(
+            versionable, candidate, parent_version_filters
+        )
+        if version:
+            yield version
+
+
 def get_moderated_children_from_placeholder(placeholder, parent_version_filters):
     """
     Get all moderated children version objects from a placeholder
     """
     for plugin in downcast_plugins(placeholder.get_plugins()):
-        for field in plugin._meta.get_fields():
-            if not field.is_relation or field.auto_created:
-                continue
-            candidate = getattr(plugin, field.name)
-            try:
-                versionable = versionables.for_grouper(candidate)
-            except KeyError:
-                continue
-            version = _get_moderatable_version(
-                versionable, candidate, parent_version_filters
-            )
-            if version:
-                yield version
+        yield from _get_nested_moderated_children_from_placeholder_plugin(plugin, placeholder, parent_version_filters)
