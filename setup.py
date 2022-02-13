@@ -28,7 +28,7 @@ setup(
     author="Divio AG",
     author_email="info@divio.ch",
     maintainer='Django CMS Association and contributors',
-    maintainer_email='info@django-cms.org'
+    maintainer_email='info@django-cms.org',
     url="http://github.com/django-cms/djangocms-moderation",
     license="BSD",
     test_suite="tests.settings.run",
