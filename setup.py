@@ -27,7 +27,9 @@ setup(
     install_requires=INSTALL_REQUIREMENTS,
     author="Divio AG",
     author_email="info@divio.ch",
-    url="http://github.com/divio/djangocms-moderation",
+    maintainer='Django CMS Association and contributors',
+    maintainer_email='info@django-cms.org'
+    url="http://github.com/django-cms/djangocms-moderation",
     license="BSD",
     test_suite="tests.settings.run",
 )
