@@ -10,6 +10,7 @@ from ..factories import (
 from .models import (
     DeeplyNestedPoll,
     DeeplyNestedPollPlugin,
+    ManytoManyPollPlugin,
     NestedPoll,
     NestedPollPlugin,
 )
@@ -20,6 +21,28 @@ class NestedPollFactory(DjangoModelFactory):
 
     class Meta:
         model = NestedPoll
+
+
+class ManytoManyPollPluginFactory(DjangoModelFactory):
+    language = factory.LazyAttribute(get_plugin_language)
+    placeholder = factory.SubFactory(PlaceholderFactory)
+    parent = None
+    position = factory.LazyAttribute(get_plugin_position)
+    plugin_type = "ManytoManyPollPlugin"
+
+    class Meta:
+        model = ManytoManyPollPlugin
+
+    @factory.post_generation
+    def polls(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            # A list of groups were passed in, use them
+            for poll in extracted:
+                self.polls.add(poll)
 
 
 class NestedPollPluginFactory(DjangoModelFactory):
