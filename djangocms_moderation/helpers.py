@@ -163,6 +163,11 @@ def _get_nested_moderated_children_from_placeholder_plugin(instance, placeholder
     Find all nested versionable objects, traverses through all attached models until it finds
     any models that are versioned.
     """
+    # Catch Many to many fields that don't have _meta
+    # FIXME: Handle nested M2M instances
+    if not hasattr(instance, "_meta"):
+        return
+
     for field in instance._meta.get_fields():
         if not field.is_relation or field.auto_created:
             continue
