@@ -4,7 +4,7 @@ Changelog
 
 Unreleased
 ==========
-
+* fix: Avoid errors thrown when nested plugins are M2M fields
 
 1.0.30 (2022-02-03)
 ===================

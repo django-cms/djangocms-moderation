@@ -3,6 +3,7 @@ from cms.plugin_pool import plugin_pool
 
 from .models import (
     DeeplyNestedPollPlugin as DeeplyNestedPoll,
+    ManytoManyPollPlugin as ManytoManyPoll,
     NestedPollPlugin as NestedPoll,
     PollPlugin as Poll,
 )
@@ -30,3 +31,11 @@ class DeeplyNestedPollPlugin(CMSPluginBase):
     name = "DeeplyNestedPoll"
     allow_children = True
     render_template = "polls/deeply_nested_poll.html"
+
+
+@plugin_pool.register_plugin
+class ManytoManyPollPlugin(CMSPluginBase):
+    model = ManytoManyPoll
+    name = "ManytoManyPoll"
+    allow_children = True
+    render_template = "polls/many_polls.html"
