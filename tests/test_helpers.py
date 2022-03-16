@@ -295,7 +295,6 @@ class ModeratedChildrenTestCase(CMSTestCase):
         #       self.assertEqual(moderated_children, [poll_1_version, poll_2_version])
         self.assertEqual(moderated_children, [])
 
-
     def test_get_moderated_children_from_placeholder_gets_deeply_nested_models(self):
         """
         Versionable models that are deeply nested inside a custom plugin model
