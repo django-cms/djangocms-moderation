@@ -103,3 +103,17 @@ class DeeplyNestedPollPlugin(CMSPlugin):
 
     def __str__(self):
         return str(self.deeply_nested_poll)
+
+
+class ManytoManyPollPlugin(CMSPlugin):
+    cmsplugin_ptr = models.OneToOneField(
+        CMSPlugin,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s",
+        parent_link=True,
+    )
+
+    polls = models.ManyToManyField(Poll)
+
+    def __str__(self):
+        return str(self.polls.first())
