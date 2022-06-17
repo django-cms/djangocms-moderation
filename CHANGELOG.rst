@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Add djangocms-alias to test settings and requirements
 * fix: Avoid errors thrown when nested plugins are M2M fields
 * fix: Add to collection should automatically add deeply nested draft versioned objects #205
 * fix: Refactor flawed add to collection XSS redirect sanitisation added in 1.0.26

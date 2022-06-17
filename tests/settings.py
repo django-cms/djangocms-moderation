@@ -5,6 +5,7 @@ HELPER_SETTINGS = {
         "tests.utils.app_2",
         "djangocms_versioning",
         "djangocms_version_locking",
+        "djangocms_alias",
 
         # the following 4 apps are related
         "aldryn_forms",
@@ -24,6 +25,7 @@ HELPER_SETTINGS = {
         "menus": None,
         "djangocms_versioning": None,
         "djangocms_version_locking": None,
+        "djangocms_alias": None,
         "filer": None,
         "djangocms_moderation": None,
         "aldryn_forms": None,
