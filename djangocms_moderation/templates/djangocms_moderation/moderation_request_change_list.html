@@ -1,0 +1,47 @@
+{% extends "admin/djangocms_moderation/treebeard/tree_change_list.html" %}
+{% load i18n cms_static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {#
+        INFO: we need to add styles here instead of "extrastyle" to avoid
+        conflicts with adminstyle. We are adding cms.base.css to gain the
+        icon support, e.g. `<span class="cms-icon cms-icon-eye"></span>`
+    #}
+    <link rel="stylesheet" href="{% static_with_version 'cms/css/cms.base.css' %}">
+{% endblock extrahead %}
+
+{% block content_title %}
+    {% if collection %}
+    <h1>{{ collection.name }}</h1>
+    <p>
+        <strong>{% trans 'Job ID' %}</strong>: {{ collection.job_id }}<br />
+        <strong>{% trans 'Status' %}</strong>: {{ collection.get_status_display }}<br />
+        <strong>{% trans 'Workflow' %}</strong>: {{ collection.workflow.name }}<br />
+        <strong>{% trans 'Owner' %}</strong>: {{ collection.author_name }}<br />
+    </p>
+    {% endif %}
+{% endblock %}
+
+{% block object-tools-items %}
+{{ block.super }}
+{% if cancel_collection_url %}
+    <li>
+        <a href="{{ cancel_collection_url }}">{% trans 'Cancel this collection' %}</a>
+    </li>
+{% endif %}
+{% if submit_for_review_url %}
+    <li>
+        <a href="{{ submit_for_review_url }}">{% trans 'Submit collection for review' %}</a>
+    </li>
+{% endif %}
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationcollection_changelist' %}">{% trans "Moderation collections" %}</a>
+&rsaquo; {% trans "Requests" %}
+</div>
+{% endblock %}

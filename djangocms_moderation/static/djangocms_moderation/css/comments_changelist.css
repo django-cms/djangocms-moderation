@@ -1,0 +1,16 @@
+td.field-message, th.column-message {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+td.field-date_created, th.column-date_created {
+    width: 150px;
+}
+
+td.field-get_author, th.column-get_author, td.field-author, th.column-author {
+    width: 20%;
+}
+
+#changelist-form table {
+    table-layout:fixed;
+}

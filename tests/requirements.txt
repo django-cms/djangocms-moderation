@@ -1,7 +1,0 @@
-djangocms-helper
-tox
-coverage
-flake8
-isort
-aldryn-forms>=3.0.3
-mock

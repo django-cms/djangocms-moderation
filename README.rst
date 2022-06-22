@@ -9,7 +9,7 @@ Installation
 Requirements
 ============
 
-django CMS Moderation requires that you have a django CMS 3.4.3 (or higher) project already running and set up.
+django CMS Moderation requires that you have a django CMS 4.0 (or higher) project already running and set up.
 
 
 To install
@@ -29,3 +29,15 @@ Run::
     python manage.py migrate djangocms_moderation
 
 to perform the application's database migrations.
+
+Documentation
+=============
+
+We maintain documentation under ``docs`` folder using rst format. HTML documentation can be generated using the following commands
+
+Run::
+
+    cd docs/
+    make html
+
+This should generate all html files from rst documents under the `docs/_build` folder, which can be browsed.

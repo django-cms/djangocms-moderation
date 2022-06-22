@@ -1,0 +1,13 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static admin_modify l10n %}
+
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationcollection_changelist' %}">{% trans "Collections" %}</a>
+&rsaquo; <a href="{% url 'admin:djangocms_moderation_moderationrequest_changelist' %}?moderation_request__collection__id={{ original.collection_id | unlocalize }}">{% trans "Requests" %}</a>
+&rsaquo; {% if add %}{% blocktrans with name=opts.verbose_name %}Add {{ name }}{% endblocktrans %}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+</div>
+{% endblock %}

@@ -7,6 +7,11 @@
 dist/
 build/
 .env
+venv
 *.sqlite
 .coverage
 .python-version
+node_modules/
+yarn.lock
+docs/_build/
+venv*
