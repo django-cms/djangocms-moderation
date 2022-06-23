@@ -18,3 +18,4 @@ https://github.com/django-cms/django-cms/tarball/develop-4#egg=django-cms
 https://github.com/django-cms/djangocms-text-ckeditor/tarball/support/4.0.x#egg=djangocms-text-ckeditor
 https://github.com/django-cms/djangocms-versioning/tarball/master#egg=djangocms-versioning
 https://github.com/adam-murray/djangocms-version-locking/tarball/fix/alias-dependency-failing-test#egg=djangocms-version-locking
+https://github.com/django-cms/djangocms-alias/tarball/master#egg=djangocms-alias
