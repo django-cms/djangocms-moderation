@@ -50,6 +50,8 @@
     $('document').ready(function () {
       // Targeting first item returned (there's only ever one messagelist per template):
         let messageList = document.getElementsByClassName('messagelist')[0];
+        let interval = 20;
+        let timeout = 500;
 
         if (messageList !== undefined) {
             for (let item of messageList.children) {
@@ -62,8 +64,8 @@
                             clearInterval(fader);
                         }
 
-                    }, 20);
-                }, 5000);
+                    }, interval);
+                }, timeout);
             }
         }
     });
@@ -91,8 +93,9 @@
         }
 
         let pos = bm.offset();
+        let leftOffset = 200;
 
-        op.css('left', pos.left - 200);
+        op.css('left', pos.left - leftOffset);
         op.css('top', pos.top);
     };
 
