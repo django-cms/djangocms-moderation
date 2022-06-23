@@ -68,6 +68,13 @@
         }
     });
 
+    let closeBurgerMenu = function closeBurgerMenu() {
+      $('.cms-actions-dropdown-menu').removeClass('open');
+      $('.cms-actions-dropdown-menu').addClass('closed');
+      $('.cms-moderation-action-btn').removeClass('open');
+      $('.cms-moderation-action-btn').addClass('closed');
+  };
+
     let toggleBurgerMenu = function toggleBurgerMenu(burgerMenuAnchor, optionsContainer) {
       let bm = $(burgerMenuAnchor);
       let op = $(optionsContainer);
@@ -85,13 +92,6 @@
     let pos = bm.offset();
     op.css('left', pos.left - 200);
     op.css('top', pos.top);
-  };
-
-    let closeBurgerMenu = function closeBurgerMenu() {
-      $('.cms-actions-dropdown-menu').removeClass('open');
-      $('.cms-actions-dropdown-menu').addClass('closed');
-      $('.cms-moderation-action-btn').removeClass('open');
-      $('.cms-moderation-action-btn').addClass('closed');
   };
 
     // Create burger menu:
@@ -173,7 +173,7 @@
             anchor.addEventListener('click', function (ev) {
                 ev.stopPropagation();
                 toggleBurgerMenu(anchor, optionsContainer);
-              });
+            });
 
             /* close burger menu if clicking outside */
             $(window).click(function () {
@@ -181,8 +181,8 @@
               });
             };
 
-    $('#result_list').find('tr').each(function (index, item) {
+        $('#result_list').find('tr').each(function (index, item) {
           createBurgerMenu(item);
         });
-      });
+    });
 })((typeof django !== 'undefined' && django.jQuery) || (typeof CMS !== 'undefined' && CMS.$) || false);
