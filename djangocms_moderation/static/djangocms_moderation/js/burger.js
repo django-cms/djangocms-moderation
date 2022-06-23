@@ -15,8 +15,8 @@
                 // action currently being targetted
                 let action = $(e.currentTarget);
                 // get the form method being used?
-                let formMethod = action.attr('class').indexOf('cms-form-get-method') !== -1 ? 'GET': 'POST';
-                let csrfToken = formMethod == 'GET' ? '' : '<input type="hidden" name="csrfmiddlewaretoken" value="' +
+                let formMethod = action.attr('class').indexOf('cms-form-get-method') !== - 1 ? 'GET': 'POST';
+                let csrfToken = formMethod === 'GET' ? '' : '<input type="hidden" name="csrfmiddlewaretoken" value="' +
                             document.cookie.match(/csrftoken=([^;]*);?/)[1] + '">';
                 let fakeForm = $(
                     '<form style="display: none" action="' + action.attr('href') + '" method="' +
@@ -25,16 +25,17 @@
                 );
                 let body = window.top.document.body;
                 let keepSideFrame = action.attr('class').indexOf('js-versioning-keep-sideframe') !== -1;
+
                 // always break out of the sideframe, cause it was never meant to open cms views inside it
                 try {
-                    if (!keepSideFrame)
-                    {
+                    if (!keepSideFrame) {
                         window.top.CMS.API.Sideframe.close();
                     }
                 } catch (err) {}
                 if (keepSideFrame) {
                     body = window.document.body;
                 }
+
                 fakeForm.appendTo(body).submit();
             });
 
@@ -46,12 +47,12 @@
     });
 
     // Hide django messages after timeout occurs to prevent content overlap
-    $('document').ready(function(){
+    $('document').ready(function() {
         // Targeting first item returned (there's only ever one messagelist per template):
         let messageList = document.getElementsByClassName('messagelist')[0];
 
-        if(messageList != undefined) {
-          for(let item of messageList.children){
+        if(messageList !== undefined) {
+          for(let item of messageList.children) {
             item.style.opacity = 1;
             setTimeout(() => {
               let fader = setInterval(() => {
