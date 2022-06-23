@@ -1,3 +1,5 @@
+import pdb
+
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
@@ -352,6 +354,7 @@ class ModerationAdminTestCase(BaseTestCase):
             ),
             self.mr1.pk,
         )
+
         self.assertHTMLEqual(result, expected)
 
 
@@ -415,9 +418,14 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
                       self.mr_tree_admin.get_list_display(mock_request))
 
     def test_tree_admin_burger_menu_present(self):
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        url = "{}?moderation_request__collection__id={}".format(
+            redirect_url,
+            self.collection.id
+        )
         with self.login_user_context(self.user):
-            response = self.client.get(self.url_with_filter)
+            response = self.client.get(url)
 
         self.assertContains(response, '/static/djangocms_moderation/js/burger.js')
-        self.assertContains(response, '<a class="btn cms-moderation-action-btn js-moderation-action"')
-        self.assertContains(response, '<img src="/static/djangocms_moderation/svg/icon-comment.svg" />')
+        self.assertContains(response, '<a class="btn cms-moderation-action-btn closed"')
+        self.assertContains(response, '<img src="/static/djangocms_versioning/svg/menu.svg" />')
