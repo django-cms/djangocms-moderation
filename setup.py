@@ -38,6 +38,6 @@ setup(
     license="BSD",
     test_suite="tests.settings.run",
     dependency_links=[
-        "http://github.com/django-cms/djangocms-alias/tarball/master#egg=djangocms-alias",
+        "https://github.com/django-cms/djangocms-alias/tarball/master#egg=djangocms-alias",
     ]
 )
