@@ -55,17 +55,17 @@
             for (let item of messageList.children) {
                 item.style.opacity = 1;
                 setTimeout(() => {
-                  let fader = setInterval(() => {
-                    item.style.opacity -= 0.05;
-                    if (item.style.opacity < 0) {
-                      item.style.display = 'none';
-                      clearInterval(fader);
-                    }
+                    let fader = setInterval(() => {
+                      item.style.opacity -= 0.05;
+                      if (item.style.opacity < 0) {
+                        item.style.display = 'none';
+                        clearInterval(fader);
+                      }
 
-                }, 20);
-              }, 5000);
-            }
-          }
+                  }, 20);
+                }, 5000);
+              }
+        }
     });
 
     // Create burger menu:
