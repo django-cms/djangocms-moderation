@@ -418,6 +418,6 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
         with self.login_user_context(self.user):
             response = self.client.get(self.url_with_filter)
 
-        self.assertContains(response, '<script src="/static/djangocms_moderation/js/burger.js">')
+        self.assertContains(response, '/static/djangocms_moderation/js/burger.js')
         self.assertContains(response, '<a class="btn cms-moderation-action-btn js-moderation-action"')
         self.assertContains(response, '<img src="/static/djangocms_moderation/svg/icon-comment.svg" />')
