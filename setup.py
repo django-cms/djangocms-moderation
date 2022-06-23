@@ -11,7 +11,7 @@ INSTALL_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
-    "djangocms_alias",
+    "djangocms-alias",
 ]
 
 setup(
