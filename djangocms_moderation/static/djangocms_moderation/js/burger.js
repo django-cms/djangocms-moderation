@@ -56,15 +56,15 @@
                 item.style.opacity = 1;
                 setTimeout(() => {
                     let fader = setInterval(() => {
-                      item.style.opacity -= 0.05;
-                      if (item.style.opacity < 0) {
-                        item.style.display = 'none';
-                        clearInterval(fader);
-                      }
+                        item.style.opacity -= 0.05;
+                        if (item.style.opacity < 0) {
+                          item.style.display = 'none';
+                          clearInterval(fader);
+                        }
 
                   }, 20);
                 }, 5000);
-              }
+            }
         }
     });
 
@@ -114,15 +114,18 @@
                 li_anchor.setAttribute('href', $(item).attr('href'));
 
                 if ($(item).hasClass('cms-form-get-method')) {
-                  li_anchor.classList.add('cms-form-get-method'); // Ensure the fake-form selector is propagated to the new anchor
+                    // Ensure the fake-form selector is propagated to the new anchor
+                    li_anchor.classList.add('cms-form-get-method');
                 }
                 /* get the span which contains the img */
                 let value = $(item).children('span')[0];
+
                 /* move the icon image */
                 li_anchor.appendChild($(value).children('img')[0]);
 
                 /* create the button text and construct the button */
                 let span = document.createElement('span');
+
                 span.appendChild(
                   document.createTextNode(item.title)
                 );
@@ -172,13 +175,13 @@
         };
 
         let closeBurgerMenu = function closeBurgerMenu() {
-          $('.cms-actions-dropdown-menu').removeClass('open');
-          $('.cms-actions-dropdown-menu').addClass('closed');
-          $('.cms-moderation-action-btn').removeClass('open');
-          $('.cms-moderation-action-btn').addClass('closed');
+            $('.cms-actions-dropdown-menu').removeClass('open');
+            $('.cms-actions-dropdown-menu').addClass('closed');
+            $('.cms-moderation-action-btn').removeClass('open');
+            $('.cms-moderation-action-btn').addClass('closed');
         };
 
-        $('#result_list').find('tr').each(function (index, item) {
+    $('#result_list').find('tr').each(function (index, item) {
           createBurgerMenu(item);
         });
       });
