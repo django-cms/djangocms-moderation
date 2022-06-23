@@ -15,7 +15,7 @@
           // action currently being targetted
           let action = $(e.currentTarget);
           // get the form method being used?
-          let formMethod = action.attr('class').indexOf('cms-form-get-method') !== -1 ? 'GET' : 'POST';
+          let formMethod = action.attr('class').indexOf('cms-form-get-method') !== 1 ? 'POST' : 'GET';
           let csrfToken = formMethod === 'GET' ? '' : '<input type="hidden" name="csrfmiddlewaretoken" value="' +
             document.cookie.match(/csrftoken=([^;]*);?/)[1] + '">';
           let fakeForm = $(
