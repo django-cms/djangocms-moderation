@@ -58,15 +58,41 @@
                     let fader = setInterval(() => {
                         item.style.opacity -= 0.05;
                         if (item.style.opacity < 0) {
-                          item.style.display = 'none';
-                          clearInterval(fader);
+                            item.style.display = 'none';
+                            clearInterval(fader);
                         }
 
-                  }, 20);
+                    }, 20);
                 }, 5000);
             }
         }
     });
+
+    let toggleBurgerMenu = function toggleBurgerMenu(burgerMenuAnchor, optionsContainer) {
+      let bm = $(burgerMenuAnchor);
+      let op = $(optionsContainer);
+      let closed = bm.hasClass('closed');
+        closeBurgerMenu();
+
+    if (closed) {
+          bm.removeClass('closed').addClass('open');
+          op.removeClass('closed').addClass('open');
+        } else {
+          bm.addClass('closed').removeClass('open');
+          op.addClass('closed').removeClass('open');
+        }
+
+    let pos = bm.offset();
+    op.css('left', pos.left - 200);
+    op.css('top', pos.top);
+  };
+
+    let closeBurgerMenu = function closeBurgerMenu() {
+      $('.cms-actions-dropdown-menu').removeClass('open');
+      $('.cms-actions-dropdown-menu').addClass('closed');
+      $('.cms-moderation-action-btn').removeClass('open');
+      $('.cms-moderation-action-btn').addClass('closed');
+  };
 
     // Create burger menu:
     $(function () {
@@ -136,7 +162,7 @@
 
                 /* destroy original replaced buttons */
                 actions[0].removeChild(item);
-              });
+            });
 
             /* add the options to the drop-down */
             optionsContainer.appendChild(ul);
@@ -154,32 +180,6 @@
                 closeBurgerMenu();
               });
             };
-
-        let toggleBurgerMenu = function toggleBurgerMenu(burgerMenuAnchor, optionsContainer) {
-            let bm = $(burgerMenuAnchor);
-            let op = $(optionsContainer);
-            let closed = bm.hasClass('closed');
-              closeBurgerMenu();
-
-          if (closed) {
-                bm.removeClass('closed').addClass('open');
-                op.removeClass('closed').addClass('open');
-              } else {
-                bm.addClass('closed').removeClass('open');
-                op.addClass('closed').removeClass('open');
-              }
-
-          let pos = bm.offset();
-          op.css('left', pos.left - 200);
-          op.css('top', pos.top);
-        };
-
-        let closeBurgerMenu = function closeBurgerMenu() {
-            $('.cms-actions-dropdown-menu').removeClass('open');
-            $('.cms-actions-dropdown-menu').addClass('closed');
-            $('.cms-moderation-action-btn').removeClass('open');
-            $('.cms-moderation-action-btn').addClass('closed');
-        };
 
     $('#result_list').find('tr').each(function (index, item) {
           createBurgerMenu(item);
