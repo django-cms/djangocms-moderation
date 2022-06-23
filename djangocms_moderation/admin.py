@@ -114,8 +114,10 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     more than once, i.e. they are present in more than one parent.
     """
     class Media:
-        js = ("djangocms_moderation/js/actions.js",)
-        css = {"all": ("djangocms_moderation/css/actions.css",)}
+        js = ("djangocms_moderation/js/actions.js", "djangocms_moderation/js/burger.js")
+        css = {
+            "all": ("djangocms_moderation/css/actions.css", "djangocms_moderation/css/burger.css")
+        }
 
     actions = [  # filtered out in `self.get_actions`
         delete_selected,

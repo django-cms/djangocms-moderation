@@ -5,13 +5,12 @@ HELPER_SETTINGS = {
         "tests.utils.app_2",
         "djangocms_versioning",
         "djangocms_version_locking",
-
         # the following 4 apps are related
         "aldryn_forms",
         "filer",
         "easy_thumbnails",
         "captcha",
-
+        "djangocms_alias",
         "djangocms_text_ckeditor",
         "tests.utils.moderated_polls",
         "tests.utils.versioned_none_moderated_app",
@@ -22,6 +21,7 @@ HELPER_SETTINGS = {
         "auth": None,
         "cms": None,
         "menus": None,
+        "djangocms_alias": None,
         "djangocms_versioning": None,
         "djangocms_version_locking": None,
         "filer": None,

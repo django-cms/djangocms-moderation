@@ -352,6 +352,7 @@ class ModerationAdminTestCase(BaseTestCase):
             ),
             self.mr1.pk,
         )
+
         self.assertHTMLEqual(result, expected)
 
 
@@ -394,6 +395,7 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
         self.mr_tree_admin = ModerationRequestTreeAdmin(
             ModerationRequest, admin.AdminSite()
         )
+
         self.mra = ModerationRequestAdmin(ModerationRequest, admin.AdminSite())
         self.mca = ModerationCollectionAdmin(ModerationCollection, admin.AdminSite())
 
@@ -412,3 +414,14 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
 
         self.assertIn("get_poll_additional_changelist_field",
                       self.mr_tree_admin.get_list_display(mock_request))
+
+    def test_tree_admin_burger_menu_present(self):
+        redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
+        url = "{}?moderation_request__collection__id={}".format(
+            redirect_url,
+            self.collection.id
+        )
+        with self.login_user_context(self.user):
+            response = self.client.get(url)
+
+        self.assertContains(response, '/static/djangocms_moderation/js/burger.js')
