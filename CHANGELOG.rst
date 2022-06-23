@@ -4,6 +4,9 @@ Changelog
 
 Unreleased
 ==========
+
+2.1.0 (2022-06-23)
+==================
 * feat: Added burgermenu for ModerationRequestTreeAdmin icons
 * fix: Avoid errors thrown when nested plugins are M2M fields
 * fix: Add to collection should automatically add deeply nested draft versioned objects #205
