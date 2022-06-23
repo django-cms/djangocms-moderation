@@ -10,10 +10,6 @@ INSTALL_REQUIREMENTS = [
     "django-admin-sortable2>=0.6.4",
 ]
 
-TEST_REQUIREMENTS = [
-    "djangocms-alias",
-]
-
 setup(
     name="djangocms-moderation",
     packages=find_packages(),
@@ -29,7 +25,6 @@ setup(
         "Topic :: Software Development",
     ],
     install_requires=INSTALL_REQUIREMENTS,
-    tests_require=TEST_REQUIREMENTS,
     author="Divio AG",
     author_email="info@divio.ch",
     maintainer='Django CMS Association and contributors',
@@ -37,7 +32,4 @@ setup(
     url="http://github.com/django-cms/djangocms-moderation",
     license="BSD",
     test_suite="tests.settings.run",
-    dependency_links=[
-        "https://github.com/django-cms/djangocms-alias.git",
-    ]
 )
