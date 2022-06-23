@@ -1,7 +1,7 @@
 (function ($) {
     if (!$) {
       return;
-  }
+    }
 
     $(function () {
       // INFO: it is not possible to put a form inside a form, so the moderation actions have to create their own form
@@ -41,8 +41,8 @@
 
         $('.js-versioning-close-sideframe').on('click', function () {
             try {
-              window.top.CMS.API.Sideframe.close();
-          } catch (e) { }
+                window.top.CMS.API.Sideframe.close();
+            } catch (e) { }
         });
     });
 
@@ -53,20 +53,20 @@
 
         if (messageList !== undefined) {
             for (let item of messageList.children) {
-              item.style.opacity = 1;
-              setTimeout(() => {
-                let fader = setInterval(() => {
-                  item.style.opacity -= 0.05;
-                  if (item.style.opacity < 0) {
-                    item.style.display = 'none';
-                    clearInterval(fader);
-                  }
+                item.style.opacity = 1;
+                setTimeout(() => {
+                  let fader = setInterval(() => {
+                    item.style.opacity -= 0.05;
+                    if (item.style.opacity < 0) {
+                      item.style.display = 'none';
+                      clearInterval(fader);
+                    }
 
-              }, 20);
-            }, 5000);
+                }, 20);
+              }, 5000);
+            }
           }
-        }
-      });
+    });
 
     // Create burger menu:
     $(function () {
@@ -80,7 +80,7 @@
 
             if (!actions.length) {
               /* skip any rows without actions to avoid errors */
-              return;
+                return;
             }
 
             /* create burger menu anchor icon */
@@ -106,34 +106,34 @@
             /* get the existing actions and move them into the options container */
             $(actions[0]).children('.cms-moderation-action-btn').each(function (index, item) {
 
-              let li = document.createElement('li');
-              /* create an anchor from the item */
-              let li_anchor = document.createElement('a');
+                let li = document.createElement('li');
+                /* create an anchor from the item */
+                let li_anchor = document.createElement('a');
 
-              li_anchor.setAttribute('class', 'cms-actions-dropdown-menu-item-anchor');
-              li_anchor.setAttribute('href', $(item).attr('href'));
+                li_anchor.setAttribute('class', 'cms-actions-dropdown-menu-item-anchor');
+                li_anchor.setAttribute('href', $(item).attr('href'));
 
-              if ($(item).hasClass('cms-form-get-method')) {
-                li_anchor.classList.add('cms-form-get-method'); // Ensure the fake-form selector is propagated to the new anchor
-              }
-              /* get the span which contains the img */
-              let value = $(item).children('span')[0];
-              /* move the icon image */
-              li_anchor.appendChild($(value).children('img')[0]);
+                if ($(item).hasClass('cms-form-get-method')) {
+                  li_anchor.classList.add('cms-form-get-method'); // Ensure the fake-form selector is propagated to the new anchor
+                }
+                /* get the span which contains the img */
+                let value = $(item).children('span')[0];
+                /* move the icon image */
+                li_anchor.appendChild($(value).children('img')[0]);
 
-              /* create the button text and construct the button */
-              let span = document.createElement('span');
-              span.appendChild(
-                document.createTextNode(item.title)
-              );
+                /* create the button text and construct the button */
+                let span = document.createElement('span');
+                span.appendChild(
+                  document.createTextNode(item.title)
+                );
 
-              li_anchor.appendChild(span);
-              li.appendChild(li_anchor);
-              ul.appendChild(li);
+                li_anchor.appendChild(span);
+                li.appendChild(li_anchor);
+                ul.appendChild(li);
 
-              /* destroy original replaced buttons */
-              actions[0].removeChild(item);
-            });
+                /* destroy original replaced buttons */
+                actions[0].removeChild(item);
+              });
 
             /* add the options to the drop-down */
             optionsContainer.appendChild(ul);
@@ -142,29 +142,29 @@
 
             /* listen for burger menu clicks */
             anchor.addEventListener('click', function (ev) {
-              ev.stopPropagation();
-              toggleBurgerMenu(anchor, optionsContainer);
-            });
+                ev.stopPropagation();
+                toggleBurgerMenu(anchor, optionsContainer);
+              });
 
             /* close burger menu if clicking outside */
             $(window).click(function () {
-              closeBurgerMenu();
-            });
-          };
+                closeBurgerMenu();
+              });
+            };
 
-          let toggleBurgerMenu = function toggleBurgerMenu(burgerMenuAnchor, optionsContainer) {
+        let toggleBurgerMenu = function toggleBurgerMenu(burgerMenuAnchor, optionsContainer) {
             let bm = $(burgerMenuAnchor);
             let op = $(optionsContainer);
             let closed = bm.hasClass('closed');
-            closeBurgerMenu();
+              closeBurgerMenu();
 
           if (closed) {
-            bm.removeClass('closed').addClass('open');
-            op.removeClass('closed').addClass('open');
-          } else {
-            bm.addClass('closed').removeClass('open');
-            op.addClass('closed').removeClass('open');
-          }
+                bm.removeClass('closed').addClass('open');
+                op.removeClass('closed').addClass('open');
+              } else {
+                bm.addClass('closed').removeClass('open');
+                op.addClass('closed').removeClass('open');
+              }
 
           let pos = bm.offset();
           op.css('left', pos.left - 200);
