@@ -69,10 +69,10 @@
     });
 
     let closeBurgerMenu = function closeBurgerMenu() {
-      $('.cms-actions-dropdown-menu').removeClass('open');
-      $('.cms-actions-dropdown-menu').addClass('closed');
-      $('.cms-moderation-action-btn').removeClass('open');
-      $('.cms-moderation-action-btn').addClass('closed');
+        $('.cms-actions-dropdown-menu').removeClass('open');
+        $('.cms-actions-dropdown-menu').addClass('closed');
+        $('.cms-moderation-action-btn').removeClass('open');
+        $('.cms-moderation-action-btn').addClass('closed');
     };
 
     let toggleBurgerMenu = function toggleBurgerMenu(burgerMenuAnchor, optionsContainer) {
@@ -83,14 +83,15 @@
         closeBurgerMenu();
 
         if (closed) {
-          bm.removeClass('closed').addClass('open');
-          op.removeClass('closed').addClass('open');
+            bm.removeClass('closed').addClass('open');
+            op.removeClass('closed').addClass('open');
         } else {
-          bm.addClass('closed').removeClass('open');
-          op.addClass('closed').removeClass('open');
+            bm.addClass('closed').removeClass('open');
+            op.addClass('closed').removeClass('open');
         }
 
         let pos = bm.offset();
+
         op.css('left', pos.left - 200);
         op.css('top', pos.top);
     };
