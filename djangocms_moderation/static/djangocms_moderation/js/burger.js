@@ -15,7 +15,7 @@
                 // action currently being targetted
                 let action = $(e.currentTarget);
                 // get the form method being used?
-                let formMethod = action.attr('class').indexOf('cms-form-get-method') !== - 1 ? 'GET': 'POST';
+                let formMethod = action.attr('class').indexOf('cms-form-get-method') !== -1 ? 'GET': 'POST';
                 let csrfToken = formMethod === 'GET' ? '' : '<input type="hidden" name="csrfmiddlewaretoken" value="' +
                             document.cookie.match(/csrftoken=([^;]*);?/)[1] + '">';
                 let fakeForm = $(
@@ -51,8 +51,8 @@
         // Targeting first item returned (there's only ever one messagelist per template):
         let messageList = document.getElementsByClassName('messagelist')[0];
 
-        if(messageList !== undefined) {
-          for(let item of messageList.children) {
+        if (messageList !== undefined) {
+          for (let item of messageList.children) {
             item.style.opacity = 1;
             setTimeout(() => {
               let fader = setInterval(() => {
