@@ -73,15 +73,16 @@
       $('.cms-actions-dropdown-menu').addClass('closed');
       $('.cms-moderation-action-btn').removeClass('open');
       $('.cms-moderation-action-btn').addClass('closed');
-  };
+    };
 
     let toggleBurgerMenu = function toggleBurgerMenu(burgerMenuAnchor, optionsContainer) {
-      let bm = $(burgerMenuAnchor);
-      let op = $(optionsContainer);
-      let closed = bm.hasClass('closed');
+        let bm = $(burgerMenuAnchor);
+        let op = $(optionsContainer);
+        let closed = bm.hasClass('closed');
+
         closeBurgerMenu();
 
-    if (closed) {
+        if (closed) {
           bm.removeClass('closed').addClass('open');
           op.removeClass('closed').addClass('open');
         } else {
@@ -89,10 +90,10 @@
           op.addClass('closed').removeClass('open');
         }
 
-    let pos = bm.offset();
-    op.css('left', pos.left - 200);
-    op.css('top', pos.top);
-  };
+        let pos = bm.offset();
+        op.css('left', pos.left - 200);
+        op.css('top', pos.top);
+    };
 
     // Create burger menu:
     $(function () {
@@ -178,11 +179,11 @@
             /* close burger menu if clicking outside */
             $(window).click(function () {
                 closeBurgerMenu();
-              });
-            };
+            });
+        };
 
         $('#result_list').find('tr').each(function (index, item) {
-          createBurgerMenu(item);
+            createBurgerMenu(item);
         });
     });
 })((typeof django !== 'undefined' && django.jQuery) || (typeof CMS !== 'undefined' && CMS.$) || false);
