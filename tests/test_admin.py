@@ -1,5 +1,3 @@
-import pdb
-
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
@@ -427,5 +425,3 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
             response = self.client.get(url)
 
         self.assertContains(response, '/static/djangocms_moderation/js/burger.js')
-        self.assertContains(response, '<a class="btn cms-moderation-action-btn closed"')
-        self.assertContains(response, '<img src="/static/djangocms_versioning/svg/menu.svg" />')
