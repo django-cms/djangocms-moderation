@@ -106,6 +106,7 @@
         if (typeof moderation_static_url_prefix === 'undefined') {
             burger_menu_icon = '/static/djangocms_versioning/svg/menu.svg';
         } else {
+            // eslint-disable-next-line no-undef
             burger_menu_icon = `${moderation_static_url_prefix}svg/menu.svg`;
         }
 
