@@ -153,6 +153,10 @@
                     // Ensure the fake-form selector is propagated to the new anchor
                     li_anchor.classList.add('cms-form-get-method');
                 }
+                if ($(item).hasClass('related-widget-wrapper-link')) {
+                    // Ensure we retain the class which defines whether an item opens in a modal
+                    li_anchor.classList.add('related-widget-wrapper-link');
+                }
                 /* get the span which contains the img */
                 let value = $(item).children('span')[0];
 
