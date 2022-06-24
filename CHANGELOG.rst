@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Retain classes which define whether a link should open in a modal or not
 
 2.1.2 (2022-06-24)
 ==================
