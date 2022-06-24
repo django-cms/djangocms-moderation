@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Updated moderation_request_change_list to pass static url for svg asset in burger menu
 
 2.1.0 (2022-06-23)
 ==================
