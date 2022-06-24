@@ -1,7 +1,11 @@
 {% extends "admin/djangocms_moderation/treebeard/tree_change_list.html" %}
-{% load i18n cms_static %}
+{% load i18n cms_static static %}
 
 {% block extrahead %}
+    {# INFO: moderation_static_url_prefix variable is used to inject static_url into actions.js #}
+    <script>
+        let moderation_static_url_prefix = "{% static "djangocms_moderation/" %}";
+    </script>
     {{ block.super }}
     {#
         INFO: we need to add styles here instead of "extrastyle" to avoid

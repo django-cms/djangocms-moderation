@@ -103,6 +103,12 @@
     $(function () {
         let burger_menu_icon;
 
+        if (typeof moderation_static_url_prefix === 'undefined') {
+            burger_menu_icon = '/static/djangocms_versioning/svg/menu.svg';
+        } else {
+            burger_menu_icon = `${moderation_static_url_prefix}svg/menu.svg`;
+        }
+
         burger_menu_icon = '/static/djangocms_versioning/svg/menu.svg';
 
         let createBurgerMenu = function createBurgerMenu(row) {
