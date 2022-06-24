@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Alter burger menu js to prioritise injected static url
 
 2.1.1 (2022-06-24)
 ==================
