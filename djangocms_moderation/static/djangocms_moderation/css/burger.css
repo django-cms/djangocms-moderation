@@ -170,3 +170,8 @@ a.cms-actions-dropdown-menu-item-anchor.inactive {
     opacity: 0.3;
     filter: alpha(opacity=30);
 }
+/* Override the related-widget-wrapper-link css from the cms, only if it's within the ModerationRequestAdmin */
+a.cms-actions-dropdown-menu-item-anchor.related-widget-wrapper-link {
+    width: auto !important;
+    height: auto !important;
+}
