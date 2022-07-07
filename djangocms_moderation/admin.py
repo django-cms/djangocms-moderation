@@ -114,7 +114,11 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     more than once, i.e. they are present in more than one parent.
     """
     class Media:
-        js = ("djangocms_moderation/js/actions.js", "djangocms_moderation/js/burger.js")
+        js = (
+            "admin/js/jquery.init.js",
+            "djangocms_moderation/js/actions.js",
+            "djangocms_moderation/js/burger.js",
+        )
         css = {
             "all": ("djangocms_moderation/css/actions.css", "djangocms_moderation/css/burger.css")
         }
@@ -464,7 +468,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
 class ModerationRequestAdmin(admin.ModelAdmin):
     class Media:
-        js = ('djangocms_moderation/js/actions.js',)
+        js = ('admin/js/jquery.init.js', 'djangocms_moderation/js/actions.js',)
 
     inlines = [ModerationRequestActionInline]
 
@@ -1000,7 +1004,7 @@ class WorkflowAdmin(admin.ModelAdmin):
 
 class ModerationCollectionAdmin(admin.ModelAdmin):
     class Media:
-        js = ("djangocms_moderation/js/actions.js",)
+        js = ("admin/js/jquery.init.js", "djangocms_moderation/js/actions.js",)
         css = {"all": ("djangocms_moderation/css/actions.css",)}
 
     actions = None  # remove `delete_selected` for now, it will be handled later
