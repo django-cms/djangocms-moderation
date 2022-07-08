@@ -4,14 +4,14 @@
 {% block extrahead %}
     {# INFO: moderation_static_url_prefix variable is used to inject static_url into actions.js #}
     <script>
-        let moderation_static_url_prefix = "{% static "djangocms_moderation/" %}";
+        let moderation_static_url_prefix = "{% static 'djangocms_moderation/' %}";
     </script>
     {{ block.super }}
-    {#
-        INFO: we need to add styles here instead of "extrastyle" to avoid
+    {% comment "INFO" %}
+        We need to add styles here instead of "extrastyle" to avoid
         conflicts with adminstyle. We are adding cms.base.css to gain the
         icon support, e.g. `<span class="cms-icon cms-icon-eye"></span>`
-    #}
+    {% endcomment %}
     <link rel="stylesheet" href="{% static_with_version 'cms/css/cms.base.css' %}">
 {% endblock extrahead %}
 
