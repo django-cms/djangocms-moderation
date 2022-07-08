@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Broken markup and js scripts in the ModerationRequest changelist views
 
 2.1.3 (2022-06-24)
 ==================
