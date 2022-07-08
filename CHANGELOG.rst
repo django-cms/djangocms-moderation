@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+* fix: Broken markup in the ModerationCollection changelist view
 
 2.1.4 (2022-07-08)
 ==================
