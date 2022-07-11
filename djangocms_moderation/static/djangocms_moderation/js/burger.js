@@ -145,9 +145,19 @@
                 let li = document.createElement('li');
                 /* create an anchor from the item */
                 let li_anchor = document.createElement('a');
+                const itemId = $(item).attr('id');
+                const itemTarget = $(item).attr('target');
 
                 li_anchor.setAttribute('class', 'cms-actions-dropdown-menu-item-anchor');
                 li_anchor.setAttribute('href', $(item).attr('href'));
+                // Copy the id attribute if it is set
+                if (itemId !== undefined) {
+                    li_anchor.setAttribute('id', itemId);
+                }
+                // Copy the target attribute if it is set
+                if (itemTarget !== undefined) {
+                    li_anchor.setAttribute('target', itemTarget);
+                }
 
                 if ($(item).hasClass('cms-form-get-method')) {
                     // Ensure the fake-form selector is propagated to the new anchor
