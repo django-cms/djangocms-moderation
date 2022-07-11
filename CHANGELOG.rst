@@ -4,6 +4,9 @@ Changelog
 
 Unreleased
 ==========
+
+2.1.5 (2022-07-11)
+==================
 * fix: Broken markup in the ModerationCollection changelist view, and missing attributes in the burger menu
 
 2.1.4 (2022-07-08)
