@@ -150,11 +150,13 @@
                 li_anchor.setAttribute('href', $(item).attr('href'));
                 // Copy the id attribute if it is set
                 const itemId = $(item).attr('id');
+
                 if (itemId !== undefined) {
                     li_anchor.setAttribute('id', itemId);
                 }
                 // Copy the target attribute if it is set
                 const itemTarget = $(item).attr('target');
+
                 if (itemTarget !== undefined) {
                     li_anchor.setAttribute('target', itemTarget);
                 }
