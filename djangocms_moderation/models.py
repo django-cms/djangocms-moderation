@@ -416,7 +416,7 @@ class ModerationRequest(models.Model):
         to=Version, verbose_name=_("version"), on_delete=models.CASCADE
     )
     language = models.CharField(
-        verbose_name=_("language"), max_length=5, choices=settings.LANGUAGES
+        verbose_name=_("language"), max_length=255, choices=settings.LANGUAGES
     )
     is_active = models.BooleanField(
         verbose_name=_("is active"), default=True, db_index=True
