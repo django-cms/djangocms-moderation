@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='moderationrequest',
             name='language',
-            field=models.CharField(choices=settings.LANGUAGES, max_length=255, verbose_name='language'),
+            field=models.CharField(choices=settings.LANGUAGES, max_length=20, verbose_name='language'),
         )
     ]

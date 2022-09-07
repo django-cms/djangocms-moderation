@@ -29,7 +29,6 @@ HELPER_SETTINGS = {
         "aldryn_forms": None,
     },
     "DEFAULT_AUTO_FIELD": "django.db.models.AutoField",
-    "CMS_CONFIRM_VERSION4": True,
 }
 
 
