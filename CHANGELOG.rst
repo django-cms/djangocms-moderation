@@ -5,6 +5,10 @@ Changelog
 Unreleased
 ==========
 
+2.1.6 (2022-09-07)
+==================
+* fix: Language max_length too short for certain language codes
+
 2.1.5 (2022-07-11)
 ==================
 * fix: Broken markup in the ModerationCollection changelist view, and missing attributes in the burger menu
