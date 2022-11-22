@@ -17,6 +17,12 @@ jobs:
             dj40_cms41.txt,
             dj41_cms41.txt,
         ]
+        exclude:
+          - python-version: 3.7
+            requirements-file: dj40_cms41.txt
+          - python-version: 3.7
+            requirements-file: dj41_cms41.txt
+
         os: [
             ubuntu-20.04,
         ]
