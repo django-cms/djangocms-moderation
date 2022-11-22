@@ -20,6 +20,12 @@ from djangocms_moderation.helpers import (
 from djangocms_moderation.utils import get_admin_url
 
 
+try:
+    from cms.utils.patching import patch_cms
+except ModuleNotFoundError:
+    patch_cms = setattr
+
+
 def get_state_actions(func):
     """
     Monkey patch VersionAdmin's get_state_actions to add Add moderation link
@@ -120,15 +126,17 @@ def _get_publish_link(func):
     return inner
 
 
-admin.VersionAdmin._get_publish_link = _get_publish_link(
+patch_cms(admin.VersionAdmin, "_get_publish_link", _get_publish_link(
     admin.VersionAdmin._get_publish_link
-)
+))
 
-admin.VersionAdmin.get_state_actions = get_state_actions(
+patch_cms(admin.VersionAdmin, "get_state_actions", get_state_actions(
     admin.VersionAdmin.get_state_actions
-)
-admin.VersionAdmin._get_moderation_link = _get_moderation_link
+))
 
+admin.VersionAdmin._get_moderation_link = _get_moderation_link  # New metod
+
+# Patch properties
 models.Version.check_archive += [
     _is_version_review_locked(
         _("Cannot archive a version in an active moderation collection")
