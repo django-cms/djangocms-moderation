@@ -12,9 +12,11 @@ isort
 mock
 pyflakes>=2.1.1
 python-dateutil>=2.4
+django-admin-sortable2
+django_polymorphic
+
 
 # Unreleased django-cms 4.0 compatible packages
-https://github.com/django-cms/django-cms/tarball/release/4.0.1.x#egg=django-cms
 https://github.com/django-cms/djangocms-text-ckeditor/tarball/support/4.0.x#egg=djangocms-text-ckeditor
 https://github.com/django-cms/djangocms-versioning/tarball/master#egg=djangocms-versioning
 https://github.com/FidelityInternational/djangocms-version-locking/tarball/master#egg=djangocms-version-locking

@@ -1,6 +1,0 @@
--r ./requirements_base.txt
-
-Django>=3.2,<4.0
-
-django-admin-sortable2
-django_polymorphic

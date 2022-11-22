@@ -1,4 +1,5 @@
 -r ./requirements_base.txt
+https://github.com/django-cms/django-cms/tarball/release/4.0.1.x#egg=django-cms
 
 Django>=2.2,<3.0
 
