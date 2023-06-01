@@ -9,6 +9,10 @@ INSTALL_REQUIREMENTS = [
     "django-sekizai>=0.7",
     "django-admin-sortable2>=0.6.4",
 ]
+DEPENDENCY_LINKS = [
+    "https://github.com/django-cms/django-cms/tarball/release/4.0.1.x#egg=django-cms",
+    "https://github.com/django-cms/djangocms-versioning/tarball/1.2.2#egg=djangocms-versioning",
+]
 
 setup(
     name="djangocms-moderation",
@@ -25,6 +29,7 @@ setup(
         "Topic :: Software Development",
     ],
     install_requires=INSTALL_REQUIREMENTS,
+    dependency_links=DEPENDENCY_LINKS,
     author="Divio AG",
     author_email="info@divio.ch",
     maintainer='Django CMS Association and contributors',
