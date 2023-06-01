@@ -5,6 +5,8 @@ Changelog
 Unreleased
 ==========
 
+* fix: Treebeard support improved by inheriting a treebeard template
+
 2.1.6 (2022-09-07)
 ==================
 * fix: Language max_length too short for certain language codes

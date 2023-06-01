@@ -11,13 +11,15 @@ Requirements
 
 django CMS Moderation requires that you have a django CMS 4.0 (or higher) project already running and set up.
 
+djangocms-versioning is also required along with django-fsm which should be installed with versioning.
+
 
 To install
 ==========
 
 Run::
 
-    pip install git+git://github.com/divio/djangocms-moderation@develop#egg=djangocms-moderation
+    pip install git+git://github.com/django-cms/djangocms-moderation@master#egg=djangocms-moderation
 
 Add the following to your project's ``INSTALLED_APPS``:
 
