@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         # AlterUniqueTogether needs to happen before removing field
         migrations.AlterUniqueTogether(
             name="confirmationformsubmission",
-            unique_together=set([("moderation_request", "for_step")]),
+            unique_together={("moderation_request", "for_step")},
         ),
         migrations.RemoveField(model_name="confirmationformsubmission", name="request"),
         migrations.RemoveField(model_name="moderationrequestaction", name="request"),

@@ -1,5 +1,5 @@
 import json
-from mock import patch
+from unittest.mock import patch
 
 from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
@@ -390,7 +390,7 @@ class ModerationRequestTest(BaseTestCase):
         request.refresh_from_db()
         self.assertIsNone(request.compliance_number)
 
-        expected = "SSO{}".format(request.pk)
+        expected = f"SSO{request.pk}"
         request.set_compliance_number()
         request.refresh_from_db()
         self.assertEqual(request.compliance_number, expected)

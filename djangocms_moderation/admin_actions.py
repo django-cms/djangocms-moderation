@@ -148,14 +148,14 @@ def add_items_to_collection(modeladmin, request, queryset):
                 args=(),
             ),
             version_ids=",".join(version_ids),
-            return_to_url=request.META.get("HTTP_REFERER", ""),
+            return_to_url=request.headers.get("referer", ""),
         )
         return HttpResponseRedirect(admin_url)
     else:
         modeladmin.message_user(
             request, _("No suitable items found to add to moderation collection")
         )
-        return HttpResponseRedirect(request.META.get("HTTP_REFERER", ""))
+        return HttpResponseRedirect(request.headers.get("referer", ""))
 
 
 add_items_to_collection.short_description = _("Add to moderation collection")

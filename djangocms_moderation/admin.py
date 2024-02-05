@@ -89,7 +89,7 @@ class ModerationRequestActionInline(admin.TabularInline):
 
         opts = ConfirmationFormSubmission._meta
         url = reverse(
-            "admin:{}_{}_change".format(opts.app_label, opts.model_name),
+            f"admin:{opts.app_label}_{opts.model_name}_change",
             args=[instance.pk],
         )
         return format_html(
@@ -107,6 +107,7 @@ class ModerationRequestActionInline(admin.TabularInline):
         return self.fields
 
 
+@admin.register(ModerationRequestTreeNode)
 class ModerationRequestTreeAdmin(TreeAdmin):
     """
     This admin is purely for the change list of Moderation Requests using the treebeard nodes to
@@ -466,6 +467,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         return HttpResponseRedirect(redirect_url)
 
 
+@admin.register(ModerationRequest)
 class ModerationRequestAdmin(admin.ModelAdmin):
     class Media:
         js = ('admin/js/jquery.init.js', 'djangocms_moderation/js/actions.js',)
@@ -813,11 +815,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return tree_node_admin.changelist_view(request, extra_context)
 
 
+@admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
     list_display = ["name", "user", "group", "confirmation_page"]
     fields = ["name", "user", "group", "confirmation_page"]
 
 
+@admin.register(CollectionComment)
 class CollectionCommentAdmin(admin.ModelAdmin):
     list_display = ["date_created", "message", "author"]
     fields = ["collection", "message", "author"]
@@ -900,6 +904,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
             return self.list_display
 
 
+@admin.register(RequestComment)
 class RequestCommentAdmin(admin.ModelAdmin):
     list_display = ["date_created", "message", "get_author"]
     fields = ["moderation_request", "message", "author"]
@@ -990,6 +995,7 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
         return 1
 
 
+@admin.register(Workflow)
 class WorkflowAdmin(admin.ModelAdmin):
     inlines = [WorkflowStepInline]
     list_display = ["name", "is_default"]
@@ -1002,6 +1008,7 @@ class WorkflowAdmin(admin.ModelAdmin):
     ]
 
 
+@admin.register(ModerationCollection)
 class ModerationCollectionAdmin(admin.ModelAdmin):
     class Media:
         js = ("admin/js/jquery.init.js", "djangocms_moderation/js/actions.js",)
@@ -1136,6 +1143,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return False
 
 
+@admin.register(ConfirmationPage)
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
     view_on_site = True
 
@@ -1153,6 +1161,7 @@ class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
         return url_patterns + super().get_urls()
 
 
+@admin.register(ConfirmationFormSubmission)
 class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
     list_display = ["moderation_request", "for_step", "submitted_at"]
     fields = [
@@ -1202,12 +1211,3 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
     form_data.short_description = _("Form Data")
 
 
-admin.site.register(ModerationRequestTreeNode, ModerationRequestTreeAdmin)
-admin.site.register(ModerationRequest, ModerationRequestAdmin)
-admin.site.register(CollectionComment, CollectionCommentAdmin)
-admin.site.register(RequestComment, RequestCommentAdmin)
-admin.site.register(ModerationCollection, ModerationCollectionAdmin)
-admin.site.register(Role, RoleAdmin)
-admin.site.register(Workflow, WorkflowAdmin)
-admin.site.register(ConfirmationPage, ConfirmationPageAdmin)
-admin.site.register(ConfirmationFormSubmission, ConfirmationFormSubmissionAdmin)
