@@ -10,8 +10,8 @@ INSTALL_REQUIREMENTS = [
     "django-admin-sortable2>=0.6.4",
 ]
 DEPENDENCY_LINKS = [
-    "https://github.com/django-cms/django-cms/tarball/release/4.0.1.x#egg=django-cms",
-    "https://github.com/django-cms/djangocms-versioning/tarball/1.2.2#egg=djangocms-versioning",
+    "django-cms>=4.1.0",
+    "djangocms-versioning>=2.0.0",
 ]
 
 setup(
