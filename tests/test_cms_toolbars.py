@@ -72,7 +72,8 @@ class CMSToolbarsTestCase(CMSTestCase):
                 return button.name == callable_or_name
 
         for button_list in toolbar.get_right_items():
-            found = found + [button for button in button_list.buttons if func(button)]
+            if hasattr(button_list, "buttons"):
+                found = found + [button for button in button_list.buttons if func(button)]
         return found
 
     def _button_exists(self, callable_or_name, toolbar):
