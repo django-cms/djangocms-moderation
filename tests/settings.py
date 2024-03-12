@@ -1,3 +1,5 @@
+from cms import __version__ as cms_version
+
 HELPER_SETTINGS = {
     "SECRET_KEY": "moderationtestsuitekey",
     "INSTALLED_APPS": [
@@ -30,9 +32,6 @@ HELPER_SETTINGS = {
     "DJANGOCMS_VERSIONING_LOCK_VERSIONS": True,
     "CMS_CONFIRM_VERSION4": True,
 }
-
-from cms import __version__ as cms_version
-
 
 if cms_version < "4.1.0":
     HELPER_SETTINGS["INSTALLED_APPS"].append("djangocms_version_locking")
