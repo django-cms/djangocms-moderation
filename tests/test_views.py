@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.messages import get_messages
@@ -629,7 +629,7 @@ class CollectionItemsViewTest(CMSTestCase):
         pg_version = PageVersionFactory()
         poll_version = PollVersionFactory()
         self.url += "?collection_id=" + str(collection.pk)
-        self.url += "&version_ids={},{}".format(pg_version.pk, poll_version.pk)
+        self.url += f"&version_ids={pg_version.pk},{poll_version.pk}"
 
         response = self.client.get(self.url)
 
@@ -648,7 +648,7 @@ class CollectionItemsViewTest(CMSTestCase):
     def test_initial_form_values_when_collection_id_not_passed(self):
         pg_version = PageVersionFactory()
         poll_version = PollVersionFactory()
-        self.url += "?version_ids={},{}".format(pg_version.pk, poll_version.pk)
+        self.url += f"?version_ids={pg_version.pk},{poll_version.pk}"
 
         response = self.client.get(self.url)
 
@@ -774,7 +774,7 @@ class CollectionItemsViewTest(CMSTestCase):
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
     def setUp(self):
-        super(SubmitCollectionForModerationViewTest, self).setUp()
+        super().setUp()
         self.url = reverse(
             "admin:cms_moderation_submit_collection_for_moderation",
             args=(self.collection2.pk,),
@@ -820,7 +820,7 @@ class CancelCollectionViewTest(BaseViewTestCase):
 
 class ModerationRequestChangeListView(BaseViewTestCase):
     def setUp(self):
-        super(ModerationRequestChangeListView, self).setUp()
+        super().setUp()
         self.collection_submit_url = reverse(
             "admin:cms_moderation_submit_collection_for_moderation",
             args=(self.collection2.pk,),
@@ -1038,7 +1038,7 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
         # Load the changelist and check that the page loads without an error
         changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
-        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        changelist_url += f"?moderation_request__collection__id={self.collection.pk}"
         response = self.client.get(changelist_url)
         self.assertEqual(response.status_code, 200)
 
@@ -1093,7 +1093,7 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
         # Load the changelist and check that the page loads without an error
         changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
-        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        changelist_url += f"?moderation_request__collection__id={self.collection.pk}"
         response = self.client.get(changelist_url)
         self.assertEqual(response.status_code, 200)
 
@@ -1149,7 +1149,7 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
         # Load the changelist and check that the page loads without an error
         changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
-        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        changelist_url += f"?moderation_request__collection__id={self.collection.pk}"
         response = self.client.get(changelist_url)
         self.assertEqual(response.status_code, 200)
 
@@ -1209,7 +1209,7 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
         # Load the changelist and check that the page loads without an error
         changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
-        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        changelist_url += f"?moderation_request__collection__id={self.collection.pk}"
         response = self.client.get(changelist_url)
         self.assertEqual(response.status_code, 200)
 
@@ -1268,7 +1268,7 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
         # Load the changelist and check that the page loads without an error
         changelist_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
-        changelist_url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        changelist_url += f"?moderation_request__collection__id={self.collection.pk}"
         response = self.client.get(changelist_url)
         self.assertEqual(response.status_code, 200)
 

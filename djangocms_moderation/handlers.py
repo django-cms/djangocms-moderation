@@ -11,7 +11,7 @@ def moderation_confirmation_form_submission(
     sender, page, language, user, form_data, **kwargs
 ):
     for field_data in form_data:
-        if not set(("label", "value")).issubset(field_data):
+        if not {"label", "value"}.issubset(field_data):
             raise ValueError("Each field dict should contain label and value keys.")
 
     # TODO Confirmation pages are not used/working in 1.0.x yet

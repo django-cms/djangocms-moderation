@@ -1,5 +1,5 @@
-import mock
 import unittest
+from unittest import mock
 
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.auth.models import Group
@@ -66,7 +66,7 @@ class ApproveSelectedTest(CMSTestCase):
 
         # Set up the url data
         self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
-        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        self.url += f"?moderation_request__collection__id={self.collection.pk}"
 
         # Asserts to check data set up is ok. Ideally wouldn't need them, but
         # the set up is so complex that it's safer to have them.
@@ -409,7 +409,7 @@ class RejectSelectedTest(CMSTestCase):
 
         # Set up the url data
         self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
-        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        self.url += f"?moderation_request__collection__id={self.collection.pk}"
 
         # Asserts to check data set up is ok. Ideally wouldn't need them, but
         # the set up is so complex that it's safer to have them.
@@ -586,7 +586,7 @@ class PublishSelectedTest(CMSTestCase):
 
         # Set up the url data
         self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
-        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        self.url += f"?moderation_request__collection__id={self.collection.pk}"
 
         # Asserts to check data set up is ok. Ideally wouldn't need them, but
         # the set up is so complex that it's safer to have them.
@@ -813,7 +813,7 @@ class ResubmitSelectedTest(CMSTestCase):
         self.client.force_login(self.user)
 
         self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
-        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        self.url += f"?moderation_request__collection__id={self.collection.pk}"
 
         # Asserts to check data set up is ok. Ideally wouldn't need them, but
         # the set up is so complex that it's safer to have them.
@@ -963,7 +963,7 @@ class DeleteSelectedTest(CMSTestCase):
             id=6, moderation_request=self.moderation_request2)
 
         self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
-        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        self.url += f"?moderation_request__collection__id={self.collection.pk}"
 
     @mock.patch.object(ModerationRequestTreeAdmin, "has_delete_permission", mock.Mock(return_value=True))
     def test_delete_selected_action_cannot_be_accessed_if_not_collection_author(self):
@@ -1112,7 +1112,7 @@ class DeletedSelectedTransactionTest(TransactionTestCase):
 
         # Generate url and POST data
         self.url = reverse("admin:djangocms_moderation_moderationrequesttreenode_changelist")
-        self.url += "?moderation_request__collection__id={}".format(self.collection.pk)
+        self.url += f"?moderation_request__collection__id={self.collection.pk}"
         self.data = get_url_data(self, "delete_selected")
 
     def tearDown(self):

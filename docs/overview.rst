@@ -5,7 +5,7 @@ Overview
 
 Moderation provides an approval workflow mechanism for organisations who need to ensure that content is approved before it is published. It is designed to extend and compliment the Versioning addon and has that as a dependency.
 
-The general idea is that a draft version can be submitted for moderation. This involves adding that draft to a :ref:`moderation_collection`, which can be thought of as a chapter, edition or batch of content that aims to all be published simultaneously. Various drafts can be added to the same :ref:`moderation_collection`. 
+The general idea is that a draft version can be submitted for moderation. This involves adding that draft to a :ref:`moderation_collection`, which can be thought of as a chapter, edition or batch of content that aims to all be published simultaneously. Various drafts can be added to the same :ref:`moderation_collection`.
 
 Drafts within the :ref:`moderation_collection` can then be approved rejected by various parties according to :ref:`role`s defined within the :ref:`workflow` assigned to the :ref:`moderation_collection`.
 
