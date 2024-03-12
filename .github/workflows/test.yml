@@ -12,6 +12,7 @@ jobs:
       matrix:
         python-version: [ 3.9, "3.10", "3.11", "3.12" ]  # latest release minus two
         requirements-file: [
+            dj50_cms41.txt,
             dj42_cms41.txt,
             dj32_cms40.txt,
         ]

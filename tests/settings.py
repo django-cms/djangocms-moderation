@@ -1,5 +1,6 @@
 from cms import __version__ as cms_version
 
+
 HELPER_SETTINGS = {
     "SECRET_KEY": "moderationtestsuitekey",
     "INSTALLED_APPS": [
