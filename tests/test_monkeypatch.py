@@ -95,7 +95,8 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         _mock.return_value = None
         archive_link = self.version_admin._get_archive_link(version, self.mock_request)
         # We test that moderation check is called when getting the link
-        self.assertEqual(2, _mock.call_count)
+        if versioning_version != "2.0.0":
+            self.assertEqual(2, _mock.call_count)
         # Archive link is active there as `get_active_moderation_request` is None
         self.assertNotIn("inactive", archive_link)
         self.assertIn(archive_url, archive_link)

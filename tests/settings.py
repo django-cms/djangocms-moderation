@@ -24,6 +24,7 @@ HELPER_SETTINGS = {
         "djangocms_version_locking": None,
         "filer": None,
         "djangocms_moderation": None,
+        "djangocms_text_ckeditor": None,
     },
     "DEFAULT_AUTO_FIELD": "django.db.models.AutoField",
     "DJANGOCMS_VERSIONING_LOCK_VERSIONS": True,
@@ -31,6 +32,7 @@ HELPER_SETTINGS = {
 }
 
 from cms import __version__ as cms_version
+
 
 if cms_version < "4.1.0":
     HELPER_SETTINGS["INSTALLED_APPS"].append("djangocms_version_locking")

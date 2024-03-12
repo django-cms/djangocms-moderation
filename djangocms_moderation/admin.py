@@ -16,7 +16,7 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
 from cms.utils.helpers import is_editable_model
 
-from adminsortable2.admin import SortableInlineAdminMixin, SortableAdminMixin
+from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from treebeard.admin import TreeAdmin
 
 from . import constants, signals
@@ -80,7 +80,6 @@ class ModerationRequestActionInline(admin.TabularInline):
         _name = obj.get_by_user_name()
         return gettext("By {user}").format(user=_name)
 
-
     @admin.display(
         description=_("Form Submission")
     )
@@ -100,7 +99,6 @@ class ModerationRequestActionInline(admin.TabularInline):
         return format_html(
             '<a href="{}" target="_blank">{}</a>', url, obj.step_approved.role.name
         )
-
 
     def get_readonly_fields(self, request, obj=None):
         if obj.user_can_moderate(request.user) or obj.user_is_author(request.user):
@@ -192,7 +190,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             "", "{}", ((action(obj),) for action in self.get_list_display_actions())
         )
 
-
     def get_list_display_actions(self):
         actions = []
         if conf.REQUEST_COMMENTS_ENABLED:
@@ -271,7 +268,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             "</a>",
             object_preview_url,
         )
-
 
     @admin.display(
         description=_('Reviewer')
@@ -936,7 +932,6 @@ class RequestCommentAdmin(admin.ModelAdmin):
     def get_author(self, obj):
         return obj.author_name
 
-
     def get_changeform_initial_data(self, request):
         data = {"author": request.user}
         moderation_request_id = utils.extract_filter_param_from_changelist_url(
@@ -1077,7 +1072,6 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             "", "{}", ((action(obj),) for action in self.get_list_display_actions())
         )
 
-
     def get_list_display_actions(self):
         actions = [self.get_edit_link, self.get_requests_link]
         if conf.COLLECTION_COMMENTS_ENABLED:
@@ -1217,13 +1211,11 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
     def moderation_request(self, obj):
         return obj.moderation_request_id
 
-
     @admin.display(
         description=_("By User")
     )
     def show_user(self, obj):
         return obj.get_by_user_name()
-
 
     @admin.display(
         description=_("Form Data")
@@ -1238,6 +1230,3 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
                 for d in data
             ),
         )
-
-
-
