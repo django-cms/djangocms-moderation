@@ -144,6 +144,7 @@ class Workflow(models.Model):
     class Meta:
         verbose_name = _("Workflow")
         verbose_name_plural = _("Workflows")
+        ordering = ("name",)
 
     def __str__(self):
         return self.name

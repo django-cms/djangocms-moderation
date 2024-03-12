@@ -8,6 +8,7 @@ from cms.middleware.toolbar import ToolbarMiddleware
 from cms.test_utils.testcases import CMSTestCase
 from cms.toolbar.toolbar import CMSToolbar
 
+from djangocms_versioning import __version__ as versioning_version
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
@@ -72,7 +73,8 @@ class CMSToolbarsTestCase(CMSTestCase):
                 return button.name == callable_or_name
 
         for button_list in toolbar.get_right_items():
-            found = found + [button for button in button_list.buttons if func(button)]
+            if hasattr(button_list, "buttons"):
+                found = found + [button for button in button_list.buttons if func(button)]
         return found
 
     def _button_exists(self, callable_or_name, toolbar):
@@ -187,16 +189,17 @@ class CMSToolbarsTestCase(CMSTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(
-            self._button_exists(
-                lambda button: button.name.endswith("Edit"), toolbar.toolbar
+        if versioning_version < "2":
+            self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
+            # Edit button should not be clickable
+            button = self._find_buttons("Edit", toolbar.toolbar)
+            self.assertTrue(button[0].disabled)
+        else:
+            self.assertFalse(
+                self._button_exists(
+                    lambda button: button.name.endswith("Edit"), toolbar.toolbar
+                )
             )
-        )
-        # Edit button should not be clickable
-        button = self._find_buttons(
-            lambda button: button.name.endswith("Edit"), toolbar.toolbar
-        )
-        self.assertTrue(button[0].disabled)
 
     def test_add_edit_button(self):
         user = self.get_superuser()
@@ -222,9 +225,12 @@ class CMSToolbarsTestCase(CMSTestCase):
         toolbar.populate()
         toolbar.post_template_populate()
 
-        self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
-        button = self._find_buttons("Edit", toolbar.toolbar)
-        self.assertTrue(button[0].disabled)
+        if versioning_version < "2":
+            self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
+            button = self._find_buttons("Edit", toolbar.toolbar)
+            self.assertTrue(button[0].disabled)
+        else:
+            self.assertFalse(self._button_exists("Edit", toolbar.toolbar))
 
     def test_add_edit_button_without_toolbar_object(self):
         toolbar = self._get_toolbar(None)
