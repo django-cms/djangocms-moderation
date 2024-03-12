@@ -6,6 +6,7 @@ from django.urls import reverse
 from cms.models import PageContent
 from cms.models.fields import PlaceholderRelationField
 
+from djangocms_versioning import __version__ as versioning_version
 from djangocms_versioning import versionables
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT, PUBLISHED
@@ -42,8 +43,12 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         )
         # We test that moderation check is called when getting an edit link
         self.assertTrue(mock_is_obj_review_locked.called)
-        # Edit link is removed as `mock_is_obj_review_locked` is True
-        self.assertEqual("", edit_link)
+        if versioning_version < "2":
+            # Edit link is inactive as `mock_is_obj_review_locked` is True
+            self.assertIn("inactive", edit_link)
+        else:
+            # Edit link is removed as `mock_is_obj_review_locked` is True
+            self.assertEqual("", edit_link)
         # self.assertIn("inactive", edit_link)
 
     @mock.patch("djangocms_moderation.monkeypatch.is_registered_for_moderation")
@@ -79,7 +84,6 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
             args=(version.pk,),
         )
         _mock.return_value = True
-        from djangocms_versioning import __version__ as versioning_version
         if versioning_version != "2.0.0":
             archive_link = self.version_admin._get_archive_link(version, self.mock_request)
         else:
@@ -89,8 +93,12 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
             archive_link = ""
         # We test that moderation check is called when getting an edit link
         self.assertEqual(1, _mock.call_count)
-        # Edit link is unavailable
-        self.assertEqual("", archive_link)
+        if versioning_version < "2":
+            # Edit link is inactive as `mock_is_obj_review_locked` is True
+            self.assertIn("inactive", archive_link)
+        else:
+            # Edit link is unavailable
+            self.assertEqual("", archive_link)
 
         _mock.return_value = None
         archive_link = self.version_admin._get_archive_link(version, self.mock_request)

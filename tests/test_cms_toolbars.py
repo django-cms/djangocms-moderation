@@ -190,9 +190,11 @@ class CMSToolbarsTestCase(CMSTestCase):
         toolbar.post_template_populate()
 
         if versioning_version < "2":
-            self.assertTrue(self._button_exists("Edit", toolbar.toolbar))
+            self.assertTrue(
+                self._button_exists(lambda button: button.name.endswith("Edit"), toolbar.toolbar)
+            )
             # Edit button should not be clickable
-            button = self._find_buttons("Edit", toolbar.toolbar)
+            button = self._find_buttons(lambda button: button.name.endswith("Edit"), toolbar.toolbar)
             self.assertTrue(button[0].disabled)
         else:
             self.assertFalse(
