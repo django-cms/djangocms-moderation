@@ -22,6 +22,16 @@ from .utils import generate_compliance_number
 from . import conf, constants, signals  # isort:skip
 
 
+try:
+    from djangocms_versioning.helpers import version_is_locked
+
+    def version_is_unlocked_for_moderation(version, user):
+        return version_is_locked(version) is None
+except ImportError:
+    def version_is_unlocked_for_moderation(version, user):
+        return version.created_by == user
+
+
 class ConfirmationPage(models.Model):
     CONTENT_TYPES = (
         (constants.CONTENT_TYPE_PLAIN, _("Plain")),
@@ -382,8 +392,8 @@ class ModerationCollection(models.Model):
             for child_version in get_moderated_children_from_placeholder(
                 placeholder, version.versionable.grouping_values(parent)
             ):
-                # Don't add the version if it's already part of the collection or another users item
-                if version.created_by == child_version.created_by:
+                # Don't add the version if it's already part of the collection or locked by another user
+                if version_is_unlocked_for_moderation(child_version, version.created_by):
                     moderation_request, _added_items = self.add_version(
                         child_version, parent=parent_node, include_children=True
                     )

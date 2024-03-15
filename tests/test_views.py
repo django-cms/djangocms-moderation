@@ -30,6 +30,15 @@ from .utils.factories import (
     UserFactory,
 )
 
+try:
+    from djangocms_versioning.helpers import remove_version_lock
+except ImportError:
+    try:
+        from djangocms_version_locking.helpers import remove_version_lock
+    except ImportError:
+        def remove_version_lock(version):
+            pass
+
 
 class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
     def test_no_eligible_items_to_add_to_collection(self):
@@ -216,6 +225,9 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         poll2_version = PollVersionFactory(created_by=user, content__language=language)
         PollPluginFactory(placeholder=placeholder, poll=poll1_version.content.poll)
         PollPluginFactory(placeholder=placeholder, poll=poll2_version.content.poll)
+        remove_version_lock(page_version)
+        remove_version_lock(poll1_version)
+        remove_version_lock(poll2_version)
 
         admin_endpoint = get_admin_url(
             name="cms_moderation_items_to_collection", language="en", args=()
@@ -238,11 +250,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
 
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
-        if cms_version < "4.1.0":
-            # version-locking override `_add_nested_children` add locked state checking
-            self.assertEqual(stored_collection.count(), 1)
-        else:
-            self.assertEqual(stored_collection.count(), 3)
+        self.assertEqual(stored_collection.count(), 3)
         mr = ModerationRequest.objects.filter(
             collection=collection, version=page_version
         )
@@ -288,6 +296,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         poll_version = PollVersionFactory(created_by=user, content__language=language)
         PollPluginFactory(placeholder=placeholder, poll=poll_version.content.poll)
         PollPluginFactory(placeholder=placeholder, poll=poll_version.content.poll)
+        remove_version_lock(poll_version)
 
         admin_endpoint = get_admin_url(
             name="cms_moderation_items_to_collection", language="en", args=()
@@ -316,18 +325,13 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             1,
         )
         mr = stored_collection.filter(version=poll_version)
-        if cms_version < "4.1.0":
-            # version-locking override `_add_nested_children` add locked state checking
-            # poll1_version is locked, so will not be added to collection
-            self.assertEqual(mr.count(), 0)
-        else:
-            self.assertEqual(mr.count(), 1)
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(
-                    moderation_request=stored_collection.get(version=poll_version)
-                ).count(),
-                1,
-            )
+        self.assertEqual(mr.count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll_version)
+            ).count(),
+            1,
+        )
 
     def test_add_pages_moderated_duplicated_children_to_collection_for_author_only(
         self
@@ -347,7 +351,9 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         poll2_version = PollVersionFactory(created_by=user2, content__language=language)
         PollPluginFactory(placeholder=placeholder, poll=poll1_version.content.poll)
         PollPluginFactory(placeholder=placeholder, poll=poll2_version.content.poll)
-
+        remove_version_lock(page_version)
+        remove_version_lock(poll1_version)
+        # poll2_version remains is locked, so will not be added to collection
         admin_endpoint = get_admin_url(
             name="cms_moderation_items_to_collection", language="en", args=()
         )
@@ -367,11 +373,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
 
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
-        if cms_version < "4.1.0":
-            # version-locking override `_add_nested_children` add locked state checking
-            self.assertEqual(stored_collection.count(), 1)
-        else:
-            self.assertEqual(stored_collection.count(), 2)
+        self.assertEqual(stored_collection.count(), 2)
 
         self.assertEqual(stored_collection.filter(version=page_version).count(), 1)
         self.assertEqual(
@@ -414,10 +416,12 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         language = page_version.content.language
         # Populate page
         placeholder = PlaceholderFactory(source=page_version.content)
+        remove_version_lock(page_version)
         poll_version = PollVersionFactory(created_by=user, content__language=language)
         poll_plugin = PollPluginFactory(
             placeholder=placeholder, poll=poll_version.content.poll
         )
+        remove_version_lock(poll_version)
         # Populate page poll child layer 1
         poll_child_1_version = PollVersionFactory(
             created_by=user, content__language=language
@@ -425,6 +429,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         poll_child_1_plugin = PollPluginFactory(
             placeholder=poll_plugin.placeholder, poll=poll_child_1_version.content.poll
         )
+        remove_version_lock(poll_child_1_version)
         # Populate page poll child layer 2
         poll_child_2_version = PollVersionFactory(
             created_by=user, content__language=language
@@ -433,6 +438,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             placeholder=poll_child_1_plugin.placeholder,
             poll=poll_child_2_version.content.poll,
         )
+        remove_version_lock(poll_child_2_version)
 
         admin_endpoint = get_admin_url(
             name="cms_moderation_items_to_collection", language="en", args=()
@@ -453,11 +459,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
 
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
-        if cms_version < "4.1.0":
-            # version-locking override `_add_nested_children` add locked state checking
-            self.assertEqual(stored_collection.count(), 1)
-        else:
-            self.assertEqual(stored_collection.count(), 4)
+        self.assertEqual(stored_collection.count(), 4)
 
         self.assertEqual(stored_collection.filter(version=page_version).count(), 1)
         self.assertEqual(
@@ -752,11 +754,13 @@ class CollectionItemsViewTest(CMSTestCase):
         PollPluginFactory(
             placeholder=placeholder, poll=poll_version.content.poll
         )
+        remove_version_lock(poll_version)
 
         # Populate poll child
         poll_child_version = PollVersionFactory(
             created_by=user, content__language=language
         )
+        remove_version_lock(poll_child_version)
         PollPluginFactory(
             placeholder=poll_version.content.placeholder,
             poll=poll_child_version.content.poll,
@@ -766,6 +770,7 @@ class CollectionItemsViewTest(CMSTestCase):
         poll_grandchild_version = PollVersionFactory(
             created_by=user, content__language=language
         )
+        remove_version_lock(poll_grandchild_version)
         PollPluginFactory(
             placeholder=poll_child_version.content.placeholder,
             poll=poll_grandchild_version.content.poll,
@@ -795,35 +800,29 @@ class CollectionItemsViewTest(CMSTestCase):
             moderation_request__collection_id=collection.pk
         )
 
-        # The correct amount of nodes exist
-        if cms_version < "4.1.0":
-            self.assertEqual(nodes.count(), 1)
-        else:
-            self.assertEqual(nodes.count(), 6)
+        # The correct number of nodes exists
+        self.assertEqual(nodes.count(), 6)
         # Now assert the tree structure...
         # Check root refers to correct version & has correct number of children
         root = ModerationRequestTreeNode.get_root_nodes().get()
         self.assertEqual(root.moderation_request.version, page_version)
-        if cms_version < "4.1.0":
-            self.assertEqual(root.get_children().count(), 0)
-        else:
-            self.assertEqual(root.get_children().count(), 2)
-            # Check first child of root has correct tree
-            poll_node = root.get_children().get(moderation_request__version=poll_version)
-            self.assertEqual(poll_node.get_children().count(), 1)
-            poll_child_node = poll_node.get_children().get()
-            self.assertEqual(poll_child_node.moderation_request.version, poll_child_version)
-            self.assertEqual(poll_child_node.get_children().count(), 1)
-            poll_grandchild_node = poll_child_node.get_children().get()
-            self.assertEqual(poll_grandchild_node.moderation_request.version, poll_grandchild_version)
-            # Check second child of root has correct tree
-            poll_child_node2 = root.get_children().get(moderation_request__version=poll_child_version)
-            self.assertNotEqual(poll_child_node, poll_child_node2)
-            self.assertEqual(poll_child_node2.moderation_request.version, poll_child_version)
-            self.assertEqual(poll_child_node2.get_children().count(), 1)
-            poll_grandchild_node2 = poll_child_node2.get_children().get()
-            self.assertNotEqual(poll_grandchild_node, poll_grandchild_node2)
-            self.assertEqual(poll_grandchild_node2.moderation_request.version, poll_grandchild_version)
+        self.assertEqual(root.get_children().count(), 2)
+        # Check first child of root has correct tree
+        poll_node = root.get_children().get(moderation_request__version=poll_version)
+        self.assertEqual(poll_node.get_children().count(), 1)
+        poll_child_node = poll_node.get_children().get()
+        self.assertEqual(poll_child_node.moderation_request.version, poll_child_version)
+        self.assertEqual(poll_child_node.get_children().count(), 1)
+        poll_grandchild_node = poll_child_node.get_children().get()
+        self.assertEqual(poll_grandchild_node.moderation_request.version, poll_grandchild_version)
+        # Check second child of root has correct tree
+        poll_child_node2 = root.get_children().get(moderation_request__version=poll_child_version)
+        self.assertNotEqual(poll_child_node, poll_child_node2)
+        self.assertEqual(poll_child_node2.moderation_request.version, poll_child_version)
+        self.assertEqual(poll_child_node2.get_children().count(), 1)
+        poll_grandchild_node2 = poll_child_node2.get_children().get()
+        self.assertNotEqual(poll_grandchild_node, poll_grandchild_node2)
+        self.assertEqual(poll_grandchild_node2.moderation_request.version, poll_grandchild_version)
 
 
 class SubmitCollectionForModerationViewTest(BaseViewTestCase):
@@ -996,11 +995,15 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
         self.poll_child_version = PollVersionFactory(created_by=self.user, content__language=language)
         PollPluginFactory(
             placeholder=self.poll_version.content.placeholder, poll=self.poll_child_version.content.poll)
+        remove_version_lock(self.page_1_version)
+        remove_version_lock(self.poll_version)
+        remove_version_lock(self.poll_child_version)
 
         # Page 2
         self.page_2_version = PageVersionFactory(created_by=self.user, content__language=language)
         page_2_placeholder = PlaceholderFactory(source=self.page_2_version.content)
         PollPluginFactory(placeholder=page_2_placeholder, poll=self.poll_child_version.content.poll)
+        remove_version_lock(self.page_2_version)
 
     def _add_pages_to_collection(self):
         """
