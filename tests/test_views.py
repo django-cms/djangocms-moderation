@@ -602,7 +602,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         """
         Reflected XSS Protection by ensuring that harmful characters are encoded
 
-        When a collection is succesful a redirect occurs back to the grouper in versioning,
+        When a collection is successful a redirect occurs back to the grouper in versioning,
         this functionality should continue to function even when sanitised!
         """
         user = self.get_superuser()
