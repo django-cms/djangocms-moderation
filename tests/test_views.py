@@ -5,7 +5,6 @@ from django.contrib.messages import get_messages
 from django.test import TransactionTestCase
 from django.urls import reverse
 
-from cms import __version__ as cms_version
 from cms.test_utils.testcases import CMSTestCase
 from cms.utils.urlutils import add_url_parameters, admin_reverse
 
@@ -29,6 +28,7 @@ from .utils.factories import (
     RootModerationRequestTreeNodeFactory,
     UserFactory,
 )
+
 
 try:
     from djangocms_versioning.helpers import remove_version_lock
@@ -265,20 +265,14 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             collection=collection, version=poll2_version
         )
 
-        if cms_version < "4.1.0":
-            # version-locking override `_add_nested_children` add locked state checking
-            # poll1_version is locked, so will not be added to collection
-            self.assertEqual(mr1.count(), 0)
-            self.assertEqual(mr2.count(), 0)
-        else:
-            self.assertEqual(mr1.count(), 1)
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(moderation_request=mr1.first()).count(), 1
-            )
-            self.assertEqual(mr2.count(), 1)
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(moderation_request=mr2.first()).count(), 1
-            )
+        self.assertEqual(mr1.count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr1.first()).count(), 1
+        )
+        self.assertEqual(mr2.count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request=mr2.first()).count(), 1
+        )
 
     def test_add_pages_moderated_duplicated_children_to_collection(self):
         """
@@ -383,18 +377,13 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             1,
         )
         mr1 = stored_collection.filter(version=poll1_version)
-        if cms_version < "4.1.0":
-            # version-locking override `_add_nested_children` add locked state checking
-            # poll1_version is locked, so will not be added to collection
-            self.assertEqual(mr1.count(), 0)
-        else:
-            self.assertEqual(mr1.count(), 1)
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(
-                    moderation_request=stored_collection.get(version=poll1_version)
-                ).count(),
-                1,
-            )
+        self.assertEqual(mr1.count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll1_version)
+            ).count(),
+            1,
+        )
 
         self.assertEqual(stored_collection.filter(version=poll2_version).count(), 0)
         self.assertEqual(
@@ -470,42 +459,31 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         )
 
         mr = stored_collection.filter(version=poll_version)
-        if cms_version < "4.1.0":
-            # version-locking override `_add_nested_children` add locked state checking
-            # poll1_version is locked, so will not be added to collection
-            self.assertEqual(mr.count(), 0)
-            self.assertEqual(
-                stored_collection.filter(version=poll_child_1_version).count(), 0
-            )
-            self.assertEqual(
-                stored_collection.filter(version=poll_child_2_version).count(), 0
-            )
-        else:
-            self.assertEqual(mr.count(), 1)
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(
-                    moderation_request=stored_collection.get(version=poll_version)
-                ).count(),
-                1,
-            )
-            self.assertEqual(
-                stored_collection.filter(version=poll_child_1_version).count(), 1
-            )
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(
-                    moderation_request=stored_collection.get(version=poll_child_1_version)
-                ).count(),
-                1,
-            )
-            self.assertEqual(
-                stored_collection.filter(version=poll_child_2_version).count(), 1
-            )
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(
-                    moderation_request=stored_collection.get(version=poll_child_2_version)
-                ).count(),
-                1,
-            )
+        self.assertEqual(mr.count(), 1)
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll_version)
+            ).count(),
+            1,
+        )
+        self.assertEqual(
+            stored_collection.filter(version=poll_child_1_version).count(), 1
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll_child_1_version)
+            ).count(),
+            1,
+        )
+        self.assertEqual(
+            stored_collection.filter(version=poll_child_2_version).count(), 1
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(
+                moderation_request=stored_collection.get(version=poll_child_2_version)
+            ).count(),
+            1,
+        )
 
     def test_adding_non_page_item_doesnt_trigger_nested_collection_mechanism(self):
         user = self.get_superuser()
@@ -1036,39 +1014,29 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
         mr = ModerationRequest.objects.filter(collection=self.collection)
         # The tree structure for page_1_version is correct
         root_1 = ModerationRequestTreeNode.get_root_nodes().get(moderation_request__version=self.page_1_version)
-        if cms_version < "4.1.0":
-            # version-locking override `_add_nested_children` add locked state checking
-            self.assertEqual(mr.count(), 2)
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
-                2
-            )
-            self.assertEqual(root_1.get_children().count(), 0)
+        self.assertEqual(mr.count(), 4)
+        # The correct amount of tree nodes has been created
+        # Poll is repeated twice and will therefore have an additional node
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            5
+        )
+        self.assertEqual(root_1.get_children().count(), 1)
 
-        else:
-            self.assertEqual(mr.count(), 4)
-            # The correct amount of tree nodes has been created
-            # Poll is repeated twice and will therefore have an additional node
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
-                5
-            )
-            self.assertEqual(root_1.get_children().count(), 1)
+        child_1 = root_1.get_children().get()
+        self.assertEqual(child_1.moderation_request.version, self.poll_version)
+        self.assertEqual(child_1.get_children().count(), 1)
+        grandchild = child_1.get_children().get()
+        self.assertEqual(
+            grandchild.moderation_request.version, self.poll_child_version)
 
-            child_1 = root_1.get_children().get()
-            self.assertEqual(child_1.moderation_request.version, self.poll_version)
-            self.assertEqual(child_1.get_children().count(), 1)
-            grandchild = child_1.get_children().get()
-            self.assertEqual(
-                grandchild.moderation_request.version, self.poll_child_version)
-
-            # The tree structure for page_2_version is correct
-            root_2 = ModerationRequestTreeNode.get_root_nodes().get(
-                moderation_request__version=self.page_2_version)
-            self.assertEqual(root_2.get_children().count(), 1)
-            child_2 = root_2.get_children().get()
-            self.assertEqual(child_2.moderation_request.version, self.poll_child_version)
-            self.assertEqual(grandchild.moderation_request, child_2.moderation_request)
+        # The tree structure for page_2_version is correct
+        root_2 = ModerationRequestTreeNode.get_root_nodes().get(
+            moderation_request__version=self.page_2_version)
+        self.assertEqual(root_2.get_children().count(), 1)
+        child_2 = root_2.get_children().get()
+        self.assertEqual(child_2.moderation_request.version, self.poll_child_version)
+        self.assertEqual(grandchild.moderation_request, child_2.moderation_request)
 
     def test_moderation_workflow_node_deletion_1(self):
         """
@@ -1112,33 +1080,19 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
         # The whole of the page_2_version tree should have been removed.
         # Additionally, poll_child_version should have been removed from
         # the page_1_version tree.
-        if cms_version < "4.1.0":
-            self.assertEqual(
-                ModerationRequest.objects.filter(collection=self.collection).count(),
-                1
-            )
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
-                1
-            )
-            self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 1)
-            root = ModerationRequestTreeNode.get_root_nodes().get()
-            self.assertEqual(root.moderation_request.version, self.page_1_version)
-            self.assertEqual(root.get_children().count(), 0)
-        else:
-            self.assertEqual(
-                ModerationRequest.objects.filter(collection=self.collection).count(),
-                2
-            )
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
-                2
-            )
-            self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 1)
-            root = ModerationRequestTreeNode.get_root_nodes().get()
-            self.assertEqual(root.moderation_request.version, self.page_1_version)
-            self.assertEqual(root.get_children().count(), 1)
-            self.assertEqual(root.get_children().get().moderation_request.version, self.poll_version)
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            2
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            2
+        )
+        self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 1)
+        root = ModerationRequestTreeNode.get_root_nodes().get()
+        self.assertEqual(root.moderation_request.version, self.page_1_version)
+        self.assertEqual(root.get_children().count(), 1)
+        self.assertEqual(root.get_children().get().moderation_request.version, self.poll_version)
 
     def test_moderation_workflow_node_deletion_2(self):
         """
@@ -1299,33 +1253,20 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
         # Check the data
         # Only the roots (page_1_version and page_2_version) should remain
-        if cms_version < "4.1.0":
-            self.assertEqual(
-                ModerationRequest.objects.filter(collection=self.collection).count(),
-                2
-            )
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
-                2
-            )
-        else:
-            self.assertEqual(
-                ModerationRequest.objects.filter(collection=self.collection).count(),
-                3
-            )
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
-                3
-            )
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            3
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            3
+        )
         self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 2)
         root_1 = ModerationRequestTreeNode.get_root_nodes().filter(
             moderation_request__version=self.page_1_version).get()
         root_2 = ModerationRequestTreeNode.get_root_nodes().filter(
             moderation_request__version=self.page_2_version).get()
-        if cms_version < "4.1.0":
-            self.assertEqual(root_1.get_children().count(), 0)
-        else:
-            self.assertEqual(root_1.get_children().count(), 1)
+        self.assertEqual(root_1.get_children().count(), 1)
         self.assertEqual(root_2.get_children().count(), 0)
 
     def test_moderation_workflow_node_deletion_5(self):
@@ -1372,34 +1313,20 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
 
         # Check the data
         # Only the roots (page_1_version and page_2_version) should remain
-        if cms_version < "4.1.0":
-            self.assertEqual(
-                ModerationRequest.objects.filter(collection=self.collection).count(),
-                2
-            )
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
-                2
-            )
-        else:
-            self.assertEqual(
-                ModerationRequest.objects.filter(collection=self.collection).count(),
-                3
-            )
-            self.assertEqual(
-                ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
-                3
-            )
+        self.assertEqual(
+            ModerationRequest.objects.filter(collection=self.collection).count(),
+            3
+        )
+        self.assertEqual(
+            ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
+            3
+        )
         self.assertEqual(ModerationRequestTreeNode.get_root_nodes().count(), 2)
         root_1 = ModerationRequestTreeNode.get_root_nodes().filter(
             moderation_request__version=self.page_1_version).get()
         root_2 = ModerationRequestTreeNode.get_root_nodes().filter(
             moderation_request__version=self.page_2_version).get()
 
-        if cms_version < "4.1.0":
-            self.assertEqual(root_1.get_children().count(), 0)
-            self.assertEqual(root_2.get_children().count(), 0)
-        else:
-            self.assertEqual(root_1.get_children().count(), 1)
-            self.assertEqual(root_1.get_children().get().moderation_request.version, self.poll_version)
-            self.assertEqual(root_2.get_children().count(), 0)
+        self.assertEqual(root_1.get_children().count(), 1)
+        self.assertEqual(root_1.get_children().get().moderation_request.version, self.poll_version)
+        self.assertEqual(root_2.get_children().count(), 0)
