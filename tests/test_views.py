@@ -239,7 +239,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
         if cms_version < "4.1.0":
-            #version-locking override `_add_nested_children` add locked state checking
+            # version-locking override `_add_nested_children` add locked state checking
             self.assertEqual(stored_collection.count(), 1)
         else:
             self.assertEqual(stored_collection.count(), 3)
@@ -258,8 +258,8 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         )
 
         if cms_version < "4.1.0":
-            #version-locking override `_add_nested_children` add locked state checking
-            #poll1_version is locked, so will not be added to collection
+            # version-locking override `_add_nested_children` add locked state checking
+            # poll1_version is locked, so will not be added to collection
             self.assertEqual(mr1.count(), 0)
             self.assertEqual(mr2.count(), 0)
         else:
@@ -317,8 +317,8 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         )
         mr = stored_collection.filter(version=poll_version)
         if cms_version < "4.1.0":
-            #version-locking override `_add_nested_children` add locked state checking
-            #poll1_version is locked, so will not be added to collection
+            # version-locking override `_add_nested_children` add locked state checking
+            # poll1_version is locked, so will not be added to collection
             self.assertEqual(mr.count(), 0)
         else:
             self.assertEqual(mr.count(), 1)
@@ -368,11 +368,11 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
         if cms_version < "4.1.0":
-            #version-locking override `_add_nested_children` add locked state checking
+            # version-locking override `_add_nested_children` add locked state checking
             self.assertEqual(stored_collection.count(), 1)
         else:
             self.assertEqual(stored_collection.count(), 2)
- 
+
         self.assertEqual(stored_collection.filter(version=page_version).count(), 1)
         self.assertEqual(
             ModerationRequestTreeNode.objects.filter(
@@ -382,8 +382,8 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         )
         mr1 = stored_collection.filter(version=poll1_version)
         if cms_version < "4.1.0":
-            #version-locking override `_add_nested_children` add locked state checking
-            #poll1_version is locked, so will not be added to collection
+            # version-locking override `_add_nested_children` add locked state checking
+            # poll1_version is locked, so will not be added to collection
             self.assertEqual(mr1.count(), 0)
         else:
             self.assertEqual(mr1.count(), 1)
@@ -454,7 +454,7 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
         self.assertEqual(302, response.status_code)
         self.assertEqual(admin_endpoint, response.url)
         if cms_version < "4.1.0":
-            #version-locking override `_add_nested_children` add locked state checking
+            # version-locking override `_add_nested_children` add locked state checking
             self.assertEqual(stored_collection.count(), 1)
         else:
             self.assertEqual(stored_collection.count(), 4)
@@ -469,8 +469,8 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
 
         mr = stored_collection.filter(version=poll_version)
         if cms_version < "4.1.0":
-            #version-locking override `_add_nested_children` add locked state checking
-            #poll1_version is locked, so will not be added to collection
+            # version-locking override `_add_nested_children` add locked state checking
+            # poll1_version is locked, so will not be added to collection
             self.assertEqual(mr.count(), 0)
             self.assertEqual(
                 stored_collection.filter(version=poll_child_1_version).count(), 0
@@ -1034,7 +1034,7 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
         # The tree structure for page_1_version is correct
         root_1 = ModerationRequestTreeNode.get_root_nodes().get(moderation_request__version=self.page_1_version)
         if cms_version < "4.1.0":
-            #version-locking override `_add_nested_children` add locked state checking
+            # version-locking override `_add_nested_children` add locked state checking
             self.assertEqual(mr.count(), 2)
             self.assertEqual(
                 ModerationRequestTreeNode.objects.filter(moderation_request__collection=self.collection).count(),
@@ -1392,7 +1392,7 @@ class CollectionItemsViewModerationIntegrationTest(CMSTestCase):
             moderation_request__version=self.page_1_version).get()
         root_2 = ModerationRequestTreeNode.get_root_nodes().filter(
             moderation_request__version=self.page_2_version).get()
-        
+
         if cms_version < "4.1.0":
             self.assertEqual(root_1.get_children().count(), 0)
             self.assertEqual(root_2.get_children().count(), 0)
