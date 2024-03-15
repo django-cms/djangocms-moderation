@@ -241,7 +241,7 @@ class ModerationCollection(models.Model):
 
     @property
     def job_id(self):
-        return "{}".format(self.pk)
+        return f"{self.pk}"
 
     @property
     def author_name(self):
@@ -445,7 +445,7 @@ class ModerationRequest(models.Model):
         ordering = ["id"]
 
     def __str__(self):
-        return "{} {}".format(self.pk, self.version_id)
+        return f"{self.pk} {self.version_id}"
 
     @cached_property
     def workflow(self):
@@ -652,7 +652,7 @@ class ModerationRequestAction(models.Model):
         verbose_name_plural = _("Actions")
 
     def __str__(self):
-        return "{} - {}".format(self.moderation_request_id, self.get_action_display())
+        return f"{self.moderation_request_id} - {self.get_action_display()}"
 
     def get_by_user_name(self):
         if not self.to_user:
@@ -687,7 +687,7 @@ class ModerationRequestAction(models.Model):
 
         if next_step:
             self.to_role_id = next_step.role_id
-        super(ModerationRequestAction, self).save(**kwargs)
+        super().save(**kwargs)
 
 
 class AbstractComment(models.Model):
@@ -744,7 +744,7 @@ class ConfirmationFormSubmission(models.Model):
     )
 
     def __str__(self):
-        return "{} - {}".format(self.request_id, self.for_step)
+        return f"{self.request_id} - {self.for_step}"
 
     class Meta:
         verbose_name = _("Confirmation Form Submission")

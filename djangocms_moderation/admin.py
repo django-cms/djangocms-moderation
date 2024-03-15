@@ -93,7 +93,7 @@ class ModerationRequestActionInline(admin.TabularInline):
 
         opts = ConfirmationFormSubmission._meta
         url = reverse(
-            "admin:{}_{}_change".format(opts.app_label, opts.model_name),
+            f"admin:{opts.app_label}_{opts.model_name}_change",
             args=[instance.pk],
         )
         return format_html(

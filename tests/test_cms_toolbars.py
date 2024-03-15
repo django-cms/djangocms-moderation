@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from django.contrib.auth.models import Permission, User
 from django.test.client import RequestFactory
@@ -141,7 +141,7 @@ class CMSToolbarsTestCase(CMSTestCase):
 
         self.assertTrue(
             self._button_exists(
-                'In collection "{} ({})"'.format(collection.name, collection.id),
+                f'In collection "{collection.name} ({collection.id})"',
                 toolbar.toolbar,
             )
         )
@@ -159,7 +159,7 @@ class CMSToolbarsTestCase(CMSTestCase):
 
         self.assertTrue(
             self._button_exists(
-                'In moderation "{} ({})"'.format(collection.name, collection.id),
+                f'In moderation "{collection.name} ({collection.id})"',
                 toolbar.toolbar,
             )
         )

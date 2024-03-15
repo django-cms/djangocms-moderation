@@ -20,6 +20,11 @@ jobs:
         os: [
             ubuntu-20.04,
         ]
+        exclude:
+          - requirements-file: "dj42_cms40.txt"
+            python-version: "3.12" #cms40 not support py3.12 yet
+          - requirements-file: "dj32_cms40.txt"
+            python-version: "3.12"
 
     steps:
     - uses: actions/checkout@v4

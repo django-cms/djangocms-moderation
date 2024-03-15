@@ -79,7 +79,7 @@ def get_active_moderation_request(content_object):
     If this returns None, it means there is no active_moderation request for this
     object, and it means it can be submitted for new moderation
     """
-    from djangocms_moderation.models import ModerationRequest  # noqa
+    from djangocms_moderation.models import ModerationRequest
 
     version = Version.objects.get_for_content(content_object)
 

@@ -1,6 +1,6 @@
 cachetools
 coverage
-django-classy-tags
+django-classy-tags>=0.7.2
 django-filer
 django-sekizai
 django-simple-captcha
