@@ -286,7 +286,8 @@ class Migration(migrations.Migration):
                     models.CharField(
                         blank=True,
                         default="",
-                        help_text="Identifier is a 'free' field you could use for internal purposes. For example, it could be used as a workflow specific prefix of a compliance number",
+                        help_text="Identifier is a 'free' field you could use for internal purposes. For example, "
+                                  "it could be used as a workflow specific prefix of a compliance number",
                         max_length=128,
                         verbose_name="identifier",
                     ),
@@ -295,7 +296,8 @@ class Migration(migrations.Migration):
                     "requires_compliance_number",
                     models.BooleanField(
                         default=False,
-                        help_text="Does the Compliance number need to be generated before the moderation request is approved? Please select the compliance number backend below",
+                        help_text="Does the Compliance number need to be generated before the moderation request is "
+                                  "approved? Please select the compliance number backend below",
                         verbose_name="requires compliance number?",
                     ),
                 ),
@@ -306,6 +308,7 @@ class Migration(migrations.Migration):
                             (
                                 "djangocms_moderation.backends.uuid4_backend",
                                 "Unique alpha-numeric string",
+
                             ),
                             (
                                 "djangocms_moderation.backends.sequential_number_backend",
