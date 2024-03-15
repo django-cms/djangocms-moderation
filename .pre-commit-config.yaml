@@ -18,7 +18,7 @@ repos:
     rev: '1.4.0'
     hooks:
       - id: django-upgrade
-        args: [--target-version, "4.2"]
+        args: [--target-version, "4.0"]
 
   - repo: https://github.com/PyCQA/flake8
     rev: 7.0.0
@@ -47,3 +47,7 @@ repos:
     rev: v2.1.0
     hooks:
       - id: codespell
+        exclude: >
+            (?x)^(
+                .*\.(js|po)
+            )$

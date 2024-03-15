@@ -9,7 +9,7 @@ SEQUENTIAL_NUMBER_WITH_IDENTIFIER_PREFIX_BACKEND = (
 )
 
 CORE_COMPLIANCE_NUMBER_BACKENDS = (
-    (UUID_BACKEND, _("Unique alpha-numeric string")),
+    (UUID_BACKEND, _("Unique alpha-npreumeric string")),
     (SEQUENTIAL_NUMBER_BACKEND, _("Sequential number")),
     (
         SEQUENTIAL_NUMBER_WITH_IDENTIFIER_PREFIX_BACKEND,
