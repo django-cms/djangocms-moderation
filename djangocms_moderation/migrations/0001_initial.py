@@ -454,14 +454,14 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterUniqueTogether(
-            name="workflowstep", unique_together=set([("role", "workflow")])
+            name="workflowstep", unique_together={("role", "workflow")}
         ),
         migrations.AlterUniqueTogether(
             name="moderationrequest",
-            unique_together=set([("collection", "object_id", "content_type")]),
+            unique_together={("collection", "object_id", "content_type")},
         ),
         migrations.AlterUniqueTogether(
             name="confirmationformsubmission",
-            unique_together=set([("request", "for_step")]),
+            unique_together={("request", "for_step")},
         ),
     ]

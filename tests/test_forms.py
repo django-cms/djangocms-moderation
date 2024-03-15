@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
@@ -248,7 +248,7 @@ class CollectionItemsFormTestCase(BaseTestCase):
             form = CollectionItemsForm(data=data, user=user)
 
             self.assertEqual(
-                form.is_valid(), fixture[1], "{} failed".format(fixture[0])
+                form.is_valid(), fixture[1], f"{fixture[0]} failed"
             )
             if not form.is_valid():
                 self.assertIn("collection", form.errors)

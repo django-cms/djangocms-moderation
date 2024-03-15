@@ -35,7 +35,7 @@ def _send_email(
         "job_id": collection.job_id,
         "by_user": by_user,
     }
-    template = "djangocms_moderation/emails/moderation-request/{}".format(template)
+    template = f"djangocms_moderation/emails/moderation-request/{template}"
 
     # TODO What language should the email be sent in? e.g. `with force_language(lang):`
     subject = force_str(subject)
@@ -61,7 +61,7 @@ def notify_collection_author(collection, moderation_requests, action, by_user):
         moderation_requests=moderation_requests,
         recipients=[collection.author.email],
         subject=email_subjects[action],
-        template="{}.txt".format(action),
+        template=f"{action}.txt",
         by_user=by_user,
     )
     return status
