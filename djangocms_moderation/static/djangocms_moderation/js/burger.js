@@ -12,7 +12,7 @@
       .on('click', function (e) {
           e.preventDefault();
 
-          // action currently being targetted
+          // action currently being targeted
           let action = $(e.currentTarget);
           // get the form method being used?
           let formMethod = action.attr('class').indexOf('cms-form-get-method') === 1 ? 'POST' : 'GET';
