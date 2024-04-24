@@ -4,7 +4,10 @@ Changelog
 
 2.2.0 (Unreleased)
 ==========
-* add support for django 4.2
+* Python 3.8, 3.9 support removed
+* Python 3.10, 3.11 and 3.12 support added
+* Django 2.2 support removed
+* Django 4.2 support added
 * fix: Treebeard support improved by inheriting a treebeard template
 
 2.1.6 (2022-09-07)
