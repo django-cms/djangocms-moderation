@@ -2,9 +2,9 @@
 Changelog
 =========
 
-Unreleased
+2.2.0 (Unreleased)
 ==========
-
+* add support for django 4.2
 * fix: Treebeard support improved by inheriting a treebeard template
 
 2.1.6 (2022-09-07)
