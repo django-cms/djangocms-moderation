@@ -2,10 +2,8 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
-from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import gettext, gettext_lazy as _, ngettext
 
-from adminsortable2.admin import CustomInlineFormSet
 from djangocms_versioning.models import Version
 
 from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED, COLLECTING
@@ -20,7 +18,7 @@ from .models import (
     ModerationRequest,
     ModerationRequestAction,
     RequestComment,
-    WorkflowStep
+    WorkflowStep,
 )
 
 
