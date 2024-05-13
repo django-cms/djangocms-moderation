@@ -5,6 +5,7 @@ Changelog
 Unreleased
 ==========
 
+* fix: Workflow admin view by removing django admin sortable2
 * fix: Treebeard support improved by inheriting a treebeard template
 
 2.1.6 (2022-09-07)

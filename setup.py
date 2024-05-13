@@ -7,7 +7,6 @@ INSTALL_REQUIREMENTS = [
     "Django>=3.2",
     "django-cms",
     "django-sekizai>=0.7",
-    "django-admin-sortable2>=0.6.4",
 ]
 DEPENDENCY_LINKS = [
     "https://github.com/django-cms/django-cms/tarball/release/4.0.1.x#egg=django-cms",
