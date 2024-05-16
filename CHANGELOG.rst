@@ -2,7 +2,7 @@
 Changelog
 =========
 
-2.2.0 (Unreleased)
+2.2.0 (2024-05-16)
 ==========
 * Python 3.8, 3.9 support removed
 * Python 3.10, 3.11 and 3.12 support added
