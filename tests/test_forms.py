@@ -16,10 +16,10 @@ from djangocms_moderation.forms import (
 )
 from djangocms_moderation.models import ModerationCollection, ModerationRequest
 
-from .utils.base import BaseTestCase
+from .utils.base import AssertQueryMixin, BaseTestCase
 
 
-class UpdateModerationRequestFormTest(BaseTestCase):
+class UpdateModerationRequestFormTest(AssertQueryMixin, BaseTestCase):
     def test_form_init_approved_action(self):
         form = UpdateModerationRequestForm(
             action=constants.ACTION_APPROVED,
@@ -31,7 +31,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
         )
         field_moderator = form.fields["moderator"]
         self.assertEqual(field_moderator.empty_label, "Any Role 2")
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             field_moderator.queryset,
             User.objects.filter(pk__in=[self.user2.pk]),
             transform=lambda x: x,
@@ -48,7 +48,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             active_request=self.moderation_request1,
         )
         field_moderator = form.fields["moderator"]
-        self.assertQuerysetEqual(field_moderator.queryset, User.objects.none())
+        self.assertQuerySetEqual(field_moderator.queryset, User.objects.none())
         self.assertIsInstance(field_moderator.widget, HiddenInput)
 
     def test_form_init_rejected_action(self):
@@ -61,7 +61,7 @@ class UpdateModerationRequestFormTest(BaseTestCase):
             active_request=self.moderation_request1,
         )
         field_moderator = form.fields["moderator"]
-        self.assertQuerysetEqual(field_moderator.queryset, User.objects.none())
+        self.assertQuerySetEqual(field_moderator.queryset, User.objects.none())
         self.assertIsInstance(field_moderator.widget, HiddenInput)
 
     def test_form_save(self):
@@ -143,7 +143,7 @@ class ModerationRequestActionInlineFormTest(BaseTestCase):
         self.assertTrue(form.is_valid())
 
 
-class CollectionItemsFormTestCase(BaseTestCase):
+class CollectionItemsFormTestCase(AssertQueryMixin, BaseTestCase):
     def test_add_items_to_collection(self):
         pg1_version = PageVersionFactory(created_by=self.user)
         pg2_version = PageVersionFactory(created_by=self.user)
@@ -155,7 +155,7 @@ class CollectionItemsFormTestCase(BaseTestCase):
         form = CollectionItemsForm(data=data, user=self.user)
         self.assertTrue(form.is_valid())
         versions = form.clean_versions()
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             versions,
             Version.objects.filter(pk__in=[pg1_version.pk, pg2_version.pk]),
             transform=lambda x: x,
@@ -172,7 +172,7 @@ class CollectionItemsFormTestCase(BaseTestCase):
         form = CollectionItemsForm(data=data, user=self.user)
         self.assertTrue(form.is_valid())
         versions = form.clean_versions()
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             versions,
             Version.objects.filter(pk__in=[pg_version.pk]),
             transform=lambda x: x,
@@ -253,7 +253,7 @@ class CollectionItemsFormTestCase(BaseTestCase):
             if not form.is_valid():
                 self.assertIn("collection", form.errors)
 
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             form.fields["collection"].queryset,
             ModerationCollection.objects.filter(
                 pk__in=[collection1.pk, collection2.pk]
