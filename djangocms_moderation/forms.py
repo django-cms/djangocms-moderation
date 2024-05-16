@@ -2,10 +2,8 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.auth import get_user_model
-from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import gettext, gettext_lazy as _, ngettext
 
-from adminsortable2.admin import CustomInlineFormSet
 from djangocms_versioning.models import Version
 
 from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED, COLLECTING
@@ -20,43 +18,14 @@ from .models import (
     ModerationRequest,
     ModerationRequestAction,
     RequestComment,
+    WorkflowStep,
 )
 
 
-class WorkflowStepInlineFormSet(CustomInlineFormSet):
-    def validate_unique(self):
-        super().validate_unique()
-        # The following fixes a bug in Django where it doesn't validate unique constraint
-        # when the parent model in inline relationship has not been saved
-        errors = []
-        unique_check = ("role", "workflow")
-        selected_roles = []
-        forms_to_delete = self.deleted_forms
-        valid_forms = [
-            form
-            for form in self.forms
-            if form.is_valid() and form not in forms_to_delete
-        ]
-
-        for form in valid_forms:
-            selected_role = form.cleaned_data.get("role")
-
-            if not selected_role:
-                continue
-
-            if selected_role.pk in selected_roles:
-                # poke error messages into the right places and mark
-                # the form as invalid
-                errors.append(self.get_unique_error_message(unique_check))
-                form._errors[NON_FIELD_ERRORS] = self.error_class(
-                    [self.get_form_error()]
-                )
-                # remove the data from the cleaned_data dict since it was invalid
-                for field in unique_check:
-                    if field in form.cleaned_data:
-                        del form.cleaned_data[field]
-            else:
-                selected_roles.append(selected_role.pk)
+class WorkflowStepInlineForm(forms.ModelForm):
+    class Meta:
+        model = WorkflowStep
+        fields = "__all__"
 
 
 class UpdateModerationRequestForm(forms.Form):

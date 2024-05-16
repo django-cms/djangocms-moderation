@@ -2,7 +2,6 @@
 
 Django>=4.2,<5.0
 
-django-admin-sortable2
 django_polymorphic
 
 https://github.com/django-cms/django-cms/tarball/release/4.0.1.x#egg=django-cms

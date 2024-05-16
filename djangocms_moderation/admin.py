@@ -16,7 +16,6 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
 from cms.utils.helpers import is_editable_model
 
-from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from treebeard.admin import TreeAdmin
 
 from . import constants, signals
@@ -35,7 +34,7 @@ from .forms import (
     CollectionCommentForm,
     ModerationRequestActionInlineForm,
     RequestCommentForm,
-    WorkflowStepInlineFormSet,
+    WorkflowStepInlineForm,
 )
 from .helpers import get_form_submission_for_step
 from .models import (
@@ -1000,8 +999,8 @@ class RequestCommentAdmin(admin.ModelAdmin):
             return self.list_display
 
 
-class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
-    formset = WorkflowStepInlineFormSet
+class WorkflowStepInline(admin.TabularInline):
+    form = WorkflowStepInlineForm
     model = WorkflowStep
 
     def get_extra(self, request, obj=None, **kwargs):
@@ -1011,7 +1010,7 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
 
 
 @admin.register(Workflow)
-class WorkflowAdmin(SortableAdminMixin, admin.ModelAdmin):
+class WorkflowAdmin(admin.ModelAdmin):
     inlines = [WorkflowStepInline]
     list_display = ["name", "is_default"]
     fields = [
