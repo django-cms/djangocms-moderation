@@ -49,5 +49,5 @@ repos:
       - id: codespell
         exclude: >
             (?x)^(
-                .*\.(js|po)
+                .*\.(js|po|json)
             )$

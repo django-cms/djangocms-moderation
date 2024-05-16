@@ -17,7 +17,7 @@ from djangocms_moderation.models import (
 )
 from djangocms_moderation.utils import get_admin_url
 
-from .utils.base import BaseViewTestCase
+from .utils.base import AssertQueryMixin, BaseViewTestCase
 from .utils.factories import (
     ChildModerationRequestTreeNodeFactory,
     ModerationCollectionFactory,
@@ -706,7 +706,7 @@ class ModerationCollectionTestCase(CMSTestCase):
         self.assertTrue(moderation_requests.filter(version=self.poll_version).exists())
 
 
-class CollectionItemsViewTest(CMSTestCase):
+class CollectionItemsViewTest(AssertQueryMixin, CMSTestCase):
     def setUp(self):
         self.client.force_login(self.get_superuser())
         self.url = get_admin_url(
@@ -746,7 +746,7 @@ class CollectionItemsViewTest(CMSTestCase):
         self.assertEqual(
             response.context["form"].initial["collection"], str(collection.pk)
         )
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             response.context["form"].initial["versions"],
             [pg_version.pk, poll_version.pk],
             transform=lambda o: o.pk,
@@ -762,7 +762,7 @@ class CollectionItemsViewTest(CMSTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["form"].initial.keys()), 1)
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             response.context["form"].initial["versions"],
             [pg_version.pk, poll_version.pk],
             transform=lambda o: o.pk,
