@@ -1,9 +1,10 @@
-from cms.utils.urlutils import admin_reverse
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.test.client import RequestFactory
 from django.urls import reverse
+
+from cms.utils.urlutils import admin_reverse
 
 from djangocms_versioning.test_utils import factories
 
@@ -14,7 +15,11 @@ from djangocms_moderation.admin import (
     ModerationRequestTreeAdmin,
 )
 from djangocms_moderation.constants import ACTION_REJECTED
-from djangocms_moderation.models import ModerationCollection, ModerationRequest, WorkflowStep
+from djangocms_moderation.models import (
+    ModerationCollection,
+    ModerationRequest,
+    WorkflowStep,
+)
 
 from .utils.base import BaseTestCase, MockRequest
 from .utils.factories import (
