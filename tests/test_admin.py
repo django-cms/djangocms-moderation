@@ -1,3 +1,4 @@
+from cms.utils.urlutils import admin_reverse
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
@@ -13,7 +14,7 @@ from djangocms_moderation.admin import (
     ModerationRequestTreeAdmin,
 )
 from djangocms_moderation.constants import ACTION_REJECTED
-from djangocms_moderation.models import ModerationCollection, ModerationRequest
+from djangocms_moderation.models import ModerationCollection, ModerationRequest, WorkflowStep
 
 from .utils.base import BaseTestCase, MockRequest
 from .utils.factories import (
@@ -425,3 +426,26 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
             response = self.client.get(url)
 
         self.assertContains(response, '/static/djangocms_moderation/js/burger.js')
+
+    def test_workflow_admin_renders_correctly(self):
+        WorkflowStep.objects.create(
+            workflow=self.wf,
+            role=self.role1,
+            order=0,
+        )
+        WorkflowStep.objects.create(
+            workflow=self.wf,
+            role=self.role3,
+            order=1,
+        )
+        url = admin_reverse("djangocms_moderation_workflow_change", args=(self.wf.pk,))
+
+        with self.login_user_context(self.get_superuser()):
+            result = self.client.get(url, follow=True)
+
+        self.assertEqual(result.status_code, 200)
+        self.assertContains(result, self.wf.name)
+
+        # django-admin-sortable2 injected its inputs
+        self.assertContains(result, '<script src="/static/adminsortable2/js/adminsortable2.min.js"></script>')
+        self.assertContains(result, '<input type="hidden" name="steps-0-id"')
