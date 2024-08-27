@@ -16,7 +16,7 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
 from cms.utils.helpers import is_editable_model
 
-from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
+from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 from treebeard.admin import TreeAdmin
 
 from . import constants, signals
@@ -1011,7 +1011,7 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
 
 
 @admin.register(Workflow)
-class WorkflowAdmin(SortableAdminMixin, admin.ModelAdmin):
+class WorkflowAdmin(SortableAdminBase, admin.ModelAdmin):
     inlines = [WorkflowStepInline]
     list_display = ["name", "is_default"]
     fields = [
