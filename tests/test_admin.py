@@ -18,7 +18,6 @@ from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
-    WorkflowStep,
 )
 
 from .utils.base import BaseTestCase, MockRequest
@@ -433,16 +432,6 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
         self.assertContains(response, '/static/djangocms_moderation/js/burger.js')
 
     def test_workflow_admin_renders_correctly(self):
-        WorkflowStep.objects.create(
-            workflow=self.wf,
-            role=self.role1,
-            order=0,
-        )
-        WorkflowStep.objects.create(
-            workflow=self.wf,
-            role=self.role3,
-            order=1,
-        )
         url = admin_reverse("djangocms_moderation_workflow_change", args=(self.wf.pk,))
 
         with self.login_user_context(self.get_superuser()):
