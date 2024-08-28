@@ -15,10 +15,7 @@ from djangocms_moderation.admin import (
     ModerationRequestTreeAdmin,
 )
 from djangocms_moderation.constants import ACTION_REJECTED
-from djangocms_moderation.models import (
-    ModerationCollection,
-    ModerationRequest,
-)
+from djangocms_moderation.models import ModerationCollection, ModerationRequest
 
 from .utils.base import BaseTestCase, MockRequest
 from .utils.factories import (
