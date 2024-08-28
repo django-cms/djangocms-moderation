@@ -21,9 +21,13 @@ from .models import ConfirmationFormSubmission
 User = get_user_model()
 
 try:
-    from djangocms_version_locking.helpers import content_is_unlocked_for_user
+    from djangocms_versioning.helpers import content_is_unlocked_for_user
 except ImportError:
-    content_is_unlocked_for_user = None
+    try:
+        # Before djangocms-versioning 2.0.0, version locking was in a separate package
+        from djangocms_version_locking.helpers import content_is_unlocked_for_user
+    except ImportError:
+        content_is_unlocked_for_user = None
 
 
 def get_page_or_404(obj_id, language):
@@ -75,7 +79,7 @@ def get_active_moderation_request(content_object):
     If this returns None, it means there is no active_moderation request for this
     object, and it means it can be submitted for new moderation
     """
-    from djangocms_moderation.models import ModerationRequest  # noqa
+    from djangocms_moderation.models import ModerationRequest
 
     version = Version.objects.get_for_content(content_object)
 
