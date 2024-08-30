@@ -106,16 +106,34 @@ def _is_draft_version_review_locked(message):
     return inner
 
 
+def _get_publish_link(func):
+    """
+    Monkey patch VersionAdmin's _get_publish_link to remove publish link,
+    if obj.content is registered with moderation
+    """
+
+    def inner(self, obj, request):
+        if is_registered_for_moderation(obj.content):
+            return ""
+        return func(self, obj, request)
+
+    return inner
+
+
 def _check_registered_for_moderation(message):
     """
     Fail check if object is registered for moderation
     """
     def inner(version, user):
-        if not is_registered_for_moderation(version.content):
+        if is_registered_for_moderation(version.content):
             raise ConditionFailed(message)
 
     return inner
 
+
+admin.VersionAdmin._get_publish_link = _get_publish_link(
+    admin.VersionAdmin._get_publish_link
+)
 
 admin.VersionAdmin.get_state_actions = get_state_actions(
     admin.VersionAdmin.get_state_actions
