@@ -5,7 +5,6 @@ from cms.models import fields
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning import admin, models
-from djangocms_versioning.conditions import Conditions
 from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.exceptions import ConditionFailed
 from djangocms_versioning.helpers import version_list_url
@@ -107,33 +106,16 @@ def _is_draft_version_review_locked(message):
     return inner
 
 
-def _get_publish_link(func):
+def _check_registered_for_moderation(message):
     """
-    Monkey patch VersionAdmin's _get_publish_link to remove publish link,
-    if obj.content is registered with moderation
-    """
-
-    def inner(self, obj, request):
-        if is_registered_for_moderation(obj.content):
-            return ""
-        return func(self, obj, request)
-
-    return inner
-
-
-def _fail(message):
-    """
-    Make a check condition fail always
+    Fail check if object is registered for moderation
     """
     def inner(version, user):
-        raise ConditionFailed(message)
+        if not is_registered_for_moderation(version.content):
+            raise ConditionFailed(message)
 
     return inner
 
-
-admin.VersionAdmin._get_publish_link = _get_publish_link(
-    admin.VersionAdmin._get_publish_link
-)
 
 admin.VersionAdmin.get_state_actions = get_state_actions(
     admin.VersionAdmin.get_state_actions
@@ -163,8 +145,8 @@ models.Version.check_edit_redirect += [
         _("Cannot edit a version in an active moderation collection")
     )
 ]
-models.Version.check_publish = Conditions([
-    _fail(_("Content cannot be published directly. Use the moderation process."))
-])
+models.Version.check_publish += [
+    _check_registered_for_moderation(_("Content cannot be published directly. Use the moderation process."))
+]
 
 fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]
