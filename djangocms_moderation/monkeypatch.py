@@ -5,6 +5,7 @@ from cms.models import fields
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning import admin, models
+from djangocms_versioning.conditions import Conditions
 from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.exceptions import ConditionFailed
 from djangocms_versioning.helpers import version_list_url
@@ -120,6 +121,16 @@ def _get_publish_link(func):
     return inner
 
 
+def _fail(message):
+    """
+    Make a check condition fail always
+    """
+    def inner(version, user):
+        raise ConditionFailed(message)
+
+    return inner
+
+
 admin.VersionAdmin._get_publish_link = _get_publish_link(
     admin.VersionAdmin._get_publish_link
 )
@@ -152,5 +163,8 @@ models.Version.check_edit_redirect += [
         _("Cannot edit a version in an active moderation collection")
     )
 ]
+models.Version.check_publish = Conditions([
+    _fail(_("Content cannot be published directly. Use the moderation process."))
+])
 
 fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]
