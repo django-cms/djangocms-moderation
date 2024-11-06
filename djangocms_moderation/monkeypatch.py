@@ -120,6 +120,17 @@ def _get_publish_link(func):
     return inner
 
 
+def _check_registered_for_moderation(message):
+    """
+    Fail check if object is registered for moderation
+    """
+    def inner(version, user):
+        if is_registered_for_moderation(version.content):
+            raise ConditionFailed(message)
+
+    return inner
+
+
 admin.VersionAdmin._get_publish_link = _get_publish_link(
     admin.VersionAdmin._get_publish_link
 )
@@ -151,6 +162,9 @@ models.Version.check_edit_redirect += [
     _is_version_review_locked(
         _("Cannot edit a version in an active moderation collection")
     )
+]
+models.Version.check_publish += [
+    _check_registered_for_moderation(_("Content cannot be published directly. Use the moderation process."))
 ]
 
 fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]
