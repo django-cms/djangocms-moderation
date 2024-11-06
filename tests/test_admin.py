@@ -440,3 +440,11 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
         # django-admin-sortable2 injected its inputs
         self.assertContains(result, '<script src="/static/adminsortable2/js/adminsortable2.min.js"></script>')
         self.assertContains(result, '<input type="hidden" name="steps-0-id"')
+
+    def test_moderated_models_cannot_be_published(self):
+        from djangocms_versioning.exceptions import ConditionFailed
+
+        version = self.mr1.version
+
+        with self.assertRaises(ConditionFailed):
+            version.check_publish(self.get_superuser())
