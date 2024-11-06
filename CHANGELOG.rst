@@ -4,6 +4,8 @@ Changelog
 
 Unreleased
 ==========
+fix: Replace SortableAdminMixin by SortableAdminBase for WorkflowAdmin
+fix: Restore "In Collection" button in the toolbar
 
 2.2.1 (2024-07-02)
 ==================
