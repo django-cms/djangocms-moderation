@@ -54,7 +54,7 @@ class ModerationToolbar(VersioningToolbar):
         if not helpers.is_registered_for_moderation(self.toolbar.obj):
             return
 
-        if self._is_versioned() and self.toolbar.edit_mode_active:
+        if self._is_versioned() and (self.toolbar.edit_mode_active or self.toolbar.preview_mode_active):
             moderation_request = helpers.get_active_moderation_request(self.toolbar.obj)
             if moderation_request:
                 title, url = helpers.get_moderation_button_title_and_url(
