@@ -54,7 +54,7 @@ class ModerationToolbar(VersioningToolbar):
         if not helpers.is_registered_for_moderation(self.toolbar.obj):
             return
 
-        if self._is_versioned() and self.toolbar.edit_mode_active:
+        if self._is_versioned() and (self.toolbar.edit_mode_active or self.toolbar.preview_mode_active):
             moderation_request = helpers.get_active_moderation_request(self.toolbar.obj)
             if moderation_request:
                 title, url = helpers.get_moderation_button_title_and_url(
@@ -68,7 +68,7 @@ class ModerationToolbar(VersioningToolbar):
                 opts = ModerationRequest._meta
                 codename = get_permission_codename("add", opts)
                 if not self.request.user.has_perm(
-                    "{app_label}.{codename}".format(app_label=opts.app_label, codename=codename)
+                    f"{opts.app_label}.{codename}"
                 ):
                     return
                 version = Version.objects.get_for_content(self.toolbar.obj)
@@ -91,7 +91,7 @@ class ModerationToolbar(VersioningToolbar):
         opts = ModerationCollection._meta
         codename = get_permission_codename("change", opts)
         if not self.request.user.has_perm(
-            "{app_label}.{codename}".format(app_label=opts.app_label, codename=codename)
+            f"{opts.app_label}.{codename}"
         ):
             return
         admin_menu = self.toolbar.get_or_create_menu(ADMIN_MENU_IDENTIFIER)
