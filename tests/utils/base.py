@@ -6,6 +6,7 @@ from djangocms_versioning.constants import PUBLISHED
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
+from djangocms_moderation.compact import DJANGO_4_1
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
@@ -16,6 +17,16 @@ from djangocms_moderation.models import (
 
 class MockRequest:
     GET = {}
+
+
+class AssertQueryMixin:
+    """Mixin to append uppercase `assertQuerySetEqual` for TestCase class
+    if django version below 4.2
+    """
+
+    if DJANGO_4_1:
+        def assertQuerySetEqual(self, *args, **kwargs):
+            return self.assertQuerysetEqual(*args, **kwargs)
 
 
 class BaseTestCase(CMSTestCase):

@@ -6,7 +6,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _, ngettext
 from django.views.generic import FormView
 
@@ -83,7 +83,7 @@ class CollectionItemsView(FormView):
         """
         return_to_url = self.request.GET.get("return_to_url")
         if return_to_url:
-            url_is_safe = is_safe_url(
+            url_is_safe = url_has_allowed_host_and_scheme(
                 url=return_to_url,
                 allowed_hosts=self.request.get_host(),
                 require_https=self.request.is_secure(),
