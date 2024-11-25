@@ -2,13 +2,12 @@
 Changelog
 =========
 
-Unreleased
-==========
-
 2.2.2 (2024-11-07)
 ==================
+fix: Add data-popup attr to a tag in burger menu item
 fix: Replace SortableAdminMixin by SortableAdminBase for WorkflowAdmin
 fix: Restore "In Collection" button in the toolbar
+fix: Update README.rst and add overview of settings
 
 2.2.1 (2024-07-02)
 ==================
