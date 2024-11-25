@@ -23,8 +23,8 @@ Run::
 
 Add the following to your project's ``INSTALLED_APPS``:
 
-  - ``'djangocms_moderation'``
-  - ``'adminsortable2'``
+- ``'djangocms_moderation'``
+- ``'adminsortable2'``
 
 Run::
 
