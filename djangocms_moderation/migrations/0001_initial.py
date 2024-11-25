@@ -311,7 +311,7 @@ class Migration(migrations.Migration):
                     models.CharField(
                         blank=True,
                         default="",
-                        help_text="Identifier is a 'free' field you could use for internal purposes. For example, it could be used as a workflow specific prefix of a compliance number",
+                        help_text="Identifier is a 'free' field you could use for internal purposes. For example, it could be used as a workflow specific prefix of a compliance number",  # noqa: E501
                         max_length=128,
                         verbose_name="identifier",
                     ),
@@ -320,7 +320,7 @@ class Migration(migrations.Migration):
                     "requires_compliance_number",
                     models.BooleanField(
                         default=False,
-                        help_text="Does the Compliance number need to be generated before the moderation request is approved? Please select the compliance number backend below",
+                        help_text="Does the Compliance number need to be generated before the moderation request is approved? Please select the compliance number backend below",  # noqa: E501
                         verbose_name="requires compliance number?",
                     ),
                 ),
@@ -454,14 +454,14 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterUniqueTogether(
-            name="workflowstep", unique_together=set([("role", "workflow")])
+            name="workflowstep", unique_together={("role", "workflow")}
         ),
         migrations.AlterUniqueTogether(
             name="moderationrequest",
-            unique_together=set([("collection", "object_id", "content_type")]),
+            unique_together={("collection", "object_id", "content_type")},
         ),
         migrations.AlterUniqueTogether(
             name="confirmationformsubmission",
-            unique_together=set([("request", "for_step")]),
+            unique_together={("request", "for_step")},
         ),
     ]

@@ -33,9 +33,9 @@ a.btn.cms-moderation-action-btn span {
     display: inline-block;
 }
 span.svg-juxtaposed-font {
-    text-rendering: auto; 
-    display: inline-block; 
-    line-height: 1rem; 
-    vertical-align: 20%; 
-    margin-top: -2px !important; 
+    text-rendering: auto;
+    display: inline-block;
+    line-height: 1rem;
+    vertical-align: 20%;
+    margin-top: -2px !important;
 }
