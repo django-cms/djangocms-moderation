@@ -22,6 +22,16 @@ from .utils import generate_compliance_number
 from . import conf, constants, signals  # isort:skip
 
 
+try:
+    from djangocms_versioning.helpers import version_is_locked
+
+    def version_is_unlocked_for_moderation(version, user):
+        return version_is_locked(version) is None
+except ImportError:
+    def version_is_unlocked_for_moderation(version, user):
+        return version.created_by == user
+
+
 class ConfirmationPage(models.Model):
     CONTENT_TYPES = (
         (constants.CONTENT_TYPE_PLAIN, _("Plain")),
@@ -144,6 +154,7 @@ class Workflow(models.Model):
     class Meta:
         verbose_name = _("Workflow")
         verbose_name_plural = _("Workflows")
+        ordering = ("name",)
 
     def __str__(self):
         return self.name
@@ -240,7 +251,7 @@ class ModerationCollection(models.Model):
 
     @property
     def job_id(self):
-        return "{}".format(self.pk)
+        return f"{self.pk}"
 
     @property
     def author_name(self):
@@ -381,8 +392,8 @@ class ModerationCollection(models.Model):
             for child_version in get_moderated_children_from_placeholder(
                 placeholder, version.versionable.grouping_values(parent)
             ):
-                # Don't add the version if it's already part of the collection or another users item
-                if version.created_by == child_version.created_by:
+                # Don't add the version if it's already part of the collection or locked by another user
+                if version_is_unlocked_for_moderation(child_version, version.created_by):
                     moderation_request, _added_items = self.add_version(
                         child_version, parent=parent_node, include_children=True
                     )
@@ -416,7 +427,7 @@ class ModerationRequest(models.Model):
         to=Version, verbose_name=_("version"), on_delete=models.CASCADE
     )
     language = models.CharField(
-        verbose_name=_("language"), max_length=5, choices=settings.LANGUAGES
+        verbose_name=_("language"), max_length=20, choices=settings.LANGUAGES
     )
     is_active = models.BooleanField(
         verbose_name=_("is active"), default=True, db_index=True
@@ -444,7 +455,7 @@ class ModerationRequest(models.Model):
         ordering = ["id"]
 
     def __str__(self):
-        return "{} {}".format(self.pk, self.version_id)
+        return f"{self.pk} {self.version_id}"
 
     @cached_property
     def workflow(self):
@@ -651,7 +662,7 @@ class ModerationRequestAction(models.Model):
         verbose_name_plural = _("Actions")
 
     def __str__(self):
-        return "{} - {}".format(self.moderation_request_id, self.get_action_display())
+        return f"{self.moderation_request_id} - {self.get_action_display()}"
 
     def get_by_user_name(self):
         if not self.to_user:
@@ -686,7 +697,7 @@ class ModerationRequestAction(models.Model):
 
         if next_step:
             self.to_role_id = next_step.role_id
-        super(ModerationRequestAction, self).save(**kwargs)
+        super().save(**kwargs)
 
 
 class AbstractComment(models.Model):
@@ -743,7 +754,7 @@ class ConfirmationFormSubmission(models.Model):
     )
 
     def __str__(self):
-        return "{} - {}".format(self.request_id, self.for_step)
+        return f"{self.request_id} - {self.for_step}"
 
     class Meta:
         verbose_name = _("Confirmation Form Submission")

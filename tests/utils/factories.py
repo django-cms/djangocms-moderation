@@ -10,6 +10,7 @@ from djangocms_versioning.test_utils.factories import (
     AbstractVersionFactory,
     PageVersionFactory,
 )
+from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyInteger, FuzzyText
 
 from djangocms_moderation.models import (
@@ -45,7 +46,7 @@ def get_plugin_language(plugin):
     # also be None unless set manually
 
 
-class PlaceholderFactory(factory.django.DjangoModelFactory):
+class PlaceholderFactory(DjangoModelFactory):
     default_width = FuzzyInteger(0, 25)
     slot = FuzzyText(length=2, chars=string.digits)
     # NOTE: When using this factory you will probably want to set
@@ -55,14 +56,14 @@ class PlaceholderFactory(factory.django.DjangoModelFactory):
         model = Placeholder
 
 
-class PollFactory(factory.django.DjangoModelFactory):
+class PollFactory(DjangoModelFactory):
     name = FuzzyText(length=6)
 
     class Meta:
         model = Poll
 
 
-class PollContentFactory(factory.django.DjangoModelFactory):
+class PollContentFactory(DjangoModelFactory):
     poll = factory.SubFactory(PollFactory)
     language = FuzzyChoice(["en", "fr", "it"])
     text = FuzzyText(length=24)
@@ -71,7 +72,7 @@ class PollContentFactory(factory.django.DjangoModelFactory):
         model = PollContent
 
 
-class PollPluginFactory(factory.django.DjangoModelFactory):
+class PollPluginFactory(DjangoModelFactory):
     language = factory.LazyAttribute(get_plugin_language)
     placeholder = factory.SubFactory(PlaceholderFactory)
     parent = None
@@ -93,14 +94,14 @@ class PollVersionFactory(AbstractVersionFactory):
 # None Moderated Poll App factories
 
 
-class NoneModeratedPollFactory(factory.django.DjangoModelFactory):
+class NoneModeratedPollFactory(DjangoModelFactory):
     name = FuzzyText(length=6)
 
     class Meta:
         model = NoneModeratedPoll
 
 
-class NoneModeratedPollContentFactory(factory.django.DjangoModelFactory):
+class NoneModeratedPollContentFactory(DjangoModelFactory):
     poll = factory.SubFactory(NoneModeratedPollFactory)
     language = FuzzyChoice(["en", "fr", "it"])
     text = FuzzyText(length=24)
@@ -116,7 +117,7 @@ class NoneModeratedPollVersionFactory(AbstractVersionFactory):
         model = Version
 
 
-class NoneModeratedPollPluginFactory(factory.django.DjangoModelFactory):
+class NoneModeratedPollPluginFactory(DjangoModelFactory):
     language = factory.LazyAttribute(get_plugin_language)
     placeholder = factory.SubFactory(PlaceholderFactory)
     parent = None
@@ -128,12 +129,12 @@ class NoneModeratedPollPluginFactory(factory.django.DjangoModelFactory):
         model = NoneModeratedPollPlugin
 
 
-class UserFactory(factory.django.DjangoModelFactory):
+class UserFactory(DjangoModelFactory):
     username = FuzzyText(length=12)
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     email = factory.LazyAttribute(
-        lambda u: "%s.%s@example.com" % (u.first_name.lower(), u.last_name.lower())
+        lambda u: f"{u.first_name.lower()}.{u.last_name.lower()}@example.com"
     )
 
     class Meta:
@@ -145,14 +146,14 @@ class UserFactory(factory.django.DjangoModelFactory):
         return manager.create_user(*args, **kwargs)
 
 
-class WorkflowFactory(factory.django.DjangoModelFactory):
+class WorkflowFactory(DjangoModelFactory):
     name = FuzzyText(length=12)
 
     class Meta:
         model = Workflow
 
 
-class ModerationCollectionFactory(factory.django.DjangoModelFactory):
+class ModerationCollectionFactory(DjangoModelFactory):
     name = FuzzyText(length=12)
     author = factory.SubFactory(UserFactory)
     workflow = factory.SubFactory(WorkflowFactory)
@@ -161,7 +162,7 @@ class ModerationCollectionFactory(factory.django.DjangoModelFactory):
         model = ModerationCollection
 
 
-class ModerationRequestFactory(factory.django.DjangoModelFactory):
+class ModerationRequestFactory(DjangoModelFactory):
     collection = factory.SubFactory(ModerationCollectionFactory)
     version = factory.SubFactory(PageVersionFactory)
     language = 'en'
@@ -171,7 +172,7 @@ class ModerationRequestFactory(factory.django.DjangoModelFactory):
         model = ModerationRequest
 
 
-class RootModerationRequestTreeNodeFactory(factory.django.DjangoModelFactory):
+class RootModerationRequestTreeNodeFactory(DjangoModelFactory):
     moderation_request = factory.SubFactory(ModerationRequestFactory)
 
     class Meta:
@@ -183,7 +184,7 @@ class RootModerationRequestTreeNodeFactory(factory.django.DjangoModelFactory):
         return model_class.add_root(*args, **kwargs)
 
 
-class ChildModerationRequestTreeNodeFactory(factory.django.DjangoModelFactory):
+class ChildModerationRequestTreeNodeFactory(DjangoModelFactory):
     moderation_request = factory.SubFactory(ModerationRequestFactory)
     parent = factory.SubFactory(RootModerationRequestTreeNodeFactory)
 

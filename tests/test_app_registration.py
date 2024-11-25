@@ -1,7 +1,7 @@
 try:
     from unittest.mock import Mock
 except ImportError:
-    from mock import Mock
+    from unittest.mock import Mock
 
 from unittest import TestCase, skip
 from unittest.mock import patch
@@ -87,7 +87,7 @@ class CMSConfigIntegrationTest(CMSTestCase):
         for model in self.moderated_models:
             self.assertIn(model, registered_model)
 
-        self.assertEqual(len(registered_model), 6)
+        self.assertEqual(len(registered_model), 7)
 
 
 class CMSConfigCheck(CMSTestCase):

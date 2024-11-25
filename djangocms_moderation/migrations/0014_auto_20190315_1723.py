@@ -11,6 +11,11 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='moderationcollection',
-            options={'permissions': (('can_change_author', 'Can change collection author'), ('cancel_moderationcollection', 'Can cancel collection')), 'verbose_name': 'collection'},
+            options={'permissions': (
+                ('can_change_author', 'Can change collection author'),
+                ('cancel_moderationcollection', 'Can cancel collection')
+                ),
+                'verbose_name': 'collection'
+            },
         ),
     ]

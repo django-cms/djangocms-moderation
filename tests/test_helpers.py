@@ -1,6 +1,5 @@
 import json
-import mock
-from unittest import skip
+from unittest import mock, skip
 
 from django.template.defaultfilters import truncatechars
 from django.urls import reverse
@@ -32,6 +31,11 @@ from .utils.factories import (
     PlaceholderFactory,
     PollPluginFactory,
     PollVersionFactory,
+)
+from .utils.moderated_polls.factories import (
+    DeeplyNestedPollPluginFactory,
+    ManytoManyPollPluginFactory,
+    NestedPollPluginFactory,
 )
 
 
@@ -110,7 +114,7 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
 
     def test_get_moderation_button_title_and_url_when_collection(self):
         title, url = get_moderation_button_title_and_url(self.mr)
-        self.assertEqual(title, 'In collection "C1 ({})"'.format(self.collection.id))
+        self.assertEqual(title, f'In collection "C1 ({self.collection.id})"')
         self.assertEqual(url, self.expected_url)
 
     def test_get_moderation_button_title_and_url_when_in_review(self):
@@ -118,7 +122,7 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
         self.collection.save()
 
         title, url = get_moderation_button_title_and_url(self.mr)
-        self.assertEqual(title, 'In moderation "C1 ({})"'.format(self.collection.id))
+        self.assertEqual(title, f'In moderation "C1 ({self.collection.id})"')
         self.assertEqual(url, self.expected_url)
 
     def test_get_moderation_button_truncated_title_and_url(self):
@@ -130,7 +134,7 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
         self.assertEqual(
             title,
             # By default, truncate will shorten the name
-            'In collection "{} ({})"'.format(expected_title, self.collection.id),
+            f'In collection "{expected_title} ({self.collection.id})"',
         )
         with mock.patch("djangocms_moderation.helpers.COLLECTION_NAME_LENGTH_LIMIT", 3):
             title, url = get_moderation_button_title_and_url(self.mr)
@@ -138,7 +142,7 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
             self.assertEqual(
                 title,
                 # As the limit is only 3, the truncate will produce `...`
-                'In collection "{} ({})"'.format(expected_title, self.collection.id),
+                f'In collection "{expected_title} ({self.collection.id})"',
             )
 
         with mock.patch(
@@ -234,3 +238,86 @@ class ModeratedChildrenTestCase(CMSTestCase):
 
         self.assertEqual(page_1_moderated_children, [pg_1_poll_version])
         self.assertEqual(page_2_moderated_children, [pg_2_poll_version])
+
+    def test_get_moderated_children_from_placeholder_gets_nested_models(self):
+        """
+        Versionable models that are nested inside a custom plugin model
+        can be found when adding to a collection.
+        """
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        # Moderated plugin
+        poll_version = PollVersionFactory(
+            created_by=self.user, content__language=language
+        )
+        # Nested versioned poll
+        NestedPollPluginFactory(placeholder=placeholder, nested_poll__poll=poll_version.content.poll)
+
+        moderated_children = list(
+            get_moderated_children_from_placeholder(
+                placeholder, {"language": pg_version.content.language}
+            )
+        )
+
+        self.assertEqual(moderated_children, [poll_version])
+
+    def test_get_moderated_children_from_placeholder_gets_plugin_with_m2m_fields(self):
+        """
+        FIXME: Currently only checks that a M2M nested poll entry does not cause an error.
+        """
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        poll_1_version = PollVersionFactory(
+            created_by=self.user, content__language=language
+        )
+        poll_2_version = PollVersionFactory(
+            created_by=self.user, content__language=language
+        )
+        ManytoManyPollPluginFactory(placeholder=placeholder, polls=[
+            poll_1_version.content.poll,
+            poll_2_version.content.poll,
+        ])
+
+        moderated_children = list(
+            get_moderated_children_from_placeholder(
+                placeholder, {"language": pg_version.content.language}
+            )
+        )
+
+        # FIXME:
+        #       This test is only covering that the M2M field doesn't cause an error.
+        #       It should see that the nested polls are found
+        #       self.assertEqual(moderated_children, [poll_1_version, poll_2_version])
+        self.assertEqual(moderated_children, [])
+
+    def test_get_moderated_children_from_placeholder_gets_deeply_nested_models(self):
+        """
+        Versionable models that are deeply nested inside a custom plugin model
+        can be found when adding to a collection.
+        """
+        pg_version = PageVersionFactory(created_by=self.user)
+        language = pg_version.content.language
+
+        # Populate page
+        placeholder = PlaceholderFactory(source=pg_version.content)
+        # Moderated plugin
+        poll_version = PollVersionFactory(
+            created_by=self.user, content__language=language
+        )
+        # Deeply nested versioned poll
+        DeeplyNestedPollPluginFactory(
+            placeholder=placeholder,
+            deeply_nested_poll__nested_poll__poll=poll_version.content.poll
+        )
+
+        moderated_children = list(
+            get_moderated_children_from_placeholder(
+                placeholder, {"language": pg_version.content.language}
+            )
+        )
+
+        self.assertEqual(moderated_children, [poll_version])

@@ -10,7 +10,7 @@ class Poll(models.Model):
     name = models.TextField()
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.pk)
+        return f"{self.name} ({self.pk})"
 
 
 class PollContent(models.Model):
@@ -61,3 +61,59 @@ class PollPlugin(CMSPlugin):
 
     def __str__(self):
         return str(self.poll)
+
+
+class NestedPoll(models.Model):
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.poll
+
+
+class NestedPollPlugin(CMSPlugin):
+    cmsplugin_ptr = models.OneToOneField(
+        CMSPlugin,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s",
+        parent_link=True,
+    )
+
+    nested_poll = models.ForeignKey(NestedPoll, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.nested_poll)
+
+
+class DeeplyNestedPoll(models.Model):
+    nested_poll = models.ForeignKey(NestedPoll, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.nested_poll
+
+
+class DeeplyNestedPollPlugin(CMSPlugin):
+    cmsplugin_ptr = models.OneToOneField(
+        CMSPlugin,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s",
+        parent_link=True,
+    )
+
+    deeply_nested_poll = models.ForeignKey(DeeplyNestedPoll, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.deeply_nested_poll)
+
+
+class ManytoManyPollPlugin(CMSPlugin):
+    cmsplugin_ptr = models.OneToOneField(
+        CMSPlugin,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s",
+        parent_link=True,
+    )
+
+    polls = models.ManyToManyField(Poll)
+
+    def __str__(self):
+        return str(self.polls.first())
