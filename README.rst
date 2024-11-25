@@ -72,20 +72,20 @@ Add these settings to your project's settings file:
 
     # Custom compliance number backend
     CMS_MODERATION_DEFAULT_COMPLIANCE_NUMBER_BACKEND = 'myapp.backends.CustomComplianceNumberBackend'
-    
+
     # Enable workflow override
     CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE = True
-    
+
     # Custom confirmation template
     CMS_MODERATION_DEFAULT_CONFIRMATION_PAGE_TEMPLATE = 'custom_confirmation.html'
-    
+
     # Enable comments
     CMS_MODERATION_COLLECTION_COMMENTS_ENABLED = True
     CMS_MODERATION_REQUEST_COMMENTS_ENABLED = True
-    
+
     # Set collection name length limit
     CMS_MODERATION_COLLECTION_NAME_LENGTH_LIMIT = 100
-    
+
     # Control email notification errors
     EMAIL_NOTIFICATIONS_FAIL_SILENTLY = False
 
