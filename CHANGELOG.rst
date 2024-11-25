@@ -4,6 +4,7 @@ Changelog
 
 Unreleased
 ==========
+fix: Add data-popup attr to a tag in burger menu item
 fix: Replace SortableAdminMixin by SortableAdminBase for WorkflowAdmin
 fix: Restore "In Collection" button in the toolbar
 
