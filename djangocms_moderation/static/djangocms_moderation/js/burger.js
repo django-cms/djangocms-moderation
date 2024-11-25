@@ -12,7 +12,7 @@
       .on('click', function (e) {
           e.preventDefault();
 
-          // action currently being targetted
+          // action currently being targeted
           let action = $(e.currentTarget);
           // get the form method being used?
           let formMethod = action.attr('class').indexOf('cms-form-get-method') === 1 ? 'POST' : 'GET';
@@ -147,6 +147,7 @@
                 let li_anchor = document.createElement('a');
                 const itemId = $(item).attr('id');
                 const itemTarget = $(item).attr('target');
+                const itemDataPopup = $(item).attr('data-popup');
 
                 li_anchor.setAttribute('class', 'cms-actions-dropdown-menu-item-anchor');
                 li_anchor.setAttribute('href', $(item).attr('href'));
@@ -157,6 +158,10 @@
                 // Copy the target attribute if it is set
                 if (itemTarget !== undefined) {
                     li_anchor.setAttribute('target', itemTarget);
+                }
+                // Copy the data-popup attribute if it is set
+                if (itemDataPopup !== undefined) {
+                    li_anchor.setAttribute('data-popup', itemDataPopup);
                 }
 
                 if ($(item).hasClass('cms-form-get-method')) {

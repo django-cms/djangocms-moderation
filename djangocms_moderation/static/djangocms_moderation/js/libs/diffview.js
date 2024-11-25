@@ -177,7 +177,7 @@ var diffview = {
             var botrows = [];
 
             for (var i = 0; i < rowcnt; i++) {
-                // jump ahead if we've alredy provided leading context or if this is the first range
+                // jump ahead if we've already provided leading context or if this is the first range
                 if (
                     contextSize &&
                     opcodes.length > 1 &&

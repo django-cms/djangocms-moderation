@@ -1,5 +1,5 @@
 import json
-from mock import patch
+from unittest.mock import patch
 
 from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
@@ -20,10 +20,10 @@ from djangocms_moderation.models import (
 )
 
 from .utils import factories
-from .utils.base import BaseTestCase
+from .utils.base import AssertQueryMixin, BaseTestCase
 
 
-class RoleTest(BaseTestCase):
+class RoleTest(AssertQueryMixin, BaseTestCase):
     def test_user_and_group_validation_error(self):
         role = Role.objects.create(name="New Role 1", user=self.user, group=self.group)
         self.assertRaisesMessage(
@@ -43,7 +43,7 @@ class RoleTest(BaseTestCase):
     def test_get_users_queryset(self):
         # with user
         role = Role.objects.create(name="New Role 1", user=self.user)
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             role.get_users_queryset(),
             User.objects.filter(pk=self.user.pk),
             transform=lambda x: x,
@@ -51,7 +51,7 @@ class RoleTest(BaseTestCase):
         )
         # with group
         role = Role.objects.create(name="New Role 2", group=self.group)
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             role.get_users_queryset(),
             User.objects.filter(pk__in=[self.user2.pk, self.user3.pk]),
             transform=lambda x: x,
@@ -88,7 +88,7 @@ class WorkflowStepTest(BaseTestCase):
         self.assertIsNone(self.wf1st3.get_next_required())
 
 
-class ModerationRequestTest(BaseTestCase):
+class ModerationRequestTest(AssertQueryMixin, BaseTestCase):
     def test_has_pending_step(self):
         self.assertTrue(self.moderation_request1.has_pending_step())
         self.assertFalse(self.moderation_request2.has_pending_step())
@@ -128,7 +128,7 @@ class ModerationRequestTest(BaseTestCase):
         )
 
     def test_get_pending_steps(self):
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             self.moderation_request3.get_pending_steps(),
             WorkflowStep.objects.filter(pk__in=[self.wf3st2.pk]),
             transform=lambda x: x,
@@ -142,7 +142,7 @@ class ModerationRequestTest(BaseTestCase):
 
         # ... so all the steps are now pending as we need to re-moderate the
         # resubmitted request
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             self.moderation_request3.get_pending_steps(),
             WorkflowStep.objects.filter(workflow=self.wf3),
             transform=lambda x: x,
@@ -150,13 +150,13 @@ class ModerationRequestTest(BaseTestCase):
         )
 
     def test_get_pending_required_steps(self):
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             self.moderation_request1.get_pending_required_steps(),
             WorkflowStep.objects.filter(pk__in=[self.wf1st1.pk, self.wf1st3.pk]),
             transform=lambda x: x,
             ordered=False,
         )
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             self.moderation_request3.get_pending_required_steps(),
             WorkflowStep.objects.none(),
             transform=lambda x: x,
@@ -164,7 +164,7 @@ class ModerationRequestTest(BaseTestCase):
         )
 
         # Lets test with archived action
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             self.moderation_request2.get_pending_required_steps(),
             WorkflowStep.objects.none(),
             transform=lambda x: x,
@@ -176,7 +176,7 @@ class ModerationRequestTest(BaseTestCase):
         last_action.is_archived = True
         last_action.save()
 
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             self.moderation_request2.get_pending_required_steps(),
             WorkflowStep.objects.filter(pk=last_action.step_approved.pk),
             transform=lambda x: x,
@@ -390,7 +390,7 @@ class ModerationRequestTest(BaseTestCase):
         request.refresh_from_db()
         self.assertIsNone(request.compliance_number)
 
-        expected = "SSO{}".format(request.pk)
+        expected = f"SSO{request.pk}"
         request.set_compliance_number()
         request.refresh_from_db()
         self.assertEqual(request.compliance_number, expected)
@@ -663,7 +663,7 @@ class ModerationCollectionTest(BaseTestCase):
         self.assertEqual(actions[0].moderation_request, active_request)
 
 
-class AddVersionTestCase(TestCase):
+class AddVersionTestCase(AssertQueryMixin, TestCase):
 
     def setUp(self):
         self.collection = factories.ModerationCollectionFactory()
@@ -717,13 +717,13 @@ class AddVersionTestCase(TestCase):
         moderation_request, added_items = self.collection.add_version(version, parent)
 
         self.assertEqual(ModerationRequest.objects.all().count(), 2)
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             ModerationRequest.objects.all(),
             [parent.moderation_request.pk, child.moderation_request.pk],
             transform=lambda o: o.pk
         )
         self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 2)
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             ModerationRequestTreeNode.objects.all(),
             [parent.pk, child.pk],
             transform=lambda o: o.pk
@@ -746,7 +746,7 @@ class AddVersionTestCase(TestCase):
         moderation_request, added_items = self.collection.add_version(version, parent)
 
         self.assertEqual(ModerationRequest.objects.all().count(), 3)
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             ModerationRequest.objects.all(),
             [root.moderation_request.pk, child.moderation_request.pk, parent.moderation_request.pk],
             transform=lambda o: o.pk

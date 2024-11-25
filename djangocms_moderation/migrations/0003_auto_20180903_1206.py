@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
             preserve_default=False,
         ),
         migrations.AlterUniqueTogether(
-            name="moderationrequest", unique_together=set([("collection", "version")])
+            name="moderationrequest", unique_together={("collection", "version")}
         ),
         migrations.RemoveField(model_name="moderationrequest", name="content_type"),
         migrations.RemoveField(model_name="moderationrequest", name="object_id"),

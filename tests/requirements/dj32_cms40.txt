@@ -4,3 +4,9 @@ Django>=3.2,<4.0
 
 django-admin-sortable2<2
 django_polymorphic
+
+https://github.com/django-cms/django-cms/tarball/release/4.0.1.x#egg=django-cms
+https://github.com/django-cms/djangocms-text-ckeditor/tarball/support/4.0.x#egg=djangocms-text-ckeditor
+https://github.com/django-cms/djangocms-versioning/tarball/1.2.2#egg=djangocms-versioning
+https://github.com/FidelityInternational/djangocms-version-locking/tarball/1.2.0#egg=djangocms-version-locking
+https://github.com/django-cms/djangocms-alias/tarball/support/django-cms-4.0.x#egg=djangocms-alias
