@@ -34,7 +34,7 @@ REPLACE
 to perform the application's database migrations.
 
 Configuration
-============
+=============
 
 The following settings can be added to your project's settings file to configure django CMS Moderation's behavior:
 
@@ -64,7 +64,7 @@ The following settings can be added to your project's settings file to configure
      - Control email notification error handling.
 
 Example Configuration
--------------------
+---------------------
 
 Add these settings to your project's settings file:
 
@@ -90,10 +90,7 @@ Add these settings to your project's settings file:
     EMAIL_NOTIFICATIONS_FAIL_SILENTLY = False
 
 =============
-=======
 Documentation
-============
-=======
 =============
 
 We maintain documentation under ``docs`` folder using rst format. HTML documentation can be generated using the following commands
