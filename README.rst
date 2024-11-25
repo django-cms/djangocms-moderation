@@ -30,7 +30,6 @@ Run::
 
     python manage.py migrate djangocms_moderation
 
-REPLACE
 to perform the application's database migrations.
 
 Configuration
@@ -46,22 +45,28 @@ The following settings can be added to your project's settings file to configure
      - Description
    * - ``CMS_MODERATION_DEFAULT_COMPLIANCE_NUMBER_BACKEND``
      - Default backend class for generating compliance numbers.
+       Default is ``djangocms_moderation.backends.uuid4_backend``.
    * - ``CMS_MODERATION_COMPLIANCE_NUMBER_BACKENDS``
      - List of available compliance number backend classes.
+       By default, three backends are configured: ``uuid4_backend``,
+       ``sequential_number_backend``, and
+       ``sequential_number_with_identifier_prefix_backend``.
    * - ``CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE``
-     - Enable/disable workflow override functionality.
+     - Enable/disable workflow override functionality. Defaults to ``False``.
    * - ``CMS_MODERATION_DEFAULT_CONFIRMATION_PAGE_TEMPLATE``
-     - Default template for confirmation pages.
+     - Default template for confirmation pages. Defaults to
+       ``djangocms_moderation/moderation_confirmation.html``
    * - ``CMS_MODERATION_CONFIRMATION_PAGE_TEMPLATES``
-     - List of available confirmation page templates.
+     - List of available confirmation page templates. Only includes the
+       default template by defaut.
    * - ``CMS_MODERATION_COLLECTION_COMMENTS_ENABLED``
-     - Enable/disable comments on collections.
+     - Enable/disable comments on collections. Defaults to ``True``.
    * - ``CMS_MODERATION_REQUEST_COMMENTS_ENABLED``
-     - Enable/disable comments on requests.
+     - Enable/disable comments on requests. Defaults to ``True``.
    * - ``CMS_MODERATION_COLLECTION_NAME_LENGTH_LIMIT``
-     - Maximum length for collection names.
+     - Maximum length for collection names. Defaults to ``24``.
    * - ``EMAIL_NOTIFICATIONS_FAIL_SILENTLY``
-     - Control email notification error handling.
+     - Control email notification error handling. Defaults to ``False``.
 
 Example Configuration
 ---------------------
