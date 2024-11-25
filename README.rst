@@ -58,7 +58,7 @@ The following settings can be added to your project's settings file to configure
        ``djangocms_moderation/moderation_confirmation.html``
    * - ``CMS_MODERATION_CONFIRMATION_PAGE_TEMPLATES``
      - List of available confirmation page templates. Only includes the
-       default template by defaut.
+       default template by default.
    * - ``CMS_MODERATION_COLLECTION_COMMENTS_ENABLED``
      - Enable/disable comments on collections. Defaults to ``True``.
    * - ``CMS_MODERATION_REQUEST_COMMENTS_ENABLED``
