@@ -1,6 +1,5 @@
 import json
-import mock
-from unittest import skip
+from unittest import mock, skip
 
 from django.template.defaultfilters import truncatechars
 from django.urls import reverse
@@ -115,7 +114,7 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
 
     def test_get_moderation_button_title_and_url_when_collection(self):
         title, url = get_moderation_button_title_and_url(self.mr)
-        self.assertEqual(title, 'In collection "C1 ({})"'.format(self.collection.id))
+        self.assertEqual(title, f'In collection "C1 ({self.collection.id})"')
         self.assertEqual(url, self.expected_url)
 
     def test_get_moderation_button_title_and_url_when_in_review(self):
@@ -123,7 +122,7 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
         self.collection.save()
 
         title, url = get_moderation_button_title_and_url(self.mr)
-        self.assertEqual(title, 'In moderation "C1 ({})"'.format(self.collection.id))
+        self.assertEqual(title, f'In moderation "C1 ({self.collection.id})"')
         self.assertEqual(url, self.expected_url)
 
     def test_get_moderation_button_truncated_title_and_url(self):
@@ -135,7 +134,7 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
         self.assertEqual(
             title,
             # By default, truncate will shorten the name
-            'In collection "{} ({})"'.format(expected_title, self.collection.id),
+            f'In collection "{expected_title} ({self.collection.id})"',
         )
         with mock.patch("djangocms_moderation.helpers.COLLECTION_NAME_LENGTH_LIMIT", 3):
             title, url = get_moderation_button_title_and_url(self.mr)
@@ -143,7 +142,7 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
             self.assertEqual(
                 title,
                 # As the limit is only 3, the truncate will produce `...`
-                'In collection "{} ({})"'.format(expected_title, self.collection.id),
+                f'In collection "{expected_title} ({self.collection.id})"',
             )
 
         with mock.patch(

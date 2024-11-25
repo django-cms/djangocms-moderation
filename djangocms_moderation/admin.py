@@ -16,7 +16,7 @@ from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
 from cms.utils.helpers import is_editable_model
 
-from adminsortable2.admin import SortableInlineAdminMixin
+from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 from treebeard.admin import TreeAdmin
 
 from . import constants, signals
@@ -73,12 +73,16 @@ class ModerationRequestActionInline(admin.TabularInline):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    @admin.display(
+        description=_("Status")
+    )
     def show_user(self, obj):
         _name = obj.get_by_user_name()
         return gettext("By {user}").format(user=_name)
 
-    show_user.short_description = _("Status")
-
+    @admin.display(
+        description=_("Form Submission")
+    )
     def form_submission(self, obj):
         instance = get_form_submission_for_step(
             obj.moderation_request, obj.step_approved
@@ -89,14 +93,12 @@ class ModerationRequestActionInline(admin.TabularInline):
 
         opts = ConfirmationFormSubmission._meta
         url = reverse(
-            "admin:{}_{}_change".format(opts.app_label, opts.model_name),
+            f"admin:{opts.app_label}_{opts.model_name}_change",
             args=[instance.pk],
         )
         return format_html(
             '<a href="{}" target="_blank">{}</a>', url, obj.step_approved.role.name
         )
-
-    form_submission.short_description = _("Form Submission")
 
     def get_readonly_fields(self, request, obj=None):
         if obj.user_can_moderate(request.user) or obj.user_is_author(request.user):
@@ -107,6 +109,7 @@ class ModerationRequestActionInline(admin.TabularInline):
         return self.fields
 
 
+@admin.register(ModerationRequestTreeNode)
 class ModerationRequestTreeAdmin(TreeAdmin):
     """
     This admin is purely for the change list of Moderation Requests using the treebeard nodes to
@@ -177,14 +180,15 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         ]
         return list_display
 
+    @admin.display(
+        description=_("actions")
+    )
     def list_display_actions(self, obj):
         """Display links to state change endpoints
         """
         return format_html_join(
             "", "{}", ((action(obj),) for action in self.get_list_display_actions())
         )
-
-    list_display_actions.short_description = _("actions")
 
     def get_list_display_actions(self):
         actions = []
@@ -210,6 +214,9 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         return fields
 
+    @admin.display(
+        description=_('ID')
+    )
     def get_id(self, obj):
         return format_html(
             '<a href="{url}">{id}</a>',
@@ -219,22 +226,30 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             ),
             id=obj.moderation_request_id,
         )
-    get_id.short_description = _('ID')
 
+    @admin.display(
+        description=_('Content type')
+    )
     def get_content_type(self, obj):
         return ContentType.objects.get_for_model(
             obj.moderation_request.version.versionable.grouper_model
         )
-    get_content_type.short_description = _('Content type')
 
+    @admin.display(
+        description=_('Title')
+    )
     def get_title(self, obj):
         return obj.moderation_request.version.content
-    get_title.short_description = _('Title')
 
+    @admin.display(
+        description=_('Author')
+    )
     def get_version_author(self, obj):
         return obj.moderation_request.version.created_by
-    get_version_author.short_description = _('Author')
 
+    @admin.display(
+        description=_("Preview")
+    )
     def get_preview_link(self, obj):
         content = obj.moderation_request.version.content
         if is_editable_model(content.__class__):
@@ -254,8 +269,9 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             object_preview_url,
         )
 
-    get_preview_link.short_description = _("Preview")
-
+    @admin.display(
+        description=_('Reviewer')
+    )
     def get_reviewer(self, obj):
         last_action = obj.moderation_request.get_last_action()
         if not last_action:
@@ -264,7 +280,6 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             next_step = obj.moderation_request.get_next_required()
             return next_step.role.name
         return last_action._get_user_name(last_action.by_user)
-    get_reviewer.short_description = _('Reviewer')
 
     def get_status(self, obj):
         # We can have moderation requests without any action (e.g. the
@@ -466,6 +481,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         return HttpResponseRedirect(redirect_url)
 
 
+@admin.register(ModerationRequest)
 class ModerationRequestAdmin(admin.ModelAdmin):
     class Media:
         js = ('admin/js/jquery.init.js', 'djangocms_moderation/js/actions.js',)
@@ -813,11 +829,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         return tree_node_admin.changelist_view(request, extra_context)
 
 
+@admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
     list_display = ["name", "user", "group", "confirmation_page"]
     fields = ["name", "user", "group", "confirmation_page"]
 
 
+@admin.register(CollectionComment)
 class CollectionCommentAdmin(admin.ModelAdmin):
     list_display = ["date_created", "message", "author"]
     fields = ["collection", "message", "author"]
@@ -900,6 +918,7 @@ class CollectionCommentAdmin(admin.ModelAdmin):
             return self.list_display
 
 
+@admin.register(RequestComment)
 class RequestCommentAdmin(admin.ModelAdmin):
     list_display = ["date_created", "message", "get_author"]
     fields = ["moderation_request", "message", "author"]
@@ -907,10 +926,11 @@ class RequestCommentAdmin(admin.ModelAdmin):
     class Media:
         css = {"all": ("djangocms_moderation/css/comments_changelist.css",)}
 
+    @admin.display(
+        description=_("User")
+    )
     def get_author(self, obj):
         return obj.author_name
-
-    get_author.short_description = _("User")
 
     def get_changeform_initial_data(self, request):
         data = {"author": request.user}
@@ -990,7 +1010,8 @@ class WorkflowStepInline(SortableInlineAdminMixin, admin.TabularInline):
         return 1
 
 
-class WorkflowAdmin(admin.ModelAdmin):
+@admin.register(Workflow)
+class WorkflowAdmin(SortableAdminBase, admin.ModelAdmin):
     inlines = [WorkflowStepInline]
     list_display = ["name", "is_default"]
     fields = [
@@ -1002,6 +1023,7 @@ class WorkflowAdmin(admin.ModelAdmin):
     ]
 
 
+@admin.register(ModerationCollection)
 class ModerationCollectionAdmin(admin.ModelAdmin):
     class Media:
         js = ("admin/js/jquery.init.js", "djangocms_moderation/js/actions.js",)
@@ -1033,19 +1055,22 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     def job_id(self, obj):
         return obj.pk
 
+    @admin.display(
+        description=_('reviewers')
+    )
     def commaseparated_reviewers(self, obj):
         reviewers = self.model.objects.reviewers(obj)
         return ", ".join(map(get_user_model().get_full_name, reviewers))
-    commaseparated_reviewers.short_description = _('reviewers')
 
+    @admin.display(
+        description=_("actions")
+    )
     def list_display_actions(self, obj):
         """Display links to state change endpoints
         """
         return format_html_join(
             "", "{}", ((action(obj),) for action in self.get_list_display_actions())
         )
-
-    list_display_actions.short_description = _("actions")
 
     def get_list_display_actions(self):
         actions = [self.get_edit_link, self.get_requests_link]
@@ -1136,6 +1161,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return False
 
 
+@admin.register(ConfirmationPage)
 class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
     view_on_site = True
 
@@ -1153,6 +1179,7 @@ class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
         return url_patterns + super().get_urls()
 
 
+@admin.register(ConfirmationFormSubmission)
 class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
     list_display = ["moderation_request", "for_step", "submitted_at"]
     fields = [
@@ -1178,16 +1205,21 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
             request, object_id, form_url, extra_context=extra_context
         )
 
+    @admin.display(
+        description=_("Request")
+    )
     def moderation_request(self, obj):
         return obj.moderation_request_id
 
-    moderation_request.short_description = _("Request")
-
+    @admin.display(
+        description=_("By User")
+    )
     def show_user(self, obj):
         return obj.get_by_user_name()
 
-    show_user.short_description = _("By User")
-
+    @admin.display(
+        description=_("Form Data")
+    )
     def form_data(self, obj):
         data = obj.get_form_data()
         return format_html_join(
@@ -1198,16 +1230,3 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
                 for d in data
             ),
         )
-
-    form_data.short_description = _("Form Data")
-
-
-admin.site.register(ModerationRequestTreeNode, ModerationRequestTreeAdmin)
-admin.site.register(ModerationRequest, ModerationRequestAdmin)
-admin.site.register(CollectionComment, CollectionCommentAdmin)
-admin.site.register(RequestComment, RequestCommentAdmin)
-admin.site.register(ModerationCollection, ModerationCollectionAdmin)
-admin.site.register(Role, RoleAdmin)
-admin.site.register(Workflow, WorkflowAdmin)
-admin.site.register(ConfirmationPage, ConfirmationPageAdmin)
-admin.site.register(ConfirmationFormSubmission, ConfirmationFormSubmissionAdmin)

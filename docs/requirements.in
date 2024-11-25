@@ -1,0 +1,9 @@
+furo
+Sphinx>=4.2.0
+sphinx-copybutton
+sphinxext-opengraph
+sphinxcontrib-spelling
+sphinx-autobuild
+codespell
+pip-tools
+docstrfmt
