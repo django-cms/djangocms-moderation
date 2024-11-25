@@ -30,9 +30,70 @@ Run::
 
     python manage.py migrate djangocms_moderation
 
+REPLACE
 to perform the application's database migrations.
 
+Configuration
+============
+
+The following settings can be added to your project's settings file to configure django CMS Moderation's behavior:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50
+
+   * - Setting
+     - Description
+   * - ``CMS_MODERATION_DEFAULT_COMPLIANCE_NUMBER_BACKEND``
+     - Default backend class for generating compliance numbers.
+   * - ``CMS_MODERATION_COMPLIANCE_NUMBER_BACKENDS``
+     - List of available compliance number backend classes.
+   * - ``CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE``
+     - Enable/disable workflow override functionality.
+   * - ``CMS_MODERATION_DEFAULT_CONFIRMATION_PAGE_TEMPLATE``
+     - Default template for confirmation pages.
+   * - ``CMS_MODERATION_CONFIRMATION_PAGE_TEMPLATES``
+     - List of available confirmation page templates.
+   * - ``CMS_MODERATION_COLLECTION_COMMENTS_ENABLED``
+     - Enable/disable comments on collections.
+   * - ``CMS_MODERATION_REQUEST_COMMENTS_ENABLED``
+     - Enable/disable comments on requests.
+   * - ``CMS_MODERATION_COLLECTION_NAME_LENGTH_LIMIT``
+     - Maximum length for collection names.
+   * - ``EMAIL_NOTIFICATIONS_FAIL_SILENTLY``
+     - Control email notification error handling.
+
+Example Configuration
+-------------------
+
+Add these settings to your project's settings file:
+
+.. code-block:: python
+
+    # Custom compliance number backend
+    CMS_MODERATION_DEFAULT_COMPLIANCE_NUMBER_BACKEND = 'myapp.backends.CustomComplianceNumberBackend'
+    
+    # Enable workflow override
+    CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE = True
+    
+    # Custom confirmation template
+    CMS_MODERATION_DEFAULT_CONFIRMATION_PAGE_TEMPLATE = 'custom_confirmation.html'
+    
+    # Enable comments
+    CMS_MODERATION_COLLECTION_COMMENTS_ENABLED = True
+    CMS_MODERATION_REQUEST_COMMENTS_ENABLED = True
+    
+    # Set collection name length limit
+    CMS_MODERATION_COLLECTION_NAME_LENGTH_LIMIT = 100
+    
+    # Control email notification errors
+    EMAIL_NOTIFICATIONS_FAIL_SILENTLY = False
+
+=============
+=======
 Documentation
+============
+=======
 =============
 
 We maintain documentation under ``docs`` folder using rst format. HTML documentation can be generated using the following commands
