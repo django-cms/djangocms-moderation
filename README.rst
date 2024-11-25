@@ -32,9 +32,9 @@ Run::
 
 to perform the application's database migrations.
 
-=======
+
 Configuration
-============
+=============
 
 The following settings can be added to your project's settings file to configure django CMS Moderation's behavior:
 
@@ -71,7 +71,7 @@ The following settings can be added to your project's settings file to configure
     Default: ``True``
 
 Example Configuration
--------------------
+---------------------
 
 Add these settings to your project's settings file:
 
@@ -89,7 +89,6 @@ Add these settings to your project's settings file:
 
 Documentation
 =============
-=======
 
 We maintain documentation under ``docs`` folder using rst format. HTML documentation can be generated using the following commands
 
