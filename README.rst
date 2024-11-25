@@ -30,9 +30,6 @@ Run::
 
     python manage.py migrate djangocms_moderation
 
-to perform the application's database migrations.
-
-Documentation
 =============
 
 We maintain documentation under ``docs`` folder using rst format. HTML documentation can be generated using the following commands
