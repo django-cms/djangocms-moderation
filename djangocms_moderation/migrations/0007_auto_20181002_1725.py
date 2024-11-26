@@ -13,4 +13,4 @@ class Migration(migrations.Migration):
 
     dependencies = [("djangocms_moderation", "0006_auto_20181001_1840")]
 
-    operations = [migrations.RunPython(moderationrequest_author)]
+    operations = [migrations.RunPython(moderationrequest_author, elidable=True)]
