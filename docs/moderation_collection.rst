@@ -3,10 +3,10 @@
 Moderation Collection
 ================================================
 
-A Moderation Collection is primarily intended as a way of being able to group draft content versions together for: 
-a) review and 
+A Moderation Collection is primarily intended as a way of being able to group draft content versions together for:
+a) review and
 b) publishing
-   
+
 The rules for adding items to a Collection, removing items from a Collection and the actions that can be taken on items the Collection may vary by :ref:`workflow`.
 
 Publishing is a `djangocms-versioning` feature, thus `djangocms-moderation` depends on and extends the functionality made available by the Versioning addon.
@@ -16,7 +16,7 @@ Collections are stateful. The available states are:
  * In review
  * Archived
  * Cancelled
-  
+
 Drafts can only be added to a Collection during the `Collecting` phase (see :ref:`lock`)
 
 Buttons
@@ -76,7 +76,7 @@ A collection can also be flagged as cancelled. This is similar to Archived excep
 
 Bulk Actions
 -------------------------------------------------
-These will appear in the Collection’s action drop-down for each content-type registered with Moderation. 
+These will appear in the Collection’s action drop-down for each content-type registered with Moderation.
 
 Remove from collection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -92,4 +92,4 @@ Flags a draft as being in need of further editing
 
 Submit for review
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Useful for items that have been flagged for rework - resubmits them for review, sending out notifications again. 
+Useful for items that have been flagged for rework - resubmits them for review, sending out notifications again.

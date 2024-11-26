@@ -1,15 +1,6 @@
 {# Used for MP and NS trees #}
-{% extends "admin/change_list.html" %}
-{% load admin_list admin_tree i18n %}
-
-{% block extrastyle %}
-    {{ block.super }}
-    {% treebeard_css %}
-{% endblock %}
-
-{% block extrahead %}
-    {{ block.super }}
-{% endblock %}
+{% extends "admin/tree_change_list.html" %}
+{% load admin_list admin_tree %}
 
 {% block result_list %}
     {% if action_form and actions_on_top and cl.full_result_count %}

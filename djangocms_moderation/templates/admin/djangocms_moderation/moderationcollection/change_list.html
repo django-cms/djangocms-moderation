@@ -2,10 +2,10 @@
 {% load i18n cms_static %}
  {% block extrahead %}
     {{ block.super }}
-    {#
-        INFO: we need to add styles here instead of "extrastyle" to avoid
+    {% comment "INFO" %}
+        We need to add styles here instead of "extrastyle" to avoid
         conflicts with adminstyle. We are adding cms.base.css to gain the
         icon support, e.g. `<span class="cms-icon cms-icon-eye"></span>`
-    #}
+    {% endcomment %}
     <link rel="stylesheet" href="{% static_with_version 'cms/css/cms.base.css' %}">
 {% endblock extrahead %}

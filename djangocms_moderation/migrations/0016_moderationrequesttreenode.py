@@ -17,7 +17,11 @@ class Migration(migrations.Migration):
                 ('path', models.CharField(max_length=255, unique=True)),
                 ('depth', models.PositiveIntegerField()),
                 ('numchild', models.PositiveIntegerField(default=0)),
-                ('moderation_request', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='djangocms_moderation.ModerationRequest', verbose_name='moderation_request')),
+                ('moderation_request', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE,
+                    to='djangocms_moderation.ModerationRequest',
+                    verbose_name='moderation_request')
+                ),  # noqa: E124
             ],
             options={
                 'ordering': ('id',),
