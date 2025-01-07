@@ -33,6 +33,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            forward_copy_moderation_requests, reverse_copy_moderation_requests
+            forward_copy_moderation_requests, reverse_copy_moderation_requests, elidable=True
         )
     ]

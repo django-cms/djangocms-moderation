@@ -53,7 +53,7 @@ class ModerationFlowsTestCase(TestCase):
         self.client.force_login(user)
         response = self.client.post(
             get_admin_url(
-                name="cms_moderation_{}_request".format(action),
+                name=f"cms_moderation_{action}_request",
                 language="en",
                 args=(self.page.pk, "en"),
             ),

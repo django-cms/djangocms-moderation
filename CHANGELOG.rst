@@ -2,8 +2,53 @@
 Changelog
 =========
 
-Unreleased
-==========
+2.2.2 (2024-11-07)
+==================
+* fix: Add data-popup attr to a tag in burger menu item  (#291)
+* fix: Replace SortableAdminMixin by SortableAdminBase for WorkflowAdmin (#279)
+* fix: Restore "In Collection" button in the toolbar (#286)
+* fix: Update README.rst and add overview of settings
+* fix: Update check framework to not allow publishing for moderated models (#282)
+
+2.2.1 (2024-07-02)
+==================
+* feat: Add multi select and add to moderation in admin for moderated_models
+
+2.2.0 (2024-05-16)
+==================
+* Python 3.8, 3.9 support removed
+* Python 3.10, 3.11 and 3.12 support added
+* Django 2.2 support removed
+* Django 4.2 support added
+* fix: Treebeard support improved by inheriting a treebeard template
+
+2.1.6 (2022-09-07)
+==================
+* fix: Language max_length too short for certain language codes
+
+2.1.5 (2022-07-11)
+==================
+* fix: Broken markup in the ModerationCollection changelist view, and missing attributes in the burger menu
+
+2.1.4 (2022-07-08)
+==================
+* fix: Broken markup and js scripts in the ModerationRequest changelist views
+
+2.1.3 (2022-06-24)
+==================
+* fix: Retain classes which define whether a link should open in a modal or not
+
+2.1.2 (2022-06-24)
+==================
+* fix: Alter burger menu js to prioritise injected static url
+
+2.1.1 (2022-06-24)
+==================
+* fix: Updated moderation_request_change_list to pass static url for svg asset in burger menu
+
+2.1.0 (2022-06-23)
+==================
+* feat: Added burgermenu for ModerationRequestTreeAdmin icons
 * fix: Avoid errors thrown when nested plugins are M2M fields
 * fix: Add to collection should automatically add deeply nested draft versioned objects #205
 * fix: Refactor flawed add to collection XSS redirect sanitisation added in 1.0.26
