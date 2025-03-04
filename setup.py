@@ -19,7 +19,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     version=djangocms_moderation.__version__,
-    description=djangocms_moderation.__doc__,
+    description="Provide moderation workflows for content in Django CMS",
     long_description=open("README.rst").read(),
     classifiers=[
         'Development Status :: 5 - Production/Stable',
