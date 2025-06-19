@@ -1,5 +1,6 @@
 cachetools
 coverage
+django-admin-sortable2
 django-classy-tags>=0.7.2
 django-filer
 django-sekizai
