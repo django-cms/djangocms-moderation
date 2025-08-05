@@ -756,7 +756,10 @@ class PublishSelectedTest(CMSTestCase):
         self.assertEqual(self.collection.status, constants.IN_REVIEW)
 
     @mock.patch("django.contrib.messages.success")
-    @mock.patch("djangocms_moderation.models.ModerationRequest.version_can_be_published", mock.Mock(return_value=False))
+    @mock.patch(
+        "djangocms_moderation.models.ModerationRequest.version_can_be_published",
+        mock.Mock(return_value=False)
+    )
     def test_view_doesnt_publish_when_version_cant_be_published(self, messages_mock):
         # Set up the url (need to access the view directly)
         url = reverse("admin:djangocms_moderation_moderationrequest_publish")
