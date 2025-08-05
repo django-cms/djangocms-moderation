@@ -164,6 +164,8 @@ class Workflow(models.Model):
         super().__init__(*args, **kwargs)
         self._meta.get_field("compliance_number_backend").choices = conf.COMPLIANCE_NUMBER_BACKENDS
         self._meta.get_field("compliance_number_backend").default = conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND
+        if not self.compliance_number_backend:
+            self.compliance_number_backend = conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND
 
     def clean(self):
         if not self.is_default:
