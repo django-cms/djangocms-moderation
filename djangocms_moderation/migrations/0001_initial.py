@@ -334,7 +334,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"verbose_name": "Workflow", "verbose_name_plural": "Workflows"},
+            options={"verbose_name": "Workflow", "verbose_name_plural": "Workflows", "ordering": ("name",)},
         ),
         migrations.CreateModel(
             name="WorkflowStep",

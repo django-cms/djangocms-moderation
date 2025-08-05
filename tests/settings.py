@@ -12,7 +12,7 @@ HELPER_SETTINGS = {
         "easy_thumbnails",
         "captcha",
         "djangocms_alias",
-        "djangocms_text_ckeditor",
+        "djangocms_text",
         "tests.utils.moderated_polls",
         "tests.utils.versioned_none_moderated_app",
     ],
@@ -20,6 +20,7 @@ HELPER_SETTINGS = {
     # test performance and removes the need for test apps to provide migrations
     "MIGRATION_MODULES": {
         "auth": None,
+        "admin": None,
         "cms": None,
         "menus": None,
         "djangocms_alias": None,
@@ -27,7 +28,7 @@ HELPER_SETTINGS = {
         "djangocms_version_locking": None,
         "filer": None,
         "djangocms_moderation": None,
-        "djangocms_text_ckeditor": None,
+        "djangocms_text": None,
     },
     "DEFAULT_AUTO_FIELD": "django.db.models.AutoField",
     "DJANGOCMS_VERSIONING_LOCK_VERSIONS": True,
