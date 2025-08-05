@@ -29,6 +29,7 @@ HELPER_SETTINGS = {
         "filer": None,
         "djangocms_moderation": None,
         "djangocms_text": None,
+        "djangocms_text_ckeditor": None,
     },
     "DEFAULT_AUTO_FIELD": "django.db.models.AutoField",
     "DJANGOCMS_VERSIONING_LOCK_VERSIONS": True,
