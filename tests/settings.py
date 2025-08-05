@@ -12,7 +12,7 @@ HELPER_SETTINGS = {
         "easy_thumbnails",
         "captcha",
         "djangocms_alias",
-        "djangocms_text",
+        "djangocms_text" if cms_version >= "4.1.0" else "djangocms_text_ckeditor",
         "tests.utils.moderated_polls",
         "tests.utils.versioned_none_moderated_app",
     ],
