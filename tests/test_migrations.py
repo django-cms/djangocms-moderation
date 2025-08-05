@@ -2,6 +2,7 @@
 # http://tech.octopus.energy/news/2016/01/21/testing-for-missing-migrations-in-django.html
 import io
 
+from django.apps import apps
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
@@ -17,6 +18,9 @@ class MigrationTestCase(TestCase):
             'stdout': output,
             'check_changes': True,
         }
+
+        apps.clear_cache()
+        apps.get_models(cache=True)  # Re-initialize models
 
         try:
             call_command('makemigrations', 'djangocms_moderation', **options)

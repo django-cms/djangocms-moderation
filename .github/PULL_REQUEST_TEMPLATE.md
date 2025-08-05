@@ -25,4 +25,4 @@ Use 'x' to check each item: [x] I have ...
 
 * [ ] I have added or modified the tests when changing logic
 * [ ] I have followed [the conventional commits guidelines](https://www.conventionalcommits.org/) to add meaningful information into the changelog
-* [ ] I have read the [contribution guidelines ](https://github.com/django-cms/django-cms/blob/develop/CONTRIBUTING.rst)
+* [ ] I have read the [contribution guidelines](https://github.com/django-cms/django-cms/blob/main/CONTRIBUTING.rst)
