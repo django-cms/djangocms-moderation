@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 class ModerationConfig(AppConfig):
     name = "djangocms_moderation"
     verbose_name = _("django CMS Moderation")
-    default_auto_field = "django.db.models.AutoField"
+    default_auto_field = "django.db.models.BigAutoField"
 
     def ready(self):
         import djangocms_moderation.handlers

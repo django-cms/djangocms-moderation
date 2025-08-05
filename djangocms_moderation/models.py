@@ -48,8 +48,6 @@ class ConfirmationPage(models.Model):
     )
     template = models.CharField(
         verbose_name=_("Template"),
-        choices=conf.CONFIRMATION_PAGE_TEMPLATES,
-        default=conf.DEFAULT_CONFIRMATION_PAGE_TEMPLATE,
         max_length=100,
     )
 
@@ -59,6 +57,11 @@ class ConfirmationPage(models.Model):
 
     def __str__(self):
         return self.name
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._meta.get_field("template").choices = conf.CONFIRMATION_PAGE_TEMPLATES
+        self._meta.get_field("template").default = conf.DEFAULT_CONFIRMATION_PAGE_TEMPLATE
 
     def get_absolute_url(self):
         return reverse("admin:cms_moderation_confirmation_page", args=(self.pk,))
@@ -146,9 +149,7 @@ class Workflow(models.Model):
     )
     compliance_number_backend = models.CharField(
         verbose_name=_("compliance number backend"),
-        choices=conf.COMPLIANCE_NUMBER_BACKENDS,
         max_length=255,
-        default=conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND,
     )
 
     class Meta:
@@ -158,6 +159,11 @@ class Workflow(models.Model):
 
     def __str__(self):
         return self.name
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._meta.get_field("compliance_number_backend").choices = conf.COMPLIANCE_NUMBER_BACKENDS
+        self._meta.get_field("compliance_number_backend").default = conf.DEFAULT_COMPLIANCE_NUMBER_BACKEND
 
     def clean(self):
         if not self.is_default:
@@ -427,7 +433,7 @@ class ModerationRequest(models.Model):
         to=Version, verbose_name=_("version"), on_delete=models.CASCADE
     )
     language = models.CharField(
-        verbose_name=_("language"), max_length=20, choices=settings.LANGUAGES
+        verbose_name=_("language"), max_length=20,
     )
     is_active = models.BooleanField(
         verbose_name=_("is active"), default=True, db_index=True
@@ -456,6 +462,10 @@ class ModerationRequest(models.Model):
 
     def __str__(self):
         return f"{self.pk} {self.version_id}"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._meta.get_field("language").choices = settings.LANGUAGES
 
     @cached_property
     def workflow(self):
