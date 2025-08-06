@@ -12,18 +12,19 @@ repos:
     rev: v3.20.0
     hooks:
       - id: pyupgrade
-        args: ["--py310-plus"]
+        args: ["--py39-plus"]
 
   - repo: https://github.com/adamchainz/django-upgrade
     rev: '1.25.0'
     hooks:
       - id: django-upgrade
-        args: [--target-version, "4.0"]
+        args: [--target-version, "4.2"]
 
   - repo: https://github.com/PyCQA/flake8
     rev: 7.3.0
     hooks:
       - id: flake8
+        additional_dependencies: [flake8-pyproject]
 
   - repo: https://github.com/asottile/yesqa
     rev: v1.5.0
@@ -37,7 +38,7 @@ repos:
       - id: debug-statements
       - id: mixed-line-ending
       - id: trailing-whitespace
-# upgrade the isort version to fix compatiable issue withe peotry: https://stackoverflow.com/questions/75269700/pre-commit-fails-to-install-isort-5-11-4-with-error-runtimeerror-the-poetry-co
+
   - repo: https://github.com/pycqa/isort
     rev: 6.0.1
     hooks:
@@ -48,6 +49,7 @@ repos:
     hooks:
       - id: codespell
         exclude: >
-            (?x)^(
+              (?x)^(
                 .*\.(js|po|json)
-            )$
+                | pyproject\.toml
+              )$

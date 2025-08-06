@@ -1,0 +1,113 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "djangocms-moderation"
+dynamic = [ "version" ]
+description = "Provide moderation workflows for content in Django CMS"
+readme = "README.rst"
+license = {text = "BSD"}
+authors = [
+    {name = "Divio AG", email = "info@divio.ch"},
+]
+maintainers = [
+    {name = "Django CMS Association and contributors", email = "info@django-cms.org"},
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Framework :: Django CMS",
+    "Framework :: Django CMS :: 4.0",
+    "Framework :: Django CMS :: 4.1",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "Django>=3.2",
+    "django-cms",
+    "django-sekizai>=0.7",
+    "django-admin-sortable2>=0.6.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/django-cms/djangocms-moderation"
+Repository = "https://github.com/django-cms/djangocms-moderation"
+Documentation = "https://github.com/django-cms/djangocms-moderation"
+"Bug Tracker" = "https://github.com/django-cms/djangocms-moderation/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "djangocms_moderation.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["djangocms_moderation*"]
+
+[tool.setuptools.package-data]
+"djangocms_moderation" = [ "templates/**/*", "static/**/*", "locale/**/*" ]
+
+[tool.flake8]
+max_line_length = 119
+exclude = [
+    ".git",
+    ".env",
+    "__pycache__",
+    "**/migrations/",
+    "build/",
+    ".tox/",
+    "docs/conf.py",
+    "node_modules/",
+]
+
+[tool.isort]
+profile = "black"
+line_length = 119
+multi_line_output = 3
+lines_after_imports = 2
+combine_as_imports = true
+include_trailing_comma = true
+balanced_wrapping = true
+skip = ["manage.py", "migrations", ".tox", "node_modules"]
+extra_standard_library = ["mock"]
+known_django = ["django"]
+known_cms = ["cms", "menus"]
+known_third_party = ["djangocms_versioning"]
+known_first_party = ["djangocms_moderation"]
+sections = ["FUTURE", "STDLIB", "DJANGO", "CMS", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.coverage.run]
+branch = true
+source = ["djangocms_moderation"]
+omit = [
+    "*apps.py",
+    "*constants.py",
+    "*migrations/*",
+    "*test_utils/*",
+    "*node_modules/*",
+    "*tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.codespell]
+ignore-words-list = "alpha-numeric,assertIn,THIRDPARTY"
+skip = "*.po,*.pot,*.js,*.map,*.min.css,node_modules/*"
