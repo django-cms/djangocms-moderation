@@ -2,6 +2,13 @@
 Changelog
 =========
 
+2.2.3 (2025-08-06)
+==================
+
+* fix: Add missing migrations and test for migration completeness by @fsbraun in https://github.com/django-cms/djangocms-moderation/pull/313
+* fix: Make version dynamic in pyproject.toml by @fsbraun in https://github.com/django-cms/djangocms-moderation/pull/314
+* build: Add a description for pypi by @marksweb in https://github.com/django-cms/djangocms-moderation/pull/302
+
 2.2.2 (2024-11-07)
 ==================
 * fix: Add data-popup attr to a tag in burger menu item  (#291)
