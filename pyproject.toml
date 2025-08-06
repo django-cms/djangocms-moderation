@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "djangocms-moderation"
-version = "2.2.2"
+dynamic = [ "version" ]
 description = "Provide moderation workflows for content in Django CMS"
 readme = "README.rst"
 license = {text = "BSD"}
@@ -45,6 +45,9 @@ Homepage = "https://github.com/django-cms/djangocms-moderation"
 Repository = "https://github.com/django-cms/djangocms-moderation"
 Documentation = "https://github.com/django-cms/djangocms-moderation"
 "Bug Tracker" = "https://github.com/django-cms/djangocms-moderation/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "djangocms_moderation.__version__" }
 
 [tool.setuptools.packages.find]
 include = ["djangocms_moderation*"]
