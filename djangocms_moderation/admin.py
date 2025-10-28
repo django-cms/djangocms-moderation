@@ -12,7 +12,6 @@ from django.urls import re_path, reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext, gettext_lazy as _, ngettext
 
-from cms.admin.placeholderadmin import PlaceholderAdminMixin
 from cms.toolbar.utils import get_object_preview_url
 from cms.utils.helpers import is_editable_model
 
@@ -1162,7 +1161,7 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
 
 @admin.register(ConfirmationPage)
-class ConfirmationPageAdmin(PlaceholderAdminMixin, admin.ModelAdmin):
+class ConfirmationPageAdmin(admin.ModelAdmin):
     view_on_site = True
 
     def get_urls(self):
