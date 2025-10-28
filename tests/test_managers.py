@@ -1,4 +1,3 @@
-
 from djangocms_moderation import constants
 from djangocms_moderation.models import ModerationCollection
 
