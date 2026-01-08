@@ -41,7 +41,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        sudo apt install libcairo2-dev pkg-config python3-dev
         python -m pip install --upgrade pip
         python -m pip install -r tests/requirements/${{ matrix.requirements-file }}
         python -m pip install -e .
