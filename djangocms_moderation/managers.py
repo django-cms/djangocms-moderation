@@ -58,6 +58,12 @@ class CollectionManager(Manager):
     def get_queryset(self):
         return CollectionQuerySet(self.model, using=self._db)
 
+    def prefetch_reviewers(self):
+        """
+        Proxy to the queryset method.
+        """
+        return self.get_queryset().prefetch_reviewers()
+
     def reviewers(self, collection):
         """
         Returns a set of all reviewers assigned to any ModerationRequestAction
@@ -80,9 +86,8 @@ class CollectionManager(Manager):
                     reviewers.add(mra.to_user)
 
             if not reviewers_in_actions and collection.status != COLLECTING:
-                role = collection.workflow.first_step.role
-                users = role.get_users_queryset()
-                for user in users:
-                    reviewers.add(user)
+                first_step = collection.workflow.first_step
+                if first_step:
+                    reviewers |= set(first_step.role.get_users_queryset())
 
         return reviewers
