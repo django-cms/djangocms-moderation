@@ -75,7 +75,7 @@ pyproject-hooks==1.0.0
     # via build
 pyyaml==6.0.1
     # via libcst
-requests==2.32.4
+requests==2.33.0
     # via sphinx
 six==1.16.0
     # via livereload
