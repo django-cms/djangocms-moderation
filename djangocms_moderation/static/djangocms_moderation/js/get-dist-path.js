@@ -16,7 +16,7 @@ var getDistPath = function(scriptFileName) {
                 scriptPath = listOfScripts[i].getAttribute(attr, 2);
             }
             if (!scriptPath) {
-                continue; // eslint-disable-line
+                continue;
             }
             fileName = scriptPath;
             fileName = fileName.split('?')[0].split('/').pop(); // get script filename
