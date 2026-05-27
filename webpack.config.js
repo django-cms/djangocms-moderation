@@ -1,30 +1,28 @@
-var webpack = require('webpack');
-// var path = require('path');
+const path = require('path');
+const webpack = require('webpack');
 
-module.exports = function(opts) {
-    'use strict';
+const PROJECT_ROOT = path.resolve(__dirname, 'djangocms_moderation/static/djangocms_moderation');
+const PROJECT_PATH = {
+    js: path.join(PROJECT_ROOT, 'js'),
+    sass: path.join(PROJECT_ROOT, 'sass'),
+    css: path.join(PROJECT_ROOT, 'css'),
+};
 
-    var PROJECT_PATH = opts.PROJECT_PATH;
-    var debug = opts.debug;
+module.exports = (_env, argv = {}) => {
+    const isProduction = argv.mode !== 'development';
 
-    if (!debug) {
-        process.env.NODE_ENV = 'production';
-    }
-
-    var baseConfig = {
-        devtool: false,
-        watch: !!opts.watch,
+    return {
+        mode: isProduction ? 'production' : 'development',
+        devtool: isProduction ? false : 'eval-cheap-module-source-map',
         entry: {
-            // CMS frontend
-            moderation: PROJECT_PATH.js + '/base.js',
+            moderation: path.join(PROJECT_PATH.js, 'base.js'),
         },
         output: {
-            path: PROJECT_PATH.js + '/dist/',
+            path: path.join(PROJECT_PATH.js, 'dist'),
             filename: 'bundle.[name].min.js',
             chunkFilename: 'bundle.[name].min.js',
-            jsonpFunction: 'moderationWebpackJsonp',
+            chunkLoadingGlobal: 'moderationWebpackJsonp',
         },
-        plugins: [],
         externals: {
             jquery: 'CMS.$',
             'cms.plugins': 'CMS.Plugin',
@@ -34,15 +32,15 @@ module.exports = function(opts) {
         },
         resolve: {
             alias: {
-                htmldiff: PROJECT_PATH.js + '/libs/htmldiff.js',
-                prettydiff: PROJECT_PATH.js + '/prettydiff.js',
+                htmldiff: path.join(PROJECT_PATH.js, 'libs/htmldiff.js'),
+                prettydiff: path.join(PROJECT_PATH.js, 'prettydiff.js'),
             },
         },
         module: {
             rules: [
-                // must be first
                 {
                     test: /\.js$/,
+                    exclude: /(node_modules|libs|tidy|addons\/jquery.*)/,
                     use: [
                         {
                             loader: 'babel-loader',
@@ -51,62 +49,35 @@ module.exports = function(opts) {
                             },
                         },
                     ],
-                    exclude: /(node_modules|libs|tidy|addons\/jquery.*)/,
                 },
                 {
-                    test: /(.html$|api\/dom)/,
-                    use: [
-                        {
-                            loader: 'raw-loader',
-                        },
-                    ],
+                    test: /(\.html$|api\/dom)/,
+                    type: 'asset/source',
                 },
                 {
-                    test: /(.css$)/,
+                    test: /\.css$/,
+                    type: 'asset/source',
                     use: [
-                        {
-                            loader: 'raw-loader',
-                        },
                         {
                             loader: 'postcss-loader',
                             options: {
-                                plugins: () => [
-                                    require('autoprefixer')({
-                                        browsers: ['last 2 versions', '> 1%'],
-                                    }),
-                                    require('cssnano')(),
-                                ],
+                                postcssOptions: {
+                                    plugins: [
+                                        require('autoprefixer')(),
+                                        require('cssnano')(),
+                                    ],
+                                },
                             },
                         },
                     ],
                 },
             ],
         },
-        stats: 'verbose',
+        plugins: [
+            new webpack.DefinePlugin({
+                __DEV__: JSON.stringify(!isProduction),
+            }),
+        ],
+        stats: 'minimal',
     };
-
-    if (debug) {
-        baseConfig.devtool = 'cheap-module-eval-source-map';
-        baseConfig.plugins = baseConfig.plugins.concat([
-            new webpack.NoEmitOnErrorsPlugin(),
-            new webpack.DefinePlugin({
-                __DEV__: 'true',
-            }),
-        ]);
-    } else {
-        baseConfig.plugins = baseConfig.plugins.concat([
-            new webpack.DefinePlugin({
-                __DEV__: 'false',
-            }),
-            new webpack.optimize.ModuleConcatenationPlugin(),
-            new webpack.optimize.UglifyJsPlugin({
-                comments: false,
-                compressor: {
-                    drop_console: true, // eslint-disable-line
-                },
-            }),
-        ]);
-    }
-
-    return baseConfig;
 };
