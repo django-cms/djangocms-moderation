@@ -11,6 +11,7 @@ HELPER_SETTINGS = {
         "filer",
         "easy_thumbnails",
         "captcha",
+        "djangocms_moderation",
         "djangocms_alias",
         "djangocms_text" if cms_version >= "4.1.0" else "djangocms_text_ckeditor",
         "tests.utils.moderated_polls",
