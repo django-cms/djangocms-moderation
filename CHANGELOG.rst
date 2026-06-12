@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Unreleased
+==========
+
+* feat: django CMS 5.1 support; drop django CMS 4.0 support
+* fix: Replace deprecated ``PlaceholderField`` with ``PlaceholderRelationField``
+  on ``ConfirmationPage`` (includes a data migration that re-links existing
+  confirmation page placeholders)
+
 2.2.3 (2025-08-06)
 ==================
 
