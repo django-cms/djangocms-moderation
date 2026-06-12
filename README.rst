@@ -9,17 +9,14 @@ Installation
 Requirements
 ============
 
-django CMS Moderation requires that you have a django CMS 4.0 (or higher) project already running and set up.
-
-djangocms-versioning is also required along with django-fsm which should be installed with versioning.
-
+django CMS Moderation requires that you have a django CMS 4.0 (or higher) project already running and set up, with `djangocms-versioning <https://github.com/django-cms/djangocms-versioning>`_ installed.
 
 To install
 ==========
 
 Run::
 
-    pip install git+git://github.com/django-cms/djangocms-moderation@master#egg=djangocms-moderation
+    pip install djangocms-moderation
 
 Add the following to your project's ``INSTALLED_APPS``:
 
@@ -31,6 +28,8 @@ Run::
     python manage.py migrate djangocms_moderation
 
 to perform the application's database migrations.
+
+For a guided introduction, see the `tutorial in the documentation <https://djangocms-moderation.readthedocs.io>`_.
 
 Configuration
 =============
@@ -52,7 +51,7 @@ The following settings can be added to your project's settings file to configure
        ``sequential_number_backend``, and
        ``sequential_number_with_identifier_prefix_backend``.
    * - ``CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE``
-     - Enable/disable workflow override functionality. Defaults to ``False``.
+     - Legacy setting from moderation 1.x; currently has no effect.
    * - ``CMS_MODERATION_DEFAULT_CONFIRMATION_PAGE_TEMPLATE``
      - Default template for confirmation pages. Defaults to
        ``djangocms_moderation/moderation_confirmation.html``
@@ -76,10 +75,7 @@ Add these settings to your project's settings file:
 .. code-block:: python
 
     # Custom compliance number backend
-    CMS_MODERATION_DEFAULT_COMPLIANCE_NUMBER_BACKEND = 'myapp.backends.CustomComplianceNumberBackend'
-
-    # Enable workflow override
-    CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE = True
+    CMS_MODERATION_DEFAULT_COMPLIANCE_NUMBER_BACKEND = 'myapp.backends.custom_compliance_number_backend'
 
     # Custom confirmation template
     CMS_MODERATION_DEFAULT_CONFIRMATION_PAGE_TEMPLATE = 'custom_confirmation.html'

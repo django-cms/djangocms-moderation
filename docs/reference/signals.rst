@@ -129,22 +129,20 @@ Arguments sent with this signal:
 How to use the moderation publish signal for a collection
 ---------------------------------------------------------------------
 
-The CMS used to provide page publish and unpublish signals which have since been removed in DjangoCMS 4.0. You can instead use the signals provided above to replace these.
+The CMS used to provide page publish and unpublish signals which have been removed in django CMS 4.0. You can use the signals provided above to replace these.
 
-Djangocms-moderation provides a way to take further actions once a collection has been published. The `published` event is the last event executed for a moderation.
+django CMS Moderation provides a way to take further actions once a collection has been published. The ``published`` event is the last event executed for a moderation.
 
 
 .. code-block:: python
 
     from django.dispatch import receiver
 
-    from cms.models import PageContent
-
-    from djangocm_moderation.signals import published
+    from djangocms_moderation.signals import published
 
 
     @receiver(published)
-    def do_something_on_publish_event(*args, **kwargs):
-        # all keyword arguments can be found in kwargs
-        # pass
+    def do_something_on_publish_event(sender, collection, moderator, moderation_requests, workflow, **kwargs):
+        for moderation_request in moderation_requests:
+            ...  # e.g. invalidate caches, ping a webhook, update a search index
 
