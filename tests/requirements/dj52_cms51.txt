@@ -6,3 +6,4 @@ django-cms>=5.1.0a1,<5.2
 djangocms-versioning>=2.0.1
 djangocms-text
 djangocms-alias>=3.0.0
+djangocms-admin-style  # needed for test settings
