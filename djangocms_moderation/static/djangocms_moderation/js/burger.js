@@ -3,6 +3,12 @@
         return;
     }
 
+    // Resolve the static url prefix from this script's own URL so that no
+    // inline script is needed to inject it (keeps templates CSP-safe).
+    let static_url_prefix = document.currentScript ?
+        document.currentScript.src.replace(/js\/burger\.js.*$/, '') :
+        '/static/djangocms_moderation/';
+
     $(function () {
       // INFO: it is not possible to put a form inside a form, so the moderation actions have to create their own form
       // on click.
@@ -104,8 +110,9 @@
         let burger_menu_icon;
 
         if (typeof moderation_static_url_prefix === 'undefined') {
-            burger_menu_icon = '/static/djangocms_moderation/svg/menu.svg';
+            burger_menu_icon = `${static_url_prefix}svg/menu.svg`;
         } else {
+            // Allow a page to override the prefix via a global variable.
             // eslint-disable-next-line no-undef
             burger_menu_icon = `${moderation_static_url_prefix}svg/menu.svg`;
         }

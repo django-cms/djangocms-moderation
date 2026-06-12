@@ -18,14 +18,23 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "djangocms-moderation"
-copyright = "2019, Fidelity International"
-author = "Fidelity International"
+import os
+import sys
+
+
+sys.path.insert(0, os.path.abspath(".."))
+
+from djangocms_moderation import __version__  # noqa: E402
+
+
+project = "django CMS Moderation"
+copyright = "2019-2026, Fidelity International and contributors"
+author = "Fidelity International and contributors"
 
 # The short X.Y version
-version = ""
+version = ".".join(__version__.split(".")[:2])
 # The full version, including alpha/beta/rc tags
-release = ""
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
