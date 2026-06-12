@@ -1,0 +1,2 @@
+ignore:
+  - "djangocms_moderation/migrations"
