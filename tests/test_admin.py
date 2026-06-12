@@ -80,6 +80,23 @@ class ModerationAdminTestCase(BaseTestCase):
         self.mra = ModerationRequestAdmin(ModerationRequest, admin.AdminSite())
         self.mca = ModerationCollectionAdmin(ModerationCollection, admin.AdminSite())
 
+    def test_lookup_allowed_for_collection_filter(self):
+        request = RequestFactory().get(self.url)
+        request.user = self.user
+        self.assertTrue(
+            self.mr_tree_admin.lookup_allowed(
+                "moderation_request__collection__id", self.collection.pk, request
+            )
+        )
+
+    def test_changelist_view_filtered_by_collection(self):
+        with self.login_user_context(self.user):
+            response = self.client.get(self.url_with_filter)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, str(self.mr1.version.content))
+        self.assertContains(response, str(self.mr2.version.content))
+
     def test_delete_selected_action_visibility(self):
         mock_request = MockRequest()
         mock_request.user = self.user

@@ -148,10 +148,10 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         """
         return False
 
-    def lookup_allowed(self, lookup, value):
+    def lookup_allowed(self, lookup, value, request=None):
         if lookup in ('moderation_request__collection__id',):
             return True
-        return super().lookup_allowed(lookup, value)
+        return super().lookup_allowed(lookup, value, request)
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name
