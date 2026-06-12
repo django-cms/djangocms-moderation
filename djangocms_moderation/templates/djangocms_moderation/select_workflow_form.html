@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block content %}
+<div id="content-main">
     {% if errors %}
         <p class="errornote">
             {% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
@@ -27,4 +28,5 @@
             <input type="submit" value="{% trans "Next" %}" class="default" name="_save">
         </div>
     </form>
+</div>
 {% endblock %}

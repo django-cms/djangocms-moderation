@@ -2,6 +2,7 @@
 {% load i18n admin_urls %}
 
 {% block content %}
+<div id="content-main">
     {% if errors or adminform.non_field_errors %}
         <p class="errornote">
             {% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
@@ -37,4 +38,5 @@
             <input type="submit" value="{% trans 'Submit' %}" class="default" name="_save">
         </div>
     </form>
+</div>
 {% endblock %}

@@ -2,6 +2,7 @@
 {% load i18n static %}
 
 {% block content %}
+<div id="content-main">
 <form action="" method="post">
 {% csrf_token %}
 <div>
@@ -71,29 +72,10 @@
     </div>
 </div>
 </form>
+</div>
 {% endblock %}
 
 {% block extrahead %}
 {{ block.super }}
-<script type="text/javascript">
-    (function($) {
-        $(function() {
-            var collection_sel = $('#id_collection');
-            collection_sel.data('prev', collection_sel.val());
-            collection_sel.on('change', function() {
-                var jqThis = $(this);
-                var newUrl;
-                if (location.href.indexOf('collection_id') === -1) {
-                    newUrl = location.href + '&collection_id=' + jqThis.val();
-                } else {
-                    newUrl = location.href.replace(
-                        "collection_id="+jqThis.data("prev"),
-                        "collection_id="+jqThis.val()
-                    );
-                }
-                location.href = newUrl;
-            });
-        });
-    })(django.jQuery);
-</script>
+<script src="{% static 'djangocms_moderation/js/items_to_collection.js' %}"></script>
 {% endblock %}
