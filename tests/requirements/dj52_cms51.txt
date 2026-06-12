@@ -1,6 +1,6 @@
 -r ./requirements_base.txt
 
-Django>=6.0,<6.1
+Django>=5.2,<6.0
 django-cms>=5.1.0a1,<5.1
 
 djangocms-versioning>=2.0.1
