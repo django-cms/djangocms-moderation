@@ -9,7 +9,8 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.translation import gettext, gettext_lazy as _
 
-from cms.models.fields import PlaceholderField
+from cms.models.fields import PlaceholderRelationField
+from cms.utils.placeholder import get_placeholder_from_slot
 
 from djangocms_versioning.models import Version
 from treebeard.mp_tree import MP_Node
@@ -39,7 +40,7 @@ class ConfirmationPage(models.Model):
     )
 
     name = models.CharField(verbose_name=_("name"), max_length=50)
-    content = PlaceholderField("confirmation_content")
+    placeholders = PlaceholderRelationField()
     content_type = models.CharField(
         verbose_name=_("Content Type"),
         choices=CONTENT_TYPES,
@@ -65,6 +66,13 @@ class ConfirmationPage(models.Model):
 
     def get_absolute_url(self):
         return reverse("admin:cms_moderation_confirmation_page", args=(self.pk,))
+
+    @cached_property
+    def content(self):
+        return get_placeholder_from_slot(self.placeholders, "confirmation_content")
+
+    def get_placeholders(self):
+        return [self.content]
 
     def is_valid(self, active_request, for_step, is_reviewed=False):
         from .helpers import get_form_submission_for_step

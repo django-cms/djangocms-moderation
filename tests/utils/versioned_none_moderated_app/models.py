@@ -1,8 +1,10 @@
 from django.db import models
 from django.urls import reverse
+from django.utils.functional import cached_property
 
 from cms.models import CMSPlugin
-from cms.models.fields import PlaceholderField
+from cms.models.fields import PlaceholderRelationField
+from cms.utils.placeholder import get_placeholder_from_slot
 
 
 class NoneModeratedPoll(models.Model):
@@ -16,7 +18,11 @@ class NoneModeratedPollContent(models.Model):
     poll = models.ForeignKey(NoneModeratedPoll, on_delete=models.CASCADE)
     language = models.TextField()
     text = models.TextField()
-    placeholder = PlaceholderField("placeholder")
+    placeholders = PlaceholderRelationField()
+
+    @cached_property
+    def placeholder(self):
+        return get_placeholder_from_slot(self.placeholders, "placeholder")
 
     def __str__(self):
         return self.text
