@@ -8,6 +8,9 @@ Changelog
 * fix: Support django-treebeard >= 4.8, whose rewritten admin tree changed the
   ``result_tree`` template tag signature. The moderation request changelist now
   works with both treebeard < 4.8 and >= 4.8 (#336)
+* feat: Add Arabic (ar), Bengali (bn), Finnish (fi), Hindi (hi), Indonesian (id),
+  Korean (ko), Russian (ru), Albanian (sq), Vietnamese (vi), Simplified Chinese
+  (zh_CN) and Traditional Chinese (zh_TW) translations
 
 2.3.0 (2026-06-13)
 ==================

@@ -1,0 +1,945 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+# Translators:
+# Fabian Braun <fsbraun@gmx.de>, 2026
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-13 00:13+0200\n"
+"PO-Revision-Date: 2026-06-29 00:00+0000\n"
+"Last-Translator: Fabian Braun <fsbraun@gmx.de>, 2026\n"
+"Language-Team: Indonesian (https://app.transifex.com/divio/teams/58664/id/)\n"
+"Language: id\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: admin.py:66 models.py:681
+#: templates/djangocms_moderation/comment_list.html:10
+msgid "Action"
+msgstr "Tindakan"
+
+#: admin.py:67 models.py:682
+msgid "Actions"
+msgstr "Tindakan"
+
+#: admin.py:76
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:25
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:25
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:25
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:25
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:25
+#: templates/djangocms_moderation/items_to_collection.html:48
+#: templates/djangocms_moderation/moderation_request_change_list.html:19
+msgid "Status"
+msgstr "Status"
+
+#: admin.py:80
+#, python-brace-format
+msgid "By {user}"
+msgstr "Oleh {user}"
+
+#: admin.py:83
+msgid "Form Submission"
+msgstr "Pengiriman Formulir"
+
+#: admin.py:183 admin.py:1065
+msgid "actions"
+msgstr "tindakan"
+
+#: admin.py:217
+msgid "ID"
+msgstr "ID"
+
+#: admin.py:230
+msgid "Content type"
+msgstr "Tipe konten"
+
+#: admin.py:238
+msgid "Title"
+msgstr "Judul"
+
+#: admin.py:244
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:22
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:22
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:22
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:22
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:22
+#: templates/djangocms_moderation/comment_list.html:9
+#: templates/djangocms_moderation/items_to_collection.html:45
+msgid "Author"
+msgstr "Penulis"
+
+#: admin.py:250
+msgid "Preview"
+msgstr "Pratinjau"
+
+#: admin.py:272
+msgid "Reviewer"
+msgstr "Peninjau"
+
+#: admin.py:290
+msgid "Ready for publishing"
+msgstr "Siap untuk diterbitkan"
+
+#: admin.py:292
+msgid "Pending author rework"
+msgstr "Menunggu pengerjaan ulang oleh penulis"
+
+#: admin.py:296
+#, python-format
+msgid "Pending %(role)s approval"
+msgstr "Menunggu persetujuan %(role)s"
+
+#: admin.py:305
+#, python-format
+msgid "%(action)s by %(name)s"
+msgstr "%(action)s oleh %(name)s"
+
+#: admin.py:307
+msgid "Ready for submission"
+msgstr "Siap untuk dikirim"
+
+#: admin.py:471
+#, python-format
+msgid "%(count)d request successfully deleted"
+msgid_plural "%(count)d requests successfully deleted"
+msgstr[0] "%(count)d permintaan berhasil dihapus"
+
+#: admin.py:614
+#, python-format
+msgid "%(count)d request successfully resubmitted for review"
+msgid_plural "%(count)d requests successfully resubmitted for review"
+msgstr[0] "%(count)d permintaan berhasil dikirim ulang untuk ditinjau"
+
+#: admin.py:661
+#, python-format
+msgid "%(count)d request successfully published"
+msgid_plural "%(count)d requests successfully published"
+msgstr[0] "%(count)d permintaan berhasil diterbitkan"
+
+#: admin.py:720
+#, python-format
+msgid "%(count)d request successfully submitted for rework"
+msgid_plural "%(count)d requests successfully submitted for rework"
+msgstr[0] "%(count)d permintaan berhasil dikirim untuk pengerjaan ulang"
+
+#: admin.py:812
+#, python-format
+msgid "%(count)d request successfully approved"
+msgid_plural "%(count)d requests successfully approved"
+msgstr[0] "%(count)d permintaan berhasil disetujui"
+
+#: admin.py:880
+#: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
+msgid "Collection comments"
+msgstr "Komentar koleksi"
+
+#: admin.py:929
+msgid "User"
+msgstr "Pengguna"
+
+#: admin.py:966
+msgid "Request comments"
+msgstr "Komentar permintaan"
+
+#: admin.py:1058
+msgid "reviewers"
+msgstr "peninjau"
+
+#: admin.py:1081
+msgid "Modify collection"
+msgstr "Ubah koleksi"
+
+#: admin.py:1208 models.py:468
+msgid "Request"
+msgstr "Permintaan"
+
+#: admin.py:1214
+msgid "By User"
+msgstr "Oleh Pengguna"
+
+#: admin.py:1220
+msgid "Form Data"
+msgstr "Data Formulir"
+
+#: admin.py:1228
+msgid "Question"
+msgstr "Pertanyaan"
+
+#: admin.py:1228
+msgid "Answer"
+msgstr "Jawaban"
+
+#: admin_actions.py:36
+msgid "Resubmit changes for review"
+msgstr "Kirim ulang perubahan untuk ditinjau"
+
+#: admin_actions.py:53
+msgid "Submit for rework"
+msgstr "Kirim untuk pengerjaan ulang"
+
+#: admin_actions.py:66
+msgid "Approve"
+msgstr "Setujui"
+
+#: admin_actions.py:82
+msgid "Remove selected"
+msgstr "Hapus yang dipilih"
+
+#: admin_actions.py:99
+msgid "Publish selected requests"
+msgstr "Terbitkan permintaan yang dipilih"
+
+#: admin_actions.py:156
+msgid "No suitable items found to add to moderation collection"
+msgstr "Tidak ada item yang sesuai untuk ditambahkan ke koleksi moderasi"
+
+#: admin_actions.py:161
+msgid "Add to moderation collection"
+msgstr "Tambahkan ke koleksi moderasi"
+
+#: admin_actions.py:165
+msgid "Add items to a collection to unpublish"
+msgstr "Tambahkan item ke koleksi untuk dibatalkan penerbitannya"
+
+#: apps.py:7
+msgid "django CMS Moderation"
+msgstr "django CMS Moderation"
+
+#: cms_toolbars.py:84 monkeypatch.py:56
+msgid "Submit for moderation"
+msgstr "Kirim untuk moderasi"
+
+#: cms_toolbars.py:109
+#: templates/djangocms_moderation/moderation_request_change_list.html:44
+msgid "Moderation collections"
+msgstr "Koleksi moderasi"
+
+#: conf.py:12
+msgid "Unique alphanumeric string"
+msgstr "String alfanumerik unik"
+
+#: conf.py:13
+msgid "Sequential number"
+msgstr "Nomor berurutan"
+
+#: conf.py:16
+msgid "Sequential number with identifier prefix"
+msgstr "Nomor berurutan dengan awalan pengenal"
+
+#: conf.py:40
+msgid "Default"
+msgstr "Default"
+
+#: constants.py:18
+msgid "Current page"
+msgstr "Halaman saat ini"
+
+#: constants.py:19
+msgid "Page children (immediate)"
+msgstr "Anak halaman (langsung)"
+
+#: constants.py:20
+msgid "Page and children (immediate)"
+msgstr "Halaman dan anak (langsung)"
+
+#: constants.py:21
+msgid "Page descendants"
+msgstr "Keturunan halaman"
+
+#: constants.py:22
+msgid "Page and descendants"
+msgstr "Halaman dan keturunan"
+
+#: constants.py:33
+msgid "Resubmitted"
+msgstr "Dikirim ulang"
+
+#: constants.py:34
+msgid "Started"
+msgstr "Dimulai"
+
+#: constants.py:35
+msgid "Rejected"
+msgstr "Ditolak"
+
+#: constants.py:36
+msgid "Approved"
+msgstr "Disetujui"
+
+#: constants.py:37 constants.py:54
+msgid "Cancelled"
+msgstr "Dibatalkan"
+
+#: constants.py:38
+msgid "Finished"
+msgstr "Selesai"
+
+#: constants.py:51
+msgid "Collecting"
+msgstr "Mengumpulkan"
+
+#: constants.py:52
+msgid "In Review"
+msgstr "Dalam Peninjauan"
+
+#: constants.py:53
+msgid "Archived"
+msgstr "Diarsipkan"
+
+#: emails.py:16
+#: templates/djangocms_moderation/emails/moderation-request/approved.txt:8
+msgid "Approved moderation requests"
+msgstr "Permintaan moderasi yang disetujui"
+
+#: emails.py:17
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:11
+msgid "Rejected moderation requests"
+msgstr "Permintaan moderasi yang ditolak"
+
+#: emails.py:18
+msgid "Request for moderation deleted"
+msgstr "Permintaan moderasi dihapus"
+
+#: emails.py:86
+msgid "Review requested"
+msgstr "Peninjauan diminta"
+
+#: filters.py:18 forms.py:64 models.py:240
+msgid "moderator"
+msgstr "moderator"
+
+#: filters.py:36
+msgid "reviewer"
+msgstr "peninjau"
+
+#: filters.py:77
+msgid "All"
+msgstr "Semua"
+
+#: forms.py:67
+msgid "comment"
+msgstr "komentar"
+
+#: forms.py:100 forms.py:198
+#, python-brace-format
+msgid "Any {role}"
+msgstr "{role} mana pun"
+
+#: forms.py:172
+msgid ""
+"Your item is either locked, not enabled for moderation,or is part of another"
+" active moderation request"
+msgid_plural ""
+"Your items are either locked, not enabled for moderation,or are part of "
+"another active moderation request"
+msgstr[0] ""
+"Item Anda terkunci, tidak diaktifkan untuk moderasi, atau merupakan bagian "
+"dari permintaan moderasi aktif lainnya"
+
+#: forms.py:184
+msgid "Select review group"
+msgstr "Pilih grup peninjauan"
+
+#: forms.py:205
+msgid "This collection can't be submitted for a review"
+msgstr "Koleksi ini tidak dapat dikirim untuk ditinjau"
+
+#: forms.py:222
+msgid "This collection can't be cancelled"
+msgstr "Koleksi ini tidak dapat dibatalkan"
+
+#: forms.py:266
+msgid "You can only change your own comments"
+msgstr "Anda hanya dapat mengubah komentar Anda sendiri"
+
+#: helpers.py:116
+#, python-format
+msgid "In collection \"%(collection_name)s (%(collection_id)s)\""
+msgstr "Dalam koleksi \"%(collection_name)s (%(collection_id)s)\""
+
+#: helpers.py:121
+#, python-format
+msgid "In moderation \"%(collection_name)s (%(collection_id)s)\""
+msgstr "Dalam moderasi \"%(collection_name)s (%(collection_id)s)\""
+
+#: models.py:38
+msgid "Plain"
+msgstr "Polos"
+
+#: models.py:39
+msgid "Form"
+msgstr "Formulir"
+
+#: models.py:42 models.py:93 models.py:136
+msgid "name"
+msgstr "nama"
+
+#: models.py:45
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:20
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:20
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:20
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:20
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:20
+#: templates/djangocms_moderation/items_to_collection.html:43
+msgid "Content Type"
+msgstr "Tipe Konten"
+
+#: models.py:51
+msgid "Template"
+msgstr "Templat"
+
+#: models.py:56
+msgid "Confirmation Page"
+msgstr "Halaman Konfirmasi"
+
+#: models.py:57
+msgid "Confirmation Pages"
+msgstr "Halaman Konfirmasi"
+
+#: models.py:98
+msgid "user"
+msgstr "pengguna"
+
+#: models.py:101
+msgid "group"
+msgstr "grup"
+
+#: models.py:105 models.py:771
+msgid "confirmation page"
+msgstr "halaman konfirmasi"
+
+#: models.py:113
+msgid "Role"
+msgstr "Peran"
+
+#: models.py:114
+msgid "Roles"
+msgstr "Peran"
+
+#: models.py:121
+msgid "Can't pick both user and group. Only one."
+msgstr "Tidak dapat memilih pengguna dan grup sekaligus. Hanya satu."
+
+#: models.py:137
+msgid "is default"
+msgstr "default"
+
+#: models.py:139
+msgid "identifier"
+msgstr "pengenal"
+
+#: models.py:144
+msgid ""
+"Identifier is a 'free' field you could use for internal purposes. For "
+"example, it could be used as a workflow specific prefix of a compliance "
+"number"
+msgstr ""
+"Pengenal adalah bidang 'bebas' yang dapat Anda gunakan untuk keperluan "
+"internal. Misalnya, dapat digunakan sebagai awalan khusus alur kerja untuk "
+"nomor kepatuhan"
+
+#: models.py:150
+msgid "requires compliance number?"
+msgstr "memerlukan nomor kepatuhan?"
+
+#: models.py:153
+msgid ""
+"Does the Compliance number need to be generated before the moderation "
+"request is approved? Please select the compliance number backend below"
+msgstr ""
+"Apakah nomor kepatuhan perlu dibuat sebelum permintaan moderasi disetujui? "
+"Silakan pilih backend nomor kepatuhan di bawah ini"
+
+#: models.py:159
+msgid "compliance number backend"
+msgstr "backend nomor kepatuhan"
+
+#: models.py:164
+#: templates/djangocms_moderation/moderation_request_change_list.html:20
+msgid "Workflow"
+msgstr "Alur kerja"
+
+#: models.py:165
+msgid "Workflows"
+msgstr "Alur kerja"
+
+#: models.py:188
+msgid "Can't have two default workflows, only one is allowed."
+msgstr "Tidak boleh ada dua alur kerja default, hanya satu yang diizinkan."
+
+#: models.py:198
+msgid "role"
+msgstr "peran"
+
+#: models.py:200
+msgid "is mandatory"
+msgstr "wajib"
+
+#: models.py:203 models.py:244
+msgid "workflow"
+msgstr "alur kerja"
+
+#: models.py:212
+msgid "Step"
+msgstr "Langkah"
+
+#: models.py:213
+msgid "Steps"
+msgstr "Langkah"
+
+#: models.py:237
+msgid "collection name"
+msgstr "nama koleksi"
+
+#: models.py:259
+msgid "collection"
+msgstr "koleksi"
+
+#: models.py:261
+msgid "Can change collection author"
+msgstr "Dapat mengubah penulis koleksi"
+
+#: models.py:262
+msgid "Can cancel collection"
+msgstr "Dapat membatalkan koleksi"
+
+#: models.py:345
+msgid "Cancelled collection"
+msgstr "Koleksi dibatalkan"
+
+#: models.py:425 models.py:666
+msgid "moderation_request"
+msgstr "permintaan_moderasi"
+
+#: models.py:443
+msgid "version"
+msgstr "versi"
+
+#: models.py:446
+msgid "language"
+msgstr "bahasa"
+
+#: models.py:449
+msgid "is active"
+msgstr "aktif"
+
+#: models.py:451
+msgid "date sent"
+msgstr "tanggal dikirim"
+
+#: models.py:453
+msgid "compliance number"
+msgstr "nomor kepatuhan"
+
+#: models.py:462 models.py:726
+msgid "author"
+msgstr "penulis"
+
+#: models.py:469
+#: templates/admin/djangocms_moderation/moderationrequest/change_form.html:10
+#: templates/admin/djangocms_moderation/requestcomment/change_form.html:10
+#: templates/admin/djangocms_moderation/requestcomment/change_list.html:10
+#: templates/djangocms_moderation/moderation_request_change_list.html:45
+msgid "Requests"
+msgstr "Permintaan"
+
+#: models.py:629
+msgid "status"
+msgstr "status"
+
+#: models.py:634 models.py:763
+msgid "by user"
+msgstr "oleh pengguna"
+
+#: models.py:640
+msgid "to user"
+msgstr "kepada pengguna"
+
+#: models.py:648
+msgid "to role"
+msgstr "kepada peran"
+
+#: models.py:658
+msgid "step approved"
+msgstr "langkah disetujui"
+
+#: models.py:663 models.py:724
+msgid "message"
+msgstr "pesan"
+
+#: models.py:671
+msgid "date taken"
+msgstr "tanggal diambil"
+
+#: models.py:751
+msgid "moderation request"
+msgstr "permintaan moderasi"
+
+#: models.py:757
+msgid "for step"
+msgstr "untuk langkah"
+
+#: models.py:780
+msgid "Confirmation Form Submission"
+msgstr "Pengiriman Formulir Konfirmasi"
+
+#: models.py:781
+msgid "Confirmation Form Submissions"
+msgstr "Pengiriman Formulir Konfirmasi"
+
+#: monkeypatch.py:145 monkeypatch.py:155
+msgid "Cannot archive a version in an active moderation collection"
+msgstr "Tidak dapat mengarsipkan versi dalam koleksi moderasi aktif"
+
+#: monkeypatch.py:150
+msgid "Cannot revert when draft version is in an active moderation collection"
+msgstr ""
+"Tidak dapat mengembalikan saat versi draf berada dalam koleksi moderasi "
+"aktif"
+
+#: monkeypatch.py:159
+msgid "Version is in an active moderation collection"
+msgstr "Versi berada dalam koleksi moderasi aktif"
+
+#: monkeypatch.py:163
+msgid "Cannot edit a version in an active moderation collection"
+msgstr "Tidak dapat mengedit versi dalam koleksi moderasi aktif"
+
+#: monkeypatch.py:167
+msgid "Content cannot be published directly. Use the moderation process."
+msgstr "Konten tidak dapat diterbitkan langsung. Gunakan proses moderasi."
+
+#: templates/admin/djangocms_moderation/collectioncomment/change_form.html:7
+#: templates/admin/djangocms_moderation/collectioncomment/change_list.html:16
+#: templates/admin/djangocms_moderation/moderationrequest/change_form.html:7
+#: templates/admin/djangocms_moderation/requestcomment/change_form.html:7
+#: templates/admin/djangocms_moderation/requestcomment/change_list.html:7
+#: templates/djangocms_moderation/moderation_request_change_list.html:42
+msgid "Home"
+msgstr "Beranda"
+
+#: templates/admin/djangocms_moderation/collectioncomment/change_form.html:9
+#: templates/admin/djangocms_moderation/collectioncomment/change_list.html:18
+#: templates/admin/djangocms_moderation/moderationrequest/change_form.html:9
+#: templates/admin/djangocms_moderation/requestcomment/change_form.html:9
+#: templates/admin/djangocms_moderation/requestcomment/change_list.html:9
+msgid "Collections"
+msgstr "Koleksi"
+
+#: templates/admin/djangocms_moderation/collectioncomment/change_form.html:11
+#: templates/admin/djangocms_moderation/moderationrequest/change_form.html:11
+#: templates/admin/djangocms_moderation/requestcomment/change_form.html:12
+#, python-format
+msgid "Add %(name)s"
+msgstr "Tambah %(name)s"
+
+#: templates/admin/djangocms_moderation/collectioncomment/change_list.html:7
+#, python-format
+msgid ""
+"\n"
+"            %(collection_name)s comments\n"
+"        "
+msgstr ""
+"\n"
+"            Komentar %(collection_name)s\n"
+"        "
+
+#: templates/admin/djangocms_moderation/collectioncomment/change_list.html:19
+#: templates/admin/djangocms_moderation/requestcomment/change_form.html:11
+#: templates/admin/djangocms_moderation/requestcomment/change_list.html:11
+msgid "Comments"
+msgstr "Komentar"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:3
+msgid "Approve Confirmation"
+msgstr "Konfirmasi Persetujuan"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:14
+msgid "Are you sure you want to approve these items for publishing?"
+msgstr "Apakah Anda yakin ingin menyetujui item ini untuk diterbitkan?"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:19
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:19
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:19
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:19
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:19
+msgid "Id"
+msgstr "Id"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:21
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:21
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:21
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:21
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:21
+#: templates/djangocms_moderation/items_to_collection.html:44
+msgid "Identifier"
+msgstr "Pengenal"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:23
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:23
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:23
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:23
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:23
+#: templates/djangocms_moderation/items_to_collection.html:46
+msgid "Edit Date"
+msgstr "Tanggal Edit"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:24
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:24
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:24
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:24
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:24
+#: templates/djangocms_moderation/items_to_collection.html:47
+msgid "Version #"
+msgstr "Versi #"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:47
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:47
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:47
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:47
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:47
+msgid "Yes, I'm sure"
+msgstr "Ya, saya yakin"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:50
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:50
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:50
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:50
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:50
+msgid "No, take me back"
+msgstr "Tidak, kembali"
+
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:3
+msgid "Delete Confirmation"
+msgstr "Konfirmasi Penghapusan"
+
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:14
+msgid "Are you sure you want to remove these items from this collection?"
+msgstr "Apakah Anda yakin ingin menghapus item ini dari koleksi ini?"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
+msgid "Publish Confirmation"
+msgstr "Konfirmasi Penerbitan"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
+msgid "Are you sure you want to publish these items?"
+msgstr "Apakah Anda yakin ingin menerbitkan item ini?"
+
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:3
+msgid "Resubmit Confirmation"
+msgstr "Konfirmasi Pengiriman Ulang"
+
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:14
+msgid "Are you sure you want to re-submit these items for review?"
+msgstr "Apakah Anda yakin ingin mengirim ulang item ini untuk ditinjau?"
+
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:3
+msgid "Rework Confirmation"
+msgstr "Konfirmasi Pengerjaan Ulang"
+
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:14
+msgid "Are you sure you want to submit these items back for rework?"
+msgstr ""
+"Apakah Anda yakin ingin mengirim kembali item ini untuk pengerjaan ulang?"
+
+#: templates/djangocms_moderation/cancel_collection.html:13
+msgid "Are you sure you'd like to cancel this collection?"
+msgstr "Apakah Anda yakin ingin membatalkan koleksi ini?"
+
+#: templates/djangocms_moderation/cancel_collection.html:17
+msgid "Cancel"
+msgstr "Batal"
+
+#: templates/djangocms_moderation/cancel_collection.html:19
+msgid "Confirm"
+msgstr "Konfirmasi"
+
+#: templates/djangocms_moderation/comment_icon.html:2
+msgid "View Comments"
+msgstr "Lihat Komentar"
+
+#: templates/djangocms_moderation/comment_list.html:8
+#: templates/djangocms_moderation/emails/moderation-request/approved.txt:20
+#: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:20
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:23
+#: templates/djangocms_moderation/emails/moderation-request/request.txt:20
+msgid "Comment"
+msgstr "Komentar"
+
+#: templates/djangocms_moderation/comment_list.html:11
+msgid "Date"
+msgstr "Tanggal"
+
+#: templates/djangocms_moderation/comment_list.html:21
+msgid "no comment provided"
+msgstr "tidak ada komentar"
+
+#: templates/djangocms_moderation/confirmation_page.html:9
+#: templates/djangocms_moderation/select_workflow_form.html:28
+msgid "Next"
+msgstr "Berikutnya"
+
+#: templates/djangocms_moderation/edit_icon.html:2
+msgid "Edit Collection Settings"
+msgstr "Edit Pengaturan Koleksi"
+
+#: templates/djangocms_moderation/emails/moderation-request/approved.txt:2
+#, python-format
+msgid ""
+"\n"
+"Hello %(collection_author)s, %(by_user)s has approved some moderation\n"
+"requests in the collection %(collection_name)s.\n"
+msgstr ""
+"\n"
+"Halo %(collection_author)s, %(by_user)s telah menyetujui beberapa permintaan\n"
+"moderasi dalam koleksi %(collection_name)s.\n"
+
+#: templates/djangocms_moderation/emails/moderation-request/approved.txt:25
+#: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:25
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:28
+#: templates/djangocms_moderation/emails/moderation-request/request.txt:25
+#: templates/djangocms_moderation/moderation_request_change_list.html:18
+msgid "Job ID"
+msgstr "ID Pekerjaan"
+
+#: templates/djangocms_moderation/emails/moderation-request/approved.txt:29
+#: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:29
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:32
+#: templates/djangocms_moderation/emails/moderation-request/request.txt:29
+msgid "Admin Url"
+msgstr "URL Admin"
+
+#: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:2
+#, python-format
+msgid ""
+"\n"
+"Hello %(collection_author)s, the following moderation requests in the collection\n"
+"%(collection_name)s have been cancelled\n"
+msgstr ""
+"\n"
+"Halo %(collection_author)s, permintaan moderasi berikut dalam koleksi\n"
+"%(collection_name)s telah dibatalkan\n"
+
+#: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:8
+msgid "Cancelled moderation requests"
+msgstr "Permintaan moderasi yang dibatalkan"
+
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:2
+#, python-format
+msgid ""
+"\n"
+"Hello %(collection_author)s, %(by_user)s has rejected some moderation\n"
+"requests in the collection %(collection_name)s.\n"
+msgstr ""
+"\n"
+"Halo %(collection_author)s, %(by_user)s telah menolak beberapa permintaan\n"
+"moderasi dalam koleksi %(collection_name)s.\n"
+
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:7
+msgid ""
+"You can resubmit the necessary changes for another review, or remove the "
+"moderation requests from the collection."
+msgstr ""
+"Anda dapat mengirim ulang perubahan yang diperlukan untuk peninjauan lain, "
+"atau menghapus permintaan moderasi dari koleksi."
+
+#: templates/djangocms_moderation/emails/moderation-request/request.txt:2
+#, python-format
+msgid ""
+"\n"
+"Hello, %(by_user)s has requested your approval for\n"
+"changes in the collection %(collection_name)s.\n"
+msgstr ""
+"\n"
+"Halo, %(by_user)s telah meminta persetujuan Anda untuk\n"
+"perubahan dalam koleksi %(collection_name)s.\n"
+
+#: templates/djangocms_moderation/emails/moderation-request/request.txt:8
+msgid "Items included in this request"
+msgstr "Item yang termasuk dalam permintaan ini"
+
+#: templates/djangocms_moderation/items_to_collection.html:12
+msgid "Add items to collection"
+msgstr "Tambahkan item ke koleksi"
+
+#: templates/djangocms_moderation/items_to_collection.html:14
+#, python-format
+msgid ""
+"\n"
+"                   Add '%(content_name)s' to collection\n"
+"                "
+msgstr ""
+"\n"
+"                   Tambahkan '%(content_name)s' ke koleksi\n"
+"                "
+
+#: templates/djangocms_moderation/items_to_collection.html:19
+msgid "No items to add"
+msgstr "Tidak ada item untuk ditambahkan"
+
+#: templates/djangocms_moderation/items_to_collection.html:37
+msgid "The selected collection currently contains the following items:"
+msgstr "Koleksi yang dipilih saat ini berisi item berikut:"
+
+#: templates/djangocms_moderation/items_to_collection.html:67
+msgid "This collection contains no items yet"
+msgstr "Koleksi ini belum berisi item apa pun"
+
+#: templates/djangocms_moderation/items_to_collection.html:71
+#: templates/djangocms_moderation/request_form.html:38
+msgid "Submit"
+msgstr "Kirim"
+
+#: templates/djangocms_moderation/moderation_request_change_list.html:21
+msgid "Owner"
+msgstr "Pemilik"
+
+#: templates/djangocms_moderation/moderation_request_change_list.html:30
+msgid "Cancel this collection"
+msgstr "Batalkan koleksi ini"
+
+#: templates/djangocms_moderation/moderation_request_change_list.html:35
+#: views.py:217
+msgid "Submit collection for review"
+msgstr "Kirim koleksi untuk ditinjau"
+
+#: templates/djangocms_moderation/request_form.html:8
+#: templates/djangocms_moderation/select_workflow_form.html:8
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] "Harap perbaiki kesalahan di bawah ini."
+
+#: templates/djangocms_moderation/request_form.html:27
+msgid "Completed Forms"
+msgstr "Formulir yang Selesai"
+
+#: templates/djangocms_moderation/request_icon.html:2
+msgid "View Requests"
+msgstr "Lihat Permintaan"
+
+#: views.py:70
+#, python-format
+msgid "%(count)d item successfully added to moderation collection"
+msgid_plural "%(count)d items successfully added to moderation collection"
+msgstr[0] "%(count)d item berhasil ditambahkan ke koleksi moderasi"
+
+#: views.py:202
+msgid "Your collection has been submitted for review"
+msgstr "Koleksi Anda telah dikirim untuk ditinjau"
+
+#: views.py:246
+msgid "Your collection has been cancelled"
+msgstr "Koleksi Anda telah dibatalkan"
+
+#: views.py:255
+msgid "Cancel collection"
+msgstr "Batalkan koleksi"
