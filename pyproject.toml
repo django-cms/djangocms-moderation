@@ -41,6 +41,18 @@ dependencies = [
     "django-admin-sortable2>=0.6.4",
 ]
 
+[project.optional-dependencies]
+test = [
+    "coverage[toml]",
+    "django-simple-captcha",
+    "djangocms-alias>=2.0.0",
+    "djangocms-text",
+    "djangocms-admin-style",
+    "factory-boy",
+    "pytest",
+    "pytest-django",
+]
+
 [project.urls]
 Homepage = "https://github.com/django-cms/djangocms-moderation"
 Repository = "https://github.com/django-cms/djangocms-moderation"
@@ -56,17 +68,26 @@ include = ["djangocms_moderation*"]
 [tool.setuptools.package-data]
 "djangocms_moderation" = [ "templates/**/*", "static/**/*", "locale/**/*" ]
 
-[tool.flake8]
-max_line_length = 119
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+addopts = [
+    "--nomigrations",
+]
+python_files = [ "tests.py", "test_*.py" ]
+testpaths = [ "tests" ]
+pythonpath = [ "." ]
+
+[tool.ruff]
+line-length = 119
 exclude = [
     ".git",
     ".env",
     "__pycache__",
     "**/migrations/",
-    "build/",
-    ".tox/",
+    "build",
+    ".tox",
     "docs/conf.py",
-    "node_modules/",
+    "node_modules",
 ]
 
 [tool.isort]

@@ -43,7 +43,7 @@ jobs:
         python -m pip install -e .
 
     - name: Run coverage
-      run: coverage run ./tests/settings.py
+      run: coverage run -m pytest
 
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v7

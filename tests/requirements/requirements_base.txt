@@ -4,11 +4,11 @@ django-classy-tags>=0.7.2
 django-filer
 django-sekizai
 django-simple-captcha
-django-app-helper
 factory-boy
-flake8
 isort
 mock
-pyflakes>=2.1.1
+pytest
+pytest-django
+ruff
 python-dateutil>=2.4
 django-admin-sortable2
