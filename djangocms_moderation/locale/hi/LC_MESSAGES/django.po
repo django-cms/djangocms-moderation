@@ -1,0 +1,950 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Fabian Braun <fsbraun@gmx.de>, 2026
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-13 00:13+0200\n"
+"PO-Revision-Date: 2023-01-23 22:32+0000\n"
+"Last-Translator: Fabian Braun <fsbraun@gmx.de>, 2026\n"
+"Language-Team: Hindi (https://app.transifex.com/divio/teams/58664/hi/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: hi\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: admin.py:66 models.py:681
+#: templates/djangocms_moderation/comment_list.html:10
+msgid "Action"
+msgstr "कार्रवाई"
+
+#: admin.py:67 models.py:682
+msgid "Actions"
+msgstr "कार्रवाइयाँ"
+
+#: admin.py:76
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:25
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:25
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:25
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:25
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:25
+#: templates/djangocms_moderation/items_to_collection.html:48
+#: templates/djangocms_moderation/moderation_request_change_list.html:19
+msgid "Status"
+msgstr "स्थिति"
+
+#: admin.py:80
+#, python-brace-format
+msgid "By {user}"
+msgstr "{user} द्वारा"
+
+#: admin.py:83
+msgid "Form Submission"
+msgstr "फ़ॉर्म सबमिशन"
+
+#: admin.py:183 admin.py:1065
+msgid "actions"
+msgstr "कार्रवाइयाँ"
+
+#: admin.py:217
+msgid "ID"
+msgstr "ID"
+
+#: admin.py:230
+msgid "Content type"
+msgstr "सामग्री प्रकार"
+
+#: admin.py:238
+msgid "Title"
+msgstr "शीर्षक"
+
+#: admin.py:244
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:22
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:22
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:22
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:22
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:22
+#: templates/djangocms_moderation/comment_list.html:9
+#: templates/djangocms_moderation/items_to_collection.html:45
+msgid "Author"
+msgstr "लेखक"
+
+#: admin.py:250
+msgid "Preview"
+msgstr "पूर्वावलोकन"
+
+#: admin.py:272
+msgid "Reviewer"
+msgstr "समीक्षक"
+
+#: admin.py:290
+msgid "Ready for publishing"
+msgstr "प्रकाशन के लिए तैयार"
+
+#: admin.py:292
+msgid "Pending author rework"
+msgstr "लेखक द्वारा पुनः कार्य लंबित"
+
+#: admin.py:296
+#, python-format
+msgid "Pending %(role)s approval"
+msgstr "%(role)s की स्वीकृति लंबित"
+
+#: admin.py:305
+#, python-format
+msgid "%(action)s by %(name)s"
+msgstr "%(name)s द्वारा %(action)s"
+
+#: admin.py:307
+msgid "Ready for submission"
+msgstr "सबमिशन के लिए तैयार"
+
+#: admin.py:471
+#, python-format
+msgid "%(count)d request successfully deleted"
+msgid_plural "%(count)d requests successfully deleted"
+msgstr[0] "%(count)d अनुरोध सफलतापूर्वक हटाया गया"
+msgstr[1] "%(count)d अनुरोध सफलतापूर्वक हटाए गए"
+
+#: admin.py:614
+#, python-format
+msgid "%(count)d request successfully resubmitted for review"
+msgid_plural "%(count)d requests successfully resubmitted for review"
+msgstr[0] "%(count)d अनुरोध सफलतापूर्वक समीक्षा के लिए पुनः सबमिट किया गया"
+msgstr[1] "%(count)d अनुरोध सफलतापूर्वक समीक्षा के लिए पुनः सबमिट किए गए"
+
+#: admin.py:661
+#, python-format
+msgid "%(count)d request successfully published"
+msgid_plural "%(count)d requests successfully published"
+msgstr[0] "%(count)d अनुरोध सफलतापूर्वक प्रकाशित किया गया"
+msgstr[1] "%(count)d अनुरोध सफलतापूर्वक प्रकाशित किए गए"
+
+#: admin.py:720
+#, python-format
+msgid "%(count)d request successfully submitted for rework"
+msgid_plural "%(count)d requests successfully submitted for rework"
+msgstr[0] "%(count)d अनुरोध सफलतापूर्वक पुनः कार्य के लिए सबमिट किया गया"
+msgstr[1] "%(count)d अनुरोध सफलतापूर्वक पुनः कार्य के लिए सबमिट किए गए"
+
+#: admin.py:812
+#, python-format
+msgid "%(count)d request successfully approved"
+msgid_plural "%(count)d requests successfully approved"
+msgstr[0] "%(count)d अनुरोध सफलतापूर्वक स्वीकृत किया गया"
+msgstr[1] "%(count)d अनुरोध सफलतापूर्वक स्वीकृत किए गए"
+
+#: admin.py:880
+#: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
+msgid "Collection comments"
+msgstr "संग्रह टिप्पणियाँ"
+
+#: admin.py:929
+msgid "User"
+msgstr "उपयोगकर्ता"
+
+#: admin.py:966
+msgid "Request comments"
+msgstr "अनुरोध टिप्पणियाँ"
+
+#: admin.py:1058
+msgid "reviewers"
+msgstr "समीक्षक"
+
+#: admin.py:1081
+msgid "Modify collection"
+msgstr "संग्रह संशोधित करें"
+
+#: admin.py:1208 models.py:468
+msgid "Request"
+msgstr "अनुरोध"
+
+#: admin.py:1214
+msgid "By User"
+msgstr "उपयोगकर्ता द्वारा"
+
+#: admin.py:1220
+msgid "Form Data"
+msgstr "फ़ॉर्म डेटा"
+
+#: admin.py:1228
+msgid "Question"
+msgstr "प्रश्न"
+
+#: admin.py:1228
+msgid "Answer"
+msgstr "उत्तर"
+
+#: admin_actions.py:36
+msgid "Resubmit changes for review"
+msgstr "समीक्षा के लिए परिवर्तन पुनः सबमिट करें"
+
+#: admin_actions.py:53
+msgid "Submit for rework"
+msgstr "पुनः कार्य के लिए सबमिट करें"
+
+#: admin_actions.py:66
+msgid "Approve"
+msgstr "स्वीकृत करें"
+
+#: admin_actions.py:82
+msgid "Remove selected"
+msgstr "चयनित हटाएँ"
+
+#: admin_actions.py:99
+msgid "Publish selected requests"
+msgstr "चयनित अनुरोध प्रकाशित करें"
+
+#: admin_actions.py:156
+msgid "No suitable items found to add to moderation collection"
+msgstr "मॉडरेशन संग्रह में जोड़ने के लिए कोई उपयुक्त आइटम नहीं मिला"
+
+#: admin_actions.py:161
+msgid "Add to moderation collection"
+msgstr "मॉडरेशन संग्रह में जोड़ें"
+
+#: admin_actions.py:165
+msgid "Add items to a collection to unpublish"
+msgstr "अप्रकाशित करने के लिए संग्रह में आइटम जोड़ें"
+
+#: apps.py:7
+msgid "django CMS Moderation"
+msgstr "django CMS मॉडरेशन"
+
+#: cms_toolbars.py:84 monkeypatch.py:56
+msgid "Submit for moderation"
+msgstr "मॉडरेशन के लिए सबमिट करें"
+
+#: cms_toolbars.py:109
+#: templates/djangocms_moderation/moderation_request_change_list.html:44
+msgid "Moderation collections"
+msgstr "मॉडरेशन संग्रह"
+
+#: conf.py:12
+msgid "Unique alphanumeric string"
+msgstr "विशिष्ट अल्फ़ान्यूमेरिक स्ट्रिंग"
+
+#: conf.py:13
+msgid "Sequential number"
+msgstr "क्रमिक संख्या"
+
+#: conf.py:16
+msgid "Sequential number with identifier prefix"
+msgstr "पहचानकर्ता उपसर्ग के साथ क्रमिक संख्या"
+
+#: conf.py:40
+msgid "Default"
+msgstr "डिफ़ॉल्ट"
+
+#: constants.py:18
+msgid "Current page"
+msgstr "वर्तमान पृष्ठ"
+
+#: constants.py:19
+msgid "Page children (immediate)"
+msgstr "पृष्ठ बच्चों (तत्काल)"
+
+#: constants.py:20
+msgid "Page and children (immediate)"
+msgstr "पृष्ठ और बच्चों (तत्काल)"
+
+#: constants.py:21
+msgid "Page descendants"
+msgstr "वंश पृष्ठ"
+
+#: constants.py:22
+msgid "Page and descendants"
+msgstr "पृष्ठ और वंश"
+
+#: constants.py:33
+msgid "Resubmitted"
+msgstr "पुनः सबमिट किया गया"
+
+#: constants.py:34
+msgid "Started"
+msgstr "शुरू हुआ"
+
+#: constants.py:35
+msgid "Rejected"
+msgstr "अस्वीकृत"
+
+#: constants.py:36
+msgid "Approved"
+msgstr "स्वीकृत"
+
+#: constants.py:37 constants.py:54
+msgid "Cancelled"
+msgstr "रद्द किया गया"
+
+#: constants.py:38
+msgid "Finished"
+msgstr "समाप्त"
+
+#: constants.py:51
+msgid "Collecting"
+msgstr "एकत्रित किया जा रहा है"
+
+#: constants.py:52
+msgid "In Review"
+msgstr "समीक्षा में"
+
+#: constants.py:53
+msgid "Archived"
+msgstr "संग्रहीत"
+
+#: emails.py:16
+#: templates/djangocms_moderation/emails/moderation-request/approved.txt:8
+msgid "Approved moderation requests"
+msgstr "स्वीकृत मॉडरेशन अनुरोध"
+
+#: emails.py:17
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:11
+msgid "Rejected moderation requests"
+msgstr "अस्वीकृत मॉडरेशन अनुरोध"
+
+#: emails.py:18
+msgid "Request for moderation deleted"
+msgstr "मॉडरेशन के लिए अनुरोध हटाया गया"
+
+#: emails.py:86
+msgid "Review requested"
+msgstr "समीक्षा का अनुरोध किया गया"
+
+#: filters.py:18 forms.py:64 models.py:240
+msgid "moderator"
+msgstr "मॉडरेटर"
+
+#: filters.py:36
+msgid "reviewer"
+msgstr "समीक्षक"
+
+#: filters.py:77
+msgid "All"
+msgstr "सब"
+
+#: forms.py:67
+msgid "comment"
+msgstr "टिप्पणी"
+
+#: forms.py:100 forms.py:198
+#, python-brace-format
+msgid "Any {role}"
+msgstr "कोई भी {role}"
+
+#: forms.py:172
+msgid ""
+"Your item is either locked, not enabled for moderation,or is part of another"
+" active moderation request"
+msgid_plural ""
+"Your items are either locked, not enabled for moderation,or are part of "
+"another active moderation request"
+msgstr[0] ""
+"आपका आइटम या तो लॉक है, मॉडरेशन के लिए सक्षम नहीं है, या किसी अन्य सक्रिय "
+"मॉडरेशन अनुरोध का हिस्सा है"
+msgstr[1] ""
+"आपके आइटम या तो लॉक हैं, मॉडरेशन के लिए सक्षम नहीं हैं, या किसी अन्य सक्रिय "
+"मॉडरेशन अनुरोध का हिस्सा हैं"
+
+#: forms.py:184
+msgid "Select review group"
+msgstr "समीक्षा समूह चुनें"
+
+#: forms.py:205
+msgid "This collection can't be submitted for a review"
+msgstr "इस संग्रह को समीक्षा के लिए सबमिट नहीं किया जा सकता"
+
+#: forms.py:222
+msgid "This collection can't be cancelled"
+msgstr "इस संग्रह को रद्द नहीं किया जा सकता"
+
+#: forms.py:266
+msgid "You can only change your own comments"
+msgstr "आप केवल अपनी ही टिप्पणियाँ बदल सकते हैं"
+
+#: helpers.py:116
+#, python-format
+msgid "In collection \"%(collection_name)s (%(collection_id)s)\""
+msgstr "संग्रह \"%(collection_name)s (%(collection_id)s)\" में"
+
+#: helpers.py:121
+#, python-format
+msgid "In moderation \"%(collection_name)s (%(collection_id)s)\""
+msgstr "मॉडरेशन \"%(collection_name)s (%(collection_id)s)\" में"
+
+#: models.py:38
+msgid "Plain"
+msgstr "सादा"
+
+#: models.py:39
+msgid "Form"
+msgstr "फ़ॉर्म"
+
+#: models.py:42 models.py:93 models.py:136
+msgid "name"
+msgstr "नाम"
+
+#: models.py:45
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:20
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:20
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:20
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:20
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:20
+#: templates/djangocms_moderation/items_to_collection.html:43
+msgid "Content Type"
+msgstr "सामग्री प्रकार"
+
+#: models.py:51
+msgid "Template"
+msgstr "टेम्पलेट"
+
+#: models.py:56
+msgid "Confirmation Page"
+msgstr "पुष्टिकरण पृष्ठ"
+
+#: models.py:57
+msgid "Confirmation Pages"
+msgstr "पुष्टिकरण पृष्ठ"
+
+#: models.py:98
+msgid "user"
+msgstr "उपयोगकर्ता"
+
+#: models.py:101
+msgid "group"
+msgstr "समूह"
+
+#: models.py:105 models.py:771
+msgid "confirmation page"
+msgstr "पुष्टिकरण पृष्ठ"
+
+#: models.py:113
+msgid "Role"
+msgstr "भूमिका"
+
+#: models.py:114
+msgid "Roles"
+msgstr "भूमिकाएँ"
+
+#: models.py:121
+msgid "Can't pick both user and group. Only one."
+msgstr "उपयोगकर्ता और समूह दोनों नहीं चुन सकते। केवल एक।"
+
+#: models.py:137
+msgid "is default"
+msgstr "डिफ़ॉल्ट है"
+
+#: models.py:139
+msgid "identifier"
+msgstr "पहचानकर्ता"
+
+#: models.py:144
+msgid ""
+"Identifier is a 'free' field you could use for internal purposes. For "
+"example, it could be used as a workflow specific prefix of a compliance "
+"number"
+msgstr ""
+"पहचानकर्ता एक 'मुक्त' फ़ील्ड है जिसका उपयोग आप आंतरिक उद्देश्यों के लिए कर "
+"सकते हैं। उदाहरण के लिए, इसका उपयोग अनुपालन संख्या के वर्कफ़्लो-विशिष्ट "
+"उपसर्ग के रूप में किया जा सकता है"
+
+#: models.py:150
+msgid "requires compliance number?"
+msgstr "अनुपालन संख्या आवश्यक है?"
+
+#: models.py:153
+msgid ""
+"Does the Compliance number need to be generated before the moderation "
+"request is approved? Please select the compliance number backend below"
+msgstr ""
+"क्या मॉडरेशन अनुरोध स्वीकृत होने से पहले अनुपालन संख्या उत्पन्न करने की "
+"आवश्यकता है? कृपया नीचे अनुपालन संख्या बैकएंड चुनें"
+
+#: models.py:159
+msgid "compliance number backend"
+msgstr "अनुपालन संख्या बैकएंड"
+
+#: models.py:164
+#: templates/djangocms_moderation/moderation_request_change_list.html:20
+msgid "Workflow"
+msgstr "वर्कफ़्लो"
+
+#: models.py:165
+msgid "Workflows"
+msgstr "वर्कफ़्लो"
+
+#: models.py:188
+msgid "Can't have two default workflows, only one is allowed."
+msgstr "दो डिफ़ॉल्ट वर्कफ़्लो नहीं हो सकते, केवल एक की अनुमति है।"
+
+#: models.py:198
+msgid "role"
+msgstr "भूमिका"
+
+#: models.py:200
+msgid "is mandatory"
+msgstr "अनिवार्य है"
+
+#: models.py:203 models.py:244
+msgid "workflow"
+msgstr "वर्कफ़्लो"
+
+#: models.py:212
+msgid "Step"
+msgstr "चरण"
+
+#: models.py:213
+msgid "Steps"
+msgstr "चरण"
+
+#: models.py:237
+msgid "collection name"
+msgstr "संग्रह नाम"
+
+#: models.py:259
+msgid "collection"
+msgstr "संग्रह"
+
+#: models.py:261
+msgid "Can change collection author"
+msgstr "संग्रह लेखक बदल सकते हैं"
+
+#: models.py:262
+msgid "Can cancel collection"
+msgstr "संग्रह रद्द कर सकते हैं"
+
+#: models.py:345
+msgid "Cancelled collection"
+msgstr "रद्द किया गया संग्रह"
+
+#: models.py:425 models.py:666
+msgid "moderation_request"
+msgstr "moderation_request"
+
+#: models.py:443
+msgid "version"
+msgstr "संस्करण"
+
+#: models.py:446
+msgid "language"
+msgstr "भाषा"
+
+#: models.py:449
+msgid "is active"
+msgstr "सक्रिय है"
+
+#: models.py:451
+msgid "date sent"
+msgstr "भेजने की तिथि"
+
+#: models.py:453
+msgid "compliance number"
+msgstr "अनुपालन संख्या"
+
+#: models.py:462 models.py:726
+msgid "author"
+msgstr "लेखक"
+
+#: models.py:469
+#: templates/admin/djangocms_moderation/moderationrequest/change_form.html:10
+#: templates/admin/djangocms_moderation/requestcomment/change_form.html:10
+#: templates/admin/djangocms_moderation/requestcomment/change_list.html:10
+#: templates/djangocms_moderation/moderation_request_change_list.html:45
+msgid "Requests"
+msgstr "अनुरोध"
+
+#: models.py:629
+msgid "status"
+msgstr "स्थिति"
+
+#: models.py:634 models.py:763
+msgid "by user"
+msgstr "उपयोगकर्ता द्वारा"
+
+#: models.py:640
+msgid "to user"
+msgstr "उपयोगकर्ता को"
+
+#: models.py:648
+msgid "to role"
+msgstr "भूमिका को"
+
+#: models.py:658
+msgid "step approved"
+msgstr "चरण स्वीकृत"
+
+#: models.py:663 models.py:724
+msgid "message"
+msgstr "संदेश"
+
+#: models.py:671
+msgid "date taken"
+msgstr "कार्रवाई की तिथि"
+
+#: models.py:751
+msgid "moderation request"
+msgstr "मॉडरेशन अनुरोध"
+
+#: models.py:757
+msgid "for step"
+msgstr "चरण के लिए"
+
+#: models.py:780
+msgid "Confirmation Form Submission"
+msgstr "पुष्टिकरण फ़ॉर्म सबमिशन"
+
+#: models.py:781
+msgid "Confirmation Form Submissions"
+msgstr "पुष्टिकरण फ़ॉर्म सबमिशन"
+
+#: monkeypatch.py:145 monkeypatch.py:155
+msgid "Cannot archive a version in an active moderation collection"
+msgstr "सक्रिय मॉडरेशन संग्रह में किसी संस्करण को संग्रहीत नहीं किया जा सकता"
+
+#: monkeypatch.py:150
+msgid "Cannot revert when draft version is in an active moderation collection"
+msgstr ""
+"जब ड्राफ़्ट संस्करण सक्रिय मॉडरेशन संग्रह में हो तो वापस नहीं किया जा सकता"
+
+#: monkeypatch.py:159
+msgid "Version is in an active moderation collection"
+msgstr "संस्करण एक सक्रिय मॉडरेशन संग्रह में है"
+
+#: monkeypatch.py:163
+msgid "Cannot edit a version in an active moderation collection"
+msgstr "सक्रिय मॉडरेशन संग्रह में किसी संस्करण को संपादित नहीं किया जा सकता"
+
+#: monkeypatch.py:167
+msgid "Content cannot be published directly. Use the moderation process."
+msgstr ""
+"सामग्री को सीधे प्रकाशित नहीं किया जा सकता। मॉडरेशन प्रक्रिया का उपयोग करें।"
+
+#: templates/admin/djangocms_moderation/collectioncomment/change_form.html:7
+#: templates/admin/djangocms_moderation/collectioncomment/change_list.html:16
+#: templates/admin/djangocms_moderation/moderationrequest/change_form.html:7
+#: templates/admin/djangocms_moderation/requestcomment/change_form.html:7
+#: templates/admin/djangocms_moderation/requestcomment/change_list.html:7
+#: templates/djangocms_moderation/moderation_request_change_list.html:42
+msgid "Home"
+msgstr "होम"
+
+#: templates/admin/djangocms_moderation/collectioncomment/change_form.html:9
+#: templates/admin/djangocms_moderation/collectioncomment/change_list.html:18
+#: templates/admin/djangocms_moderation/moderationrequest/change_form.html:9
+#: templates/admin/djangocms_moderation/requestcomment/change_form.html:9
+#: templates/admin/djangocms_moderation/requestcomment/change_list.html:9
+msgid "Collections"
+msgstr "संग्रह"
+
+#: templates/admin/djangocms_moderation/collectioncomment/change_form.html:11
+#: templates/admin/djangocms_moderation/moderationrequest/change_form.html:11
+#: templates/admin/djangocms_moderation/requestcomment/change_form.html:12
+#, python-format
+msgid "Add %(name)s"
+msgstr "%(name)s जोड़ें"
+
+#: templates/admin/djangocms_moderation/collectioncomment/change_list.html:7
+#, python-format
+msgid ""
+"\n"
+"            %(collection_name)s comments\n"
+"        "
+msgstr ""
+"\n"
+"            %(collection_name)s टिप्पणियाँ\n"
+"        "
+
+#: templates/admin/djangocms_moderation/collectioncomment/change_list.html:19
+#: templates/admin/djangocms_moderation/requestcomment/change_form.html:11
+#: templates/admin/djangocms_moderation/requestcomment/change_list.html:11
+msgid "Comments"
+msgstr "टिप्पणियाँ"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:3
+msgid "Approve Confirmation"
+msgstr "स्वीकृति पुष्टिकरण"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:14
+msgid "Are you sure you want to approve these items for publishing?"
+msgstr "क्या आप वाकई इन आइटम को प्रकाशन के लिए स्वीकृत करना चाहते हैं?"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:19
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:19
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:19
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:19
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:19
+msgid "Id"
+msgstr "Id"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:21
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:21
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:21
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:21
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:21
+#: templates/djangocms_moderation/items_to_collection.html:44
+msgid "Identifier"
+msgstr "पहचानकर्ता"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:23
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:23
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:23
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:23
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:23
+#: templates/djangocms_moderation/items_to_collection.html:46
+msgid "Edit Date"
+msgstr "संपादन तिथि"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:24
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:24
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:24
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:24
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:24
+#: templates/djangocms_moderation/items_to_collection.html:47
+msgid "Version #"
+msgstr "संस्करण #"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:47
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:47
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:47
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:47
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:47
+msgid "Yes, I'm sure"
+msgstr "हां, मुझे यकीन है"
+
+#: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:50
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:50
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:50
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:50
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:50
+msgid "No, take me back"
+msgstr "नहीं, मुझे वापस ले चलो"
+
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:3
+msgid "Delete Confirmation"
+msgstr "हटाने की पुष्टि"
+
+#: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:14
+msgid "Are you sure you want to remove these items from this collection?"
+msgstr "क्या आप वाकई इन आइटम को इस संग्रह से हटाना चाहते हैं?"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
+msgid "Publish Confirmation"
+msgstr "प्रकाशन पुष्टिकरण"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
+msgid "Are you sure you want to publish these items?"
+msgstr "क्या आप वाकई इन आइटम को प्रकाशित करना चाहते हैं?"
+
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:3
+msgid "Resubmit Confirmation"
+msgstr "पुनः सबमिट पुष्टिकरण"
+
+#: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:14
+msgid "Are you sure you want to re-submit these items for review?"
+msgstr "क्या आप वाकई इन आइटम को समीक्षा के लिए पुनः सबमिट करना चाहते हैं?"
+
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:3
+msgid "Rework Confirmation"
+msgstr "पुनः कार्य पुष्टिकरण"
+
+#: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:14
+msgid "Are you sure you want to submit these items back for rework?"
+msgstr "क्या आप वाकई इन आइटम को पुनः कार्य के लिए वापस भेजना चाहते हैं?"
+
+#: templates/djangocms_moderation/cancel_collection.html:13
+msgid "Are you sure you'd like to cancel this collection?"
+msgstr "क्या आप वाकई इस संग्रह को रद्द करना चाहते हैं?"
+
+#: templates/djangocms_moderation/cancel_collection.html:17
+msgid "Cancel"
+msgstr "रद्द करें"
+
+#: templates/djangocms_moderation/cancel_collection.html:19
+msgid "Confirm"
+msgstr "पुष्टि करें"
+
+#: templates/djangocms_moderation/comment_icon.html:2
+msgid "View Comments"
+msgstr "टिप्पणियाँ देखें"
+
+#: templates/djangocms_moderation/comment_list.html:8
+#: templates/djangocms_moderation/emails/moderation-request/approved.txt:20
+#: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:20
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:23
+#: templates/djangocms_moderation/emails/moderation-request/request.txt:20
+msgid "Comment"
+msgstr "टिप्पणी"
+
+#: templates/djangocms_moderation/comment_list.html:11
+msgid "Date"
+msgstr "तिथि"
+
+#: templates/djangocms_moderation/comment_list.html:21
+msgid "no comment provided"
+msgstr "कोई टिप्पणी नहीं दी गई"
+
+#: templates/djangocms_moderation/confirmation_page.html:9
+#: templates/djangocms_moderation/select_workflow_form.html:28
+msgid "Next"
+msgstr "अगला"
+
+#: templates/djangocms_moderation/edit_icon.html:2
+msgid "Edit Collection Settings"
+msgstr "संग्रह सेटिंग्स संपादित करें"
+
+#: templates/djangocms_moderation/emails/moderation-request/approved.txt:2
+#, python-format
+msgid ""
+"\n"
+"Hello %(collection_author)s, %(by_user)s has approved some moderation\n"
+"requests in the collection %(collection_name)s.\n"
+msgstr ""
+"\n"
+"नमस्ते %(collection_author)s, %(by_user)s ने संग्रह %(collection_name)s में कुछ मॉडरेशन अनुरोध स्वीकृत किए हैं।\n"
+
+#: templates/djangocms_moderation/emails/moderation-request/approved.txt:25
+#: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:25
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:28
+#: templates/djangocms_moderation/emails/moderation-request/request.txt:25
+#: templates/djangocms_moderation/moderation_request_change_list.html:18
+msgid "Job ID"
+msgstr "जॉब ID"
+
+#: templates/djangocms_moderation/emails/moderation-request/approved.txt:29
+#: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:29
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:32
+#: templates/djangocms_moderation/emails/moderation-request/request.txt:29
+msgid "Admin Url"
+msgstr "एडमिन URL"
+
+#: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:2
+#, python-format
+msgid ""
+"\n"
+"Hello %(collection_author)s, the following moderation requests in the collection\n"
+"%(collection_name)s have been cancelled\n"
+msgstr ""
+"\n"
+"नमस्ते %(collection_author)s, संग्रह %(collection_name)s में निम्नलिखित मॉडरेशन अनुरोध रद्द कर दिए गए हैं।\n"
+
+#: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:8
+msgid "Cancelled moderation requests"
+msgstr "रद्द किए गए मॉडरेशन अनुरोध"
+
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:2
+#, python-format
+msgid ""
+"\n"
+"Hello %(collection_author)s, %(by_user)s has rejected some moderation\n"
+"requests in the collection %(collection_name)s.\n"
+msgstr ""
+"\n"
+"नमस्ते %(collection_author)s, %(by_user)s ने संग्रह %(collection_name)s में कुछ मॉडरेशन अनुरोध अस्वीकृत किए हैं।\n"
+
+#: templates/djangocms_moderation/emails/moderation-request/rejected.txt:7
+msgid ""
+"You can resubmit the necessary changes for another review, or remove the "
+"moderation requests from the collection."
+msgstr ""
+"आप आवश्यक परिवर्तनों को किसी अन्य समीक्षा के लिए पुनः सबमिट कर सकते हैं, या "
+"मॉडरेशन अनुरोधों को संग्रह से हटा सकते हैं।"
+
+#: templates/djangocms_moderation/emails/moderation-request/request.txt:2
+#, python-format
+msgid ""
+"\n"
+"Hello, %(by_user)s has requested your approval for\n"
+"changes in the collection %(collection_name)s.\n"
+msgstr ""
+"\n"
+"नमस्ते, %(by_user)s ने संग्रह %(collection_name)s में परिवर्तनों के लिए आपकी स्वीकृति का अनुरोध किया है।\n"
+
+#: templates/djangocms_moderation/emails/moderation-request/request.txt:8
+msgid "Items included in this request"
+msgstr "इस अनुरोध में शामिल आइटम"
+
+#: templates/djangocms_moderation/items_to_collection.html:12
+msgid "Add items to collection"
+msgstr "संग्रह में आइटम जोड़ें"
+
+#: templates/djangocms_moderation/items_to_collection.html:14
+#, python-format
+msgid ""
+"\n"
+"                   Add '%(content_name)s' to collection\n"
+"                "
+msgstr ""
+"\n"
+"                   '%(content_name)s' को संग्रह में जोड़ें\n"
+"                "
+
+#: templates/djangocms_moderation/items_to_collection.html:19
+msgid "No items to add"
+msgstr "जोड़ने के लिए कोई आइटम नहीं"
+
+#: templates/djangocms_moderation/items_to_collection.html:37
+msgid "The selected collection currently contains the following items:"
+msgstr "चयनित संग्रह में वर्तमान में निम्नलिखित आइटम शामिल हैं:"
+
+#: templates/djangocms_moderation/items_to_collection.html:67
+msgid "This collection contains no items yet"
+msgstr "इस संग्रह में अभी तक कोई आइटम नहीं है"
+
+#: templates/djangocms_moderation/items_to_collection.html:71
+#: templates/djangocms_moderation/request_form.html:38
+msgid "Submit"
+msgstr "जमा करें"
+
+#: templates/djangocms_moderation/moderation_request_change_list.html:21
+msgid "Owner"
+msgstr "स्वामी"
+
+#: templates/djangocms_moderation/moderation_request_change_list.html:30
+msgid "Cancel this collection"
+msgstr "इस संग्रह को रद्द करें"
+
+#: templates/djangocms_moderation/moderation_request_change_list.html:35
+#: views.py:217
+msgid "Submit collection for review"
+msgstr "संग्रह को समीक्षा के लिए सबमिट करें"
+
+#: templates/djangocms_moderation/request_form.html:8
+#: templates/djangocms_moderation/select_workflow_form.html:8
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] "कृपया नीचे दी गई त्रुटि को ठीक करें।"
+msgstr[1] "कृपया नीचे दी गई त्रुटियों को ठीक करें।"
+
+#: templates/djangocms_moderation/request_form.html:27
+msgid "Completed Forms"
+msgstr "पूर्ण किए गए फ़ॉर्म"
+
+#: templates/djangocms_moderation/request_icon.html:2
+msgid "View Requests"
+msgstr "अनुरोध देखें"
+
+#: views.py:70
+#, python-format
+msgid "%(count)d item successfully added to moderation collection"
+msgid_plural "%(count)d items successfully added to moderation collection"
+msgstr[0] "%(count)d आइटम सफलतापूर्वक मॉडरेशन संग्रह में जोड़ा गया"
+msgstr[1] "%(count)d आइटम सफलतापूर्वक मॉडरेशन संग्रह में जोड़े गए"
+
+#: views.py:202
+msgid "Your collection has been submitted for review"
+msgstr "आपका संग्रह समीक्षा के लिए सबमिट कर दिया गया है"
+
+#: views.py:246
+msgid "Your collection has been cancelled"
+msgstr "आपका संग्रह रद्द कर दिया गया है"
+
+#: views.py:255
+msgid "Cancel collection"
+msgstr "संग्रह रद्द करें"
