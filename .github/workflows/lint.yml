@@ -16,10 +16,7 @@ jobs:
       - name: Install ruff
         run: pip install --upgrade ruff
       - name: Run ruff
-        uses: liskin/gh-problem-matcher-wrap@v4
-        with:
-          linters: ruff
-          run: ruff check
+        run: ruff check --output-format=github
 
   isort:
     runs-on: ubuntu-latest
