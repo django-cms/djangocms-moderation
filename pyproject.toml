@@ -36,7 +36,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "djangocms-versioning",
-    "django-treebeard<4.8",
+    "django-treebeard",
     "django-sekizai>=0.7",
     "django-admin-sortable2>=0.6.4",
 ]

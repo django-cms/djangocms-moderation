@@ -1,0 +1,7 @@
+{# django-treebeard >= 4.8 admin tree #}
+{% load admin_tree %}
+{% result_tree cl %}
+<input type="hidden" id="has-filters" value="{{ filtered|yesno:"1,0" }}"/>
+<input type="hidden" id="has-change-permission" value="{{ has_change_permission|yesno:"1,0" }}"/>
+{% tree_context cl as node_context %}
+{{ node_context|json_script:"tree-context" }}
