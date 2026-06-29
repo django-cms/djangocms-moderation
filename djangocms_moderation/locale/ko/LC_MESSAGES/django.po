@@ -1,32 +1,34 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 # Translators:
 # Fabian Braun <fsbraun@gmx.de>, 2026
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-13 00:13+0200\n"
-"PO-Revision-Date: 2026-06-13 00:00+0200\n"
-"Last-Translator: Fabian Braun <fsbraun@gmx.de>\n"
-"Language-Team: German\n"
-"Language: de\n"
+"PO-Revision-Date: 2026-06-29 00:00+0000\n"
+"Last-Translator: Fabian Braun <fsbraun@gmx.de>, 2026\n"
+"Language-Team: Korean (https://app.transifex.com/divio/teams/58664/ko/)\n"
+"Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: admin.py:66 models.py:681
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
-msgstr "Aktion"
+msgstr "작업"
 
 #: admin.py:67 models.py:682
 msgid "Actions"
-msgstr "Aktionen"
+msgstr "작업"
 
 #: admin.py:76
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:25
@@ -37,20 +39,20 @@ msgstr "Aktionen"
 #: templates/djangocms_moderation/items_to_collection.html:48
 #: templates/djangocms_moderation/moderation_request_change_list.html:19
 msgid "Status"
-msgstr "Status"
+msgstr "상태"
 
 #: admin.py:80
 #, python-brace-format
 msgid "By {user}"
-msgstr "Von {user}"
+msgstr "{user} 작성"
 
 #: admin.py:83
 msgid "Form Submission"
-msgstr "Formulareinsendung"
+msgstr "양식 제출"
 
 #: admin.py:183 admin.py:1065
 msgid "actions"
-msgstr "Aktionen"
+msgstr "작업"
 
 #: admin.py:217
 msgid "ID"
@@ -58,11 +60,11 @@ msgstr "ID"
 
 #: admin.py:230
 msgid "Content type"
-msgstr "Inhaltstyp"
+msgstr "콘텐츠 유형"
 
 #: admin.py:238
 msgid "Title"
-msgstr "Titel"
+msgstr "제목"
 
 #: admin.py:244
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:22
@@ -73,324 +75,311 @@ msgstr "Titel"
 #: templates/djangocms_moderation/comment_list.html:9
 #: templates/djangocms_moderation/items_to_collection.html:45
 msgid "Author"
-msgstr "Autor"
+msgstr "작성자"
 
 #: admin.py:250
 msgid "Preview"
-msgstr "Vorschau"
+msgstr "미리보기"
 
 #: admin.py:272
 msgid "Reviewer"
-msgstr "Moderator"
+msgstr "검토자"
 
 #: admin.py:290
 msgid "Ready for publishing"
-msgstr "Bereit zur Veröffentlichung"
+msgstr "게시 준비 완료"
 
 #: admin.py:292
 msgid "Pending author rework"
-msgstr "Wartet auf Überarbeitung durch den Autor"
+msgstr "작성자 재작업 대기 중"
 
 #: admin.py:296
 #, python-format
 msgid "Pending %(role)s approval"
-msgstr "Wartet auf Genehmigung durch %(role)s"
+msgstr "%(role)s 승인 대기 중"
 
 #: admin.py:305
 #, python-format
 msgid "%(action)s by %(name)s"
-msgstr "%(action)s von %(name)s"
+msgstr "%(name)s의 %(action)s"
 
 #: admin.py:307
 msgid "Ready for submission"
-msgstr "Bereit zum Einreichen"
+msgstr "제출 준비 완료"
 
 #: admin.py:471
 #, python-format
 msgid "%(count)d request successfully deleted"
 msgid_plural "%(count)d requests successfully deleted"
-msgstr[0] "%(count)d Anfrage erfolgreich gelöscht"
-msgstr[1] "%(count)d Anfragen erfolgreich gelöscht"
+msgstr[0] "요청 %(count)d건이 삭제되었습니다"
 
 #: admin.py:614
 #, python-format
 msgid "%(count)d request successfully resubmitted for review"
 msgid_plural "%(count)d requests successfully resubmitted for review"
-msgstr[0] "%(count)d Anfrage erfolgreich zur erneuten Prüfung eingereicht"
-msgstr[1] "%(count)d Anfragen erfolgreich zur erneuten Prüfung eingereicht"
+msgstr[0] "요청 %(count)d건이 검토를 위해 재제출되었습니다"
 
 #: admin.py:661
 #, python-format
 msgid "%(count)d request successfully published"
 msgid_plural "%(count)d requests successfully published"
-msgstr[0] "%(count)d Anfrage erfolgreich veröffentlicht"
-msgstr[1] "%(count)d Anfragen erfolgreich veröffentlicht"
+msgstr[0] "요청 %(count)d건이 게시되었습니다"
 
 #: admin.py:720
 #, python-format
 msgid "%(count)d request successfully submitted for rework"
 msgid_plural "%(count)d requests successfully submitted for rework"
-msgstr[0] "%(count)d Anfrage erfolgreich zur Überarbeitung eingereicht"
-msgstr[1] "%(count)d Anfragen erfolgreich zur Überarbeitung eingereicht"
+msgstr[0] "요청 %(count)d건이 재작업을 위해 제출되었습니다"
 
 #: admin.py:812
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
-msgstr[0] "%(count)d Anfrage erfolgreich genehmigt"
-msgstr[1] "%(count)d Anfragen erfolgreich genehmigt"
+msgstr[0] "요청 %(count)d건이 승인되었습니다"
 
 #: admin.py:880
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
-msgstr "Kommentare zur Sammlung"
+msgstr "컬렉션 댓글"
 
 #: admin.py:929
 msgid "User"
-msgstr "Benutzer"
+msgstr "사용자"
 
 #: admin.py:966
 msgid "Request comments"
-msgstr "Kommentare zur Anfrage"
+msgstr "요청 댓글"
 
 #: admin.py:1058
 msgid "reviewers"
-msgstr "Moderatoren"
+msgstr "검토자"
 
 #: admin.py:1081
 msgid "Modify collection"
-msgstr "Sammlung bearbeiten"
+msgstr "컬렉션 수정"
 
 #: admin.py:1208 models.py:468
 msgid "Request"
-msgstr "Anfrage"
+msgstr "요청"
 
 #: admin.py:1214
 msgid "By User"
-msgstr "Von Benutzer"
+msgstr "사용자별"
 
 #: admin.py:1220
 msgid "Form Data"
-msgstr "Formulardaten"
+msgstr "양식 데이터"
 
 #: admin.py:1228
 msgid "Question"
-msgstr "Frage"
+msgstr "질문"
 
 #: admin.py:1228
 msgid "Answer"
-msgstr "Antwort"
+msgstr "답변"
 
 #: admin_actions.py:36
 msgid "Resubmit changes for review"
-msgstr "Änderungen zur erneuten Prüfung einreichen"
+msgstr "변경 사항 검토 재제출"
 
 #: admin_actions.py:53
 msgid "Submit for rework"
-msgstr "Zur Überarbeitung einreichen"
+msgstr "재작업 제출"
 
 #: admin_actions.py:66
 msgid "Approve"
-msgstr "Genehmigen"
+msgstr "승인"
 
 #: admin_actions.py:82
 msgid "Remove selected"
-msgstr "Ausgewählte entfernen"
+msgstr "선택 항목 제거"
 
 #: admin_actions.py:99
 msgid "Publish selected requests"
-msgstr "Ausgewählte Anfragen veröffentlichen"
+msgstr "선택한 요청 게시"
 
 #: admin_actions.py:156
 msgid "No suitable items found to add to moderation collection"
-msgstr ""
-"Keine geeigneten Elemente gefunden, die der Moderationssammlung hinzugefügt "
-"werden können"
+msgstr "모더레이션 컬렉션에 추가할 적합한 항목이 없습니다"
 
 #: admin_actions.py:161
 msgid "Add to moderation collection"
-msgstr "Zur Moderationssammlung hinzufügen"
+msgstr "모더레이션 컬렉션에 추가"
 
 #: admin_actions.py:165
 msgid "Add items to a collection to unpublish"
-msgstr ""
-"Elemente zu einer Sammlung hinzufügen, um deren Veröffentlichung aufzuheben"
+msgstr "게시 취소할 항목을 컬렉션에 추가"
 
 #: apps.py:7
 msgid "django CMS Moderation"
-msgstr "django CMS Moderation"
+msgstr "django CMS 모더레이션"
 
 #: cms_toolbars.py:84 monkeypatch.py:56
 msgid "Submit for moderation"
-msgstr "Zur Moderation einreichen"
+msgstr "모더레이션 제출"
 
 #: cms_toolbars.py:109
 #: templates/djangocms_moderation/moderation_request_change_list.html:44
 msgid "Moderation collections"
-msgstr "Moderationssammlungen"
+msgstr "모더레이션 컬렉션"
 
 #: conf.py:12
 msgid "Unique alphanumeric string"
-msgstr "Eindeutige alphanumerische Zeichenkette"
+msgstr "고유한 영숫자 문자열"
 
 #: conf.py:13
 msgid "Sequential number"
-msgstr "Fortlaufende Nummer"
+msgstr "순차 번호"
 
 #: conf.py:16
 msgid "Sequential number with identifier prefix"
-msgstr "Fortlaufende Nummer mit Bezeichner-Präfix"
+msgstr "식별자 접두사가 있는 순차 번호"
 
 #: conf.py:40
 msgid "Default"
-msgstr "Standard"
+msgstr "기본값"
 
 #: constants.py:18
 msgid "Current page"
-msgstr "Aktuelle Seite"
+msgstr "현재 페이지"
 
 #: constants.py:19
 msgid "Page children (immediate)"
-msgstr "Unterseiten (direkt)"
+msgstr "페이지 하위 항목(직계)"
 
 #: constants.py:20
 msgid "Page and children (immediate)"
-msgstr "Seite und Unterseiten (direkt)"
+msgstr "페이지 및 하위 항목(직계)"
 
 #: constants.py:21
 msgid "Page descendants"
-msgstr "Alle untergeordneten Seiten"
+msgstr "페이지 자손"
 
 #: constants.py:22
 msgid "Page and descendants"
-msgstr "Seite und alle untergeordneten Seiten"
+msgstr "페이지 및 자손"
 
 #: constants.py:33
 msgid "Resubmitted"
-msgstr "Erneut eingereicht"
+msgstr "재제출됨"
 
 #: constants.py:34
 msgid "Started"
-msgstr "Begonnen"
+msgstr "시작됨"
 
 #: constants.py:35
 msgid "Rejected"
-msgstr "Abgelehnt"
+msgstr "거부됨"
 
 #: constants.py:36
 msgid "Approved"
-msgstr "Genehmigt"
+msgstr "승인됨"
 
 #: constants.py:37 constants.py:54
 msgid "Cancelled"
-msgstr "Abgebrochen"
+msgstr "취소됨"
 
 #: constants.py:38
 msgid "Finished"
-msgstr "Abgeschlossen"
+msgstr "완료됨"
 
 #: constants.py:51
 msgid "Collecting"
-msgstr "In Zusammenstellung"
+msgstr "수집 중"
 
 #: constants.py:52
 msgid "In Review"
-msgstr "In Prüfung"
+msgstr "검토 중"
 
 #: constants.py:53
 msgid "Archived"
-msgstr "Archiviert"
+msgstr "아카이브됨"
 
 #: emails.py:16
 #: templates/djangocms_moderation/emails/moderation-request/approved.txt:8
 msgid "Approved moderation requests"
-msgstr "Genehmigte Moderationsanfragen"
+msgstr "승인된 모더레이션 요청"
 
 #: emails.py:17
 #: templates/djangocms_moderation/emails/moderation-request/rejected.txt:11
 msgid "Rejected moderation requests"
-msgstr "Abgelehnte Moderationsanfragen"
+msgstr "거부된 모더레이션 요청"
 
 #: emails.py:18
 msgid "Request for moderation deleted"
-msgstr "Moderationsanfrage gelöscht"
+msgstr "모더레이션 요청이 삭제되었습니다"
 
 #: emails.py:86
 msgid "Review requested"
-msgstr "Prüfung angefordert"
+msgstr "검토 요청됨"
 
 #: filters.py:18 forms.py:64 models.py:240
 msgid "moderator"
-msgstr "Moderator"
+msgstr "모더레이터"
 
 #: filters.py:36
 msgid "reviewer"
-msgstr "Moderator"
+msgstr "검토자"
 
 #: filters.py:77
 msgid "All"
-msgstr "Alle"
+msgstr "전부"
 
 #: forms.py:67
 msgid "comment"
-msgstr "Kommentar"
+msgstr "댓글"
 
 #: forms.py:100 forms.py:198
 #, python-brace-format
 msgid "Any {role}"
-msgstr "Beliebige(r) {role}"
+msgstr "모든 {role}"
 
 #: forms.py:172
 msgid ""
-"Your item is either locked, not enabled for moderation,or is part of another "
-"active moderation request"
+"Your item is either locked, not enabled for moderation,or is part of another"
+" active moderation request"
 msgid_plural ""
 "Your items are either locked, not enabled for moderation,or are part of "
 "another active moderation request"
-msgstr[0] ""
-"Ihr Element ist entweder gesperrt, nicht für die Moderation freigegeben oder "
-"Teil einer anderen aktiven Moderationsanfrage"
-msgstr[1] ""
-"Ihre Elemente sind entweder gesperrt, nicht für die Moderation freigegeben "
-"oder Teil einer anderen aktiven Moderationsanfrage"
+msgstr[0] "항목이 잠겨 있거나, 모더레이션이 활성화되지 않았거나, 다른 활성 모더레이션 요청에 포함되어 있습니다"
 
 #: forms.py:184
 msgid "Select review group"
-msgstr "Prüfgruppe auswählen"
+msgstr "검토 그룹 선택"
 
 #: forms.py:205
 msgid "This collection can't be submitted for a review"
-msgstr "Diese Sammlung kann nicht zur Prüfung eingereicht werden"
+msgstr "이 컬렉션은 검토를 위해 제출할 수 없습니다"
 
 #: forms.py:222
 msgid "This collection can't be cancelled"
-msgstr "Diese Sammlung kann nicht abgebrochen werden"
+msgstr "이 컬렉션은 취소할 수 없습니다"
 
 #: forms.py:266
 msgid "You can only change your own comments"
-msgstr "Sie können nur Ihre eigenen Kommentare ändern"
+msgstr "본인의 댓글만 변경할 수 있습니다"
 
 #: helpers.py:116
 #, python-format
 msgid "In collection \"%(collection_name)s (%(collection_id)s)\""
-msgstr "In Sammlung \"%(collection_name)s (%(collection_id)s)\""
+msgstr "컬렉션 \"%(collection_name)s (%(collection_id)s)\" 내"
 
 #: helpers.py:121
 #, python-format
 msgid "In moderation \"%(collection_name)s (%(collection_id)s)\""
-msgstr "In Moderation \"%(collection_name)s (%(collection_id)s)\""
+msgstr "모더레이션 \"%(collection_name)s (%(collection_id)s)\" 내"
 
 #: models.py:38
 msgid "Plain"
-msgstr "Einfach"
+msgstr "일반"
 
 #: models.py:39
 msgid "Form"
-msgstr "Formular"
+msgstr "양식"
 
 #: models.py:42 models.py:93 models.py:136
 msgid "name"
-msgstr "Name"
+msgstr "이름"
 
 #: models.py:45
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:20
@@ -400,53 +389,51 @@ msgstr "Name"
 #: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:20
 #: templates/djangocms_moderation/items_to_collection.html:43
 msgid "Content Type"
-msgstr "Inhaltstyp"
+msgstr "콘텐츠 유형"
 
 #: models.py:51
 msgid "Template"
-msgstr "Vorlage"
+msgstr "템플릿"
 
 #: models.py:56
 msgid "Confirmation Page"
-msgstr "Bestätigungsseite"
+msgstr "확인 페이지"
 
 #: models.py:57
 msgid "Confirmation Pages"
-msgstr "Bestätigungsseiten"
+msgstr "확인 페이지"
 
 #: models.py:98
 msgid "user"
-msgstr "Benutzer"
+msgstr "사용자"
 
 #: models.py:101
 msgid "group"
-msgstr "Gruppe"
+msgstr "그룹"
 
 #: models.py:105 models.py:771
 msgid "confirmation page"
-msgstr "Bestätigungsseite"
+msgstr "확인 페이지"
 
 #: models.py:113
 msgid "Role"
-msgstr "Rolle"
+msgstr "역할"
 
 #: models.py:114
 msgid "Roles"
-msgstr "Rollen"
+msgstr "역할"
 
 #: models.py:121
 msgid "Can't pick both user and group. Only one."
-msgstr ""
-"Benutzer und Gruppe können nicht gleichzeitig ausgewählt werden. Nur eines "
-"von beiden."
+msgstr "사용자와 그룹을 모두 선택할 수 없습니다. 하나만 선택하세요."
 
 #: models.py:137
 msgid "is default"
-msgstr "ist Standard"
+msgstr "기본값임"
 
 #: models.py:139
 msgid "identifier"
-msgstr "Bezeichner"
+msgstr "식별자"
 
 #: models.py:144
 msgid ""
@@ -454,107 +441,102 @@ msgid ""
 "example, it could be used as a workflow specific prefix of a compliance "
 "number"
 msgstr ""
-"Der Bezeichner ist ein „freies“ Feld, das Sie für interne Zwecke verwenden "
-"können. Es kann zum Beispiel als workflowspezifisches Präfix einer "
-"Compliance-Nummer dienen"
+"식별자는 내부 용도로 사용할 수 있는 '자유' 필드입니다. 예를 들어 컴플라이언스 번호의 워크플로 전용 접두사로 사용할 수 있습니다"
 
 #: models.py:150
 msgid "requires compliance number?"
-msgstr "Compliance-Nummer erforderlich?"
+msgstr "컴플라이언스 번호가 필요합니까?"
 
 #: models.py:153
 msgid ""
 "Does the Compliance number need to be generated before the moderation "
 "request is approved? Please select the compliance number backend below"
-msgstr ""
-"Muss die Compliance-Nummer generiert werden, bevor die Moderationsanfrage "
-"genehmigt wird? Bitte wählen Sie unten das Backend für die Compliance-Nummer "
-"aus"
+msgstr "모더레이션 요청이 승인되기 전에 컴플라이언스 번호를 생성해야 합니까? 아래에서 컴플라이언스 번호 백엔드를 선택하세요"
 
 #: models.py:159
 msgid "compliance number backend"
-msgstr "Backend für Compliance-Nummern"
+msgstr "컴플라이언스 번호 백엔드"
 
 #: models.py:164
 #: templates/djangocms_moderation/moderation_request_change_list.html:20
 msgid "Workflow"
-msgstr "Workflow"
+msgstr "워크플로"
 
 #: models.py:165
 msgid "Workflows"
-msgstr "Workflows"
+msgstr "워크플로"
 
 #: models.py:188
 msgid "Can't have two default workflows, only one is allowed."
-msgstr "Es kann nicht zwei Standard-Workflows geben, nur einer ist erlaubt."
+msgstr "기본 워크플로는 두 개를 가질 수 없으며 하나만 허용됩니다."
 
 #: models.py:198
 msgid "role"
-msgstr "Rolle"
+msgstr "역할"
 
 #: models.py:200
 msgid "is mandatory"
-msgstr "ist verpflichtend"
+msgstr "필수임"
 
 #: models.py:203 models.py:244
 msgid "workflow"
-msgstr "Workflow"
+msgstr "워크플로"
 
 #: models.py:212
 msgid "Step"
-msgstr "Schritt"
+msgstr "단계"
 
 #: models.py:213
 msgid "Steps"
-msgstr "Schritte"
+msgstr "단계"
 
 #: models.py:237
 msgid "collection name"
-msgstr "Name der Sammlung"
+msgstr "컬렉션 이름"
 
 #: models.py:259
 msgid "collection"
-msgstr "Sammlung"
+msgstr "컬렉션"
 
 #: models.py:261
 msgid "Can change collection author"
-msgstr "Darf den Autor der Sammlung ändern"
+msgstr "컬렉션 작성자 변경 가능"
 
 #: models.py:262
 msgid "Can cancel collection"
-msgstr "Darf die Sammlung abbrechen"
+msgstr "컬렉션 취소 가능"
 
 #: models.py:345
 msgid "Cancelled collection"
-msgstr "Abgebrochene Sammlung"
+msgstr "취소된 컬렉션"
 
 #: models.py:425 models.py:666
 msgid "moderation_request"
-msgstr "Moderationsanfrage"
+msgstr "moderation_request"
 
 #: models.py:443
 msgid "version"
-msgstr "Version"
+msgstr "버전"
 
 #: models.py:446
 msgid "language"
-msgstr "Sprache"
+msgstr "언어"
 
 #: models.py:449
 msgid "is active"
-msgstr "ist aktiv"
+msgstr "활성 상태임"
 
 #: models.py:451
 msgid "date sent"
-msgstr "Sendedatum"
+msgstr "발송일"
 
 #: models.py:453
 msgid "compliance number"
-msgstr "Compliance-Nummer"
+msgstr "컴플라이언스 번호"
 
 #: models.py:462 models.py:726
 msgid "author"
-msgstr "Autor"
+msgstr "작성자"
 
 #: models.py:469
 #: templates/admin/djangocms_moderation/moderationrequest/change_form.html:10
@@ -562,79 +544,71 @@ msgstr "Autor"
 #: templates/admin/djangocms_moderation/requestcomment/change_list.html:10
 #: templates/djangocms_moderation/moderation_request_change_list.html:45
 msgid "Requests"
-msgstr "Anfragen"
+msgstr "요청"
 
 #: models.py:629
 msgid "status"
-msgstr "Status"
+msgstr "상태"
 
 #: models.py:634 models.py:763
 msgid "by user"
-msgstr "von Benutzer"
+msgstr "사용자별"
 
 #: models.py:640
 msgid "to user"
-msgstr "an Benutzer"
+msgstr "대상 사용자"
 
 #: models.py:648
 msgid "to role"
-msgstr "an Rolle"
+msgstr "대상 역할"
 
 #: models.py:658
 msgid "step approved"
-msgstr "Schritt genehmigt"
+msgstr "단계 승인됨"
 
 #: models.py:663 models.py:724
 msgid "message"
-msgstr "Nachricht"
+msgstr "메시지"
 
 #: models.py:671
 msgid "date taken"
-msgstr "Datum der Aktion"
+msgstr "처리일"
 
 #: models.py:751
 msgid "moderation request"
-msgstr "Moderationsanfrage"
+msgstr "모더레이션 요청"
 
 #: models.py:757
 msgid "for step"
-msgstr "für Schritt"
+msgstr "단계"
 
 #: models.py:780
 msgid "Confirmation Form Submission"
-msgstr "Einsendung des Bestätigungsformulars"
+msgstr "확인 양식 제출"
 
 #: models.py:781
 msgid "Confirmation Form Submissions"
-msgstr "Einsendungen des Bestätigungsformulars"
+msgstr "확인 양식 제출"
 
 #: monkeypatch.py:145 monkeypatch.py:155
 msgid "Cannot archive a version in an active moderation collection"
-msgstr ""
-"Eine Version in einer aktiven Moderationssammlung kann nicht archiviert "
-"werden"
+msgstr "활성 모더레이션 컬렉션에 있는 버전은 아카이브할 수 없습니다"
 
 #: monkeypatch.py:150
 msgid "Cannot revert when draft version is in an active moderation collection"
-msgstr ""
-"Zurückholen nicht möglich, wenn sich der Entwurf in einer aktiven "
-"Moderationssammlung befindet"
+msgstr "초안 버전이 활성 모더레이션 컬렉션에 있을 때는 되돌릴 수 없습니다"
 
 #: monkeypatch.py:159
 msgid "Version is in an active moderation collection"
-msgstr "Die Version befindet sich in einer aktiven Moderationssammlung"
+msgstr "버전이 활성 모더레이션 컬렉션에 있습니다"
 
 #: monkeypatch.py:163
 msgid "Cannot edit a version in an active moderation collection"
-msgstr ""
-"Eine Version in einer aktiven Moderationssammlung kann nicht bearbeitet "
-"werden"
+msgstr "활성 모더레이션 컬렉션에 있는 버전은 편집할 수 없습니다"
 
 #: monkeypatch.py:167
 msgid "Content cannot be published directly. Use the moderation process."
-msgstr ""
-"Inhalte können nicht direkt veröffentlicht werden. Bitte nutzen Sie den "
-"Moderationsprozess."
+msgstr "콘텐츠를 직접 게시할 수 없습니다. 모더레이션 절차를 사용하세요."
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:7
 #: templates/admin/djangocms_moderation/collectioncomment/change_list.html:16
@@ -643,7 +617,7 @@ msgstr ""
 #: templates/admin/djangocms_moderation/requestcomment/change_list.html:7
 #: templates/djangocms_moderation/moderation_request_change_list.html:42
 msgid "Home"
-msgstr "Start"
+msgstr "홈"
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:9
 #: templates/admin/djangocms_moderation/collectioncomment/change_list.html:18
@@ -651,14 +625,14 @@ msgstr "Start"
 #: templates/admin/djangocms_moderation/requestcomment/change_form.html:9
 #: templates/admin/djangocms_moderation/requestcomment/change_list.html:9
 msgid "Collections"
-msgstr "Sammlungen"
+msgstr "컬렉션"
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:11
 #: templates/admin/djangocms_moderation/moderationrequest/change_form.html:11
 #: templates/admin/djangocms_moderation/requestcomment/change_form.html:12
 #, python-format
 msgid "Add %(name)s"
-msgstr "%(name)s hinzufügen"
+msgstr "%(name)s 추가"
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_list.html:7
 #, python-format
@@ -668,24 +642,22 @@ msgid ""
 "        "
 msgstr ""
 "\n"
-"            Kommentare zu %(collection_name)s\n"
+"            %(collection_name)s 댓글\n"
 "        "
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_list.html:19
 #: templates/admin/djangocms_moderation/requestcomment/change_form.html:11
 #: templates/admin/djangocms_moderation/requestcomment/change_list.html:11
 msgid "Comments"
-msgstr "Kommentare"
+msgstr "댓글"
 
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:3
 msgid "Approve Confirmation"
-msgstr "Bestätigung: Genehmigen"
+msgstr "승인 확인"
 
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:14
 msgid "Are you sure you want to approve these items for publishing?"
-msgstr ""
-"Sind Sie sicher, dass Sie diese Elemente zur Veröffentlichung genehmigen "
-"wollen?"
+msgstr "이 항목들을 게시 승인하시겠습니까?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:19
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:19
@@ -702,7 +674,7 @@ msgstr "Id"
 #: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:21
 #: templates/djangocms_moderation/items_to_collection.html:44
 msgid "Identifier"
-msgstr "Bezeichner"
+msgstr "식별자"
 
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:23
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:23
@@ -711,7 +683,7 @@ msgstr "Bezeichner"
 #: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:23
 #: templates/djangocms_moderation/items_to_collection.html:46
 msgid "Edit Date"
-msgstr "Bearbeitungsdatum"
+msgstr "편집일"
 
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:24
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:24
@@ -720,7 +692,7 @@ msgstr "Bearbeitungsdatum"
 #: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:24
 #: templates/djangocms_moderation/items_to_collection.html:47
 msgid "Version #"
-msgstr "Versionsnr."
+msgstr "버전 번호"
 
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:47
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:47
@@ -728,7 +700,7 @@ msgstr "Versionsnr."
 #: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:47
 #: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:47
 msgid "Yes, I'm sure"
-msgstr "Ja, ich bin sicher!"
+msgstr "예, 확실합니다"
 
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:50
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:50
@@ -736,61 +708,55 @@ msgstr "Ja, ich bin sicher!"
 #: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:50
 #: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:50
 msgid "No, take me back"
-msgstr "Nein, bitte zurück!"
+msgstr "아니요, 돌아갑니다"
 
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:3
 msgid "Delete Confirmation"
-msgstr "Bestätigung: Entfernen"
+msgstr "삭제 확인"
 
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:14
 msgid "Are you sure you want to remove these items from this collection?"
-msgstr ""
-"Sind Sie sicher, dass Sie diese Elemente aus dieser Sammlung entfernen "
-"wollen?"
+msgstr "이 항목들을 이 컬렉션에서 제거하시겠습니까?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
 msgid "Publish Confirmation"
-msgstr "Bestätigung: Veröffentlichen"
+msgstr "게시 확인"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
 msgid "Are you sure you want to publish these items?"
-msgstr "Sind Sie sicher, dass Sie diese Elemente veröffentlichen wollen?"
+msgstr "이 항목들을 게시하시겠습니까?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:3
 msgid "Resubmit Confirmation"
-msgstr "Bestätigung: Erneut einreichen"
+msgstr "재제출 확인"
 
 #: templates/admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html:14
 msgid "Are you sure you want to re-submit these items for review?"
-msgstr ""
-"Sind Sie sicher, dass Sie diese Elemente erneut zur Prüfung einreichen "
-"wollen?"
+msgstr "이 항목들을 검토를 위해 재제출하시겠습니까?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:3
 msgid "Rework Confirmation"
-msgstr "Bestätigung: Überarbeiten"
+msgstr "재작업 확인"
 
 #: templates/admin/djangocms_moderation/moderationrequest/rework_confirmation.html:14
 msgid "Are you sure you want to submit these items back for rework?"
-msgstr ""
-"Sind Sie sicher, dass Sie diese Elemente zur Überarbeitung zurückgeben "
-"wollen?"
+msgstr "이 항목들을 재작업을 위해 되돌려 보내시겠습니까?"
 
 #: templates/djangocms_moderation/cancel_collection.html:13
 msgid "Are you sure you'd like to cancel this collection?"
-msgstr "Sind Sie sicher, dass Sie diese Sammlung abbrechen möchten?"
+msgstr "이 컬렉션을 취소하시겠습니까?"
 
 #: templates/djangocms_moderation/cancel_collection.html:17
 msgid "Cancel"
-msgstr "Abbrechen"
+msgstr "취소"
 
 #: templates/djangocms_moderation/cancel_collection.html:19
 msgid "Confirm"
-msgstr "Bestätigen"
+msgstr "확인"
 
 #: templates/djangocms_moderation/comment_icon.html:2
 msgid "View Comments"
-msgstr "Kommentare anzeigen"
+msgstr "댓글 보기"
 
 #: templates/djangocms_moderation/comment_list.html:8
 #: templates/djangocms_moderation/emails/moderation-request/approved.txt:20
@@ -798,24 +764,24 @@ msgstr "Kommentare anzeigen"
 #: templates/djangocms_moderation/emails/moderation-request/rejected.txt:23
 #: templates/djangocms_moderation/emails/moderation-request/request.txt:20
 msgid "Comment"
-msgstr "Kommentar"
+msgstr "댓글"
 
 #: templates/djangocms_moderation/comment_list.html:11
 msgid "Date"
-msgstr "Datum"
+msgstr "날짜"
 
 #: templates/djangocms_moderation/comment_list.html:21
 msgid "no comment provided"
-msgstr "kein Kommentar vorhanden"
+msgstr "제공된 댓글 없음"
 
 #: templates/djangocms_moderation/confirmation_page.html:9
 #: templates/djangocms_moderation/select_workflow_form.html:28
 msgid "Next"
-msgstr "Weiter"
+msgstr "다음"
 
 #: templates/djangocms_moderation/edit_icon.html:2
 msgid "Edit Collection Settings"
-msgstr "Sammlungseinstellungen bearbeiten"
+msgstr "컬렉션 설정 편집"
 
 #: templates/djangocms_moderation/emails/moderation-request/approved.txt:2
 #, python-format
@@ -825,8 +791,8 @@ msgid ""
 "requests in the collection %(collection_name)s.\n"
 msgstr ""
 "\n"
-"Hallo %(collection_author)s, %(by_user)s hat einige Moderationsanfragen\n"
-"in der Sammlung %(collection_name)s genehmigt.\n"
+"%(collection_author)s님, 안녕하세요. %(by_user)s님이 컬렉션 %(collection_name)s의 일부 모더레이션\n"
+"요청을 승인했습니다.\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/approved.txt:25
 #: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:25
@@ -834,31 +800,29 @@ msgstr ""
 #: templates/djangocms_moderation/emails/moderation-request/request.txt:25
 #: templates/djangocms_moderation/moderation_request_change_list.html:18
 msgid "Job ID"
-msgstr "Job-ID"
+msgstr "작업 ID"
 
 #: templates/djangocms_moderation/emails/moderation-request/approved.txt:29
 #: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:29
 #: templates/djangocms_moderation/emails/moderation-request/rejected.txt:32
 #: templates/djangocms_moderation/emails/moderation-request/request.txt:29
 msgid "Admin Url"
-msgstr "Admin-URL"
+msgstr "관리 URL"
 
 #: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:2
 #, python-format
 msgid ""
 "\n"
-"Hello %(collection_author)s, the following moderation requests in the "
-"collection\n"
+"Hello %(collection_author)s, the following moderation requests in the collection\n"
 "%(collection_name)s have been cancelled\n"
 msgstr ""
 "\n"
-"Hallo %(collection_author)s, die folgenden Moderationsanfragen in der "
-"Sammlung\n"
-"%(collection_name)s wurden abgebrochen\n"
+"%(collection_author)s님, 안녕하세요. 컬렉션 %(collection_name)s의 다음 모더레이션 요청이\n"
+"취소되었습니다\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:8
 msgid "Cancelled moderation requests"
-msgstr "Abgebrochene Moderationsanfragen"
+msgstr "취소된 모더레이션 요청"
 
 #: templates/djangocms_moderation/emails/moderation-request/rejected.txt:2
 #, python-format
@@ -868,16 +832,14 @@ msgid ""
 "requests in the collection %(collection_name)s.\n"
 msgstr ""
 "\n"
-"Hallo %(collection_author)s, %(by_user)s hat einige Moderationsanfragen\n"
-"in der Sammlung %(collection_name)s abgelehnt.\n"
+"%(collection_author)s님, 안녕하세요. %(by_user)s님이 컬렉션 %(collection_name)s의 일부 모더레이션\n"
+"요청을 거부했습니다.\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/rejected.txt:7
 msgid ""
 "You can resubmit the necessary changes for another review, or remove the "
 "moderation requests from the collection."
-msgstr ""
-"Sie können die erforderlichen Änderungen erneut zur Prüfung einreichen oder "
-"die Moderationsanfragen aus der Sammlung entfernen."
+msgstr "필요한 변경 사항을 다시 검토를 위해 재제출하거나 컬렉션에서 모더레이션 요청을 제거할 수 있습니다."
 
 #: templates/djangocms_moderation/emails/moderation-request/request.txt:2
 #, python-format
@@ -887,16 +849,16 @@ msgid ""
 "changes in the collection %(collection_name)s.\n"
 msgstr ""
 "\n"
-"Hallo, %(by_user)s hat Ihre Genehmigung für Änderungen\n"
-"in der Sammlung %(collection_name)s angefordert.\n"
+"안녕하세요. %(by_user)s님이 컬렉션 %(collection_name)s의\n"
+"변경 사항에 대한 승인을 요청했습니다.\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/request.txt:8
 msgid "Items included in this request"
-msgstr "In dieser Anfrage enthaltene Elemente"
+msgstr "이 요청에 포함된 항목"
 
 #: templates/djangocms_moderation/items_to_collection.html:12
 msgid "Add items to collection"
-msgstr "Elemente zur Sammlung hinzufügen"
+msgstr "컬렉션에 항목 추가"
 
 #: templates/djangocms_moderation/items_to_collection.html:14
 #, python-format
@@ -906,69 +868,67 @@ msgid ""
 "                "
 msgstr ""
 "\n"
-"                   „%(content_name)s“ zur Sammlung hinzufügen\n"
+"                   '%(content_name)s'을(를) 컬렉션에 추가\n"
 "                "
 
 #: templates/djangocms_moderation/items_to_collection.html:19
 msgid "No items to add"
-msgstr "Keine Elemente zum Hinzufügen"
+msgstr "추가할 항목 없음"
 
 #: templates/djangocms_moderation/items_to_collection.html:37
 msgid "The selected collection currently contains the following items:"
-msgstr "Die ausgewählte Sammlung enthält derzeit die folgenden Elemente:"
+msgstr "선택한 컬렉션에는 현재 다음 항목이 포함되어 있습니다:"
 
 #: templates/djangocms_moderation/items_to_collection.html:67
 msgid "This collection contains no items yet"
-msgstr "Diese Sammlung enthält noch keine Elemente"
+msgstr "이 컬렉션에는 아직 항목이 없습니다"
 
 #: templates/djangocms_moderation/items_to_collection.html:71
 #: templates/djangocms_moderation/request_form.html:38
 msgid "Submit"
-msgstr "Absenden"
+msgstr "제출"
 
 #: templates/djangocms_moderation/moderation_request_change_list.html:21
 msgid "Owner"
-msgstr "Besitzer"
+msgstr "소유자"
 
 #: templates/djangocms_moderation/moderation_request_change_list.html:30
 msgid "Cancel this collection"
-msgstr "Diese Sammlung abbrechen"
+msgstr "이 컬렉션 취소"
 
 #: templates/djangocms_moderation/moderation_request_change_list.html:35
 #: views.py:217
 msgid "Submit collection for review"
-msgstr "Sammlung zur Prüfung einreichen"
+msgstr "컬렉션을 검토를 위해 제출"
 
 #: templates/djangocms_moderation/request_form.html:8
 #: templates/djangocms_moderation/select_workflow_form.html:8
 msgid "Please correct the error below."
 msgid_plural "Please correct the errors below."
-msgstr[0] "Bitte korrigieren Sie den folgenden Fehler."
-msgstr[1] "Bitte korrigieren Sie die folgenden Fehler."
+msgstr[0] "아래 오류를 수정하세요."
 
 #: templates/djangocms_moderation/request_form.html:27
 msgid "Completed Forms"
-msgstr "Ausgefüllte Formulare"
+msgstr "완료된 양식"
 
 #: templates/djangocms_moderation/request_icon.html:2
 msgid "View Requests"
-msgstr "Anfragen anzeigen"
+msgstr "요청 보기"
 
 #: views.py:70
 #, python-format
 msgid "%(count)d item successfully added to moderation collection"
 msgid_plural "%(count)d items successfully added to moderation collection"
-msgstr[0] "%(count)d Element erfolgreich zur Moderationssammlung hinzugefügt"
-msgstr[1] "%(count)d Elemente erfolgreich zur Moderationssammlung hinzugefügt"
+msgstr[0] "항목 %(count)d개가 모더레이션 컬렉션에 추가되었습니다"
 
 #: views.py:202
 msgid "Your collection has been submitted for review"
-msgstr "Ihre Sammlung wurde zur Prüfung eingereicht"
+msgstr "컬렉션이 검토를 위해 제출되었습니다"
 
 #: views.py:246
 msgid "Your collection has been cancelled"
-msgstr "Ihre Sammlung wurde abgebrochen"
+msgstr "컬렉션이 취소되었습니다"
 
 #: views.py:255
 msgid "Cancel collection"
-msgstr "Sammlung abbrechen"
+msgstr "컬렉션 취소"
