@@ -1,12 +1,22 @@
 {# Used for MP and NS trees #}
 {% extends "admin/tree_change_list.html" %}
-{% load admin_list admin_tree %}
+{% load admin_list moderation_treebeard %}
 
 {% block result_list %}
     {% if action_form and actions_on_top and cl.show_admin_actions %}
         {% admin_actions %}
     {% endif %}
-    {% result_tree cl request %}
+    {% comment %}
+        django-treebeard >= 4.8 changed the `result_tree` tag signature, so the
+        version-specific call lives in a partial that is only compiled when
+        actually included (template tags are validated at parse time).
+    {% endcomment %}
+    {% treebeard_new_admin_tree as new_admin_tree %}
+    {% if new_admin_tree %}
+        {% include "admin/djangocms_moderation/treebeard/_result_tree.html" %}
+    {% else %}
+        {% include "admin/djangocms_moderation/treebeard/_result_tree_legacy.html" %}
+    {% endif %}
     {% if action_form and actions_on_bottom and cl.show_admin_actions %}
         {% admin_actions %}
     {% endif %}
