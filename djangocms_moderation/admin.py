@@ -758,6 +758,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 raise Http404
 
             approved_requests = []
+            # Requests the user could not approve, grouped by reason so we can
+            # give clear feedback instead of a silent "0 requests approved"
+            already_approved_requests = []
+            already_actioned_requests = []
+            rejected_requests = []
+            no_permission_requests = []
             # Variable we are using to group the requests by action.step_approved
             request_action_mapping = dict()
 
@@ -783,6 +789,14 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                             ] = action
                         else:
                             request_action_mapping[step_approved_key].append(mr)
+                elif mr.is_approved():
+                    already_approved_requests.append(mr)
+                elif mr.is_rejected():
+                    rejected_requests.append(mr)
+                elif mr.user_has_already_actioned(request.user):
+                    already_actioned_requests.append(mr)
+                else:
+                    no_permission_requests.append(mr)
 
             if approved_requests:  # TODO task queue?
                 # Lets notify the collection author about the approval
@@ -806,15 +820,67 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                             action_obj=request_action_mapping["action_" + key],
                         )
 
-            messages.success(
-                request,
-                ngettext(
-                    "%(count)d request successfully approved",
-                    "%(count)d requests successfully approved",
-                    len(approved_requests),
+            if approved_requests:
+                messages.success(
+                    request,
+                    ngettext(
+                        "%(count)d request successfully approved",
+                        "%(count)d requests successfully approved",
+                        len(approved_requests),
+                    )
+                    % {"count": len(approved_requests)},
                 )
-                % {"count": len(approved_requests)},
-            )
+
+            if no_permission_requests:
+                messages.warning(
+                    request,
+                    ngettext(
+                        "%(count)d request was not approved because you do not "
+                        "have permission to approve it",
+                        "%(count)d requests were not approved because you do not "
+                        "have permission to approve them",
+                        len(no_permission_requests),
+                    )
+                    % {"count": len(no_permission_requests)},
+                )
+
+            if already_approved_requests:
+                messages.info(
+                    request,
+                    ngettext(
+                        "%(count)d request was already approved",
+                        "%(count)d requests were already approved",
+                        len(already_approved_requests),
+                    )
+                    % {"count": len(already_approved_requests)},
+                )
+
+            if already_actioned_requests:
+                messages.info(
+                    request,
+                    ngettext(
+                        "%(count)d request was already approved by you or your "
+                        "team and is awaiting other reviewers",
+                        "%(count)d requests were already approved by you or your "
+                        "team and are awaiting other reviewers",
+                        len(already_actioned_requests),
+                    )
+                    % {"count": len(already_actioned_requests)},
+                )
+
+            if rejected_requests:
+                messages.warning(
+                    request,
+                    ngettext(
+                        "%(count)d request could not be approved because it has "
+                        "been rejected and must be resubmitted by its author",
+                        "%(count)d requests could not be approved because they "
+                        "have been rejected and must be resubmitted by their "
+                        "authors",
+                        len(rejected_requests),
+                    )
+                    % {"count": len(rejected_requests)},
+                )
 
             post_bulk_actions(collection)
 

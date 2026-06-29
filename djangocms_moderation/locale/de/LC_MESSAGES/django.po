@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-13 00:13+0200\n"
+"POT-Creation-Date: 2026-06-30 00:54+0200\n"
 "PO-Revision-Date: 2026-06-13 00:00+0200\n"
 "Last-Translator: Fabian Braun <fsbraun@gmx.de>\n"
 "Language-Team: German\n"
@@ -19,12 +19,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:66 models.py:681
+#: admin.py:66 models.py:699
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
 msgstr "Aktion"
 
-#: admin.py:67 models.py:682
+#: admin.py:67 models.py:700
 msgid "Actions"
 msgstr "Aktionen"
 
@@ -48,7 +48,7 @@ msgstr "Von {user}"
 msgid "Form Submission"
 msgstr "Formulareinsendung"
 
-#: admin.py:183 admin.py:1065
+#: admin.py:183 admin.py:1131
 msgid "actions"
 msgstr "Aktionen"
 
@@ -133,51 +133,103 @@ msgid_plural "%(count)d requests successfully submitted for rework"
 msgstr[0] "%(count)d Anfrage erfolgreich zur Überarbeitung eingereicht"
 msgstr[1] "%(count)d Anfragen erfolgreich zur Überarbeitung eingereicht"
 
-#: admin.py:812
+#: admin.py:827
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
 msgstr[0] "%(count)d Anfrage erfolgreich genehmigt"
 msgstr[1] "%(count)d Anfragen erfolgreich genehmigt"
 
-#: admin.py:880
+#: admin.py:838
+#, python-format
+msgid ""
+"%(count)d request was not approved because you do not have permission to "
+"approve it"
+msgid_plural ""
+"%(count)d requests were not approved because you do not have permission to "
+"approve them"
+msgstr[0] ""
+"%(count)d Anfrage wurde nicht genehmigt, weil Sie keine Berechtigung zum "
+"Genehmigen haben"
+msgstr[1] ""
+"%(count)d Anfragen wurden nicht genehmigt, weil Sie keine Berechtigung zum "
+"Genehmigen haben"
+
+#: admin.py:851
+#, python-format
+msgid "%(count)d request was already approved"
+msgid_plural "%(count)d requests were already approved"
+msgstr[0] "%(count)d Anfrage wurde bereits genehmigt"
+msgstr[1] "%(count)d Anfragen wurden bereits genehmigt"
+
+#: admin.py:862
+#, python-format
+msgid ""
+"%(count)d request was already approved by you or your team and is awaiting "
+"other reviewers"
+msgid_plural ""
+"%(count)d requests were already approved by you or your team and are "
+"awaiting other reviewers"
+msgstr[0] ""
+"%(count)d Anfrage wurde bereits von Ihnen oder Ihrem Team genehmigt und "
+"wartet auf weitere Moderatoren"
+msgstr[1] ""
+"%(count)d Anfragen wurden bereits von Ihnen oder Ihrem Team genehmigt und "
+"warten auf weitere Moderatoren"
+
+#: admin.py:875
+#, python-format
+msgid ""
+"%(count)d request could not be approved because it has been rejected and "
+"must be resubmitted by its author"
+msgid_plural ""
+"%(count)d requests could not be approved because they have been rejected and "
+"must be resubmitted by their authors"
+msgstr[0] ""
+"%(count)d Anfrage konnte nicht genehmigt werden, weil sie abgelehnt wurde und "
+"von ihrem Autor erneut eingereicht werden muss"
+msgstr[1] ""
+"%(count)d Anfragen konnten nicht genehmigt werden, weil sie abgelehnt wurden "
+"und von ihren Autoren erneut eingereicht werden müssen"
+
+#: admin.py:946
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
 msgstr "Kommentare zur Sammlung"
 
-#: admin.py:929
+#: admin.py:995
 msgid "User"
 msgstr "Benutzer"
 
-#: admin.py:966
+#: admin.py:1032
 msgid "Request comments"
 msgstr "Kommentare zur Anfrage"
 
-#: admin.py:1058
+#: admin.py:1124
 msgid "reviewers"
 msgstr "Moderatoren"
 
-#: admin.py:1081
+#: admin.py:1147
 msgid "Modify collection"
 msgstr "Sammlung bearbeiten"
 
-#: admin.py:1208 models.py:468
+#: admin.py:1274 models.py:468
 msgid "Request"
 msgstr "Anfrage"
 
-#: admin.py:1214
+#: admin.py:1280
 msgid "By User"
 msgstr "Von Benutzer"
 
-#: admin.py:1220
+#: admin.py:1286
 msgid "Form Data"
 msgstr "Formulardaten"
 
-#: admin.py:1228
+#: admin.py:1294
 msgid "Question"
 msgstr "Frage"
 
-#: admin.py:1228
+#: admin.py:1294
 msgid "Answer"
 msgstr "Antwort"
 
@@ -422,7 +474,7 @@ msgstr "Benutzer"
 msgid "group"
 msgstr "Gruppe"
 
-#: models.py:105 models.py:771
+#: models.py:105 models.py:789
 msgid "confirmation page"
 msgstr "Bestätigungsseite"
 
@@ -528,7 +580,7 @@ msgstr "Darf die Sammlung abbrechen"
 msgid "Cancelled collection"
 msgstr "Abgebrochene Sammlung"
 
-#: models.py:425 models.py:666
+#: models.py:425 models.py:684
 msgid "moderation_request"
 msgstr "Moderationsanfrage"
 
@@ -552,7 +604,7 @@ msgstr "Sendedatum"
 msgid "compliance number"
 msgstr "Compliance-Nummer"
 
-#: models.py:462 models.py:726
+#: models.py:462 models.py:744
 msgid "author"
 msgstr "Autor"
 
@@ -564,47 +616,47 @@ msgstr "Autor"
 msgid "Requests"
 msgstr "Anfragen"
 
-#: models.py:629
+#: models.py:647
 msgid "status"
 msgstr "Status"
 
-#: models.py:634 models.py:763
+#: models.py:652 models.py:781
 msgid "by user"
 msgstr "von Benutzer"
 
-#: models.py:640
+#: models.py:658
 msgid "to user"
 msgstr "an Benutzer"
 
-#: models.py:648
+#: models.py:666
 msgid "to role"
 msgstr "an Rolle"
 
-#: models.py:658
+#: models.py:676
 msgid "step approved"
 msgstr "Schritt genehmigt"
 
-#: models.py:663 models.py:724
+#: models.py:681 models.py:742
 msgid "message"
 msgstr "Nachricht"
 
-#: models.py:671
+#: models.py:689
 msgid "date taken"
 msgstr "Datum der Aktion"
 
-#: models.py:751
+#: models.py:769
 msgid "moderation request"
 msgstr "Moderationsanfrage"
 
-#: models.py:757
+#: models.py:775
 msgid "for step"
 msgstr "für Schritt"
 
-#: models.py:780
+#: models.py:798
 msgid "Confirmation Form Submission"
 msgstr "Einsendung des Bestätigungsformulars"
 
-#: models.py:781
+#: models.py:799
 msgid "Confirmation Form Submissions"
 msgstr "Einsendungen des Bestätigungsformulars"
 

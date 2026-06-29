@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-13 00:13+0200\n"
+"POT-Creation-Date: 2026-06-30 00:54+0200\n"
 "PO-Revision-Date: 2026-06-29 00:00+0000\n"
 "Last-Translator: Fabian Braun <fsbraun@gmx.de>, 2026\n"
 "Language-Team: Korean (https://app.transifex.com/divio/teams/58664/ko/)\n"
@@ -21,12 +21,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: admin.py:66 models.py:681
+#: admin.py:66 models.py:699
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
 msgstr "작업"
 
-#: admin.py:67 models.py:682
+#: admin.py:67 models.py:700
 msgid "Actions"
 msgstr "작업"
 
@@ -50,7 +50,7 @@ msgstr "{user} 작성"
 msgid "Form Submission"
 msgstr "양식 제출"
 
-#: admin.py:183 admin.py:1065
+#: admin.py:183 admin.py:1131
 msgid "actions"
 msgstr "작업"
 
@@ -131,50 +131,86 @@ msgid "%(count)d request successfully submitted for rework"
 msgid_plural "%(count)d requests successfully submitted for rework"
 msgstr[0] "요청 %(count)d건이 재작업을 위해 제출되었습니다"
 
-#: admin.py:812
+#: admin.py:827
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
 msgstr[0] "요청 %(count)d건이 승인되었습니다"
 
-#: admin.py:880
+#: admin.py:838
+#, python-format
+msgid ""
+"%(count)d request was not approved because you do not have permission to "
+"approve it"
+msgid_plural ""
+"%(count)d requests were not approved because you do not have permission to "
+"approve them"
+msgstr[0] "승인 권한이 없어 요청 %(count)d건이 승인되지 않았습니다"
+
+#: admin.py:851
+#, python-format
+msgid "%(count)d request was already approved"
+msgid_plural "%(count)d requests were already approved"
+msgstr[0] "요청 %(count)d건은 이미 승인되었습니다"
+
+#: admin.py:862
+#, python-format
+msgid ""
+"%(count)d request was already approved by you or your team and is awaiting "
+"other reviewers"
+msgid_plural ""
+"%(count)d requests were already approved by you or your team and are "
+"awaiting other reviewers"
+msgstr[0] "요청 %(count)d건은 귀하 또는 귀하의 팀에서 이미 승인했으며 다른 검토자를 기다리고 있습니다"
+
+#: admin.py:875
+#, python-format
+msgid ""
+"%(count)d request could not be approved because it has been rejected and "
+"must be resubmitted by its author"
+msgid_plural ""
+"%(count)d requests could not be approved because they have been rejected and "
+"must be resubmitted by their authors"
+msgstr[0] "요청 %(count)d건은 거부되어 작성자가 재제출해야 하므로 승인할 수 없습니다"
+
+#: admin.py:946
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
 msgstr "컬렉션 댓글"
 
-#: admin.py:929
+#: admin.py:995
 msgid "User"
 msgstr "사용자"
 
-#: admin.py:966
+#: admin.py:1032
 msgid "Request comments"
 msgstr "요청 댓글"
 
-#: admin.py:1058
+#: admin.py:1124
 msgid "reviewers"
 msgstr "검토자"
 
-#: admin.py:1081
+#: admin.py:1147
 msgid "Modify collection"
 msgstr "컬렉션 수정"
 
-#: admin.py:1208 models.py:468
+#: admin.py:1274 models.py:468
 msgid "Request"
 msgstr "요청"
 
-#: admin.py:1214
+#: admin.py:1280
 msgid "By User"
 msgstr "사용자별"
 
-#: admin.py:1220
+#: admin.py:1286
 msgid "Form Data"
 msgstr "양식 데이터"
 
-#: admin.py:1228
+#: admin.py:1294
 msgid "Question"
 msgstr "질문"
 
-#: admin.py:1228
+#: admin.py:1294
 msgid "Answer"
 msgstr "답변"
 
@@ -336,12 +372,14 @@ msgstr "모든 {role}"
 
 #: forms.py:172
 msgid ""
-"Your item is either locked, not enabled for moderation,or is part of another"
-" active moderation request"
+"Your item is either locked, not enabled for moderation,or is part of another "
+"active moderation request"
 msgid_plural ""
 "Your items are either locked, not enabled for moderation,or are part of "
 "another active moderation request"
-msgstr[0] "항목이 잠겨 있거나, 모더레이션이 활성화되지 않았거나, 다른 활성 모더레이션 요청에 포함되어 있습니다"
+msgstr[0] ""
+"항목이 잠겨 있거나, 모더레이션이 활성화되지 않았거나, 다른 활성 모더레이션 요"
+"청에 포함되어 있습니다"
 
 #: forms.py:184
 msgid "Select review group"
@@ -411,7 +449,7 @@ msgstr "사용자"
 msgid "group"
 msgstr "그룹"
 
-#: models.py:105 models.py:771
+#: models.py:105 models.py:789
 msgid "confirmation page"
 msgstr "확인 페이지"
 
@@ -441,7 +479,8 @@ msgid ""
 "example, it could be used as a workflow specific prefix of a compliance "
 "number"
 msgstr ""
-"식별자는 내부 용도로 사용할 수 있는 '자유' 필드입니다. 예를 들어 컴플라이언스 번호의 워크플로 전용 접두사로 사용할 수 있습니다"
+"식별자는 내부 용도로 사용할 수 있는 '자유' 필드입니다. 예를 들어 컴플라이언"
+"스 번호의 워크플로 전용 접두사로 사용할 수 있습니다"
 
 #: models.py:150
 msgid "requires compliance number?"
@@ -451,7 +490,9 @@ msgstr "컴플라이언스 번호가 필요합니까?"
 msgid ""
 "Does the Compliance number need to be generated before the moderation "
 "request is approved? Please select the compliance number backend below"
-msgstr "모더레이션 요청이 승인되기 전에 컴플라이언스 번호를 생성해야 합니까? 아래에서 컴플라이언스 번호 백엔드를 선택하세요"
+msgstr ""
+"모더레이션 요청이 승인되기 전에 컴플라이언스 번호를 생성해야 합니까? 아래에"
+"서 컴플라이언스 번호 백엔드를 선택하세요"
 
 #: models.py:159
 msgid "compliance number backend"
@@ -510,7 +551,7 @@ msgstr "컬렉션 취소 가능"
 msgid "Cancelled collection"
 msgstr "취소된 컬렉션"
 
-#: models.py:425 models.py:666
+#: models.py:425 models.py:684
 msgid "moderation_request"
 msgstr "moderation_request"
 
@@ -534,7 +575,7 @@ msgstr "발송일"
 msgid "compliance number"
 msgstr "컴플라이언스 번호"
 
-#: models.py:462 models.py:726
+#: models.py:462 models.py:744
 msgid "author"
 msgstr "작성자"
 
@@ -546,47 +587,47 @@ msgstr "작성자"
 msgid "Requests"
 msgstr "요청"
 
-#: models.py:629
+#: models.py:647
 msgid "status"
 msgstr "상태"
 
-#: models.py:634 models.py:763
+#: models.py:652 models.py:781
 msgid "by user"
 msgstr "사용자별"
 
-#: models.py:640
+#: models.py:658
 msgid "to user"
 msgstr "대상 사용자"
 
-#: models.py:648
+#: models.py:666
 msgid "to role"
 msgstr "대상 역할"
 
-#: models.py:658
+#: models.py:676
 msgid "step approved"
 msgstr "단계 승인됨"
 
-#: models.py:663 models.py:724
+#: models.py:681 models.py:742
 msgid "message"
 msgstr "메시지"
 
-#: models.py:671
+#: models.py:689
 msgid "date taken"
 msgstr "처리일"
 
-#: models.py:751
+#: models.py:769
 msgid "moderation request"
 msgstr "모더레이션 요청"
 
-#: models.py:757
+#: models.py:775
 msgid "for step"
 msgstr "단계"
 
-#: models.py:780
+#: models.py:798
 msgid "Confirmation Form Submission"
 msgstr "확인 양식 제출"
 
-#: models.py:781
+#: models.py:799
 msgid "Confirmation Form Submissions"
 msgstr "확인 양식 제출"
 
@@ -791,7 +832,8 @@ msgid ""
 "requests in the collection %(collection_name)s.\n"
 msgstr ""
 "\n"
-"%(collection_author)s님, 안녕하세요. %(by_user)s님이 컬렉션 %(collection_name)s의 일부 모더레이션\n"
+"%(collection_author)s님, 안녕하세요. %(by_user)s님이 컬렉션 "
+"%(collection_name)s의 일부 모더레이션\n"
 "요청을 승인했습니다.\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/approved.txt:25
@@ -813,11 +855,13 @@ msgstr "관리 URL"
 #, python-format
 msgid ""
 "\n"
-"Hello %(collection_author)s, the following moderation requests in the collection\n"
+"Hello %(collection_author)s, the following moderation requests in the "
+"collection\n"
 "%(collection_name)s have been cancelled\n"
 msgstr ""
 "\n"
-"%(collection_author)s님, 안녕하세요. 컬렉션 %(collection_name)s의 다음 모더레이션 요청이\n"
+"%(collection_author)s님, 안녕하세요. 컬렉션 %(collection_name)s의 다음 모더레"
+"이션 요청이\n"
 "취소되었습니다\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:8
@@ -832,14 +876,17 @@ msgid ""
 "requests in the collection %(collection_name)s.\n"
 msgstr ""
 "\n"
-"%(collection_author)s님, 안녕하세요. %(by_user)s님이 컬렉션 %(collection_name)s의 일부 모더레이션\n"
+"%(collection_author)s님, 안녕하세요. %(by_user)s님이 컬렉션 "
+"%(collection_name)s의 일부 모더레이션\n"
 "요청을 거부했습니다.\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/rejected.txt:7
 msgid ""
 "You can resubmit the necessary changes for another review, or remove the "
 "moderation requests from the collection."
-msgstr "필요한 변경 사항을 다시 검토를 위해 재제출하거나 컬렉션에서 모더레이션 요청을 제거할 수 있습니다."
+msgstr ""
+"필요한 변경 사항을 다시 검토를 위해 재제출하거나 컬렉션에서 모더레이션 요청"
+"을 제거할 수 있습니다."
 
 #: templates/djangocms_moderation/emails/moderation-request/request.txt:2
 #, python-format

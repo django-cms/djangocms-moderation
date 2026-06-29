@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-13 00:13+0200\n"
+"POT-Creation-Date: 2026-06-30 00:54+0200\n"
 "PO-Revision-Date: 2023-01-23 22:32+0000\n"
 "Last-Translator: Besnik Bleta <besnik@programeshqip.org>, 2023\n"
 "Language-Team: Albanian (https://app.transifex.com/divio/teams/58664/sq/)\n"
@@ -21,12 +21,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:66 models.py:681
+#: admin.py:66 models.py:699
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
 msgstr "Veprim"
 
-#: admin.py:67 models.py:682
+#: admin.py:67 models.py:700
 msgid "Actions"
 msgstr "Veprime"
 
@@ -50,7 +50,7 @@ msgstr "Nga {user}"
 msgid "Form Submission"
 msgstr "Parashtrim Formulari"
 
-#: admin.py:183 admin.py:1065
+#: admin.py:183 admin.py:1131
 msgid "actions"
 msgstr "veprime"
 
@@ -135,51 +135,99 @@ msgid_plural "%(count)d requests successfully submitted for rework"
 msgstr[0] "U parashtrua me sukses %(count)d kërkesë për ripunim"
 msgstr[1] "U parashtruan me sukses %(count)d kërkesa për ripunim"
 
-#: admin.py:812
+#: admin.py:827
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
 msgstr[0] "U miratua me sukses %(count)d kërkesë"
 msgstr[1] "U miratuan me sukses %(count)d kërkesa"
 
-#: admin.py:880
+#: admin.py:838
+#, python-format
+msgid ""
+"%(count)d request was not approved because you do not have permission to "
+"approve it"
+msgid_plural ""
+"%(count)d requests were not approved because you do not have permission to "
+"approve them"
+msgstr[0] "%(count)d kërkesë nuk u miratua sepse nuk keni leje ta miratoni"
+msgstr[1] "%(count)d kërkesa nuk u miratuan sepse nuk keni leje t'i miratoni"
+
+#: admin.py:851
+#, python-format
+msgid "%(count)d request was already approved"
+msgid_plural "%(count)d requests were already approved"
+msgstr[0] "%(count)d kërkesë ishte tashmë e miratuar"
+msgstr[1] "%(count)d kërkesa ishin tashmë të miratuara"
+
+#: admin.py:862
+#, python-format
+msgid ""
+"%(count)d request was already approved by you or your team and is awaiting "
+"other reviewers"
+msgid_plural ""
+"%(count)d requests were already approved by you or your team and are "
+"awaiting other reviewers"
+msgstr[0] ""
+"%(count)d kërkesë ishte tashmë e miratuar nga ju ose ekipi juaj dhe po pret "
+"shqyrtues të tjerë"
+msgstr[1] ""
+"%(count)d kërkesa ishin tashmë të miratuara nga ju ose ekipi juaj dhe po "
+"presin shqyrtues të tjerë"
+
+#: admin.py:875
+#, python-format
+msgid ""
+"%(count)d request could not be approved because it has been rejected and "
+"must be resubmitted by its author"
+msgid_plural ""
+"%(count)d requests could not be approved because they have been rejected and "
+"must be resubmitted by their authors"
+msgstr[0] ""
+"%(count)d kërkesë nuk mund të miratohej sepse është refuzuar dhe duhet të "
+"riparashtrohet nga autori i saj"
+msgstr[1] ""
+"%(count)d kërkesa nuk mund të miratoheshin sepse janë refuzuar dhe duhet të "
+"riparashtrohen nga autorët e tyre"
+
+#: admin.py:946
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
 msgstr "Komente koleksioni"
 
-#: admin.py:929
+#: admin.py:995
 msgid "User"
 msgstr "Përdorues"
 
-#: admin.py:966
+#: admin.py:1032
 msgid "Request comments"
 msgstr "Komente kërkese"
 
-#: admin.py:1058
+#: admin.py:1124
 msgid "reviewers"
 msgstr "shqyrtues"
 
-#: admin.py:1081
+#: admin.py:1147
 msgid "Modify collection"
 msgstr "Ndryshoni koleksion"
 
-#: admin.py:1208 models.py:468
+#: admin.py:1274 models.py:468
 msgid "Request"
 msgstr "Kërkesë"
 
-#: admin.py:1214
+#: admin.py:1280
 msgid "By User"
 msgstr "Nga Përdoruesi"
 
-#: admin.py:1220
+#: admin.py:1286
 msgid "Form Data"
 msgstr "Të dhënash Formularësh"
 
-#: admin.py:1228
+#: admin.py:1294
 msgid "Question"
 msgstr "Pyetje"
 
-#: admin.py:1228
+#: admin.py:1294
 msgid "Answer"
 msgstr "Përgjigje"
 
@@ -342,8 +390,8 @@ msgstr "Çfarëdo {role}"
 
 #: forms.py:172
 msgid ""
-"Your item is either locked, not enabled for moderation,or is part of another"
-" active moderation request"
+"Your item is either locked, not enabled for moderation,or is part of another "
+"active moderation request"
 msgid_plural ""
 "Your items are either locked, not enabled for moderation,or are part of "
 "another active moderation request"
@@ -351,8 +399,8 @@ msgstr[0] ""
 "Objekti juaj ose është i kyçur, ose s’i lejohet moderimi, ose është pjesë e "
 "një tjetër kërkese aktive moderimi"
 msgstr[1] ""
-"Objektet tuaja ose janë të kyçur, ose s’u lejohet moderimi, ose janë pjesë e"
-" një tjetër kërkese aktive moderimi"
+"Objektet tuaja ose janë të kyçur, ose s’u lejohet moderimi, ose janë pjesë e "
+"një tjetër kërkese aktive moderimi"
 
 #: forms.py:184
 msgid "Select review group"
@@ -422,7 +470,7 @@ msgstr "përdorues"
 msgid "group"
 msgstr "grup"
 
-#: models.py:105 models.py:771
+#: models.py:105 models.py:789
 msgid "confirmation page"
 msgstr "faqe ripohimi"
 
@@ -526,7 +574,7 @@ msgstr "Mund të anulojë koleksion"
 msgid "Cancelled collection"
 msgstr "Koleksioni  anulua"
 
-#: models.py:425 models.py:666
+#: models.py:425 models.py:684
 msgid "moderation_request"
 msgstr "kërkesë moderimi"
 
@@ -550,7 +598,7 @@ msgstr "datë dërgimi"
 msgid "compliance number"
 msgstr "numër pajtueshmërie"
 
-#: models.py:462 models.py:726
+#: models.py:462 models.py:744
 msgid "author"
 msgstr "autor"
 
@@ -562,47 +610,47 @@ msgstr "autor"
 msgid "Requests"
 msgstr "Kërkesa"
 
-#: models.py:629
+#: models.py:647
 msgid "status"
 msgstr "gjendje"
 
-#: models.py:634 models.py:763
+#: models.py:652 models.py:781
 msgid "by user"
 msgstr "nga përdorues"
 
-#: models.py:640
+#: models.py:658
 msgid "to user"
 msgstr "për përdorues"
 
-#: models.py:648
+#: models.py:666
 msgid "to role"
 msgstr "te rol"
 
-#: models.py:658
+#: models.py:676
 msgid "step approved"
 msgstr "hapi u miratua"
 
-#: models.py:663 models.py:724
+#: models.py:681 models.py:742
 msgid "message"
 msgstr "mesazh"
 
-#: models.py:671
+#: models.py:689
 msgid "date taken"
 msgstr "data e bërjes"
 
-#: models.py:751
+#: models.py:769
 msgid "moderation request"
 msgstr "kërkesë moderimi"
 
-#: models.py:757
+#: models.py:775
 msgid "for step"
 msgstr "për hap"
 
-#: models.py:780
+#: models.py:798
 msgid "Confirmation Form Submission"
 msgstr "Parashtrim Formulari Ripohimi"
 
-#: models.py:781
+#: models.py:799
 msgid "Confirmation Form Submissions"
 msgstr "Parashtrime Formulari Ripohimi"
 
@@ -613,8 +661,8 @@ msgstr "S’mund të arkivohet një version në një koleksion nën moderim akti
 #: monkeypatch.py:150
 msgid "Cannot revert when draft version is in an active moderation collection"
 msgstr ""
-"S’mund të rikthehet, kur versioni skicë gjendet në një koleksion nën moderim"
-" aktiv"
+"S’mund të rikthehet, kur versioni skicë gjendet në një koleksion nën moderim "
+"aktiv"
 
 #: monkeypatch.py:159
 msgid "Version is in an active moderation collection"
@@ -831,11 +879,13 @@ msgstr "URL përgjegjësi"
 #, python-format
 msgid ""
 "\n"
-"Hello %(collection_author)s, the following moderation requests in the collection\n"
+"Hello %(collection_author)s, the following moderation requests in the "
+"collection\n"
 "%(collection_name)s have been cancelled\n"
 msgstr ""
 "\n"
-"Tungjatjeta %(collection_author)s, kërkesat vijuese për moderim te koleksioni\n"
+"Tungjatjeta %(collection_author)s, kërkesat vijuese për moderim te "
+"koleksioni\n"
 "%(collection_name)s janë anuluar\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:8
@@ -858,8 +908,8 @@ msgid ""
 "You can resubmit the necessary changes for another review, or remove the "
 "moderation requests from the collection."
 msgstr ""
-"Mund të riparashtroni ndryshimet e nevojshme për një tjetër shqyrtim, ose të"
-" hiqni kërkesat e moderimit nga koleksioni."
+"Mund të riparashtroni ndryshimet e nevojshme për një tjetër shqyrtim, ose të "
+"hiqni kërkesat e moderimit nga koleksioni."
 
 #: templates/djangocms_moderation/emails/moderation-request/request.txt:2
 #, python-format

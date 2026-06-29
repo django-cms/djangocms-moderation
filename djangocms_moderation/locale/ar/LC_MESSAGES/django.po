@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-13 00:13+0200\n"
+"POT-Creation-Date: 2026-06-30 00:54+0200\n"
 "PO-Revision-Date: 2026-06-29 00:00+0000\n"
 "Last-Translator: Fabian Braun <fsbraun@gmx.de>, 2026\n"
 "Language-Team: Arabic (https://app.transifex.com/divio/teams/58664/ar/)\n"
@@ -19,14 +19,15 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
-#: admin.py:66 models.py:681
+#: admin.py:66 models.py:699
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
 msgstr "الإجراء"
 
-#: admin.py:67 models.py:682
+#: admin.py:67 models.py:700
 msgid "Actions"
 msgstr "الإجراءات"
 
@@ -50,7 +51,7 @@ msgstr "بواسطة {user}"
 msgid "Form Submission"
 msgstr "إرسال النموذج"
 
-#: admin.py:183 admin.py:1065
+#: admin.py:183 admin.py:1131
 msgid "actions"
 msgstr "إجراءات"
 
@@ -151,7 +152,7 @@ msgstr[3] "تم إرسال %(count)d طلبات لإعادة العمل بنجا
 msgstr[4] "تم إرسال %(count)d طلبًا لإعادة العمل بنجاح"
 msgstr[5] "تم إرسال %(count)d طلب لإعادة العمل بنجاح"
 
-#: admin.py:812
+#: admin.py:827
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
@@ -162,44 +163,100 @@ msgstr[3] "تمت الموافقة على %(count)d طلبات بنجاح"
 msgstr[4] "تمت الموافقة على %(count)d طلبًا بنجاح"
 msgstr[5] "تمت الموافقة على %(count)d طلب بنجاح"
 
-#: admin.py:880
+#: admin.py:838
+#, python-format
+msgid ""
+"%(count)d request was not approved because you do not have permission to "
+"approve it"
+msgid_plural ""
+"%(count)d requests were not approved because you do not have permission to "
+"approve them"
+msgstr[0] "لم تتم الموافقة على %(count)d طلب لأنك لا تملك صلاحية الموافقة عليه"
+msgstr[1] "لم تتم الموافقة على %(count)d طلب لأنك لا تملك صلاحية الموافقة عليه"
+msgstr[2] "لم تتم الموافقة على %(count)d طلبين لأنك لا تملك صلاحية الموافقة عليهما"
+msgstr[3] "لم تتم الموافقة على %(count)d طلبات لأنك لا تملك صلاحية الموافقة عليها"
+msgstr[4] "لم تتم الموافقة على %(count)d طلبًا لأنك لا تملك صلاحية الموافقة عليها"
+msgstr[5] "لم تتم الموافقة على %(count)d طلب لأنك لا تملك صلاحية الموافقة عليه"
+
+#: admin.py:851
+#, python-format
+msgid "%(count)d request was already approved"
+msgid_plural "%(count)d requests were already approved"
+msgstr[0] "سبقت الموافقة على %(count)d طلب"
+msgstr[1] "سبقت الموافقة على %(count)d طلب"
+msgstr[2] "سبقت الموافقة على %(count)d طلبين"
+msgstr[3] "سبقت الموافقة على %(count)d طلبات"
+msgstr[4] "سبقت الموافقة على %(count)d طلبًا"
+msgstr[5] "سبقت الموافقة على %(count)d طلب"
+
+#: admin.py:862
+#, python-format
+msgid ""
+"%(count)d request was already approved by you or your team and is awaiting "
+"other reviewers"
+msgid_plural ""
+"%(count)d requests were already approved by you or your team and are "
+"awaiting other reviewers"
+msgstr[0] "سبقت الموافقة على %(count)d طلب من قِبلك أو من فريقك وهو في انتظار مراجِعين آخرين"
+msgstr[1] "سبقت الموافقة على %(count)d طلب من قِبلك أو من فريقك وهو في انتظار مراجِعين آخرين"
+msgstr[2] "سبقت الموافقة على %(count)d طلبين من قِبلك أو من فريقك وهما في انتظار مراجِعين آخرين"
+msgstr[3] "سبقت الموافقة على %(count)d طلبات من قِبلك أو من فريقك وهي في انتظار مراجِعين آخرين"
+msgstr[4] "سبقت الموافقة على %(count)d طلبًا من قِبلك أو من فريقك وهي في انتظار مراجِعين آخرين"
+msgstr[5] "سبقت الموافقة على %(count)d طلب من قِبلك أو من فريقك وهو في انتظار مراجِعين آخرين"
+
+#: admin.py:875
+#, python-format
+msgid ""
+"%(count)d request could not be approved because it has been rejected and "
+"must be resubmitted by its author"
+msgid_plural ""
+"%(count)d requests could not be approved because they have been rejected and "
+"must be resubmitted by their authors"
+msgstr[0] "تعذّرت الموافقة على %(count)d طلب لأنه قد رُفض ويجب أن يعيد صاحبه تقديمه"
+msgstr[1] "تعذّرت الموافقة على %(count)d طلب لأنه قد رُفض ويجب أن يعيد صاحبه تقديمه"
+msgstr[2] "تعذّرت الموافقة على %(count)d طلبين لأنهما قد رُفضا ويجب أن يعيد صاحباهما تقديمهما"
+msgstr[3] "تعذّرت الموافقة على %(count)d طلبات لأنها قد رُفضت ويجب أن يعيد أصحابها تقديمها"
+msgstr[4] "تعذّرت الموافقة على %(count)d طلبًا لأنها قد رُفضت ويجب أن يعيد أصحابها تقديمها"
+msgstr[5] "تعذّرت الموافقة على %(count)d طلب لأنه قد رُفض ويجب أن يعيد صاحبه تقديمه"
+
+#: admin.py:946
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
 msgstr "تعليقات المجموعة"
 
-#: admin.py:929
+#: admin.py:995
 msgid "User"
 msgstr "المستخدم"
 
-#: admin.py:966
+#: admin.py:1032
 msgid "Request comments"
 msgstr "تعليقات الطلب"
 
-#: admin.py:1058
+#: admin.py:1124
 msgid "reviewers"
 msgstr "المراجِعون"
 
-#: admin.py:1081
+#: admin.py:1147
 msgid "Modify collection"
 msgstr "تعديل المجموعة"
 
-#: admin.py:1208 models.py:468
+#: admin.py:1274 models.py:468
 msgid "Request"
 msgstr "طلب"
 
-#: admin.py:1214
+#: admin.py:1280
 msgid "By User"
 msgstr "بواسطة المستخدم"
 
-#: admin.py:1220
+#: admin.py:1286
 msgid "Form Data"
 msgstr "بيانات النموذج"
 
-#: admin.py:1228
+#: admin.py:1294
 msgid "Question"
 msgstr "السؤال"
 
-#: admin.py:1228
+#: admin.py:1294
 msgid "Answer"
 msgstr "الإجابة"
 
@@ -361,23 +418,18 @@ msgstr "أي {role}"
 
 #: forms.py:172
 msgid ""
-"Your item is either locked, not enabled for moderation,or is part of another"
-" active moderation request"
+"Your item is either locked, not enabled for moderation,or is part of another "
+"active moderation request"
 msgid_plural ""
 "Your items are either locked, not enabled for moderation,or are part of "
 "another active moderation request"
-msgstr[0] ""
-"عناصرك إما مقفلة، أو غير مُمكَّنة للإشراف، أو جزء من طلب إشراف نشط آخر"
-msgstr[1] ""
-"عنصرك إما مقفل، أو غير مُمكَّن للإشراف، أو جزء من طلب إشراف نشط آخر"
+msgstr[0] "عناصرك إما مقفلة، أو غير مُمكَّنة للإشراف، أو جزء من طلب إشراف نشط آخر"
+msgstr[1] "عنصرك إما مقفل، أو غير مُمكَّن للإشراف، أو جزء من طلب إشراف نشط آخر"
 msgstr[2] ""
 "عنصراك إما مقفلان، أو غير مُمكَّنين للإشراف، أو جزء من طلب إشراف نشط آخر"
-msgstr[3] ""
-"عناصرك إما مقفلة، أو غير مُمكَّنة للإشراف، أو جزء من طلب إشراف نشط آخر"
-msgstr[4] ""
-"عناصرك إما مقفلة، أو غير مُمكَّنة للإشراف، أو جزء من طلب إشراف نشط آخر"
-msgstr[5] ""
-"عناصرك إما مقفلة، أو غير مُمكَّنة للإشراف، أو جزء من طلب إشراف نشط آخر"
+msgstr[3] "عناصرك إما مقفلة، أو غير مُمكَّنة للإشراف، أو جزء من طلب إشراف نشط آخر"
+msgstr[4] "عناصرك إما مقفلة، أو غير مُمكَّنة للإشراف، أو جزء من طلب إشراف نشط آخر"
+msgstr[5] "عناصرك إما مقفلة، أو غير مُمكَّنة للإشراف، أو جزء من طلب إشراف نشط آخر"
 
 #: forms.py:184
 msgid "Select review group"
@@ -447,7 +499,7 @@ msgstr "مستخدم"
 msgid "group"
 msgstr "مجموعات"
 
-#: models.py:105 models.py:771
+#: models.py:105 models.py:789
 msgid "confirmation page"
 msgstr "صفحة التأكيد"
 
@@ -477,8 +529,8 @@ msgid ""
 "example, it could be used as a workflow specific prefix of a compliance "
 "number"
 msgstr ""
-"المعرّف حقل 'حر' يمكنك استخدامه لأغراض داخلية. على سبيل المثال، يمكن "
-"استخدامه كبادئة خاصة بسير العمل لرقم الامتثال"
+"المعرّف حقل 'حر' يمكنك استخدامه لأغراض داخلية. على سبيل المثال، يمكن استخدامه "
+"كبادئة خاصة بسير العمل لرقم الامتثال"
 
 #: models.py:150
 msgid "requires compliance number?"
@@ -489,8 +541,8 @@ msgid ""
 "Does the Compliance number need to be generated before the moderation "
 "request is approved? Please select the compliance number backend below"
 msgstr ""
-"هل يلزم إنشاء رقم الامتثال قبل الموافقة على طلب الإشراف؟ يرجى اختيار الخلفية"
-" البرمجية لرقم الامتثال أدناه"
+"هل يلزم إنشاء رقم الامتثال قبل الموافقة على طلب الإشراف؟ يرجى اختيار الخلفية "
+"البرمجية لرقم الامتثال أدناه"
 
 #: models.py:159
 msgid "compliance number backend"
@@ -549,7 +601,7 @@ msgstr "يمكنه إلغاء المجموعة"
 msgid "Cancelled collection"
 msgstr "مجموعة ملغاة"
 
-#: models.py:425 models.py:666
+#: models.py:425 models.py:684
 msgid "moderation_request"
 msgstr "طلب الإشراف"
 
@@ -573,7 +625,7 @@ msgstr "تاريخ الإرسال"
 msgid "compliance number"
 msgstr "رقم الامتثال"
 
-#: models.py:462 models.py:726
+#: models.py:462 models.py:744
 msgid "author"
 msgstr "المؤلف"
 
@@ -585,47 +637,47 @@ msgstr "المؤلف"
 msgid "Requests"
 msgstr "الطلبات"
 
-#: models.py:629
+#: models.py:647
 msgid "status"
 msgstr "الحالة"
 
-#: models.py:634 models.py:763
+#: models.py:652 models.py:781
 msgid "by user"
 msgstr "بواسطة المستخدم"
 
-#: models.py:640
+#: models.py:658
 msgid "to user"
 msgstr "إلى المستخدم"
 
-#: models.py:648
+#: models.py:666
 msgid "to role"
 msgstr "إلى الدور"
 
-#: models.py:658
+#: models.py:676
 msgid "step approved"
 msgstr "الخطوة موافَق عليها"
 
-#: models.py:663 models.py:724
+#: models.py:681 models.py:742
 msgid "message"
 msgstr "الرسالة"
 
-#: models.py:671
+#: models.py:689
 msgid "date taken"
 msgstr "تاريخ الإجراء"
 
-#: models.py:751
+#: models.py:769
 msgid "moderation request"
 msgstr "طلب الإشراف"
 
-#: models.py:757
+#: models.py:775
 msgid "for step"
 msgstr "للخطوة"
 
-#: models.py:780
+#: models.py:798
 msgid "Confirmation Form Submission"
 msgstr "إرسال نموذج التأكيد"
 
-#: models.py:781
+#: models.py:799
 msgid "Confirmation Form Submissions"
 msgstr "عمليات إرسال نموذج التأكيد"
 
@@ -830,7 +882,8 @@ msgid ""
 "requests in the collection %(collection_name)s.\n"
 msgstr ""
 "\n"
-"مرحبًا %(collection_author)s، لقد وافق %(by_user)s على بعض طلبات الإشراف في المجموعة %(collection_name)s.\n"
+"مرحبًا %(collection_author)s، لقد وافق %(by_user)s على بعض طلبات الإشراف في "
+"المجموعة %(collection_name)s.\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/approved.txt:25
 #: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:25
@@ -851,11 +904,13 @@ msgstr "رابط الإدارة"
 #, python-format
 msgid ""
 "\n"
-"Hello %(collection_author)s, the following moderation requests in the collection\n"
+"Hello %(collection_author)s, the following moderation requests in the "
+"collection\n"
 "%(collection_name)s have been cancelled\n"
 msgstr ""
 "\n"
-"مرحبًا %(collection_author)s، تم إلغاء طلبات الإشراف التالية في المجموعة %(collection_name)s.\n"
+"مرحبًا %(collection_author)s، تم إلغاء طلبات الإشراف التالية في المجموعة "
+"%(collection_name)s.\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/cancelled.txt:8
 msgid "Cancelled moderation requests"
@@ -869,7 +924,8 @@ msgid ""
 "requests in the collection %(collection_name)s.\n"
 msgstr ""
 "\n"
-"مرحبًا %(collection_author)s، لقد رفض %(by_user)s بعض طلبات الإشراف في المجموعة %(collection_name)s.\n"
+"مرحبًا %(collection_author)s، لقد رفض %(by_user)s بعض طلبات الإشراف في "
+"المجموعة %(collection_name)s.\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/rejected.txt:7
 msgid ""
@@ -887,7 +943,8 @@ msgid ""
 "changes in the collection %(collection_name)s.\n"
 msgstr ""
 "\n"
-"مرحبًا، لقد طلب %(by_user)s موافقتك على التغييرات في المجموعة %(collection_name)s.\n"
+"مرحبًا، لقد طلب %(by_user)s موافقتك على التغييرات في المجموعة "
+"%(collection_name)s.\n"
 
 #: templates/djangocms_moderation/emails/moderation-request/request.txt:8
 msgid "Items included in this request"

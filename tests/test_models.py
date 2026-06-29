@@ -207,6 +207,28 @@ class ModerationRequestTest(AssertQueryMixin, BaseTestCase):
             self.moderation_request3.user_can_take_moderation_action(self.user2)
         )
 
+    def test_user_has_already_actioned(self):
+        temp_user = User.objects.create_superuser(
+            username="temp", email="temp@temp.com", password="temp"
+        )
+        # request3: role1 (self.user) has approved step wf3st1, role3 (group of
+        # self.user2 / self.user3) has not actioned its step yet
+        self.assertTrue(
+            self.moderation_request3.user_has_already_actioned(self.user)
+        )
+        # self.user2 is in role3, whose step is still pending
+        self.assertFalse(
+            self.moderation_request3.user_has_already_actioned(self.user2)
+        )
+        # A user not involved in the moderation has not actioned anything
+        self.assertFalse(
+            self.moderation_request3.user_has_already_actioned(temp_user)
+        )
+        # request5 has no approvals at all
+        self.assertFalse(
+            self.moderation_request5.user_has_already_actioned(self.user)
+        )
+
     def test_user_can_resubmit(self):
         temp_user = User.objects.create_superuser(
             username="temp", email="temp@temp.com", password="temp"

@@ -5,12 +5,16 @@ Changelog
 2.4.0 (2026-06-29)
 ==================
 
-* fix: Support django-treebeard >= 4.8, whose rewritten admin tree changed the
-  ``result_tree`` template tag signature. The moderation request changelist now
-  works with both treebeard < 4.8 and >= 4.8 (#336)
+* feat: When approving moderation requests in bulk, the user now gets clear
+  per-reason feedback for requests that were not approved (no permission,
+  already approved, already actioned by you or your team, or rejected) instead
+  of a silent "0 requests approved" message (#158)
 * feat: Add Arabic (ar), Bengali (bn), Finnish (fi), Hindi (hi), Indonesian (id),
   Korean (ko), Russian (ru), Albanian (sq), Vietnamese (vi), Simplified Chinese
   (zh_CN) and Traditional Chinese (zh_TW) translations
+* fix: Support django-treebeard >= 4.8, whose rewritten admin tree changed the
+  ``result_tree`` template tag signature. The moderation request changelist now
+  works with both treebeard < 4.8 and >= 4.8 (#336)
 
 2.3.0 (2026-06-13)
 ==================
