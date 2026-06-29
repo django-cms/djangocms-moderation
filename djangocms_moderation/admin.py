@@ -275,7 +275,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         last_action = obj.moderation_request.get_last_action()
         if not last_action:
             return
-        if obj.moderation_request.is_active and obj.moderation_request.has_pending_step():
+        if obj.moderation_request.is_active and obj.moderation_request.has_required_pending_steps():
             next_step = obj.moderation_request.get_next_required()
             return next_step.role.name
         return last_action._get_user_name(last_action.by_user)
@@ -290,7 +290,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                 status = gettext('Ready for publishing')
             elif obj.moderation_request.is_rejected():
                 status = gettext('Pending author rework')
-            elif obj.moderation_request.is_active and obj.moderation_request.has_pending_step():
+            elif obj.moderation_request.is_active and obj.moderation_request.has_required_pending_steps():
                 next_step = obj.moderation_request.get_next_required()
                 role = next_step.role.name
                 status = gettext('Pending %(role)s approval') % {'role': role}
