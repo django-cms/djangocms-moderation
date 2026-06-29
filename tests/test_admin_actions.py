@@ -334,28 +334,103 @@ class ApproveSelectedTest(CMSTestCase):
         self.assertEqual(response.status_code, 404)
 
     @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("django.contrib.messages.info")
+    @mock.patch("django.contrib.messages.warning")
     @mock.patch("django.contrib.messages.success")
     @mock.patch(
         "djangocms_moderation.models.ModerationRequest.user_can_take_moderation_action",
         mock.Mock(return_value=False)
     )
-    def test_view_doesnt_approve_when_user_cant_approve(self, messages_mock, notify_moderators_mock):
+    def test_view_doesnt_approve_when_user_cant_approve(
+        self, messages_mock, warning_mock, info_mock, notify_moderators_mock
+    ):
         self.client.force_login(self.role1.user)
-        # Set up the url (need to access the view directly)
+        # Set up the url (need to access the view directly).
+        # NOTE: ids are tree node pks, not moderation request pks.
+        # root1 -> moderation_request1 (already approved),
+        # root2 -> moderation_request2 (still pending / no permission)
         url = reverse("admin:djangocms_moderation_moderationrequest_approve")
         url += "?ids=%d,%d&collection_id=%d" % (
-            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+            self.root1.pk, self.root2.pk, self.collection.pk)
 
         response = self.client.post(url)
 
         # Check response
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, self.url)
-        self.assertEqual(messages_mock.call_args[0][1], '0 requests successfully approved')
+        # No success message is shown when nothing could be approved
+        self.assertEqual(messages_mock.call_count, 0)
+        # The user is clearly told they lacked permission for the pending request
+        self.assertEqual(
+            warning_mock.call_args[0][1],
+            '1 request was not approved because you do not have permission '
+            'to approve it',
+        )
+        # And told that the already-approved request needed no action
+        self.assertEqual(
+            info_mock.call_args[0][1],
+            '1 request was already approved',
+        )
         # No actions were approved
         self.assertFalse(self.moderation_request2.actions.filter(
             action=constants.ACTION_RESUBMITTED).exists())
         self.assertEqual(notify_moderators_mock.call_count, 0)
+
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("django.contrib.messages.warning")
+    @mock.patch("django.contrib.messages.success")
+    def test_view_warns_when_request_was_rejected(
+        self, messages_mock, warning_mock, notify_moderators_mock
+    ):
+        # Reject request 2 so it can no longer be approved
+        self.moderation_request2.update_status(
+            constants.ACTION_REJECTED, self.role1.user)
+        self.assertTrue(self.moderation_request2.is_rejected())
+
+        self.client.force_login(self.role2.user)
+        url = reverse("admin:djangocms_moderation_moderationrequest_approve")
+        url += "?ids=%d&collection_id=%d" % (self.root2.pk, self.collection.pk)
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 302)
+        # No success message, but a clear warning about the rejection
+        self.assertEqual(messages_mock.call_count, 0)
+        self.assertEqual(
+            warning_mock.call_args[0][1],
+            '1 request could not be approved because it has been rejected and '
+            'must be resubmitted by its author',
+        )
+
+    @mock.patch("djangocms_moderation.admin.notify_collection_moderators")
+    @mock.patch("djangocms_moderation.admin.notify_collection_author")
+    @mock.patch("django.contrib.messages.info")
+    @mock.patch("django.contrib.messages.success")
+    def test_view_informs_when_user_already_actioned(
+        self, messages_mock, info_mock, notify_author_mock, notify_moderators_mock
+    ):
+        # role1 approves their step on request 2, which still needs role2
+        self.moderation_request2.update_status(
+            constants.ACTION_APPROVED, self.role1.user)
+        self.assertFalse(self.moderation_request2.is_approved())
+        self.assertTrue(
+            self.moderation_request2.user_has_already_actioned(self.role1.user))
+
+        self.client.force_login(self.role1.user)
+        url = reverse("admin:djangocms_moderation_moderationrequest_approve")
+        url += "?ids=%d&collection_id=%d" % (self.root2.pk, self.collection.pk)
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 302)
+        # role1 cannot approve again, so no success message
+        self.assertEqual(messages_mock.call_count, 0)
+        # Instead they are told their team already approved and it's pending others
+        self.assertEqual(
+            info_mock.call_args[0][1],
+            '1 request was already approved by you or your team and is '
+            'awaiting other reviewers',
+        )
 
     def test_approve_view_when_using_get(self):
         self.client.force_login(self.role1.user)

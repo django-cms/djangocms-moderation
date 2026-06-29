@@ -602,6 +602,24 @@ class ModerationRequest(models.Model):
                 return True
         return False
 
+    def user_has_already_actioned(self, user):
+        """
+        Has the role this user is assigned to already approved its step for
+        this moderation request?
+
+        In that case there is no further action for the user to take, even
+        though the request as a whole may still be pending other reviewers.
+        Note that the step may have been approved by a colleague sharing the
+        same group role.
+        """
+        approved_actions = self.actions.filter(
+            step_approved__isnull=False, is_archived=False
+        ).select_related("step_approved__role__group")
+        for action in approved_actions:
+            if action.step_approved.role.user_is_assigned(user):
+                return True
+        return False
+
     def user_can_moderate(self, user):
         """
         Is `user` involved in the moderation process at some point?
