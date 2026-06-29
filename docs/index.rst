@@ -7,33 +7,51 @@ review steps, and published only once the right people have signed it off.
 It builds on `djangocms-versioning
 <https://github.com/django-cms/djangocms-versioning>`_.
 
-New to moderation? Start with the hands-on :ref:`tutorial` — it takes you
-from an empty project to publishing a page through a review workflow in
-about 30 minutes.
+New to moderation? Start with the hands-on :ref:`tutorial <tutorial>` — its
+quick-start takes you from an empty project to a published page in about ten
+minutes, and a second part adds a full review workflow with a separate
+reviewer.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Tutorial
 
-   tutorial/index
+   tutorial/quickstart
+   tutorial/review_process
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: How-to guides
 
-   howto/index
+   howto/installation
+   howto/moderating_models
+   howto/notifications
+   howto/compliance_numbers
+   howto/repair_states
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Reference
 
-   reference/index
+   reference/settings
+   reference/cms_config
+   reference/signals
+   reference/management_commands
+   reference/helpers
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Explanation
 
-   explanation/index
+   explanation/how_it_works
+   explanation/collections
+   explanation/requests
+   explanation/workflows
+   explanation/roles
+   explanation/lock
+   explanation/comments
+   explanation/references
+   explanation/internals
 
 
 Glossary
