@@ -6,7 +6,7 @@ How to install moderation in an existing project
 Requirements
 ------------
 
-* django CMS 4.0 or higher
+* django CMS 4.1 or higher
 * `djangocms-versioning <https://github.com/django-cms/djangocms-versioning>`_
   — moderation works on draft *versions*, so versioning is a hard dependency
 

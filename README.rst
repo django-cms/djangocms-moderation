@@ -2,17 +2,30 @@
 django CMS Moderation
 *********************
 
+django CMS Moderation adds editorial approval workflows to django CMS: draft
+content is gathered into collections, routed through configurable review steps,
+and published only once the right people have signed it off. It builds on
+`djangocms-versioning <https://github.com/django-cms/djangocms-versioning>`_.
+
+=============
+Documentation
+=============
+
+Full documentation — tutorial, how-to guides, a complete settings reference and
+background explanation — is published at
+`djangocms-moderation.readthedocs.io <https://djangocms-moderation.readthedocs.io>`_.
+
+New to moderation? Start with the `quick-start tutorial
+<https://djangocms-moderation.readthedocs.io/en/latest/tutorial/quickstart.html>`_,
+which takes you from an empty project to a published page in about ten minutes.
+
 ============
 Installation
 ============
 
-Requirements
-============
-
-django CMS Moderation requires that you have a django CMS 4.0 (or higher) project already running and set up, with `djangocms-versioning <https://github.com/django-cms/djangocms-versioning>`_ installed.
-
-To install
-==========
+django CMS Moderation requires a django CMS 4.1 (or higher) project, with
+`djangocms-versioning <https://github.com/django-cms/djangocms-versioning>`_
+installed.
 
 Run::
 
@@ -23,82 +36,25 @@ Add the following to your project's ``INSTALLED_APPS``:
 - ``'djangocms_moderation'``
 - ``'adminsortable2'``
 
-Run::
+Then run the application's database migrations::
 
     python manage.py migrate djangocms_moderation
 
-to perform the application's database migrations.
+For the full set-up, see the `installation guide
+<https://djangocms-moderation.readthedocs.io/en/latest/howto/installation.html>`_.
+All configuration options are documented in the `settings reference
+<https://djangocms-moderation.readthedocs.io/en/latest/reference/settings.html>`_.
 
-For a guided introduction, see the `tutorial in the documentation <https://djangocms-moderation.readthedocs.io>`_.
+============
+Contributing
+============
 
-Configuration
-=============
-
-The following settings can be added to your project's settings file to configure django CMS Moderation's behavior:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 50 50
-
-   * - Setting
-     - Description
-   * - ``CMS_MODERATION_DEFAULT_COMPLIANCE_NUMBER_BACKEND``
-     - Default backend class for generating compliance numbers.
-       Default is ``djangocms_moderation.backends.uuid4_backend``.
-   * - ``CMS_MODERATION_COMPLIANCE_NUMBER_BACKENDS``
-     - List of available compliance number backend classes.
-       By default, three backends are configured: ``uuid4_backend``,
-       ``sequential_number_backend``, and
-       ``sequential_number_with_identifier_prefix_backend``.
-   * - ``CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE``
-     - Legacy setting from moderation 1.x; currently has no effect.
-   * - ``CMS_MODERATION_DEFAULT_CONFIRMATION_PAGE_TEMPLATE``
-     - Default template for confirmation pages. Defaults to
-       ``djangocms_moderation/moderation_confirmation.html``
-   * - ``CMS_MODERATION_CONFIRMATION_PAGE_TEMPLATES``
-     - List of available confirmation page templates. Only includes the
-       default template by default.
-   * - ``CMS_MODERATION_COLLECTION_COMMENTS_ENABLED``
-     - Enable/disable comments on collections. Defaults to ``True``.
-   * - ``CMS_MODERATION_REQUEST_COMMENTS_ENABLED``
-     - Enable/disable comments on requests. Defaults to ``True``.
-   * - ``CMS_MODERATION_COLLECTION_NAME_LENGTH_LIMIT``
-     - Maximum length for collection names. Defaults to ``24``.
-   * - ``EMAIL_NOTIFICATIONS_FAIL_SILENTLY``
-     - Control email notification error handling. Defaults to ``False``.
-
-Example Configuration
----------------------
-
-Add these settings to your project's settings file:
-
-.. code-block:: python
-
-    # Custom compliance number backend
-    CMS_MODERATION_DEFAULT_COMPLIANCE_NUMBER_BACKEND = 'myapp.backends.custom_compliance_number_backend'
-
-    # Custom confirmation template
-    CMS_MODERATION_DEFAULT_CONFIRMATION_PAGE_TEMPLATE = 'custom_confirmation.html'
-
-    # Enable comments
-    CMS_MODERATION_COLLECTION_COMMENTS_ENABLED = True
-    CMS_MODERATION_REQUEST_COMMENTS_ENABLED = True
-
-    # Set collection name length limit
-    CMS_MODERATION_COLLECTION_NAME_LENGTH_LIMIT = 100
-
-    # Control email notification errors
-    EMAIL_NOTIFICATIONS_FAIL_SILENTLY = False
-
-=============
-Documentation
-=============
-
-We maintain documentation under ``docs`` folder using rst format. HTML documentation can be generated using the following commands
-
-Run::
+The documentation sources live under ``docs/`` in reStructuredText format. To
+build and preview the HTML locally::
 
     cd docs/
     make html
 
-This should generate all html files from rst documents under the `docs/_build` folder, which can be browsed.
+The generated files appear under ``docs/_build/html`` and can be opened in a
+browser. The published site on Read the Docs is rebuilt automatically from the
+``docs/`` sources.
