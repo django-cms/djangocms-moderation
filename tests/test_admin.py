@@ -374,6 +374,42 @@ class ModerationAdminTestCase(BaseTestCase):
 
         self.assertHTMLEqual(result, expected)
 
+    def test_get_status_and_reviewer_with_only_optional_pending_step(self):
+        """Regression test for #164.
+
+        A workflow whose only pending step is not required must not crash
+        when rendering the changelist. ``get_next_required()`` returns ``None``
+        in that case, so the status/reviewer columns must not dereference it.
+        """
+        workflow = WorkflowFactory(name="Optional Only Workflow")
+        # The single step of this workflow is optional
+        workflow.steps.create(role=self.role2, is_required=False, order=1)
+        collection = ModerationCollectionFactory(
+            author=self.user,
+            workflow=workflow,
+            status=constants.IN_REVIEW,
+        )
+        node = RootModerationRequestTreeNodeFactory(
+            moderation_request__version=factories.PageVersionFactory(),
+            moderation_request__collection=collection,
+            moderation_request__is_active=True,
+        )
+        node.moderation_request.actions.create(
+            by_user=self.user, action=constants.ACTION_STARTED
+        )
+
+        # As the only step is optional, there are no required pending steps,
+        # so the request counts as approved rather than pending a reviewer.
+        self.assertFalse(node.moderation_request.has_required_pending_steps())
+        # Neither of these should raise (previously AttributeError on None)
+        self.assertEqual(
+            self.mr_tree_admin.get_status(node), "Ready for publishing"
+        )
+        self.assertEqual(
+            self.mr_tree_admin.get_reviewer(node),
+            node.moderation_request.get_last_action()._get_user_name(self.user),
+        )
+
 
 class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
     def setUp(self):
