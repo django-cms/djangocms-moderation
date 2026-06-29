@@ -2,15 +2,15 @@
 Changelog
 =========
 
-Unreleased
-==========
+2.3.0 (2026-06-13)
+==================
 
+* feat: django CMS 5.1 support; drop django CMS 4.0 support
 * docs: Restructure the documentation along the Diátaxis framework: new
   step-by-step tutorial with screenshots, how-to guides (installation,
   moderating custom models, notifications, compliance numbers, state
   repair), full settings and ``cms_config`` reference, and reworked
   explanation pages
-* feat: django CMS 5.1 support; drop django CMS 4.0 support
 * fix: Replace deprecated ``PlaceholderField`` with ``PlaceholderRelationField``
   on ``ConfirmationPage`` (includes a data migration that re-links existing
   confirmation page placeholders)
