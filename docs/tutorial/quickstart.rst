@@ -1,3 +1,4 @@
+.. _tutorial:
 .. _tutorial-quickstart:
 
 Part 1: Quick-start
