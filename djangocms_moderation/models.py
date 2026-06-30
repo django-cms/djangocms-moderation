@@ -250,6 +250,17 @@ class ModerationCollection(models.Model):
         default=constants.COLLECTING,
         db_index=True,
     )
+    action = models.CharField(
+        verbose_name=_("action"),
+        max_length=10,
+        choices=constants.COLLECTION_ACTION_CHOICES,
+        default=constants.COLLECTION_PUBLISH,
+        db_index=True,
+        help_text=_(
+            "Whether approving this collection publishes its content or "
+            "unpublishes it. The review workflow is the same for both."
+        ),
+    )
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
@@ -264,6 +275,11 @@ class ModerationCollection(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def is_unpublishing(self):
+        """Does approving this collection unpublish (rather than publish) its content?"""
+        return self.action == constants.COLLECTION_UNPUBLISH
 
     @property
     def job_id(self):
@@ -492,6 +508,9 @@ class ModerationRequest(models.Model):
 
     def version_can_be_published(self):
         return self.is_approved() and self.version.can_be_published()
+
+    def version_can_be_unpublished(self):
+        return self.is_approved() and self.version.can_be_unpublished()
 
     def is_rejected(self):
         last_action = self.get_last_action()

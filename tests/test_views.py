@@ -10,6 +10,7 @@ from cms.utils.urlutils import add_url_parameters, admin_reverse
 
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
+from djangocms_moderation import constants
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
@@ -742,9 +743,12 @@ class CollectionItemsViewTest(AssertQueryMixin, CMSTestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["form"].initial.keys()), 2)
+        self.assertEqual(len(response.context["form"].initial.keys()), 3)
         self.assertEqual(
             response.context["form"].initial["collection"], str(collection.pk)
+        )
+        self.assertEqual(
+            response.context["form"].initial["action"], constants.COLLECTION_PUBLISH
         )
         self.assertQuerySetEqual(
             response.context["form"].initial["versions"],
@@ -761,7 +765,10 @@ class CollectionItemsViewTest(AssertQueryMixin, CMSTestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["form"].initial.keys()), 1)
+        self.assertEqual(len(response.context["form"].initial.keys()), 2)
+        self.assertEqual(
+            response.context["form"].initial["action"], constants.COLLECTION_PUBLISH
+        )
         self.assertQuerySetEqual(
             response.context["form"].initial["versions"],
             [pg_version.pk, poll_version.pk],
@@ -773,7 +780,7 @@ class CollectionItemsViewTest(AssertQueryMixin, CMSTestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["form"].initial.keys()), 1)
+        self.assertEqual(len(response.context["form"].initial.keys()), 2)
         self.assertEqual(response.context["form"].initial["versions"].count(), 0)
 
     def test_collection_widget_gets_set_on_form(self):

@@ -24,7 +24,7 @@ from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
 
 
-from . import constants  # isort:skip
+from . import conf, constants  # isort:skip
 
 
 @method_decorator(transaction.atomic, name="post")
@@ -35,7 +35,17 @@ class CollectionItemsView(FormView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
+        kwargs["action"] = self._get_action()
         return kwargs
+
+    def _get_action(self):
+        if not conf.ENABLE_UNPUBLISHING:
+            # Unpublish flow disabled: only publish collections exist.
+            return constants.COLLECTION_PUBLISH
+        action = self.request.GET.get("action") or self.request.POST.get("action")
+        if action not in (constants.COLLECTION_PUBLISH, constants.COLLECTION_UNPUBLISH):
+            action = constants.COLLECTION_PUBLISH
+        return action
 
     def get_initial(self):
         initial = super().get_initial()
@@ -47,6 +57,8 @@ class CollectionItemsView(FormView):
         collection_id = self.request.GET.get("collection_id")
         if collection_id:
             initial["collection"] = collection_id
+
+        initial["action"] = self._get_action()
         return initial
 
     def form_valid(self, form):

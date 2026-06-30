@@ -120,6 +120,8 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
             ),
             link,
         )
+        # With the unpublish flow disabled (default), published versions get no
+        # moderation link.
         version = PageVersionFactory(state=PUBLISHED)
         link = self.version_admin._get_moderation_link(version, self.mock_request)
         self.assertEqual("", link)
@@ -135,6 +137,33 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         # Now the version lock is lifted, so we should be able to add to moderation
         link = self.version_admin._get_moderation_link(draft_version, self.mock_request)
         self.assertIn("Submit for moderation", link)
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
+    def test_get_moderation_link_offers_unpublish_when_enabled(self):
+        # With the unpublish flow enabled, a published moderated version offers
+        # a "Submit for unpublishing" link.
+        version = PageVersionFactory(
+            state=PUBLISHED, created_by=self.mock_request.user
+        )
+        link = self.version_admin._get_moderation_link(version, self.mock_request)
+        self.assertIn("Submit for unpublishing", link)
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
+    def test_get_unpublish_link_blanked_when_registered_and_enabled(self):
+        # The direct unpublish link is removed for moderated content (#165) when
+        # the moderated unpublish flow is enabled.
+        link = self.version_admin._get_unpublish_link(
+            self.pg1_version, self.mock_request
+        )
+        self.assertEqual("", link)
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", False)
+    def test_get_unpublish_link_kept_when_feature_disabled(self):
+        # With the feature off, the direct unpublish link is left untouched, even
+        # for moderated content (there is no moderated unpublish path to use).
+        version = PageVersionFactory(state=PUBLISHED, created_by=self.user)
+        link = self.version_admin._get_unpublish_link(version, self.mock_request)
+        self.assertNotEqual("", link)
 
     @mock.patch("djangocms_moderation.monkeypatch.is_registered_for_moderation")
     def test_get_moderation_link_when_not_registered(

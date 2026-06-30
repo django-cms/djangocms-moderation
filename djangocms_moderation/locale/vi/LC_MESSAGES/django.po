@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 00:54+0200\n"
+"POT-Creation-Date: 2026-06-30 08:52+0200\n"
 "PO-Revision-Date: 2026-06-29 00:00+0000\n"
 "Last-Translator: Fabian Braun <fsbraun@gmx.de>, 2026\n"
 "Language-Team: Vietnamese (https://app.transifex.com/divio/teams/58664/vi/)\n"
@@ -21,16 +21,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: admin.py:66 models.py:699
+#: admin.py:68 models.py:718
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
 msgstr "Hành động"
 
-#: admin.py:67 models.py:700
+#: admin.py:69 models.py:719
 msgid "Actions"
 msgstr "Hành động"
 
-#: admin.py:76
+#: admin.py:78
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:25
@@ -41,32 +41,32 @@ msgstr "Hành động"
 msgid "Status"
 msgstr "Trạng thái"
 
-#: admin.py:80
+#: admin.py:82
 #, python-brace-format
 msgid "By {user}"
 msgstr "Bởi {user}"
 
-#: admin.py:83
+#: admin.py:85
 msgid "Form Submission"
 msgstr "Gửi biểu mẫu"
 
-#: admin.py:183 admin.py:1131
+#: admin.py:186 admin.py:1167
 msgid "actions"
 msgstr "hành động"
 
-#: admin.py:217
+#: admin.py:220
 msgid "ID"
 msgstr "ID"
 
-#: admin.py:230
+#: admin.py:233
 msgid "Content type"
 msgstr "Loại nội dung"
 
-#: admin.py:238
+#: admin.py:241
 msgid "Title"
 msgstr "Tiêu đề"
 
-#: admin.py:244
+#: admin.py:247
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:22
@@ -77,67 +77,73 @@ msgstr "Tiêu đề"
 msgid "Author"
 msgstr "Tác giả"
 
-#: admin.py:250
+#: admin.py:253
 msgid "Preview"
 msgstr "Xem trước"
 
-#: admin.py:272
+#: admin.py:275
 msgid "Reviewer"
 msgstr "Người đánh giá"
 
-#: admin.py:290
+#: admin.py:293
 msgid "Ready for publishing"
 msgstr "Sẵn sàng xuất bản"
 
-#: admin.py:292
+#: admin.py:295
 msgid "Pending author rework"
 msgstr "Đang chờ tác giả làm lại"
 
-#: admin.py:296
+#: admin.py:299
 #, python-format
 msgid "Pending %(role)s approval"
 msgstr "Đang chờ %(role)s phê duyệt"
 
-#: admin.py:305
+#: admin.py:308
 #, python-format
 msgid "%(action)s by %(name)s"
 msgstr "%(action)s bởi %(name)s"
 
-#: admin.py:307
+#: admin.py:310
 msgid "Ready for submission"
 msgstr "Sẵn sàng gửi"
 
-#: admin.py:471
+#: admin.py:484
 #, python-format
 msgid "%(count)d request successfully deleted"
 msgid_plural "%(count)d requests successfully deleted"
 msgstr[0] "Đã xóa thành công %(count)d yêu cầu"
 
-#: admin.py:614
+#: admin.py:630
 #, python-format
 msgid "%(count)d request successfully resubmitted for review"
 msgid_plural "%(count)d requests successfully resubmitted for review"
 msgstr[0] "Đã gửi lại thành công %(count)d yêu cầu để đánh giá"
 
-#: admin.py:661
+#: admin.py:685
+#, python-format
+msgid "%(count)d request successfully unpublished"
+msgid_plural "%(count)d requests successfully unpublished"
+msgstr[0] "Đã hủy xuất bản thành công %(count)d yêu cầu"
+
+#: admin.py:691
 #, python-format
 msgid "%(count)d request successfully published"
 msgid_plural "%(count)d requests successfully published"
 msgstr[0] "Đã xuất bản thành công %(count)d yêu cầu"
 
-#: admin.py:720
+#: admin.py:754
 #, python-format
 msgid "%(count)d request successfully submitted for rework"
 msgid_plural "%(count)d requests successfully submitted for rework"
 msgstr[0] "Đã gửi thành công %(count)d yêu cầu để làm lại"
 
-#: admin.py:827
+#: admin.py:861
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
 msgstr[0] "Đã phê duyệt thành công %(count)d yêu cầu"
 
-#: admin.py:838
+#: admin.py:872
 #, python-format
 msgid ""
 "%(count)d request was not approved because you do not have permission to "
@@ -148,13 +154,13 @@ msgid_plural ""
 msgstr[0] ""
 "%(count)d yêu cầu không được phê duyệt vì bạn không có quyền phê duyệt"
 
-#: admin.py:851
+#: admin.py:885
 #, python-format
 msgid "%(count)d request was already approved"
 msgid_plural "%(count)d requests were already approved"
 msgstr[0] "%(count)d yêu cầu đã được phê duyệt từ trước"
 
-#: admin.py:862
+#: admin.py:896
 #, python-format
 msgid ""
 "%(count)d request was already approved by you or your team and is awaiting "
@@ -166,7 +172,7 @@ msgstr[0] ""
 "%(count)d yêu cầu đã được bạn hoặc nhóm của bạn phê duyệt và đang chờ những "
 "người đánh giá khác"
 
-#: admin.py:875
+#: admin.py:909
 #, python-format
 msgid ""
 "%(count)d request could not be approved because it has been rejected and "
@@ -178,76 +184,84 @@ msgstr[0] ""
 "%(count)d yêu cầu không thể được phê duyệt vì đã bị từ chối và phải được tác "
 "giả gửi lại"
 
-#: admin.py:946
+#: admin.py:980
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
 msgstr "Bình luận về bộ sưu tập"
 
-#: admin.py:995
+#: admin.py:1029
 msgid "User"
 msgstr "Người dùng"
 
-#: admin.py:1032
+#: admin.py:1066
 msgid "Request comments"
 msgstr "Bình luận về yêu cầu"
 
-#: admin.py:1124
+#: admin.py:1160
 msgid "reviewers"
 msgstr "người đánh giá"
 
-#: admin.py:1147
+#: admin.py:1183
 msgid "Modify collection"
 msgstr "Sửa đổi bộ sưu tập"
 
-#: admin.py:1274 models.py:468
+#: admin.py:1320 models.py:484
 msgid "Request"
 msgstr "Yêu cầu"
 
-#: admin.py:1280
+#: admin.py:1326
 msgid "By User"
 msgstr "Bởi người dùng"
 
-#: admin.py:1286
+#: admin.py:1332
 msgid "Form Data"
 msgstr "Dữ liệu biểu mẫu"
 
-#: admin.py:1294
+#: admin.py:1340
 msgid "Question"
 msgstr "Câu hỏi"
 
-#: admin.py:1294
+#: admin.py:1340
 msgid "Answer"
 msgstr "Câu trả lời"
 
-#: admin_actions.py:36
+#: admin_actions.py:35
 msgid "Resubmit changes for review"
 msgstr "Gửi lại thay đổi để đánh giá"
 
-#: admin_actions.py:53
+#: admin_actions.py:52
 msgid "Submit for rework"
 msgstr "Gửi để làm lại"
 
-#: admin_actions.py:66
+#: admin_actions.py:65
 msgid "Approve"
 msgstr "Phê duyệt"
 
-#: admin_actions.py:82
+#: admin_actions.py:81
 msgid "Remove selected"
 msgstr "Xóa mục đã chọn"
 
-#: admin_actions.py:99
+#: admin_actions.py:106
 msgid "Publish selected requests"
 msgstr "Xuất bản các yêu cầu đã chọn"
 
-#: admin_actions.py:156
+#: admin_actions.py:113
+msgid "Unpublish selected requests"
+msgstr "Hủy xuất bản các yêu cầu đã chọn"
+
+#: admin_actions.py:174
 msgid "No suitable items found to add to moderation collection"
 msgstr "Không tìm thấy mục phù hợp để thêm vào bộ sưu tập kiểm duyệt"
 
-#: admin_actions.py:161
+#: admin_actions.py:186
 msgid "Add to moderation collection"
 msgstr "Thêm vào bộ sưu tập kiểm duyệt"
 
-#: admin_actions.py:165
+#: admin_actions.py:193
+msgid "Unpublishing through moderation is not enabled"
+msgstr "Hủy xuất bản thông qua kiểm duyệt không được kích hoạt"
+
+#: admin_actions.py:202
 msgid "Add items to a collection to unpublish"
 msgstr "Thêm các mục vào bộ sưu tập để hủy xuất bản"
 
@@ -255,7 +269,7 @@ msgstr "Thêm các mục vào bộ sưu tập để hủy xuất bản"
 msgid "django CMS Moderation"
 msgstr "django CMS Moderation"
 
-#: cms_toolbars.py:84 monkeypatch.py:56
+#: cms_toolbars.py:84 monkeypatch.py:45
 msgid "Submit for moderation"
 msgstr "Gửi để kiểm duyệt"
 
@@ -316,7 +330,7 @@ msgstr "Đã từ chối"
 msgid "Approved"
 msgstr "Đã phê duyệt"
 
-#: constants.py:37 constants.py:54
+#: constants.py:37 constants.py:65
 msgid "Cancelled"
 msgstr "Đã hủy"
 
@@ -325,14 +339,22 @@ msgid "Finished"
 msgstr "Đã hoàn thành"
 
 #: constants.py:51
+msgid "Publish"
+msgstr "Xuất bản"
+
+#: constants.py:52
+msgid "Unpublish"
+msgstr "Hủy xuất bản"
+
+#: constants.py:62
 msgid "Collecting"
 msgstr "Đang thu thập"
 
-#: constants.py:52
+#: constants.py:63
 msgid "In Review"
 msgstr "Đang đánh giá"
 
-#: constants.py:53
+#: constants.py:64
 msgid "Archived"
 msgstr "Đã lưu trữ"
 
@@ -354,7 +376,7 @@ msgstr "Đã xóa yêu cầu kiểm duyệt"
 msgid "Review requested"
 msgstr "Đã yêu cầu đánh giá"
 
-#: filters.py:18 forms.py:64 models.py:240
+#: filters.py:18 forms.py:72 models.py:240
 msgid "moderator"
 msgstr "người kiểm duyệt"
 
@@ -366,16 +388,16 @@ msgstr "người đánh giá"
 msgid "All"
 msgstr "Tất cả"
 
-#: forms.py:67
+#: forms.py:75
 msgid "comment"
 msgstr "bình luận"
 
-#: forms.py:100 forms.py:198
+#: forms.py:108 forms.py:217
 #, python-brace-format
 msgid "Any {role}"
 msgstr "Bất kỳ {role}"
 
-#: forms.py:172
+#: forms.py:191
 msgid ""
 "Your item is either locked, not enabled for moderation,or is part of another "
 "active moderation request"
@@ -386,19 +408,19 @@ msgstr[0] ""
 "Các mục của bạn hoặc đã bị khóa, không được kích hoạt để kiểm duyệt, hoặc là "
 "một phần của một yêu cầu kiểm duyệt đang hoạt động khác"
 
-#: forms.py:184
+#: forms.py:203
 msgid "Select review group"
 msgstr "Chọn nhóm đánh giá"
 
-#: forms.py:205
+#: forms.py:224
 msgid "This collection can't be submitted for a review"
 msgstr "Không thể gửi bộ sưu tập này để đánh giá"
 
-#: forms.py:222
+#: forms.py:241
 msgid "This collection can't be cancelled"
 msgstr "Không thể hủy bộ sưu tập này"
 
-#: forms.py:266
+#: forms.py:285
 msgid "You can only change your own comments"
 msgstr "Bạn chỉ có thể thay đổi bình luận của chính mình"
 
@@ -454,7 +476,7 @@ msgstr "người dùng"
 msgid "group"
 msgstr "nhóm"
 
-#: models.py:105 models.py:789
+#: models.py:105 models.py:808
 msgid "confirmation page"
 msgstr "trang xác nhận"
 
@@ -540,51 +562,63 @@ msgstr "Các bước"
 msgid "collection name"
 msgstr "tên bộ sưu tập"
 
-#: models.py:259
+#: models.py:254
+msgid "action"
+msgstr "hành động"
+
+#: models.py:260
+msgid ""
+"Whether approving this collection publishes its content or unpublishes it. "
+"The review workflow is the same for both."
+msgstr ""
+"Việc phê duyệt bộ sưu tập này sẽ xuất bản nội dung của nó hay hủy xuất bản "
+"nó. Quy trình đánh giá là như nhau cho cả hai."
+
+#: models.py:270
 msgid "collection"
 msgstr "bộ sưu tập"
 
-#: models.py:261
+#: models.py:272
 msgid "Can change collection author"
 msgstr "Có thể thay đổi tác giả bộ sưu tập"
 
-#: models.py:262
+#: models.py:273
 msgid "Can cancel collection"
 msgstr "Có thể hủy bộ sưu tập"
 
-#: models.py:345
+#: models.py:361
 msgid "Cancelled collection"
 msgstr "Bộ sưu tập đã hủy"
 
-#: models.py:425 models.py:684
+#: models.py:441 models.py:703
 msgid "moderation_request"
 msgstr "moderation_request"
 
-#: models.py:443
+#: models.py:459
 msgid "version"
 msgstr "phiên bản"
 
-#: models.py:446
+#: models.py:462
 msgid "language"
 msgstr "ngôn ngữ"
 
-#: models.py:449
+#: models.py:465
 msgid "is active"
 msgstr "đang hoạt động"
 
-#: models.py:451
+#: models.py:467
 msgid "date sent"
 msgstr "ngày gửi"
 
-#: models.py:453
+#: models.py:469
 msgid "compliance number"
 msgstr "số tuân thủ"
 
-#: models.py:462 models.py:744
+#: models.py:478 models.py:763
 msgid "author"
 msgstr "tác giả"
 
-#: models.py:469
+#: models.py:485
 #: templates/admin/djangocms_moderation/moderationrequest/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_list.html:10
@@ -592,74 +626,83 @@ msgstr "tác giả"
 msgid "Requests"
 msgstr "Các yêu cầu"
 
-#: models.py:647
+#: models.py:666
 msgid "status"
 msgstr "trạng thái"
 
-#: models.py:652 models.py:781
+#: models.py:671 models.py:800
 msgid "by user"
 msgstr "bởi người dùng"
 
-#: models.py:658
+#: models.py:677
 msgid "to user"
 msgstr "đến người dùng"
 
-#: models.py:666
+#: models.py:685
 msgid "to role"
 msgstr "đến vai trò"
 
-#: models.py:676
+#: models.py:695
 msgid "step approved"
 msgstr "bước đã phê duyệt"
 
-#: models.py:681 models.py:742
+#: models.py:700 models.py:761
 msgid "message"
 msgstr "tin nhắn"
 
-#: models.py:689
+#: models.py:708
 msgid "date taken"
 msgstr "ngày thực hiện"
 
-#: models.py:769
+#: models.py:788
 msgid "moderation request"
 msgstr "yêu cầu kiểm duyệt"
 
-#: models.py:775
+#: models.py:794
 msgid "for step"
 msgstr "cho bước"
 
-#: models.py:798
+#: models.py:817
 msgid "Confirmation Form Submission"
 msgstr "Gửi biểu mẫu xác nhận"
 
-#: models.py:799
+#: models.py:818
 msgid "Confirmation Form Submissions"
 msgstr "Các lần gửi biểu mẫu xác nhận"
 
-#: monkeypatch.py:145 monkeypatch.py:155
+#: monkeypatch.py:48
+msgid "Submit for unpublishing"
+msgstr "Gửi để hủy xuất bản"
+
+#: monkeypatch.py:190 monkeypatch.py:200
 msgid "Cannot archive a version in an active moderation collection"
 msgstr ""
 "Không thể lưu trữ một phiên bản trong bộ sưu tập kiểm duyệt đang hoạt động"
 
-#: monkeypatch.py:150
+#: monkeypatch.py:195
 msgid "Cannot revert when draft version is in an active moderation collection"
 msgstr ""
 "Không thể hoàn nguyên khi phiên bản nháp đang ở trong bộ sưu tập kiểm duyệt "
 "đang hoạt động"
 
-#: monkeypatch.py:159
+#: monkeypatch.py:204
 msgid "Version is in an active moderation collection"
 msgstr "Phiên bản đang ở trong bộ sưu tập kiểm duyệt đang hoạt động"
 
-#: monkeypatch.py:163
+#: monkeypatch.py:208
 msgid "Cannot edit a version in an active moderation collection"
 msgstr ""
 "Không thể chỉnh sửa một phiên bản trong bộ sưu tập kiểm duyệt đang hoạt động"
 
-#: monkeypatch.py:167
+#: monkeypatch.py:212
 msgid "Content cannot be published directly. Use the moderation process."
 msgstr ""
 "Không thể xuất bản nội dung trực tiếp. Hãy sử dụng quy trình kiểm duyệt."
+
+#: monkeypatch.py:215
+msgid "Content cannot be unpublished directly. Use the moderation process."
+msgstr ""
+"Không thể hủy xuất bản nội dung trực tiếp. Hãy sử dụng quy trình kiểm duyệt."
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:7
 #: templates/admin/djangocms_moderation/collectioncomment/change_list.html:16
@@ -770,8 +813,16 @@ msgid "Are you sure you want to remove these items from this collection?"
 msgstr "Bạn có chắc chắn muốn xóa các mục này khỏi bộ sưu tập này không?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
+msgid "Unpublish Confirmation"
+msgstr "Xác nhận hủy xuất bản"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
 msgid "Publish Confirmation"
 msgstr "Xác nhận xuất bản"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
+msgid "Are you sure you want to unpublish these items?"
+msgstr "Bạn có chắc chắn muốn hủy xuất bản các mục này không?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
 msgid "Are you sure you want to publish these items?"
@@ -951,7 +1002,7 @@ msgid "Cancel this collection"
 msgstr "Hủy bộ sưu tập này"
 
 #: templates/djangocms_moderation/moderation_request_change_list.html:35
-#: views.py:217
+#: views.py:229
 msgid "Submit collection for review"
 msgstr "Gửi bộ sưu tập để đánh giá"
 
@@ -969,20 +1020,20 @@ msgstr "Các biểu mẫu đã hoàn thành"
 msgid "View Requests"
 msgstr "Xem các yêu cầu"
 
-#: views.py:70
+#: views.py:82
 #, python-format
 msgid "%(count)d item successfully added to moderation collection"
 msgid_plural "%(count)d items successfully added to moderation collection"
 msgstr[0] "Đã thêm thành công %(count)d mục vào bộ sưu tập kiểm duyệt"
 
-#: views.py:202
+#: views.py:214
 msgid "Your collection has been submitted for review"
 msgstr "Bộ sưu tập của bạn đã được gửi để đánh giá"
 
-#: views.py:246
+#: views.py:258
 msgid "Your collection has been cancelled"
 msgstr "Bộ sưu tập của bạn đã bị hủy"
 
-#: views.py:255
+#: views.py:267
 msgid "Cancel collection"
 msgstr "Hủy bộ sưu tập"

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 00:54+0200\n"
+"POT-Creation-Date: 2026-06-30 08:52+0200\n"
 "PO-Revision-Date: 2023-01-23 22:32+0000\n"
 "Last-Translator: Besnik Bleta <besnik@programeshqip.org>, 2023\n"
 "Language-Team: Albanian (https://app.transifex.com/divio/teams/58664/sq/)\n"
@@ -21,16 +21,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:66 models.py:699
+#: admin.py:68 models.py:718
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
 msgstr "Veprim"
 
-#: admin.py:67 models.py:700
+#: admin.py:69 models.py:719
 msgid "Actions"
 msgstr "Veprime"
 
-#: admin.py:76
+#: admin.py:78
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:25
@@ -41,32 +41,32 @@ msgstr "Veprime"
 msgid "Status"
 msgstr "Gjendje"
 
-#: admin.py:80
+#: admin.py:82
 #, python-brace-format
 msgid "By {user}"
 msgstr "Nga {user}"
 
-#: admin.py:83
+#: admin.py:85
 msgid "Form Submission"
 msgstr "Parashtrim Formulari"
 
-#: admin.py:183 admin.py:1131
+#: admin.py:186 admin.py:1167
 msgid "actions"
 msgstr "veprime"
 
-#: admin.py:217
+#: admin.py:220
 msgid "ID"
 msgstr "ID"
 
-#: admin.py:230
+#: admin.py:233
 msgid "Content type"
 msgstr "Lloj lënde"
 
-#: admin.py:238
+#: admin.py:241
 msgid "Title"
 msgstr "Titull"
 
-#: admin.py:244
+#: admin.py:247
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:22
@@ -77,72 +77,79 @@ msgstr "Titull"
 msgid "Author"
 msgstr "Autor"
 
-#: admin.py:250
+#: admin.py:253
 msgid "Preview"
 msgstr "Paraparje"
 
-#: admin.py:272
+#: admin.py:275
 msgid "Reviewer"
 msgstr "Shqyrtues"
 
-#: admin.py:290
+#: admin.py:293
 msgid "Ready for publishing"
 msgstr "Gatim për botim"
 
-#: admin.py:292
+#: admin.py:295
 msgid "Pending author rework"
 msgstr "Ripunim nga autori pezull"
 
-#: admin.py:296
+#: admin.py:299
 #, python-format
 msgid "Pending %(role)s approval"
 msgstr "Në pritje të miratimit nga %(role)s"
 
-#: admin.py:305
+#: admin.py:308
 #, python-format
 msgid "%(action)s by %(name)s"
 msgstr "%(action)s nga %(name)s"
 
-#: admin.py:307
+#: admin.py:310
 msgid "Ready for submission"
 msgstr "Gati për parashtrim"
 
-#: admin.py:471
+#: admin.py:484
 #, python-format
 msgid "%(count)d request successfully deleted"
 msgid_plural "%(count)d requests successfully deleted"
 msgstr[0] "U fshi me sukses %(count)d kërkesë"
 msgstr[1] "U fshinë me sukses %(count)d kërkesa"
 
-#: admin.py:614
+#: admin.py:630
 #, python-format
 msgid "%(count)d request successfully resubmitted for review"
 msgid_plural "%(count)d requests successfully resubmitted for review"
 msgstr[0] "%(count)d kërkesë e riparashtruar me sukses për shqyrtim"
 msgstr[1] "%(count)d kërkesa të riparashtruara me sukses për shqyrtim"
 
-#: admin.py:661
+#: admin.py:685
+#, python-format
+msgid "%(count)d request successfully unpublished"
+msgid_plural "%(count)d requests successfully unpublished"
+msgstr[0] "U hoq botimi me sukses për %(count)d kërkesë"
+msgstr[1] "U hoq botimi me sukses për %(count)d kërkesa"
+
+#: admin.py:691
 #, python-format
 msgid "%(count)d request successfully published"
 msgid_plural "%(count)d requests successfully published"
 msgstr[0] "U botua me sukses %(count)d kërkesë"
 msgstr[1] "U botuan me sukses %(count)d kërkesa"
 
-#: admin.py:720
+#: admin.py:754
 #, python-format
 msgid "%(count)d request successfully submitted for rework"
 msgid_plural "%(count)d requests successfully submitted for rework"
 msgstr[0] "U parashtrua me sukses %(count)d kërkesë për ripunim"
 msgstr[1] "U parashtruan me sukses %(count)d kërkesa për ripunim"
 
-#: admin.py:827
+#: admin.py:861
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
 msgstr[0] "U miratua me sukses %(count)d kërkesë"
 msgstr[1] "U miratuan me sukses %(count)d kërkesa"
 
-#: admin.py:838
+#: admin.py:872
 #, python-format
 msgid ""
 "%(count)d request was not approved because you do not have permission to "
@@ -153,14 +160,14 @@ msgid_plural ""
 msgstr[0] "%(count)d kërkesë nuk u miratua sepse nuk keni leje ta miratoni"
 msgstr[1] "%(count)d kërkesa nuk u miratuan sepse nuk keni leje t'i miratoni"
 
-#: admin.py:851
+#: admin.py:885
 #, python-format
 msgid "%(count)d request was already approved"
 msgid_plural "%(count)d requests were already approved"
 msgstr[0] "%(count)d kërkesë ishte tashmë e miratuar"
 msgstr[1] "%(count)d kërkesa ishin tashmë të miratuara"
 
-#: admin.py:862
+#: admin.py:896
 #, python-format
 msgid ""
 "%(count)d request was already approved by you or your team and is awaiting "
@@ -175,7 +182,7 @@ msgstr[1] ""
 "%(count)d kërkesa ishin tashmë të miratuara nga ju ose ekipi juaj dhe po "
 "presin shqyrtues të tjerë"
 
-#: admin.py:875
+#: admin.py:909
 #, python-format
 msgid ""
 "%(count)d request could not be approved because it has been rejected and "
@@ -190,77 +197,85 @@ msgstr[1] ""
 "%(count)d kërkesa nuk mund të miratoheshin sepse janë refuzuar dhe duhet të "
 "riparashtrohen nga autorët e tyre"
 
-#: admin.py:946
+#: admin.py:980
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
 msgstr "Komente koleksioni"
 
-#: admin.py:995
+#: admin.py:1029
 msgid "User"
 msgstr "Përdorues"
 
-#: admin.py:1032
+#: admin.py:1066
 msgid "Request comments"
 msgstr "Komente kërkese"
 
-#: admin.py:1124
+#: admin.py:1160
 msgid "reviewers"
 msgstr "shqyrtues"
 
-#: admin.py:1147
+#: admin.py:1183
 msgid "Modify collection"
 msgstr "Ndryshoni koleksion"
 
-#: admin.py:1274 models.py:468
+#: admin.py:1320 models.py:484
 msgid "Request"
 msgstr "Kërkesë"
 
-#: admin.py:1280
+#: admin.py:1326
 msgid "By User"
 msgstr "Nga Përdoruesi"
 
-#: admin.py:1286
+#: admin.py:1332
 msgid "Form Data"
 msgstr "Të dhënash Formularësh"
 
-#: admin.py:1294
+#: admin.py:1340
 msgid "Question"
 msgstr "Pyetje"
 
-#: admin.py:1294
+#: admin.py:1340
 msgid "Answer"
 msgstr "Përgjigje"
 
-#: admin_actions.py:36
+#: admin_actions.py:35
 msgid "Resubmit changes for review"
 msgstr "Riparashtroni ndryshimet për shqyrtim"
 
-#: admin_actions.py:53
+#: admin_actions.py:52
 msgid "Submit for rework"
 msgstr "Parashtroje për ripunim"
 
-#: admin_actions.py:66
+#: admin_actions.py:65
 msgid "Approve"
 msgstr "Miratojeni"
 
-#: admin_actions.py:82
+#: admin_actions.py:81
 msgid "Remove selected"
 msgstr "Hiq të përzgjedhurin"
 
-#: admin_actions.py:99
+#: admin_actions.py:106
 msgid "Publish selected requests"
 msgstr "Botoji kërkesat e përzgjedhura"
 
-#: admin_actions.py:156
+#: admin_actions.py:113
+msgid "Unpublish selected requests"
+msgstr "Hiqu botimin kërkesave të përzgjedhura"
+
+#: admin_actions.py:174
 msgid "No suitable items found to add to moderation collection"
 msgstr ""
 "S’u gjetën objekte të përshtatshëm për t’u shtuar te moderim koleksioni"
 
-#: admin_actions.py:161
+#: admin_actions.py:186
 msgid "Add to moderation collection"
 msgstr "Shtoje te koleksion moderimi"
 
-#: admin_actions.py:165
+#: admin_actions.py:193
+msgid "Unpublishing through moderation is not enabled"
+msgstr "Heqja e botimit përmes moderimit s’është e aktivizuar"
+
+#: admin_actions.py:202
 msgid "Add items to a collection to unpublish"
 msgstr "Shtoni objekte te një koleksion për t’u hequr botimin"
 
@@ -268,7 +283,7 @@ msgstr "Shtoni objekte te një koleksion për t’u hequr botimin"
 msgid "django CMS Moderation"
 msgstr "Moderim django CMS"
 
-#: cms_toolbars.py:84 monkeypatch.py:56
+#: cms_toolbars.py:84 monkeypatch.py:45
 msgid "Submit for moderation"
 msgstr "Parashtroje për moderim"
 
@@ -329,7 +344,7 @@ msgstr "Hedhur tej"
 msgid "Approved"
 msgstr "Miratuar"
 
-#: constants.py:37 constants.py:54
+#: constants.py:37 constants.py:65
 msgid "Cancelled"
 msgstr "Anuluar"
 
@@ -338,14 +353,22 @@ msgid "Finished"
 msgstr "Përfunduar"
 
 #: constants.py:51
+msgid "Publish"
+msgstr "Boto"
+
+#: constants.py:52
+msgid "Unpublish"
+msgstr "Hiq botimin"
+
+#: constants.py:62
 msgid "Collecting"
 msgstr "Në grumbullim"
 
-#: constants.py:52
+#: constants.py:63
 msgid "In Review"
 msgstr "Në Shqyrtim"
 
-#: constants.py:53
+#: constants.py:64
 msgid "Archived"
 msgstr "Arkivuar"
 
@@ -367,7 +390,7 @@ msgstr "Kërkesa për moderim është fshirë"
 msgid "Review requested"
 msgstr "Është kërkuar shqyrtim"
 
-#: filters.py:18 forms.py:64 models.py:240
+#: filters.py:18 forms.py:72 models.py:240
 msgid "moderator"
 msgstr "moderator"
 
@@ -379,16 +402,16 @@ msgstr "shqyrtues"
 msgid "All"
 msgstr "Krejt"
 
-#: forms.py:67
+#: forms.py:75
 msgid "comment"
 msgstr "koment"
 
-#: forms.py:100 forms.py:198
+#: forms.py:108 forms.py:217
 #, python-brace-format
 msgid "Any {role}"
 msgstr "Çfarëdo {role}"
 
-#: forms.py:172
+#: forms.py:191
 msgid ""
 "Your item is either locked, not enabled for moderation,or is part of another "
 "active moderation request"
@@ -402,19 +425,19 @@ msgstr[1] ""
 "Objektet tuaja ose janë të kyçur, ose s’u lejohet moderimi, ose janë pjesë e "
 "një tjetër kërkese aktive moderimi"
 
-#: forms.py:184
+#: forms.py:203
 msgid "Select review group"
 msgstr "Përzgjidhni grup shqyrtimesh"
 
-#: forms.py:205
+#: forms.py:224
 msgid "This collection can't be submitted for a review"
 msgstr "Ky koleksion s’mund të parashtrohet për shqyrtim"
 
-#: forms.py:222
+#: forms.py:241
 msgid "This collection can't be cancelled"
 msgstr "Ky koleksion s’mund të anulohet"
 
-#: forms.py:266
+#: forms.py:285
 msgid "You can only change your own comments"
 msgstr "Mund të ndryshoni vetëm komentet tuaja"
 
@@ -470,7 +493,7 @@ msgstr "përdorues"
 msgid "group"
 msgstr "grup"
 
-#: models.py:105 models.py:789
+#: models.py:105 models.py:808
 msgid "confirmation page"
 msgstr "faqe ripohimi"
 
@@ -558,51 +581,63 @@ msgstr "Hapa"
 msgid "collection name"
 msgstr "emër koleksioni"
 
-#: models.py:259
+#: models.py:254
+msgid "action"
+msgstr "veprim"
+
+#: models.py:260
+msgid ""
+"Whether approving this collection publishes its content or unpublishes it. "
+"The review workflow is the same for both."
+msgstr ""
+"Nëse miratimi i këtij koleksioni boton lëndën e tij apo ia heq botimin. "
+"Rrjedha e punës e shqyrtimit është e njëjtë për të dyja."
+
+#: models.py:270
 msgid "collection"
 msgstr "koleksion"
 
-#: models.py:261
+#: models.py:272
 msgid "Can change collection author"
 msgstr "Mundë të ndryshojë autor koleksioni"
 
-#: models.py:262
+#: models.py:273
 msgid "Can cancel collection"
 msgstr "Mund të anulojë koleksion"
 
-#: models.py:345
+#: models.py:361
 msgid "Cancelled collection"
 msgstr "Koleksioni  anulua"
 
-#: models.py:425 models.py:684
+#: models.py:441 models.py:703
 msgid "moderation_request"
 msgstr "kërkesë moderimi"
 
-#: models.py:443
+#: models.py:459
 msgid "version"
 msgstr "version"
 
-#: models.py:446
+#: models.py:462
 msgid "language"
 msgstr "gjuhë"
 
-#: models.py:449
+#: models.py:465
 msgid "is active"
 msgstr "është aktiv"
 
-#: models.py:451
+#: models.py:467
 msgid "date sent"
 msgstr "datë dërgimi"
 
-#: models.py:453
+#: models.py:469
 msgid "compliance number"
 msgstr "numër pajtueshmërie"
 
-#: models.py:462 models.py:744
+#: models.py:478 models.py:763
 msgid "author"
 msgstr "autor"
 
-#: models.py:469
+#: models.py:485
 #: templates/admin/djangocms_moderation/moderationrequest/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_list.html:10
@@ -610,71 +645,80 @@ msgstr "autor"
 msgid "Requests"
 msgstr "Kërkesa"
 
-#: models.py:647
+#: models.py:666
 msgid "status"
 msgstr "gjendje"
 
-#: models.py:652 models.py:781
+#: models.py:671 models.py:800
 msgid "by user"
 msgstr "nga përdorues"
 
-#: models.py:658
+#: models.py:677
 msgid "to user"
 msgstr "për përdorues"
 
-#: models.py:666
+#: models.py:685
 msgid "to role"
 msgstr "te rol"
 
-#: models.py:676
+#: models.py:695
 msgid "step approved"
 msgstr "hapi u miratua"
 
-#: models.py:681 models.py:742
+#: models.py:700 models.py:761
 msgid "message"
 msgstr "mesazh"
 
-#: models.py:689
+#: models.py:708
 msgid "date taken"
 msgstr "data e bërjes"
 
-#: models.py:769
+#: models.py:788
 msgid "moderation request"
 msgstr "kërkesë moderimi"
 
-#: models.py:775
+#: models.py:794
 msgid "for step"
 msgstr "për hap"
 
-#: models.py:798
+#: models.py:817
 msgid "Confirmation Form Submission"
 msgstr "Parashtrim Formulari Ripohimi"
 
-#: models.py:799
+#: models.py:818
 msgid "Confirmation Form Submissions"
 msgstr "Parashtrime Formulari Ripohimi"
 
-#: monkeypatch.py:145 monkeypatch.py:155
+#: monkeypatch.py:48
+msgid "Submit for unpublishing"
+msgstr "Parashtroje për heqje botimi"
+
+#: monkeypatch.py:190 monkeypatch.py:200
 msgid "Cannot archive a version in an active moderation collection"
 msgstr "S’mund të arkivohet një version në një koleksion nën moderim aktiv"
 
-#: monkeypatch.py:150
+#: monkeypatch.py:195
 msgid "Cannot revert when draft version is in an active moderation collection"
 msgstr ""
 "S’mund të rikthehet, kur versioni skicë gjendet në një koleksion nën moderim "
 "aktiv"
 
-#: monkeypatch.py:159
+#: monkeypatch.py:204
 msgid "Version is in an active moderation collection"
 msgstr "Versioni gjendet në një koleksion nën moderim aktiv"
 
-#: monkeypatch.py:163
+#: monkeypatch.py:208
 msgid "Cannot edit a version in an active moderation collection"
 msgstr "S’mund të përpunohet një version në një koleksion nën moderim aktiv"
 
-#: monkeypatch.py:167
+#: monkeypatch.py:212
 msgid "Content cannot be published directly. Use the moderation process."
 msgstr "Lënda s’mund të botohet drejtpërdrejt. Përdorni procesin e moderimit."
+
+#: monkeypatch.py:215
+msgid "Content cannot be unpublished directly. Use the moderation process."
+msgstr ""
+"Lëndës s’mund t’i hiqet botimi drejtpërdrejt. Përdorni procesin e moderimit."
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:7
 #: templates/admin/djangocms_moderation/collectioncomment/change_list.html:16
@@ -785,8 +829,16 @@ msgid "Are you sure you want to remove these items from this collection?"
 msgstr "Jeni i sigurt se doni të hiqen këto objekte prej këtij koleksioni?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
+msgid "Unpublish Confirmation"
+msgstr "Ripohim Heqjeje Botimi"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
 msgid "Publish Confirmation"
 msgstr "Ripohim Botimi"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
+msgid "Are you sure you want to unpublish these items?"
+msgstr "Jeni i sigurt se doni t’u hiqet botimi këtyre objekteve?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
 msgid "Are you sure you want to publish these items?"
@@ -967,7 +1019,7 @@ msgid "Cancel this collection"
 msgstr "Anuloje këtë koleksion"
 
 #: templates/djangocms_moderation/moderation_request_change_list.html:35
-#: views.py:217
+#: views.py:229
 msgid "Submit collection for review"
 msgstr "Parashtroni koleksion për shqyrtim"
 
@@ -986,21 +1038,21 @@ msgstr "Formularë të Plotësuar"
 msgid "View Requests"
 msgstr "Shihni Kërkesa"
 
-#: views.py:70
+#: views.py:82
 #, python-format
 msgid "%(count)d item successfully added to moderation collection"
 msgid_plural "%(count)d items successfully added to moderation collection"
 msgstr[0] "U shtua me sukses %(count)d zë te koleksion moderimi"
 msgstr[1] "U shtuan me sukses %(count)d zëra te koleksion moderimi"
 
-#: views.py:202
+#: views.py:214
 msgid "Your collection has been submitted for review"
 msgstr "Koleksioni juaj u parashtrua për shqyrtim"
 
-#: views.py:246
+#: views.py:258
 msgid "Your collection has been cancelled"
 msgstr "Koleksioni juaj u anulua"
 
-#: views.py:255
+#: views.py:267
 msgid "Cancel collection"
 msgstr "Anuloje koleksionin"

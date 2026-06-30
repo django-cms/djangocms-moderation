@@ -1,6 +1,6 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls static %}
-{% block title %}{% trans "Publish Confirmation" %}{% endblock %}
+{% block title %}{% if is_unpublishing %}{% trans "Unpublish Confirmation" %}{% else %}{% trans "Publish Confirmation" %}{% endif %}{% endblock %}
 
 {% block extrahead %}
     {{ block.super }}
@@ -11,7 +11,7 @@
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation{% endblock %}
 
 {% block content %}
-<h1>{% trans "Are you sure you want to publish these items?" %}</h1>
+<h1>{% if is_unpublishing %}{% trans "Are you sure you want to unpublish these items?" %}{% else %}{% trans "Are you sure you want to publish these items?" %}{% endif %}</h1>
 <div class="results">
     <table id="result_list">
             <thead>

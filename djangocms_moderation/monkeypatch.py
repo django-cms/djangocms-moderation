@@ -5,11 +5,12 @@ from cms.models import fields
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning import admin, models
-from djangocms_versioning.constants import DRAFT
+from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.exceptions import ConditionFailed
 from djangocms_versioning.helpers import version_list_url
 from djangocms_versioning.models import Version
 
+from djangocms_moderation import conf, constants
 from djangocms_moderation.helpers import (
     get_active_moderation_request,
     get_moderation_button_title_and_url,
@@ -36,7 +37,16 @@ def _get_moderation_link(self, version, request):
     if not is_registered_for_moderation(version.content):
         return ""
 
-    if version.state != DRAFT:
+    # Drafts are submitted to be published; published versions are submitted to
+    # be unpublished. Both use the identical review workflow. The unpublish
+    # entry point is only shown when the feature is deliberately enabled.
+    if version.state == DRAFT:
+        action = constants.COLLECTION_PUBLISH
+        submit_label = _("Submit for moderation")
+    elif version.state == PUBLISHED and conf.ENABLE_UNPUBLISHING:
+        action = constants.COLLECTION_UNPUBLISH
+        submit_label = _("Submit for unpublishing")
+    else:
         return ""
 
     content_object = version.content
@@ -51,9 +61,10 @@ def _get_moderation_link(self, version, request):
             ),
             version_ids=version.pk,
             return_to_url=version_list_url(version.content),
+            action=action,
         )
         # TODO use a fancy icon as for the rest of the actions?
-        return format_html('<a href="{}">{}</a>', url, _("Submit for moderation"))
+        return format_html('<a href="{}">{}</a>', url, submit_label)
     return ""
 
 
@@ -120,6 +131,24 @@ def _get_publish_link(func):
     return inner
 
 
+def _get_unpublish_link(func):
+    """
+    Monkey patch VersionAdmin's _get_unpublish_link to remove the direct
+    unpublish link if obj.content is registered with moderation. Unpublishing
+    moderated content must go through the moderation process instead (#165).
+    """
+
+    def inner(self, obj, request):
+        # Only divert unpublishing into moderation when the feature is enabled;
+        # otherwise leave the direct unpublish link untouched (no moderated
+        # unpublish path would exist to replace it).
+        if conf.ENABLE_UNPUBLISHING and is_registered_for_moderation(obj.content):
+            return ""
+        return func(self, obj, request)
+
+    return inner
+
+
 def _check_registered_for_moderation(message):
     """
     Fail check if object is registered for moderation
@@ -131,8 +160,24 @@ def _check_registered_for_moderation(message):
     return inner
 
 
+def _check_registered_for_unpublish_moderation(message):
+    """
+    Fail the unpublish check when moderated content should be unpublished
+    through the moderation process instead of directly (only while the
+    unpublish flow is enabled).
+    """
+    def inner(version, user):
+        if conf.ENABLE_UNPUBLISHING and is_registered_for_moderation(version.content):
+            raise ConditionFailed(message)
+
+    return inner
+
+
 admin.VersionAdmin._get_publish_link = _get_publish_link(
     admin.VersionAdmin._get_publish_link
+)
+admin.VersionAdmin._get_unpublish_link = _get_unpublish_link(
+    admin.VersionAdmin._get_unpublish_link
 )
 
 admin.VersionAdmin.get_state_actions = get_state_actions(
@@ -165,6 +210,9 @@ models.Version.check_edit_redirect += [
 ]
 models.Version.check_publish += [
     _check_registered_for_moderation(_("Content cannot be published directly. Use the moderation process."))
+]
+models.Version.check_unpublish += [
+    _check_registered_for_unpublish_moderation(_("Content cannot be unpublished directly. Use the moderation process."))
 ]
 
 fields.PlaceholderRelationField.default_checks += [_is_placeholder_review_unlocked]

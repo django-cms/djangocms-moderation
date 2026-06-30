@@ -27,6 +27,8 @@ from .admin_actions import (
     publish_version,
     reject_selected,
     resubmit_selected,
+    unpublish_selected,
+    unpublish_version,
 )
 from .emails import notify_collection_author, notify_collection_moderators
 from .filters import ModeratorFilter, ReviewerFilter
@@ -128,6 +130,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     actions = [  # filtered out in `self.get_actions`
         delete_selected,
         publish_selected,
+        unpublish_selected,
         approve_selected,
         reject_selected,
         resubmit_selected,
@@ -346,15 +349,25 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                 # `publish_selected` is possible.
                 _max_to_keep = 1  # publish_selected
 
+            # A collection either publishes or unpublishes its content; the
+            # finalising action shown to the author differs accordingly.
+            finalise_action = (
+                "unpublish_selected"
+                if collection.is_unpublishing
+                else "publish_selected"
+            )
+
             for mr in collection.moderation_requests.all().select_related("version"):
                 if len(actions_to_keep) == _max_to_keep:
                     break  # We have found all the actions, so no need to loop anymore
-                if "publish_selected" not in actions_to_keep:
-                    if (
-                        request.user == collection.author
-                        and mr.version_can_be_published()
-                    ):
-                        actions_to_keep.append("publish_selected")
+                if finalise_action not in actions_to_keep:
+                    can_finalise = (
+                        mr.version_can_be_unpublished()
+                        if collection.is_unpublishing
+                        else mr.version_can_be_published()
+                    )
+                    if request.user == collection.author and can_finalise:
+                        actions_to_keep.append(finalise_action)
                 if (
                     collection.status == constants.IN_REVIEW
                     and "approve_selected" not in actions_to_keep
@@ -554,10 +567,13 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         treenodes = self._get_selected_tree_nodes(request)
         collection_id = request.GET.get('collection_id')
         redirect_url = self._redirect_to_changeview_url(collection_id)
+        collection = ModerationCollection.objects.filter(id=collection_id).first()
         return dict(
             ids=request.GET.getlist("ids"),
             back_url=redirect_url,
-            queryset=[n.moderation_request for n in treenodes]
+            queryset=[n.moderation_request for n in treenodes],
+            collection=collection,
+            is_unpublishing=bool(collection and collection.is_unpublishing),
         )
 
     def resubmit_view(self, request):
@@ -642,12 +658,21 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         else:
             treenodes = self._get_selected_tree_nodes(request)
 
-            published_moderation_requests = []
+            # The review workflow is identical for both kinds of collection;
+            # only the terminal transition and the eligibility check differ.
+            if collection.is_unpublishing:
+                can_finalise = lambda mr: mr.version_can_be_unpublished()  # noqa: E731
+                finalise = unpublish_version
+            else:
+                can_finalise = lambda mr: mr.version_can_be_published()  # noqa: E731
+                finalise = publish_version
+
+            finalised_moderation_requests = []
             for node in treenodes.all():
                 mr = node.moderation_request
-                if mr.version_can_be_published():
-                    if publish_version(mr.version, request.user):
-                        published_moderation_requests.append(mr)
+                if can_finalise(mr):
+                    if finalise(mr.version, request.user):
+                        finalised_moderation_requests.append(mr)
                         mr.update_status(
                             action=constants.ACTION_FINISHED, by_user=request.user
                         )
@@ -655,22 +680,31 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                         # TODO provide some feedback back to the user?
                         pass
 
-            messages.success(
-                request,
-                ngettext(
+            if collection.is_unpublishing:
+                message = ngettext(
+                    "%(count)d request successfully unpublished",
+                    "%(count)d requests successfully unpublished",
+                    len(finalised_moderation_requests),
+                )
+            else:
+                message = ngettext(
                     "%(count)d request successfully published",
                     "%(count)d requests successfully published",
-                    len(published_moderation_requests),
+                    len(finalised_moderation_requests),
                 )
-                % {"count": len(published_moderation_requests)},
+            messages.success(
+                request, message % {"count": len(finalised_moderation_requests)}
             )
 
             post_bulk_actions(collection)
-            signals.published.send(
+            signal = (
+                signals.unpublished if collection.is_unpublishing else signals.published
+            )
+            signal.send(
                 sender=self.model,
                 collection=collection,
                 moderator=collection.author,
-                moderation_requests=published_moderation_requests,
+                moderation_requests=finalised_moderation_requests,
                 workflow=collection.workflow
             )
 
@@ -1115,6 +1149,8 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
             "date_created",
             "list_display_actions",
         ]
+        if conf.ENABLE_UNPUBLISHING:
+            list_display.insert(4, "action")
         return list_display
 
     def job_id(self, obj):
@@ -1205,15 +1241,25 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
     def get_changeform_initial_data(self, request):
         return {"author": request.user}
 
+    def get_exclude(self, request, obj=None):
+        exclude = list(super().get_exclude(request, obj) or [])
+        # The action field (publish/unpublish) only exists when the unpublish
+        # flow is enabled; otherwise collections are always publish collections.
+        if not conf.ENABLE_UNPUBLISHING:
+            exclude.append("action")
+        return exclude or None
+
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = ["status"]
         if obj:
             if not request.user.has_perm("djangocms_moderation.can_change_author"):
                 readonly_fields.append("author")
-            # Author of the collection can change the workflow if the collection
-            # is still in the `collecting` state
+            # Author of the collection can change the workflow and action if the
+            # collection is still in the `collecting` state
             if obj.status != constants.COLLECTING or obj.author != request.user:
                 readonly_fields.append("workflow")
+                if conf.ENABLE_UNPUBLISHING:
+                    readonly_fields.append("action")
         return readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):

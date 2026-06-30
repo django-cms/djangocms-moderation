@@ -6,9 +6,17 @@ from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import gettext, gettext_lazy as _, ngettext
 
 from adminsortable2.admin import CustomInlineFormSet
+from djangocms_versioning.constants import PUBLISHED
 from djangocms_versioning.models import Version
 
-from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED, COLLECTING
+from .constants import (
+    ACTION_CANCELLED,
+    ACTION_REJECTED,
+    ACTION_RESUBMITTED,
+    COLLECTING,
+    COLLECTION_PUBLISH,
+    COLLECTION_UNPUBLISH,
+)
 from .helpers import (
     get_active_moderation_request,
     is_obj_version_unlocked,
@@ -123,12 +131,16 @@ class CollectionItemsForm(forms.Form):
         required=True,
         widget=forms.MultipleHiddenInput(),
     )
+    action = forms.CharField(required=False, widget=forms.HiddenInput())
 
     def __init__(self, user, *args, **kwargs):
+        self.action = kwargs.pop("action", COLLECTION_PUBLISH)
         super().__init__(*args, **kwargs)
         self.user = user
+        # Only offer collections matching the requested action, so publish items
+        # can't be dropped into an unpublish collection (and vice versa).
         self.fields["collection"].queryset = ModerationCollection.objects.filter(
-            status=COLLECTING, author=user
+            status=COLLECTING, author=user, action=self.action
         )
 
     def set_collection_widget(self, request):
@@ -155,10 +167,17 @@ class CollectionItemsForm(forms.Form):
         """
         versions = self.cleaned_data["versions"]
 
+        # Publishing moderates drafts; unpublishing moderates published versions.
+        unpublishing = self.action == COLLECTION_UNPUBLISH
+
         eligible_versions = []
         for version in versions:
+            state_ok = (
+                version.state == PUBLISHED if unpublishing else version.state != PUBLISHED
+            )
             if all(
                 [
+                    state_ok,
                     is_registered_for_moderation(version.content),
                     not get_active_moderation_request(version.content),
                     is_obj_version_unlocked(version.content, self.user),

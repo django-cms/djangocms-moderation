@@ -1,5 +1,4 @@
 from collections import defaultdict
-from functools import partial
 
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.contenttypes.models import ContentType
@@ -14,7 +13,7 @@ from cms.utils.urlutils import add_url_parameters
 from django_fsm import TransitionNotAllowed
 from djangocms_versioning.models import Version
 
-from djangocms_moderation import constants
+from djangocms_moderation import conf, constants
 
 from .utils import get_admin_url
 
@@ -83,7 +82,11 @@ delete_selected.short_description = _("Remove selected")
 delete_selected.__name__ = 'remove_selected'
 
 
-def publish_selected(modeladmin, request, queryset):
+def _redirect_to_publish_view(request):
+    """
+    Both publishing and unpublishing are finalised by the same view; it branches
+    on ``collection.is_unpublishing``. Only the collection author may trigger it.
+    """
     if request.user != request._collection.author:
         raise PermissionDenied
 
@@ -96,7 +99,18 @@ def publish_selected(modeladmin, request, queryset):
     return HttpResponseRedirect(url)
 
 
+def publish_selected(modeladmin, request, queryset):
+    return _redirect_to_publish_view(request)
+
+
 publish_selected.short_description = _("Publish selected requests")
+
+
+def unpublish_selected(modeladmin, request, queryset):
+    return _redirect_to_publish_view(request)
+
+
+unpublish_selected.short_description = _("Unpublish selected requests")
 
 
 def convert_queryset_to_version_queryset(queryset):
@@ -134,8 +148,11 @@ def convert_queryset_to_version_queryset(queryset):
     return Version.objects.filter(q)
 
 
-def add_items_to_collection(modeladmin, request, queryset):
-    """Action to add queryset to moderation collection."""
+def _add_items_to_collection(modeladmin, request, queryset, action):
+    """
+    Redirect to the "add to collection" view, pre-filtering the collection
+    picker to collections of the matching ``action`` (publish/unpublish).
+    """
     version_ids = convert_queryset_to_version_queryset(queryset).values_list(
         "pk", flat=True
     )
@@ -149,6 +166,7 @@ def add_items_to_collection(modeladmin, request, queryset):
             ),
             version_ids=",".join(version_ids),
             return_to_url=request.headers.get("referer", ""),
+            action=action,
         )
         return HttpResponseRedirect(admin_url)
     else:
@@ -158,11 +176,31 @@ def add_items_to_collection(modeladmin, request, queryset):
         return HttpResponseRedirect(request.headers.get("referer", ""))
 
 
+def add_items_to_collection(modeladmin, request, queryset):
+    """Action to add queryset to a publish moderation collection."""
+    return _add_items_to_collection(
+        modeladmin, request, queryset, constants.COLLECTION_PUBLISH
+    )
+
+
 add_items_to_collection.short_description = _("Add to moderation collection")
 
-add_item_to_unpublish_collection = partial(add_items_to_collection)
-add_item_to_unpublish_collection.__name__ = 'add_item_to_unpublish_collection'
-add_item_to_unpublish_collection.short_description = _('Add items to a collection to unpublish')
+
+def add_item_to_unpublish_collection(modeladmin, request, queryset):
+    """Action to add queryset to an unpublish moderation collection."""
+    if not conf.ENABLE_UNPUBLISHING:
+        modeladmin.message_user(
+            request, _("Unpublishing through moderation is not enabled")
+        )
+        return HttpResponseRedirect(request.headers.get("referer", ""))
+    return _add_items_to_collection(
+        modeladmin, request, queryset, constants.COLLECTION_UNPUBLISH
+    )
+
+
+add_item_to_unpublish_collection.short_description = _(
+    "Add items to a collection to unpublish"
+)
 
 
 def post_bulk_actions(collection):
@@ -174,6 +212,14 @@ def post_bulk_actions(collection):
 def publish_version(version, user):
     try:
         version.publish(user)
+    except TransitionNotAllowed:
+        return False
+    return True
+
+
+def unpublish_version(version, user):
+    try:
+        version.unpublish(user)
     except TransitionNotAllowed:
         return False
     return True

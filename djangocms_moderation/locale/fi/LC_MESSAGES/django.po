@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 00:54+0200\n"
+"POT-Creation-Date: 2026-06-30 08:52+0200\n"
 "PO-Revision-Date: 2026-06-29 00:00+0000\n"
 "Last-Translator: Fabian Braun <fsbraun@gmx.de>, 2026\n"
 "Language-Team: Finnish (https://app.transifex.com/divio/teams/58664/fi/)\n"
@@ -21,16 +21,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:66 models.py:699
+#: admin.py:68 models.py:718
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
 msgstr "Toiminto"
 
-#: admin.py:67 models.py:700
+#: admin.py:69 models.py:719
 msgid "Actions"
 msgstr "Toiminnot"
 
-#: admin.py:76
+#: admin.py:78
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:25
@@ -41,32 +41,32 @@ msgstr "Toiminnot"
 msgid "Status"
 msgstr "Tila"
 
-#: admin.py:80
+#: admin.py:82
 #, python-brace-format
 msgid "By {user}"
 msgstr "Tekijä {user}"
 
-#: admin.py:83
+#: admin.py:85
 msgid "Form Submission"
 msgstr "Lomakkeen lähetys"
 
-#: admin.py:183 admin.py:1131
+#: admin.py:186 admin.py:1167
 msgid "actions"
 msgstr "toiminnot"
 
-#: admin.py:217
+#: admin.py:220
 msgid "ID"
 msgstr "tunnus"
 
-#: admin.py:230
+#: admin.py:233
 msgid "Content type"
 msgstr "Sisältötyyppi"
 
-#: admin.py:238
+#: admin.py:241
 msgid "Title"
 msgstr "Otsikko"
 
-#: admin.py:244
+#: admin.py:247
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:22
@@ -77,72 +77,79 @@ msgstr "Otsikko"
 msgid "Author"
 msgstr "Tekijä"
 
-#: admin.py:250
+#: admin.py:253
 msgid "Preview"
 msgstr "Esikatsele"
 
-#: admin.py:272
+#: admin.py:275
 msgid "Reviewer"
 msgstr "Tarkastaja"
 
-#: admin.py:290
+#: admin.py:293
 msgid "Ready for publishing"
 msgstr "Valmis julkaistavaksi"
 
-#: admin.py:292
+#: admin.py:295
 msgid "Pending author rework"
 msgstr "Odottaa tekijän muokkauksia"
 
-#: admin.py:296
+#: admin.py:299
 #, python-format
 msgid "Pending %(role)s approval"
 msgstr "Odottaa %(role)s hyväksyntää"
 
-#: admin.py:305
+#: admin.py:308
 #, python-format
 msgid "%(action)s by %(name)s"
 msgstr "%(action)s käyttäjältä %(name)s"
 
-#: admin.py:307
+#: admin.py:310
 msgid "Ready for submission"
 msgstr "Valmis lähetettäväksi"
 
-#: admin.py:471
+#: admin.py:484
 #, python-format
 msgid "%(count)d request successfully deleted"
 msgid_plural "%(count)d requests successfully deleted"
 msgstr[0] "%(count)d pyyntö poistettu onnistuneesti"
 msgstr[1] "%(count)d pyyntöä poistettu onnistuneesti"
 
-#: admin.py:614
+#: admin.py:630
 #, python-format
 msgid "%(count)d request successfully resubmitted for review"
 msgid_plural "%(count)d requests successfully resubmitted for review"
 msgstr[0] "%(count)d pyyntö lähetetty uudelleen tarkastettavaksi"
 msgstr[1] "%(count)d pyyntöä lähetetty uudelleen tarkastettavaksi"
 
-#: admin.py:661
+#: admin.py:685
+#, python-format
+msgid "%(count)d request successfully unpublished"
+msgid_plural "%(count)d requests successfully unpublished"
+msgstr[0] "%(count)d pyyntö poistettu julkaisusta onnistuneesti"
+msgstr[1] "%(count)d pyyntöä poistettu julkaisusta onnistuneesti"
+
+#: admin.py:691
 #, python-format
 msgid "%(count)d request successfully published"
 msgid_plural "%(count)d requests successfully published"
 msgstr[0] "%(count)d pyyntö julkaistu onnistuneesti"
 msgstr[1] "%(count)d pyyntöä julkaistu onnistuneesti"
 
-#: admin.py:720
+#: admin.py:754
 #, python-format
 msgid "%(count)d request successfully submitted for rework"
 msgid_plural "%(count)d requests successfully submitted for rework"
 msgstr[0] "%(count)d pyyntö lähetetty muokattavaksi"
 msgstr[1] "%(count)d pyyntöä lähetetty muokattavaksi"
 
-#: admin.py:827
+#: admin.py:861
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
 msgstr[0] "%(count)d pyyntö hyväksytty onnistuneesti"
 msgstr[1] "%(count)d pyyntöä hyväksytty onnistuneesti"
 
-#: admin.py:838
+#: admin.py:872
 #, python-format
 msgid ""
 "%(count)d request was not approved because you do not have permission to "
@@ -151,19 +158,20 @@ msgid_plural ""
 "%(count)d requests were not approved because you do not have permission to "
 "approve them"
 msgstr[0] ""
-"%(count)d pyyntö jäi hyväksymättä, koska sinulla ei ole oikeutta hyväksyä sitä"
+"%(count)d pyyntö jäi hyväksymättä, koska sinulla ei ole oikeutta hyväksyä "
+"sitä"
 msgstr[1] ""
 "%(count)d pyyntöä jäi hyväksymättä, koska sinulla ei ole oikeutta hyväksyä "
 "niitä"
 
-#: admin.py:851
+#: admin.py:885
 #, python-format
 msgid "%(count)d request was already approved"
 msgid_plural "%(count)d requests were already approved"
 msgstr[0] "%(count)d pyyntö oli jo hyväksytty"
 msgstr[1] "%(count)d pyyntöä oli jo hyväksytty"
 
-#: admin.py:862
+#: admin.py:896
 #, python-format
 msgid ""
 "%(count)d request was already approved by you or your team and is awaiting "
@@ -178,7 +186,7 @@ msgstr[1] ""
 "%(count)d pyyntöä oli jo sinun tai tiimisi hyväksymä ja odottaa muita "
 "tarkastajia"
 
-#: admin.py:875
+#: admin.py:909
 #, python-format
 msgid ""
 "%(count)d request could not be approved because it has been rejected and "
@@ -193,76 +201,84 @@ msgstr[1] ""
 "%(count)d pyyntöä jäi hyväksymättä, koska ne on hylätty ja niiden tekijöiden "
 "on lähetettävä ne uudelleen"
 
-#: admin.py:946
+#: admin.py:980
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
 msgstr "Kokoelman kommentit"
 
-#: admin.py:995
+#: admin.py:1029
 msgid "User"
 msgstr "Käyttäjä"
 
-#: admin.py:1032
+#: admin.py:1066
 msgid "Request comments"
 msgstr "Pyynnön kommentit"
 
-#: admin.py:1124
+#: admin.py:1160
 msgid "reviewers"
 msgstr "tarkastajat"
 
-#: admin.py:1147
+#: admin.py:1183
 msgid "Modify collection"
 msgstr "Muokkaa kokoelmaa"
 
-#: admin.py:1274 models.py:468
+#: admin.py:1320 models.py:484
 msgid "Request"
 msgstr "Pyyntö"
 
-#: admin.py:1280
+#: admin.py:1326
 msgid "By User"
 msgstr "Käyttäjältä"
 
-#: admin.py:1286
+#: admin.py:1332
 msgid "Form Data"
 msgstr "Lomakkeen tiedot"
 
-#: admin.py:1294
+#: admin.py:1340
 msgid "Question"
 msgstr "Kysymys"
 
-#: admin.py:1294
+#: admin.py:1340
 msgid "Answer"
 msgstr "Vastaus"
 
-#: admin_actions.py:36
+#: admin_actions.py:35
 msgid "Resubmit changes for review"
 msgstr "Lähetä muutokset uudelleen tarkastettavaksi"
 
-#: admin_actions.py:53
+#: admin_actions.py:52
 msgid "Submit for rework"
 msgstr "Lähetä muokattavaksi"
 
-#: admin_actions.py:66
+#: admin_actions.py:65
 msgid "Approve"
 msgstr "Hyväksy"
 
-#: admin_actions.py:82
+#: admin_actions.py:81
 msgid "Remove selected"
 msgstr "Poista valitut"
 
-#: admin_actions.py:99
+#: admin_actions.py:106
 msgid "Publish selected requests"
 msgstr "Julkaise valitut pyynnöt"
 
-#: admin_actions.py:156
+#: admin_actions.py:113
+msgid "Unpublish selected requests"
+msgstr "Peru valittujen pyyntöjen julkaisu"
+
+#: admin_actions.py:174
 msgid "No suitable items found to add to moderation collection"
 msgstr "Moderointikokoelmaan ei löytynyt sopivia kohteita lisättäväksi"
 
-#: admin_actions.py:161
+#: admin_actions.py:186
 msgid "Add to moderation collection"
 msgstr "Lisää moderointikokoelmaan"
 
-#: admin_actions.py:165
+#: admin_actions.py:193
+msgid "Unpublishing through moderation is not enabled"
+msgstr "Julkaisun peruminen moderoinnin kautta ei ole käytössä"
+
+#: admin_actions.py:202
 msgid "Add items to a collection to unpublish"
 msgstr "Lisää kohteita kokoelmaan julkaisun perumiseksi"
 
@@ -270,7 +286,7 @@ msgstr "Lisää kohteita kokoelmaan julkaisun perumiseksi"
 msgid "django CMS Moderation"
 msgstr "django CMS Moderation"
 
-#: cms_toolbars.py:84 monkeypatch.py:56
+#: cms_toolbars.py:84 monkeypatch.py:45
 msgid "Submit for moderation"
 msgstr "Lähetä moderoitavaksi"
 
@@ -331,7 +347,7 @@ msgstr "Hylätty"
 msgid "Approved"
 msgstr "Hyväksytty"
 
-#: constants.py:37 constants.py:54
+#: constants.py:37 constants.py:65
 msgid "Cancelled"
 msgstr "Peruutettu"
 
@@ -340,14 +356,22 @@ msgid "Finished"
 msgstr "Valmis"
 
 #: constants.py:51
+msgid "Publish"
+msgstr "Julkaise"
+
+#: constants.py:52
+msgid "Unpublish"
+msgstr "Peru julkaisu"
+
+#: constants.py:62
 msgid "Collecting"
 msgstr "Kerätään"
 
-#: constants.py:52
+#: constants.py:63
 msgid "In Review"
 msgstr "Tarkastettavana"
 
-#: constants.py:53
+#: constants.py:64
 msgid "Archived"
 msgstr "Arkistoitu"
 
@@ -369,7 +393,7 @@ msgstr "Moderointipyyntö poistettu"
 msgid "Review requested"
 msgstr "Tarkastus pyydetty"
 
-#: filters.py:18 forms.py:64 models.py:240
+#: filters.py:18 forms.py:72 models.py:240
 msgid "moderator"
 msgstr "moderaattori"
 
@@ -381,16 +405,16 @@ msgstr "tarkastaja"
 msgid "All"
 msgstr "Kaikki"
 
-#: forms.py:67
+#: forms.py:75
 msgid "comment"
 msgstr "kommentti"
 
-#: forms.py:100 forms.py:198
+#: forms.py:108 forms.py:217
 #, python-brace-format
 msgid "Any {role}"
 msgstr "Mikä tahansa {role}"
 
-#: forms.py:172
+#: forms.py:191
 msgid ""
 "Your item is either locked, not enabled for moderation,or is part of another "
 "active moderation request"
@@ -404,19 +428,19 @@ msgstr[1] ""
 "Kohteesi ovat joko lukittuja, eivät ole otettu käyttöön moderointia varten "
 "tai kuuluvat toiseen aktiiviseen moderointipyyntöön"
 
-#: forms.py:184
+#: forms.py:203
 msgid "Select review group"
 msgstr "Valitse tarkastusryhmä"
 
-#: forms.py:205
+#: forms.py:224
 msgid "This collection can't be submitted for a review"
 msgstr "Tätä kokoelmaa ei voi lähettää tarkastettavaksi"
 
-#: forms.py:222
+#: forms.py:241
 msgid "This collection can't be cancelled"
 msgstr "Tätä kokoelmaa ei voi peruuttaa"
 
-#: forms.py:266
+#: forms.py:285
 msgid "You can only change your own comments"
 msgstr "Voit muokata vain omia kommenttejasi"
 
@@ -472,7 +496,7 @@ msgstr "käyttäjä"
 msgid "group"
 msgstr "ryhmä"
 
-#: models.py:105 models.py:789
+#: models.py:105 models.py:808
 msgid "confirmation page"
 msgstr "vahvistussivu"
 
@@ -559,51 +583,63 @@ msgstr "Vaiheet"
 msgid "collection name"
 msgstr "kokoelman nimi"
 
-#: models.py:259
+#: models.py:254
+msgid "action"
+msgstr "toiminto"
+
+#: models.py:260
+msgid ""
+"Whether approving this collection publishes its content or unpublishes it. "
+"The review workflow is the same for both."
+msgstr ""
+"Julkaiseeko tämän kokoelman hyväksyminen sen sisällön vai peruuko se sisällön "
+"julkaisun. Tarkastustyönkulku on sama molemmille."
+
+#: models.py:270
 msgid "collection"
 msgstr "kokoelma"
 
-#: models.py:261
+#: models.py:272
 msgid "Can change collection author"
 msgstr "Voi vaihtaa kokoelman tekijää"
 
-#: models.py:262
+#: models.py:273
 msgid "Can cancel collection"
 msgstr "Voi peruuttaa kokoelman"
 
-#: models.py:345
+#: models.py:361
 msgid "Cancelled collection"
 msgstr "Peruutettu kokoelma"
 
-#: models.py:425 models.py:684
+#: models.py:441 models.py:703
 msgid "moderation_request"
 msgstr "moderointipyyntö"
 
-#: models.py:443
+#: models.py:459
 msgid "version"
 msgstr "versio"
 
-#: models.py:446
+#: models.py:462
 msgid "language"
 msgstr "kieli"
 
-#: models.py:449
+#: models.py:465
 msgid "is active"
 msgstr "on aktiivinen"
 
-#: models.py:451
+#: models.py:467
 msgid "date sent"
 msgstr "lähetyspäivä"
 
-#: models.py:453
+#: models.py:469
 msgid "compliance number"
 msgstr "vaatimustenmukaisuusnumero"
 
-#: models.py:462 models.py:744
+#: models.py:478 models.py:763
 msgid "author"
 msgstr "tekijä"
 
-#: models.py:469
+#: models.py:485
 #: templates/admin/djangocms_moderation/moderationrequest/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_list.html:10
@@ -611,70 +647,78 @@ msgstr "tekijä"
 msgid "Requests"
 msgstr "Pyynnöt"
 
-#: models.py:647
+#: models.py:666
 msgid "status"
 msgstr "tila"
 
-#: models.py:652 models.py:781
+#: models.py:671 models.py:800
 msgid "by user"
 msgstr "käyttäjältä"
 
-#: models.py:658
+#: models.py:677
 msgid "to user"
 msgstr "käyttäjälle"
 
-#: models.py:666
+#: models.py:685
 msgid "to role"
 msgstr "roolille"
 
-#: models.py:676
+#: models.py:695
 msgid "step approved"
 msgstr "vaihe hyväksytty"
 
-#: models.py:681 models.py:742
+#: models.py:700 models.py:761
 msgid "message"
 msgstr "viesti"
 
-#: models.py:689
+#: models.py:708
 msgid "date taken"
 msgstr "toimenpiteen päivämäärä"
 
-#: models.py:769
+#: models.py:788
 msgid "moderation request"
 msgstr "moderointipyyntö"
 
-#: models.py:775
+#: models.py:794
 msgid "for step"
 msgstr "vaiheelle"
 
-#: models.py:798
+#: models.py:817
 msgid "Confirmation Form Submission"
 msgstr "Vahvistuslomakkeen lähetys"
 
-#: models.py:799
+#: models.py:818
 msgid "Confirmation Form Submissions"
 msgstr "Vahvistuslomakkeen lähetykset"
 
-#: monkeypatch.py:145 monkeypatch.py:155
+#: monkeypatch.py:48
+msgid "Submit for unpublishing"
+msgstr "Lähetä julkaisun peruttavaksi"
+
+#: monkeypatch.py:190 monkeypatch.py:200
 msgid "Cannot archive a version in an active moderation collection"
 msgstr "Aktiivisessa moderointikokoelmassa olevaa versiota ei voi arkistoida"
 
-#: monkeypatch.py:150
+#: monkeypatch.py:195
 msgid "Cannot revert when draft version is in an active moderation collection"
 msgstr ""
 "Palautus ei onnistu, kun luonnosversio on aktiivisessa moderointikokoelmassa"
 
-#: monkeypatch.py:159
+#: monkeypatch.py:204
 msgid "Version is in an active moderation collection"
 msgstr "Versio on aktiivisessa moderointikokoelmassa"
 
-#: monkeypatch.py:163
+#: monkeypatch.py:208
 msgid "Cannot edit a version in an active moderation collection"
 msgstr "Aktiivisessa moderointikokoelmassa olevaa versiota ei voi muokata"
 
-#: monkeypatch.py:167
+#: monkeypatch.py:212
 msgid "Content cannot be published directly. Use the moderation process."
 msgstr "Sisältöä ei voi julkaista suoraan. Käytä moderointiprosessia."
+
+#: monkeypatch.py:215
+msgid "Content cannot be unpublished directly. Use the moderation process."
+msgstr "Sisällön julkaisua ei voi perua suoraan. Käytä moderointiprosessia."
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:7
 #: templates/admin/djangocms_moderation/collectioncomment/change_list.html:16
@@ -785,8 +829,16 @@ msgid "Are you sure you want to remove these items from this collection?"
 msgstr "Haluatko varmasti poistaa nämä kohteet tästä kokoelmasta?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
+msgid "Unpublish Confirmation"
+msgstr "Julkaisun perumisen vahvistus"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
 msgid "Publish Confirmation"
 msgstr "Julkaisun vahvistus"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
+msgid "Are you sure you want to unpublish these items?"
+msgstr "Haluatko varmasti perua näiden kohteiden julkaisun?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
 msgid "Are you sure you want to publish these items?"
@@ -966,7 +1018,7 @@ msgid "Cancel this collection"
 msgstr "Peruuta tämä kokoelma"
 
 #: templates/djangocms_moderation/moderation_request_change_list.html:35
-#: views.py:217
+#: views.py:229
 msgid "Submit collection for review"
 msgstr "Lähetä kokoelma tarkastettavaksi"
 
@@ -985,21 +1037,21 @@ msgstr "Valmiit lomakkeet"
 msgid "View Requests"
 msgstr "Näytä pyynnöt"
 
-#: views.py:70
+#: views.py:82
 #, python-format
 msgid "%(count)d item successfully added to moderation collection"
 msgid_plural "%(count)d items successfully added to moderation collection"
 msgstr[0] "%(count)d kohde lisätty moderointikokoelmaan"
 msgstr[1] "%(count)d kohdetta lisätty moderointikokoelmaan"
 
-#: views.py:202
+#: views.py:214
 msgid "Your collection has been submitted for review"
 msgstr "Kokoelmasi on lähetetty tarkastettavaksi"
 
-#: views.py:246
+#: views.py:258
 msgid "Your collection has been cancelled"
 msgstr "Kokoelmasi on peruutettu"
 
-#: views.py:255
+#: views.py:267
 msgid "Cancel collection"
 msgstr "Peruuta kokoelma"
