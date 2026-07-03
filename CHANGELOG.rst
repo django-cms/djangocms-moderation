@@ -2,6 +2,16 @@
 Changelog
 =========
 
+unreleased
+==========
+
+* fix: Collection and request comments are no longer disclosed in the admin
+  changelist/changeform to staff users who are not participants of the
+  collection. The comment admins now enforce the
+  ``user_can_view_comments`` gate (author or assigned moderator) instead of
+  relying only on Django's model-level ``view`` permission, closing an
+  authorization asymmetry between the read and write paths.
+
 2.4.0 (2026-06-29)
 ==================
 
