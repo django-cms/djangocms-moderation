@@ -6,3 +6,4 @@ django-cms>=5.0,<5.1
 djangocms-versioning>=2.0.1
 djangocms-text
 djangocms-alias>=2.0.0
+django-treebeard<5
