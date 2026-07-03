@@ -27,7 +27,6 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.staticfiles",
     "django.contrib.messages",
-    "djangocms_admin_style",
     "django.contrib.admin",
     # django CMS and its dependencies
     "cms",
