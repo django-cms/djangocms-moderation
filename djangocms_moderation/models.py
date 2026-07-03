@@ -334,6 +334,19 @@ class ModerationCollection(models.Model):
             ]
         )
 
+    def user_can_moderate(self, user):
+        """
+        Is `user` involved in the moderation process of this collection at some
+        point (i.e. assigned to one of its workflow's roles)?
+        """
+        for step in self.workflow.steps.select_related("role__group"):
+            if step.role.user_is_assigned(user):
+                return True
+        return False
+
+    def user_can_view_comments(self, user):
+        return self.author == user or self.user_can_moderate(user)
+
     def cancel(self, user):
         """
         Cancel all active moderation requests in this collection

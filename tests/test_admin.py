@@ -15,7 +15,12 @@ from djangocms_moderation.admin import (
     ModerationRequestTreeAdmin,
 )
 from djangocms_moderation.constants import ACTION_REJECTED
-from djangocms_moderation.models import ModerationCollection, ModerationRequest
+from djangocms_moderation.models import (
+    CollectionComment,
+    ModerationCollection,
+    ModerationRequest,
+    RequestComment,
+)
 
 from .utils.base import BaseTestCase, MockRequest
 from .utils.factories import (
@@ -501,3 +506,112 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
 
         with self.assertRaises(ConditionFailed):
             version.check_publish(self.get_superuser())
+
+
+class CommentAdminPermissionTestCase(BaseTestCase):
+    """
+    Comments must only be readable by participants of the collection /
+    moderation request (its author or an assigned moderator). A staff user
+    who is not a participant must not be able to read them by supplying the
+    target id in the changelist filter or the changeform URL.
+    """
+
+    def setUp(self):
+        # collection1 uses wf1 (roles: user, user2, user3). Create an outsider
+        # superuser who participates in none of those roles.
+        self.outsider = User.objects.create_superuser(
+            username="outsider", email="outsider@test.com", password="outsider"
+        )
+        self.collection_comment = CollectionComment.objects.create(
+            collection=self.collection1,
+            author=self.user,
+            message="secret collection comment",
+        )
+        self.request_comment = RequestComment.objects.create(
+            moderation_request=self.moderation_request1,
+            author=self.user,
+            message="secret request comment",
+        )
+        self.collection_changelist = admin_reverse(
+            "djangocms_moderation_collectioncomment_changelist"
+        )
+        self.request_changelist = admin_reverse(
+            "djangocms_moderation_requestcomment_changelist"
+        )
+
+    def test_collection_comment_changelist_denied_for_non_participant(self):
+        with self.login_user_context(self.outsider):
+            response = self.client.get(
+                self.collection_changelist,
+                {"collection__id__exact": self.collection1.pk},
+            )
+        self.assertEqual(response.status_code, 403)
+
+    def test_collection_comment_changelist_allowed_for_author(self):
+        with self.login_user_context(self.user):
+            response = self.client.get(
+                self.collection_changelist,
+                {"collection__id__exact": self.collection1.pk},
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "secret collection comment")
+
+    def test_collection_comment_changelist_allowed_for_moderator(self):
+        with self.login_user_context(self.user2):
+            response = self.client.get(
+                self.collection_changelist,
+                {"collection__id__exact": self.collection1.pk},
+            )
+        self.assertEqual(response.status_code, 200)
+
+    def test_collection_comment_changeform_denied_for_non_participant(self):
+        url = admin_reverse(
+            "djangocms_moderation_collectioncomment_change",
+            args=(self.collection_comment.pk,),
+        )
+        with self.login_user_context(self.outsider):
+            response = self.client.get(
+                url, {"_changelist_filters": f"collection__id__exact={self.collection1.pk}"}
+            )
+        self.assertEqual(response.status_code, 403)
+
+    def test_request_comment_changelist_denied_for_non_participant(self):
+        with self.login_user_context(self.outsider):
+            response = self.client.get(
+                self.request_changelist,
+                {"moderation_request__id__exact": self.moderation_request1.pk},
+            )
+        self.assertEqual(response.status_code, 403)
+
+    def test_request_comment_changelist_allowed_for_author(self):
+        with self.login_user_context(self.user):
+            response = self.client.get(
+                self.request_changelist,
+                {"moderation_request__id__exact": self.moderation_request1.pk},
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "secret request comment")
+
+    def test_request_comment_changelist_allowed_for_moderator(self):
+        with self.login_user_context(self.user2):
+            response = self.client.get(
+                self.request_changelist,
+                {"moderation_request__id__exact": self.moderation_request1.pk},
+            )
+        self.assertEqual(response.status_code, 200)
+
+    def test_request_comment_changeform_denied_for_non_participant(self):
+        url = admin_reverse(
+            "djangocms_moderation_requestcomment_change",
+            args=(self.request_comment.pk,),
+        )
+        with self.login_user_context(self.outsider):
+            response = self.client.get(
+                url,
+                {
+                    "_changelist_filters": (
+                        f"moderation_request__id__exact={self.moderation_request1.pk}"
+                    )
+                },
+            )
+        self.assertEqual(response.status_code, 403)
