@@ -2,29 +2,28 @@
 Changelog
 =========
 
-unreleased
-==========
-
-* fix: Collection and request comments are no longer disclosed in the admin
+2.4.0 (2026-07-06)
+==================
+* feat: When approving moderation requests in bulk, the user now gets clear
+  per-reason feedback for requests that were not approved (no permission,
+  already approved, already actioned by you or your team, or rejected) instead
+  of a silent "0 requests approved" message by @fsbraun in https://github.com/django-cms/djangocms-moderation/pull/158
+* feat: Add Arabic (ar), Bengali (bn), Finnish (fi), Hindi (hi), Indonesian (id),
+  Korean (ko), Russian (ru), Albanian (sq), Vietnamese (vi), Simplified Chinese
+  (zh_CN) and Traditional Chinese (zh_TW) translations
+* fix: Collection and request comments are no longer disclosed in the admin   
   changelist/changeform to staff users who are not participants of the
   collection. The comment admins now enforce the
   ``user_can_view_comments`` gate (author or assigned moderator) instead of
   relying only on Django's model-level ``view`` permission, closing an
-  authorization asymmetry between the read and write paths.
-
-2.4.0 (2026-06-29)
-==================
-
-* feat: When approving moderation requests in bulk, the user now gets clear
-  per-reason feedback for requests that were not approved (no permission,
-  already approved, already actioned by you or your team, or rejected) instead
-  of a silent "0 requests approved" message (#158)
-* feat: Add Arabic (ar), Bengali (bn), Finnish (fi), Hindi (hi), Indonesian (id),
-  Korean (ko), Russian (ru), Albanian (sq), Vietnamese (vi), Simplified Chinese
-  (zh_CN) and Traditional Chinese (zh_TW) translations
+  authorization asymmetry between the read and write paths (reported by Ta Duc Thien)
 * fix: Support django-treebeard >= 4.8, whose rewritten admin tree changed the
   ``result_tree`` template tag signature. The moderation request changelist now
-  works with both treebeard < 4.8 and >= 4.8 (#336)
+  works with both treebeard < 4.8 and >= 4.8 by @fsbraun in https://github.com/django-cms/djangocms-moderation/pull/336
+* fix: Workflows without required steps errored out by @fsbraun in https://github.com/django-cms/djangocms-moderation/pull/372
+
+
+**Full Changelog**: https://github.com/django-cms/djangocms-moderation/compare/2.3.0...2.4.0
 
 2.3.0 (2026-06-13)
 ==================
