@@ -11,7 +11,7 @@ Changelog
 * feat: Add Arabic (ar), Bengali (bn), Finnish (fi), Hindi (hi), Indonesian (id),
   Korean (ko), Russian (ru), Albanian (sq), Vietnamese (vi), Simplified Chinese
   (zh_CN) and Traditional Chinese (zh_TW) translations
-* fix: Collection and request comments are no longer disclosed in the admin   
+* fix: Collection and request comments are no longer disclosed in the admin
   changelist/changeform to staff users who are not participants of the
   collection. The comment admins now enforce the
   ``user_can_view_comments`` gate (author or assigned moderator) instead of
