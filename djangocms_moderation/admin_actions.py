@@ -82,7 +82,7 @@ delete_selected.short_description = _("Remove selected")
 delete_selected.__name__ = 'remove_selected'
 
 
-def _redirect_to_publish_view(request):
+def _redirect_to_finalise_collection(request):
     """
     Both publishing and unpublishing are finalised by the same view; it branches
     on ``collection.is_unpublishing``. Only the collection author may trigger it.
@@ -100,14 +100,14 @@ def _redirect_to_publish_view(request):
 
 
 def publish_selected(modeladmin, request, queryset):
-    return _redirect_to_publish_view(request)
+    return _redirect_to_finalise_collection(request)
 
 
 publish_selected.short_description = _("Publish selected requests")
 
 
 def unpublish_selected(modeladmin, request, queryset):
-    return _redirect_to_publish_view(request)
+    return _redirect_to_finalise_collection(request)
 
 
 unpublish_selected.short_description = _("Unpublish selected requests")
@@ -186,13 +186,20 @@ def add_items_to_collection(modeladmin, request, queryset):
 add_items_to_collection.short_description = _("Add to moderation collection")
 
 
+def _ensure_unpublishing_enabled(modeladmin, request):
+    if conf.ENABLE_UNPUBLISHING:
+        return True
+    modeladmin.message_user(
+        request, _("Unpublishing through moderation is not enabled")
+    )
+    return HttpResponseRedirect(request.headers.get("referer", ""))
+
+
 def add_item_to_unpublish_collection(modeladmin, request, queryset):
     """Action to add queryset to an unpublish moderation collection."""
-    if not conf.ENABLE_UNPUBLISHING:
-        modeladmin.message_user(
-            request, _("Unpublishing through moderation is not enabled")
-        )
-        return HttpResponseRedirect(request.headers.get("referer", ""))
+    result = _ensure_unpublishing_enabled(modeladmin, request)
+    if result is not True:
+        return result
     return _add_items_to_collection(
         modeladmin, request, queryset, constants.COLLECTION_UNPUBLISH
     )

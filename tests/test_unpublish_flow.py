@@ -2,8 +2,10 @@ from unittest import mock
 
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.admin.sites import AdminSite
+from django.test import RequestFactory
 from django.urls import reverse
 
+from cms.models import PageContent
 from cms.test_utils.testcases import CMSTestCase
 from cms.test_utils.util.context_managers import signal_tester
 
@@ -13,6 +15,10 @@ from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import conf, constants
 from djangocms_moderation.admin import ModerationRequestTreeAdmin
+from djangocms_moderation.admin_actions import (
+    add_item_to_unpublish_collection,
+    unpublish_selected,
+)
 from djangocms_moderation.forms import CollectionItemsForm
 from djangocms_moderation.models import ModerationRequestTreeNode, Role
 from djangocms_moderation.signals import unpublished
@@ -158,6 +164,67 @@ class CollectionItemsUnpublishFormTest(CMSTestCase):
             },
         )
         self.assertFalse(form.is_valid())
+
+
+class UnpublishAdminActionTest(CMSTestCase):
+    def setUp(self):
+        self.user = factories.UserFactory(is_staff=True, is_superuser=True)
+        self.collection = factories.ModerationCollectionFactory(
+            author=self.user,
+            action=constants.COLLECTION_UNPUBLISH,
+            status=constants.COLLECTING,
+        )
+        self.request_factory = RequestFactory()
+
+    def test_unpublish_selected_redirects_to_finalise_view(self):
+        request = self.request_factory.post(
+            "/",
+            data={ACTION_CHECKBOX_NAME: ["1", "2"]},
+        )
+        request.user = self.user
+        request._collection = self.collection
+
+        response = unpublish_selected(None, request, None)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            "{}?ids=1,2&collection_id={}".format(
+                reverse("admin:djangocms_moderation_moderationrequest_publish"),
+                self.collection.pk,
+            ),
+        )
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", False)
+    def test_add_item_to_unpublish_collection_reports_disabled_feature(self):
+        modeladmin = mock.Mock()
+        request = self.request_factory.get("/", HTTP_REFERER="/admin/source/")
+
+        response = add_item_to_unpublish_collection(modeladmin, request, [])
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/admin/source/")
+        modeladmin.message_user.assert_called_once_with(
+            request, "Unpublishing through moderation is not enabled"
+        )
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
+    def test_add_item_to_unpublish_collection_redirects_with_unpublish_action(self):
+        modeladmin = mock.Mock()
+        version = PageVersionFactory(state=PUBLISHED, created_by=self.user)
+        request = self.request_factory.get(
+            "/",
+            {"language": "en"},
+            HTTP_REFERER="/admin/source/",
+        )
+        queryset = PageContent.objects.filter(pk=version.content.pk)
+
+        response = add_item_to_unpublish_collection(modeladmin, request, queryset)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(f"version_ids={version.pk}", response.url)
+        self.assertIn("return_to_url=%2Fadmin%2Fsource%2F", response.url)
+        self.assertIn(f"action={constants.COLLECTION_UNPUBLISH}", response.url)
 
 
 @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
