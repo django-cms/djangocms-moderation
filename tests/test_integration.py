@@ -20,6 +20,10 @@ class VersionLockingTestCase(BaseTestCase):
         self.assertTrue(is_obj_version_unlocked(version.content, self.user))
         self.assertFalse(is_obj_version_unlocked(version.content, self.user2))
         version.publish(self.user)
+        # djangocms-versioning does not clear the cached draft version on
+        # publish. Clear it here so the test reloads the published version.
+        if hasattr(version.content, "_version_cache"):
+            delattr(version.content, "_version_cache")
         # reload version to update cache
         version = Version.objects.get_for_content(version.content)
         self.assertTrue(is_obj_version_unlocked(version.content, self.user2))
