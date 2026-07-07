@@ -976,6 +976,8 @@ class CollectionCommentAdmin(admin.ModelAdmin):
             except (ValueError, ModerationCollection.DoesNotExist):
                 raise Http404
             else:
+                if not collection.user_can_view_comments(request.user):
+                    raise PermissionDenied
                 extra_context = dict(
                     collection=collection, title=_("Collection comments")
                 )
@@ -999,6 +1001,8 @@ class CollectionCommentAdmin(admin.ModelAdmin):
                 )
             except ValueError:
                 raise Http404
+            if not collection_comment.collection.user_can_view_comments(request.user):
+                raise PermissionDenied
             if request.user != collection_comment.author:
                 extra_context["readonly"] = True
 
@@ -1063,6 +1067,8 @@ class RequestCommentAdmin(admin.ModelAdmin):
             except (ValueError, ModerationRequest.DoesNotExist):
                 raise Http404
             else:
+                if not moderation_request.user_can_view_comments(request.user):
+                    raise PermissionDenied
                 extra_context = dict(collection=collection, title=_("Request comments"))
         else:
             # If no collection id, then don't show all requests
@@ -1079,6 +1085,8 @@ class RequestCommentAdmin(admin.ModelAdmin):
                 request_comment = get_object_or_404(RequestComment, pk=int(object_id))
             except ValueError:
                 raise Http404
+            if not request_comment.moderation_request.user_can_view_comments(request.user):
+                raise PermissionDenied
             if request.user != request_comment.author:
                 extra_context["readonly"] = True
         # for breadcrumb trail
