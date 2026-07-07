@@ -55,9 +55,9 @@ The lifecycle is the same as for publishing (see :ref:`overview`):
    drafts).
 #. The author submits the collection for review; reviewers approve or send it
    back for rework, step by step.
-#. Once every required step has approved, the author finalises the collection
-   and the content is unpublished. An ``unpublished`` signal is sent so your
-   code can react (see :ref:`signals`).
+#. Once every required step has been approved, the author finalises the
+   collection and the content is unpublished. An ``unpublished`` signal is
+   sent so your code can react (see :ref:`signals`).
 
 While the feature is enabled, the **direct** unpublish link is removed from
 moderated content, so unpublishing always goes through moderation rather than
