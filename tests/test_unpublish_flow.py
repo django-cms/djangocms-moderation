@@ -1,6 +1,7 @@
 from unittest import mock
 
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
+from django.contrib.admin.sites import AdminSite
 from django.urls import reverse
 
 from cms.test_utils.testcases import CMSTestCase
@@ -11,8 +12,9 @@ from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import conf, constants
+from djangocms_moderation.admin import ModerationRequestTreeAdmin
 from djangocms_moderation.forms import CollectionItemsForm
-from djangocms_moderation.models import Role
+from djangocms_moderation.models import ModerationRequestTreeNode, Role
 from djangocms_moderation.signals import unpublished
 from djangocms_moderation.views import CollectionItemsView
 
@@ -54,6 +56,25 @@ class CollectionActionModelTest(CMSTestCase):
         self.assertTrue(mr.version_can_be_unpublished())
         # The same approved version is not a publish candidate (already published)
         self.assertFalse(mr.version_can_be_published())
+
+    def test_approved_unpublish_request_status(self):
+        collection = factories.ModerationCollectionFactory(
+            action=constants.COLLECTION_UNPUBLISH, status=constants.IN_REVIEW
+        )
+        author = collection.author
+        role = Role.objects.create(name="Role 1", user=author)
+        collection.workflow.steps.create(role=role, is_required=True, order=1)
+        mr = factories.ModerationRequestFactory(
+            collection=collection,
+            version=PageVersionFactory(state=PUBLISHED, created_by=author),
+        )
+        mr.actions.create(by_user=author, action=constants.ACTION_STARTED)
+        mr.update_status(constants.ACTION_APPROVED, author)
+        node = factories.RootModerationRequestTreeNodeFactory(moderation_request=mr)
+
+        model_admin = ModerationRequestTreeAdmin(ModerationRequestTreeNode, AdminSite())
+
+        self.assertEqual(model_admin.get_status(node), "Ready for unpublishing")
 
 
 class UnpublishFeatureFlagTest(CMSTestCase):

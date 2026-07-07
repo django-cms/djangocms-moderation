@@ -289,7 +289,12 @@ class ModerationRequestTreeAdmin(TreeAdmin):
         last_action = obj.moderation_request.get_last_action()
 
         if last_action:
-            if obj.moderation_request.version_can_be_published():
+            if (
+                obj.moderation_request.collection.is_unpublishing
+                and obj.moderation_request.version_can_be_unpublished()
+            ):
+                status = gettext('Ready for unpublishing')
+            elif obj.moderation_request.version_can_be_published():
                 status = gettext('Ready for publishing')
             elif obj.moderation_request.is_rejected():
                 status = gettext('Pending author rework')
