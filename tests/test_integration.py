@@ -33,5 +33,5 @@ class VersionLockingTestCase(BaseTestCase):
         with mock.patch(
             "djangocms_moderation.helpers.content_is_unlocked_for_user"
         ) as _mock:
-            is_obj_version_unlocked(version.content, self.user2)
-            _mock.assert_called_once_with(version.content, self.user2)
+            is_obj_version_unlocked(content, self.user2)
+            _mock.assert_called_once_with(content, self.user2)
