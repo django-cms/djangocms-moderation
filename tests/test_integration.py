@@ -20,14 +20,13 @@ class VersionLockingTestCase(BaseTestCase):
         self.assertTrue(is_obj_version_unlocked(version.content, self.user))
         self.assertFalse(is_obj_version_unlocked(version.content, self.user2))
         version.publish(self.user)
-        # reload version to update cache
-        version = Version.objects.get_for_content(version.content)
-        self.assertTrue(is_obj_version_unlocked(version.content, self.user2))
+        content = type(version.content)._base_manager.get(pk=version.content.pk)
+        self.assertTrue(is_obj_version_unlocked(content, self.user2))
 
         # Make sure that we are actually calling the version-lock method and it
         # still exists
         with mock.patch(
             "djangocms_moderation.helpers.content_is_unlocked_for_user"
         ) as _mock:
-            is_obj_version_unlocked(version.content, self.user2)
-            _mock.assert_called_once_with(version.content, self.user2)
+            is_obj_version_unlocked(content, self.user2)
+            _mock.assert_called_once_with(content, self.user2)
