@@ -26,7 +26,8 @@ class VersionLockingTestCase(BaseTestCase):
             delattr(version.content, "_version_cache")
         # reload version to update cache
         version = Version.objects.get_for_content(version.content)
-        self.assertTrue(is_obj_version_unlocked(version.content, self.user2))
+        content = version.content
+        self.assertTrue(is_obj_version_unlocked(content, self.user2))
 
         # Make sure that we are actually calling the version-lock method and it
         # still exists
