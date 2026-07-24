@@ -1,12 +1,11 @@
 from unittest import mock
 
-from django.contrib import admin
-from django.urls import reverse
-
 from cms.models import PageContent
 from cms.models.fields import PlaceholderRelationField
-
-from djangocms_versioning import __version__ as versioning_version, versionables
+from django.contrib import admin
+from django.urls import reverse
+from djangocms_versioning import __version__ as versioning_version
+from djangocms_versioning import versionables
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.test_utils.factories import (
@@ -74,9 +73,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         """
         version = PageVersionFactory(state=DRAFT, created_by=self.user)
         archive_url = reverse(
-            "admin:{app}_{model}version_archive".format(
-                app=version._meta.app_label, model=version.content._meta.model_name
-            ),
+            f"admin:{version._meta.app_label}_{version.content._meta.model_name}version_archive",
             args=(version.pk,),
         )
         _mock.return_value = True
@@ -115,9 +112,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
             self.pg1_version, self.mock_request
         )
         self.assertIn(
-            "In collection &quot;{} ({})&quot;".format(
-                self.collection1.name, self.collection1.id
-            ),
+            f"In collection &quot;{self.collection1.name} ({self.collection1.id})&quot;",
             link,
         )
         version = PageVersionFactory(state=PUBLISHED)
@@ -156,10 +151,7 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
     def test_get_publish_link_when_not_registered(self, mock_is_registered_for_moderation):
         link = self.version_admin._get_publish_link(self.pg1_version, self.mock_request)
         publish_url = reverse(
-            "admin:{app}_{model}version_publish".format(
-                app=self.pg1_version._meta.app_label,
-                model=self.pg1_version.content._meta.model_name,
-            ),
+            f"admin:{self.pg1_version._meta.app_label}_{self.pg1_version.content._meta.model_name}version_publish",
             args=(self.pg1_version.pk,),
         )
         self.assertNotEqual("", link)

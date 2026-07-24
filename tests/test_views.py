@@ -1,13 +1,11 @@
 from unittest import mock
 
+from cms.test_utils.testcases import CMSTestCase
+from cms.utils.urlutils import add_url_parameters, admin_reverse
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.messages import get_messages
 from django.test import TransactionTestCase
 from django.urls import reverse
-
-from cms.test_utils.testcases import CMSTestCase
-from cms.utils.urlutils import add_url_parameters, admin_reverse
-
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation.models import (
@@ -28,7 +26,6 @@ from .utils.factories import (
     RootModerationRequestTreeNodeFactory,
     UserFactory,
 )
-
 
 try:
     from djangocms_versioning.helpers import remove_version_lock, version_is_locked
@@ -893,9 +890,7 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
         request_change_list_url = reverse(
             "admin:djangocms_moderation_moderationrequest_changelist"
         )
-        self.request_change_list_url = "{}?moderation_request__collection__id={}".format(
-            request_change_list_url, self.collection2.pk
-        )
+        self.request_change_list_url = f"{request_change_list_url}?moderation_request__collection__id={self.collection2.pk}"
 
     @mock.patch.object(ModerationCollection, "submit_for_review")
     def test_submit_collection_for_moderation(self, submit_mock):
@@ -937,9 +932,7 @@ class ModerationRequestChangeListView(BaseViewTestCase):
             args=(self.collection2.pk,),
         )
         self.url = reverse("admin:djangocms_moderation_moderationrequest_changelist")
-        self.url_with_filter = "{}?moderation_request__collection__id={}".format(
-            self.url, self.collection2.pk
-        )
+        self.url_with_filter = f"{self.url}?moderation_request__collection__id={self.collection2.pk}"
 
     def test_change_list_view_should_404_if_not_filtered(self):
         response = self.client.get(self.url)

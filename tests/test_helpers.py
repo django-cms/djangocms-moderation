@@ -1,11 +1,9 @@
 import json
 from unittest import mock, skip
 
+from cms.test_utils.testcases import CMSTestCase
 from django.template.defaultfilters import truncatechars
 from django.urls import reverse
-
-from cms.test_utils.testcases import CMSTestCase
-
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation.conf import COLLECTION_NAME_LENGTH_LIMIT
@@ -90,7 +88,7 @@ class VersionLockingTestCase(BaseTestCase):
         with mock.patch(
             "djangocms_moderation.helpers.content_is_unlocked_for_user"
         ) as _mock:
-            _mock = None  # noqa
+            _mock = None
             version = PageVersionFactory(created_by=self.user)
             self.assertTrue(is_obj_version_unlocked(version.content, self.user3))
 
@@ -152,9 +150,7 @@ class ModerationButtonLinkAndUrlTestCase(BaseTestCase):
             title, url = get_moderation_button_title_and_url(self.mr)
             self.assertEqual(
                 title,
-                'In collection "Very long collection name so long wow! ({})"'.format(
-                    self.collection.id
-                ),
+                f'In collection "Very long collection name so long wow! ({self.collection.id})"',
             )
 
         self.assertEqual(url, self.expected_url)

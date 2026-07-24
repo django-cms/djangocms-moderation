@@ -1,11 +1,9 @@
+from cms.utils.urlutils import admin_reverse
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.test.client import RequestFactory
 from django.urls import reverse
-
-from cms.utils.urlutils import admin_reverse
-
 from djangocms_versioning.test_utils import factories
 
 from djangocms_moderation import conf, constants
@@ -76,9 +74,7 @@ class ModerationAdminTestCase(BaseTestCase):
         )
 
         self.url = reverse("admin:djangocms_moderation_moderationrequest_changelist")
-        self.url_with_filter = "{}?moderation_request__collection__id={}".format(
-            self.url, self.collection.pk
-        )
+        self.url_with_filter = f"{self.url}?moderation_request__collection__id={self.collection.pk}"
         self.mr_tree_admin = ModerationRequestTreeAdmin(
             ModerationRequest, admin.AdminSite()
         )
@@ -449,9 +445,7 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
         )
 
         self.url = reverse("admin:djangocms_moderation_moderationrequest_changelist")
-        self.url_with_filter = "{}?moderation_request__collection__id={}".format(
-            self.url, self.collection.pk
-        )
+        self.url_with_filter = f"{self.url}?moderation_request__collection__id={self.collection.pk}"
         self.mr_tree_admin = ModerationRequestTreeAdmin(
             ModerationRequest, admin.AdminSite()
         )
@@ -477,10 +471,7 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
 
     def test_tree_admin_burger_menu_present(self):
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        url = "{}?moderation_request__collection__id={}".format(
-            redirect_url,
-            self.collection.id
-        )
+        url = f"{redirect_url}?moderation_request__collection__id={self.collection.id}"
         with self.login_user_context(self.user):
             response = self.client.get(url)
 

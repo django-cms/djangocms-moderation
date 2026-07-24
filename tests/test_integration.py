@@ -1,11 +1,11 @@
 from unittest import mock
 
+from cms.models import PageContent
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation.helpers import is_obj_version_unlocked
 
 from .utils.base import BaseTestCase
-
 
 try:
     from djangocms_versioning.models import Version
@@ -19,12 +19,10 @@ class VersionLockingTestCase(BaseTestCase):
         version = PageVersionFactory(created_by=self.user)
         self.assertTrue(is_obj_version_unlocked(version.content, self.user))
         self.assertFalse(is_obj_version_unlocked(version.content, self.user2))
+        page = version.content.page
+        language = version.content.language
         version.publish(self.user)
-        # reload version to update cache
-        version = Version.objects.get_for_content(version.content)
-        content = version.content
-        if hasattr(content, "prefetched_versions"):
-            del content.prefetched_versions
+        content = PageContent.objects.get(page=page, language=language)
         self.assertTrue(is_obj_version_unlocked(content, self.user2))
 
         # Make sure that we are actually calling the version-lock method and it
