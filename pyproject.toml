@@ -89,6 +89,9 @@ exclude = [
     "docs/conf.py",
     "node_modules",
 ]
+extend-ignore = [
+  "PLR0917",  # Too many positional arguments
+]
 
 [tool.isort]
 profile = "black"
