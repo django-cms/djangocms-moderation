@@ -89,12 +89,10 @@ exclude = [
     "docs/conf.py",
     "node_modules",
 ]
-extend-ignore = [
-  "PLR0917",  # Too many positional arguments
-]
-
+[tool.ruff.lint]
 extend-ignore = [
     "C408",     # Unnecessary `dict()` call (rewrite as a literal)
+    "PLR0917",  # Too many positional arguments
     "RUF012",   # Mutable default value for class attribute
 ]
 
