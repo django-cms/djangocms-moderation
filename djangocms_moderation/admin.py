@@ -258,9 +258,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             object_preview_url = get_object_preview_url(content)
         else:
             object_preview_url = reverse(
-                "admin:{app}_{model}_change".format(
-                    app=content._meta.app_label, model=content._meta.model_name
-                ),
+                f"admin:{content._meta.app_label}_{content._meta.model_name}_change",
                 args=[content.pk],
             )
 
@@ -376,16 +374,14 @@ class ModerationRequestTreeAdmin(TreeAdmin):
                 if (
                     collection.status == constants.IN_REVIEW
                     and "approve_selected" not in actions_to_keep
-                ):
-                    if mr.user_can_take_moderation_action(request.user):
-                        actions_to_keep.append("approve_selected")
-                        actions_to_keep.append("reject_selected")
+                ) and mr.user_can_take_moderation_action(request.user):
+                    actions_to_keep.append("approve_selected")
+                    actions_to_keep.append("reject_selected")
                 if (
                     collection.status == constants.IN_REVIEW
                     and "resubmit_selected" not in actions_to_keep
-                ):
-                    if mr.user_can_resubmit(request.user):
-                        actions_to_keep.append("resubmit_selected")
+                ) and mr.user_can_resubmit(request.user):
+                    actions_to_keep.append("resubmit_selected")
 
         # Only collection author can delete moderation requests
         if collection.author == request.user:
@@ -455,10 +451,7 @@ class ModerationRequestTreeAdmin(TreeAdmin):
 
         queryset = ModerationRequest.objects.filter(pk__in=moderation_requests_affected)
         redirect_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
-        redirect_url = "{}?moderation_request__collection__id={}".format(
-            redirect_url,
-            collection_id
-        )
+        redirect_url = f"{redirect_url}?moderation_request__collection__id={collection_id}"
 
         if request.method != 'POST':
             context = dict(
@@ -510,10 +503,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         An internal private helper that generates a return url to this models changeview.
         """
         redirect_url = reverse('admin:djangocms_moderation_moderationrequesttreenode_changelist')
-        return "{}?moderation_request__collection__id={}".format(
-            redirect_url,
-            collection_id
-        )
+        return f"{redirect_url}?moderation_request__collection__id={collection_id}"
 
     def get_formsets_with_inlines(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):

@@ -900,9 +900,7 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
         request_change_list_url = reverse(
             "admin:djangocms_moderation_moderationrequest_changelist"
         )
-        self.request_change_list_url = "{}?moderation_request__collection__id={}".format(
-            request_change_list_url, self.collection2.pk
-        )
+        self.request_change_list_url = f"{request_change_list_url}?moderation_request__collection__id={self.collection2.pk}"
 
     @mock.patch.object(ModerationCollection, "submit_for_review")
     def test_submit_collection_for_moderation(self, submit_mock):
@@ -944,9 +942,7 @@ class ModerationRequestChangeListView(BaseViewTestCase):
             args=(self.collection2.pk,),
         )
         self.url = reverse("admin:djangocms_moderation_moderationrequest_changelist")
-        self.url_with_filter = "{}?moderation_request__collection__id={}".format(
-            self.url, self.collection2.pk
-        )
+        self.url_with_filter = f"{self.url}?moderation_request__collection__id={self.collection2.pk}"
 
     def test_change_list_view_should_404_if_not_filtered(self):
         response = self.client.get(self.url)

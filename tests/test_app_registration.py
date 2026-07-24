@@ -57,9 +57,8 @@ class CMSConfigTest(CMSTestCase, TestCase):
         )
 
         err_msg = (
-            "Moderated model %s need to be Versionable, please include every model that "
+            f"Moderated model {App1PostContent} need to be Versionable, please include every model that "
             "needs to be moderated in djangocms_versioning VersionableItem entry"
-            % App1PostContent
         )
 
         with self.assertRaisesMessage(ImproperlyConfigured, err_msg):

@@ -32,9 +32,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("No inconsistent ModerationRequest objects found"))
             return
 
-        self.stdout.write(self.style.WARNING("Inconsistent ModerationRequest objects found: %s" % items.count()))
+        self.stdout.write(self.style.WARNING(f"Inconsistent ModerationRequest objects found: {items.count()}"))
         for request in items:
-            self.stdout.write("Found ModerationRequest id: %s" % request.id)
+            self.stdout.write(f"Found ModerationRequest id: {request.id}")
 
         if not options.get('perform_fix'):
             self.stdout.write(self.style.SUCCESS(
@@ -46,6 +46,6 @@ class Command(BaseCommand):
         for request in items:
             request.is_active = False
             request.save()
-            self.stdout.write("Repaired ModerationRequest id: %s" % request.id)
+            self.stdout.write(f"Repaired ModerationRequest id: {request.id}")
 
         self.stdout.write(self.style.SUCCESS("Finished and made the changes successfully."))

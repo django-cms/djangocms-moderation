@@ -73,10 +73,8 @@ def _is_placeholder_review_unlocked(placeholder, user):
     Register review lock with placeholder checks framework to
     prevent users from editing content by directly accessing the URL
     """
-    if is_registered_for_moderation(placeholder.source):
-        if is_obj_review_locked(placeholder.source, user):
-            return False
-    return True
+    locked = is_registered_for_moderation(placeholder.source) and is_obj_review_locked(placeholder.source, user)
+    return not locked
 
 
 def _is_version_review_locked(message):

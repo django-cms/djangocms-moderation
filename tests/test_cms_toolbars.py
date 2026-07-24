@@ -284,7 +284,7 @@ class CMSToolbarsTestCase(CMSTestCase):
         collection_list_url = reverse(
             "admin:djangocms_moderation_moderationcollection_changelist"
         )
-        collection_list_url += "?author__id__exact=%s" % user.pk
+        collection_list_url += f"?author__id__exact={user.pk}"
         self.assertTrue(manage_collection_item.url, collection_list_url)
 
     def test_add_manage_collection_item_to_moderation_menu_no_permission(self):

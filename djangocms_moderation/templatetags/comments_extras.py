@@ -13,7 +13,7 @@ def comments_submit_row(context):
     Displays the row of buttons for delete and save.
     """
     if context.get("readonly"):
-        return dict()
+        return {}
     ctx = original_submit_row(context)
     ctx.update(
         {
