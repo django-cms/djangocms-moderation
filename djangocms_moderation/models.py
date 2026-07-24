@@ -423,7 +423,7 @@ class ModerationCollection(models.Model):
             ):
                 # Don't add the version if it's already part of the collection or locked by another user
                 if version_is_unlocked_for_moderation(child_version, version.created_by):
-                    moderation_request, _added_items = self.add_version(
+                    _, _added_items = self.add_version(
                         child_version, parent=parent_node, include_children=True
                     )
                 else:
