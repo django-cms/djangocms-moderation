@@ -1,9 +1,11 @@
 import json
 from unittest import mock, skip
 
-from cms.test_utils.testcases import CMSTestCase
 from django.template.defaultfilters import truncatechars
 from django.urls import reverse
+
+from cms.test_utils.testcases import CMSTestCase
+
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation.conf import COLLECTION_NAME_LENGTH_LIMIT

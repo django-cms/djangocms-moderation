@@ -1,11 +1,12 @@
 from unittest import mock
 
-from cms.models import PageContent
-from cms.models.fields import PlaceholderRelationField
 from django.contrib import admin
 from django.urls import reverse
-from djangocms_versioning import __version__ as versioning_version
-from djangocms_versioning import versionables
+
+from cms.models import PageContent
+from cms.models.fields import PlaceholderRelationField
+
+from djangocms_versioning import __version__ as versioning_version, versionables
 from djangocms_versioning.admin import VersionAdmin
 from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.test_utils.factories import (

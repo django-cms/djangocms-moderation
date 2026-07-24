@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
+
 UUID_BACKEND = "djangocms_moderation.backends.uuid4_backend"
 SEQUENTIAL_NUMBER_BACKEND = "djangocms_moderation.backends.sequential_number_backend"
 SEQUENTIAL_NUMBER_WITH_IDENTIFIER_PREFIX_BACKEND = (

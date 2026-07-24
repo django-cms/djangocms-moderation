@@ -1,11 +1,13 @@
 from unittest import mock
 
 from cms.models import PageContent
+
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation.helpers import is_obj_version_unlocked
 
 from .utils.base import BaseTestCase
+
 
 try:
     from djangocms_versioning.models import Version

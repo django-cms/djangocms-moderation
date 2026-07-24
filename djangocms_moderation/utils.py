@@ -1,11 +1,12 @@
 from functools import cache
 from urllib.parse import parse_qs, urljoin
 
-from cms.utils.urlutils import admin_reverse
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.module_loading import import_string
 from django.utils.translation import override as force_language
+
+from cms.utils.urlutils import admin_reverse
 
 
 def get_absolute_url(location, site=None):

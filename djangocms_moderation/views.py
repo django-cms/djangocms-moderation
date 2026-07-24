@@ -1,7 +1,5 @@
 from urllib.parse import quote
 
-from cms.models import PageContent
-from cms.utils.urlutils import add_url_parameters
 from django.contrib import admin, messages
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
@@ -9,9 +7,12 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.utils.translation import gettext_lazy as _
-from django.utils.translation import ngettext
+from django.utils.translation import gettext_lazy as _, ngettext
 from django.views.generic import FormView
+
+from cms.models import PageContent
+from cms.utils.urlutils import add_url_parameters
+
 from djangocms_versioning.models import Version
 
 from .forms import (
@@ -21,6 +22,7 @@ from .forms import (
 )
 from .models import ConfirmationPage, ModerationCollection
 from .utils import get_admin_url
+
 
 from . import constants  # isort:skip
 

@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from .conf import EMAIL_NOTIFICATIONS_FAIL_SILENTLY
 from .utils import get_absolute_url
 
+
 from . import constants  # isort:skip
 
 

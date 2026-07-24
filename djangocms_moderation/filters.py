@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from . import constants, helpers
 
+
 User = get_user_model()
 
 

@@ -1,5 +1,6 @@
 from django.utils.translation import gettext_lazy as _
 
+
 # NOTE: those are not just numbers!! we will do binary AND on them,
 # so pay attention when adding/changing them, or MASKs..
 ACCESS_PAGE = 1

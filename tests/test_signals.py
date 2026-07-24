@@ -1,7 +1,8 @@
+from django.urls import reverse
+
 from cms.test_utils.testcases import CMSTestCase
 from cms.test_utils.util.context_managers import signal_tester
 from cms.utils.urlutils import add_url_parameters
-from django.urls import reverse
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import ModerationCollection, Role

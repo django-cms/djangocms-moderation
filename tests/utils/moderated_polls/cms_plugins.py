@@ -3,14 +3,8 @@ from cms.plugin_pool import plugin_pool
 
 from .models import (
     DeeplyNestedPollPlugin as DeeplyNestedPoll,
-)
-from .models import (
     ManytoManyPollPlugin as ManytoManyPoll,
-)
-from .models import (
     NestedPollPlugin as NestedPoll,
-)
-from .models import (
     PollPlugin as Poll,
 )
 

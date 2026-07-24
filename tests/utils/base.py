@@ -1,5 +1,7 @@
-from cms.test_utils.testcases import CMSTestCase
 from django.contrib.auth.models import Group, User
+
+from cms.test_utils.testcases import CMSTestCase
+
 from djangocms_versioning.constants import PUBLISHED
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 

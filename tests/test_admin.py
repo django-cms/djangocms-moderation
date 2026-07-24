@@ -1,9 +1,11 @@
-from cms.utils.urlutils import admin_reverse
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.test.client import RequestFactory
 from django.urls import reverse
+
+from cms.utils.urlutils import admin_reverse
+
 from djangocms_versioning.test_utils import factories
 
 from djangocms_moderation import conf, constants

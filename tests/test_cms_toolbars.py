@@ -1,11 +1,13 @@
 from unittest import mock
 
-from cms.middleware.toolbar import ToolbarMiddleware
-from cms.test_utils.testcases import CMSTestCase
-from cms.toolbar.toolbar import CMSToolbar
 from django.contrib.auth.models import Permission, User
 from django.test.client import RequestFactory
 from django.urls import reverse
+
+from cms.middleware.toolbar import ToolbarMiddleware
+from cms.test_utils.testcases import CMSTestCase
+from cms.toolbar.toolbar import CMSToolbar
+
 from djangocms_versioning import __version__ as versioning_version
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 

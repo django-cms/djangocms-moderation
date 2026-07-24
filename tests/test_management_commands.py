@@ -1,7 +1,8 @@
 from io import StringIO
 
-from cms.test_utils.testcases import CMSTestCase
 from django.core.management import call_command
+
+from cms.test_utils.testcases import CMSTestCase
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import Role

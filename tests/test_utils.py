@@ -1,4 +1,5 @@
 from django.test.client import RequestFactory
+
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import utils

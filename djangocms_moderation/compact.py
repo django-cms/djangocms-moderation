@@ -1,5 +1,7 @@
 from django import get_version
+
 from packaging.version import Version
+
 
 DJANGO_VERSION = get_version()
 

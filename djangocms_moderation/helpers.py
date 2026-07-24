@@ -1,5 +1,3 @@
-from cms.models import CMSPlugin
-from cms.utils.plugins import downcast_plugins
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -7,6 +5,10 @@ from django.db.models import Q
 from django.template.defaultfilters import truncatechars
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+
+from cms.models import CMSPlugin
+from cms.utils.plugins import downcast_plugins
+
 from djangocms_versioning import versionables
 from djangocms_versioning.constants import DRAFT
 from djangocms_versioning.models import Version
@@ -14,6 +16,7 @@ from djangocms_versioning.models import Version
 from .conf import COLLECTION_NAME_LENGTH_LIMIT
 from .constants import COLLECTING
 from .models import ConfirmationFormSubmission
+
 
 User = get_user_model()
 

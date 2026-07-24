@@ -1,12 +1,14 @@
 import unittest
 from unittest import mock
 
-from cms.test_utils.testcases import CMSTestCase
-from cms.test_utils.util.context_managers import signal_tester
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.auth.models import Group
 from django.test import TransactionTestCase
 from django.urls import reverse
+
+from cms.test_utils.testcases import CMSTestCase
+from cms.test_utils.util.context_managers import signal_tester
+
 from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.models import Version
 

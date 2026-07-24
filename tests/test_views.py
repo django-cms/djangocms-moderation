@@ -1,11 +1,13 @@
 from unittest import mock
 
-from cms.test_utils.testcases import CMSTestCase
-from cms.utils.urlutils import add_url_parameters, admin_reverse
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.contrib.messages import get_messages
 from django.test import TransactionTestCase
 from django.urls import reverse
+
+from cms.test_utils.testcases import CMSTestCase
+from cms.utils.urlutils import add_url_parameters, admin_reverse
+
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation.models import (
@@ -26,6 +28,7 @@ from .utils.factories import (
     RootModerationRequestTreeNodeFactory,
     UserFactory,
 )
+
 
 try:
     from djangocms_versioning.helpers import remove_version_lock, version_is_locked
