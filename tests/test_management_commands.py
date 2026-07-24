@@ -1,8 +1,7 @@
 from io import StringIO
 
-from django.core.management import call_command
-
 from cms.test_utils.testcases import CMSTestCase
+from django.core.management import call_command
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import Role
@@ -129,7 +128,7 @@ class FixStatesTestCase(CMSTestCase):
         call_command("moderation_fix_states", "--perform-fix", stdout=out)
 
         self.assertIn("ModerationRequest objects found: 1", out.getvalue())
-        self.assertIn("Repaired ModerationRequest id: %s" % self.collection2_moderation_request2.id, out.getvalue())
+        self.assertIn(f"Repaired ModerationRequest id: {self.collection2_moderation_request2.id}", out.getvalue())
 
         # Verify fixes
         out = StringIO()

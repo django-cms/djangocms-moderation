@@ -6,14 +6,13 @@ except ImportError:
 from unittest import TestCase, skip
 from unittest.mock import patch
 
-from django.apps import apps
-from django.core.exceptions import ImproperlyConfigured
-from django.test import ignore_warnings
-
 from cms import app_registration
 from cms.models import PageContent
 from cms.test_utils.testcases import CMSTestCase
 from cms.utils.setup import setup_cms_apps
+from django.apps import apps
+from django.core.exceptions import ImproperlyConfigured
+from django.test import ignore_warnings
 
 from djangocms_moderation.cms_config import ModerationExtension
 from djangocms_moderation.helpers import is_registered_for_moderation
@@ -57,9 +56,8 @@ class CMSConfigTest(CMSTestCase, TestCase):
         )
 
         err_msg = (
-            "Moderated model %s need to be Versionable, please include every model that "
+            f"Moderated model {App1PostContent} need to be Versionable, please include every model that "
             "needs to be moderated in djangocms_versioning VersionableItem entry"
-            % App1PostContent
         )
 
         with self.assertRaisesMessage(ImproperlyConfigured, err_msg):

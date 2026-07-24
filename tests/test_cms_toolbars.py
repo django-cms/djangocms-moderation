@@ -1,13 +1,11 @@
 from unittest import mock
 
-from django.contrib.auth.models import Permission, User
-from django.test.client import RequestFactory
-from django.urls import reverse
-
 from cms.middleware.toolbar import ToolbarMiddleware
 from cms.test_utils.testcases import CMSTestCase
 from cms.toolbar.toolbar import CMSToolbar
-
+from django.contrib.auth.models import Permission, User
+from django.test.client import RequestFactory
+from django.urls import reverse
 from djangocms_versioning import __version__ as versioning_version
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
@@ -284,7 +282,7 @@ class CMSToolbarsTestCase(CMSTestCase):
         collection_list_url = reverse(
             "admin:djangocms_moderation_moderationcollection_changelist"
         )
-        collection_list_url += "?author__id__exact=%s" % user.pk
+        collection_list_url += f"?author__id__exact={user.pk}"
         self.assertTrue(manage_collection_item.url, collection_list_url)
 
     def test_add_manage_collection_item_to_moderation_menu_no_permission(self):

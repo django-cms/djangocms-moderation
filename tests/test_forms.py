@@ -2,7 +2,6 @@ from unittest import mock
 
 from django.contrib.auth.models import User
 from django.forms import HiddenInput
-
 from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 

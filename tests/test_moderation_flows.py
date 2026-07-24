@@ -1,10 +1,9 @@
 from unittest import skip
 
-from django.contrib.auth.models import User
-from django.test import TestCase
-
 from cms.api import create_page
 from cms.utils.urlutils import admin_reverse
+from django.contrib.auth.models import User
+from django.test import TestCase
 
 from djangocms_moderation import constants
 from djangocms_moderation.models import (

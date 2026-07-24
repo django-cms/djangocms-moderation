@@ -1,3 +1,6 @@
+from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
+from cms.toolbar.utils import get_object_preview_url
+from cms.utils.helpers import is_editable_model
 from django import forms
 from django.apps import apps
 from django.contrib import admin, messages
@@ -10,12 +13,8 @@ from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import re_path, reverse
 from django.utils.html import format_html, format_html_join
-from django.utils.translation import gettext, gettext_lazy as _, ngettext
-
-from cms.toolbar.utils import get_object_preview_url
-from cms.utils.helpers import is_editable_model
-
-from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
+from django.utils.translation import gettext, ngettext
+from django.utils.translation import gettext_lazy as _
 from treebeard.admin import TreeAdmin
 
 from . import constants, signals
@@ -50,7 +49,6 @@ from .models import (
     Workflow,
     WorkflowStep,
 )
-
 
 from . import conf  # isort:skip
 from . import utils  # isort:skip

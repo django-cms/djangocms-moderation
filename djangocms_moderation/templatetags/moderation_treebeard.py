@@ -1,7 +1,5 @@
 from django import template
-
 from treebeard.templatetags import admin_tree
-
 
 register = template.Library()
 

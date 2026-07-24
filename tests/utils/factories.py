@@ -1,10 +1,8 @@
 import string
 
-from django.contrib.auth.models import User
-
-from cms.models import Placeholder
-
 import factory
+from cms.models import Placeholder
+from django.contrib.auth.models import User
 from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import (
     AbstractVersionFactory,

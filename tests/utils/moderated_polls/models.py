@@ -1,9 +1,8 @@
+from cms.models import CMSPlugin, Placeholder
+from cms.models.fields import PlaceholderRelationField
 from django.db import models
 from django.urls import reverse
 from django.utils.functional import cached_property
-
-from cms.models import CMSPlugin, Placeholder
-from cms.models.fields import PlaceholderRelationField
 
 
 class Poll(models.Model):

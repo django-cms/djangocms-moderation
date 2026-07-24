@@ -6,7 +6,6 @@ from django.urls import include, path, re_path
 from django.views.i18n import JavaScriptCatalog
 from django.views.static import serve
 
-
 admin.autodiscover()
 
 urlpatterns = [

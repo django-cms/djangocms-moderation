@@ -1,14 +1,12 @@
 import unittest
 from unittest import mock
 
+from cms.test_utils.testcases import CMSTestCase
+from cms.test_utils.util.context_managers import signal_tester
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.auth.models import Group
 from django.test import TransactionTestCase
 from django.urls import reverse
-
-from cms.test_utils.testcases import CMSTestCase
-from cms.test_utils.util.context_managers import signal_tester
-
 from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.models import Version
 
@@ -350,8 +348,7 @@ class ApproveSelectedTest(CMSTestCase):
         # root1 -> moderation_request1 (already approved),
         # root2 -> moderation_request2 (still pending / no permission)
         url = reverse("admin:djangocms_moderation_moderationrequest_approve")
-        url += "?ids=%d,%d&collection_id=%d" % (
-            self.root1.pk, self.root2.pk, self.collection.pk)
+        url += f"?ids={self.root1.pk},{self.root2.pk}&collection_id={self.collection.pk}"
 
         response = self.client.post(url)
 
@@ -389,7 +386,7 @@ class ApproveSelectedTest(CMSTestCase):
 
         self.client.force_login(self.role2.user)
         url = reverse("admin:djangocms_moderation_moderationrequest_approve")
-        url += "?ids=%d&collection_id=%d" % (self.root2.pk, self.collection.pk)
+        url += f"?ids={self.root2.pk}&collection_id={self.collection.pk}"
 
         response = self.client.post(url)
 
@@ -418,7 +415,7 @@ class ApproveSelectedTest(CMSTestCase):
 
         self.client.force_login(self.role1.user)
         url = reverse("admin:djangocms_moderation_moderationrequest_approve")
-        url += "?ids=%d&collection_id=%d" % (self.root2.pk, self.collection.pk)
+        url += f"?ids={self.root2.pk}&collection_id={self.collection.pk}"
 
         response = self.client.post(url)
 
@@ -600,8 +597,10 @@ class RejectSelectedTest(CMSTestCase):
     ):
         # Set up the url (need to access the view directly)
         url = reverse("admin:djangocms_moderation_moderationrequest_rework")
-        url += "?ids=%d,%d&collection_id=%d" % (
-            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+        url += (
+            f"?ids={self.moderation_request1.pk},{self.moderation_request2.pk}"
+            f"&collection_id={self.collection.pk}"
+        )
 
         response = self.client.post(url)
 
@@ -712,7 +711,7 @@ class PublishSelectedTest(CMSTestCase):
         with signal_tester(published) as signal:
             # And now go to the view the action redirects to
             self.client.post(response.url)
-            args, kwargs = signal.calls[0]
+            _args, kwargs = signal.calls[0]
             published_mr = kwargs['moderation_requests']
             self.assertEqual(signal.call_count, 1)
             self.assertEqual(kwargs['sender'], ModerationRequest)
@@ -807,8 +806,10 @@ class PublishSelectedTest(CMSTestCase):
         self.client.force_login(self.get_superuser())
         # Set up the url (need to access the view directly)
         url = reverse("admin:djangocms_moderation_moderationrequest_publish")
-        url += "?ids=%d,%d&collection_id=%d" % (
-            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+        url += (
+            f"?ids={self.moderation_request1.pk},{self.moderation_request2.pk}"
+            f"&collection_id={self.collection.pk}"
+        )
 
         # POST directly to the view, don't go through actions
         response = self.client.post(url)
@@ -838,8 +839,10 @@ class PublishSelectedTest(CMSTestCase):
     def test_view_doesnt_publish_when_version_cant_be_published(self, messages_mock):
         # Set up the url (need to access the view directly)
         url = reverse("admin:djangocms_moderation_moderationrequest_publish")
-        url += "?ids=%d,%d&collection_id=%d" % (
-            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+        url += (
+            f"?ids={self.moderation_request1.pk},{self.moderation_request2.pk}"
+            f"&collection_id={self.collection.pk}"
+        )
 
         response = self.client.post(url)
 
@@ -972,8 +975,10 @@ class ResubmitSelectedTest(CMSTestCase):
     def test_view_doesnt_resubmit_when_user_cant_resubmit(self, messages_mock, notify_moderators_mock):
         # Set up the url (need to access the view directly)
         url = reverse("admin:djangocms_moderation_moderationrequest_resubmit")
-        url += "?ids=%d,%d&collection_id=%d" % (
-            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+        url += (
+            f"?ids={self.moderation_request1.pk},{self.moderation_request2.pk}"
+            f"&collection_id={self.collection.pk}"
+        )
 
         response = self.client.post(url)
 
@@ -1006,8 +1011,10 @@ class ResubmitSelectedTest(CMSTestCase):
         self.client.force_login(self.get_superuser())
         # Set up the url (need to access the view directly)
         url = reverse("admin:djangocms_moderation_moderationrequest_resubmit")
-        url += "?ids=%d,%d&collection_id=%d" % (
-            self.moderation_request1.pk, self.moderation_request2.pk, self.collection.pk)
+        url += (
+            f"?ids={self.moderation_request1.pk},{self.moderation_request2.pk}"
+            f"&collection_id={self.collection.pk}"
+        )
 
         # POST directly to the view, don't go through actions
         response = self.client.post(url)

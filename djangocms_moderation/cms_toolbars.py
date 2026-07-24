@@ -1,9 +1,7 @@
-from django.contrib.auth import get_permission_codename
-from django.utils.translation import gettext_lazy as _
-
 from cms.cms_toolbars import ADMIN_MENU_IDENTIFIER
 from cms.utils.urlutils import add_url_parameters
-
+from django.contrib.auth import get_permission_codename
+from django.utils.translation import gettext_lazy as _
 from djangocms_versioning.cms_toolbars import VersioningToolbar, replace_toolbar
 from djangocms_versioning.models import Version
 

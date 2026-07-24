@@ -1,5 +1,4 @@
 from cms.app_base import CMSAppConfig
-
 from djangocms_versioning.datastructures import VersionableItem
 
 from .models import App1PostContent, App1TitleContent

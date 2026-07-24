@@ -1,10 +1,9 @@
-from django.db import models
-from django.urls import reverse
-from django.utils.functional import cached_property
-
 from cms.models import CMSPlugin
 from cms.models.fields import PlaceholderRelationField
 from cms.utils.placeholder import get_placeholder_from_slot
+from django.db import models
+from django.urls import reverse
+from django.utils.functional import cached_property
 
 
 class NoneModeratedPoll(models.Model):

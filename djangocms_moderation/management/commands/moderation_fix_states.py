@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-
 from djangocms_versioning import constants as versioning_constants
 
 from djangocms_moderation import constants as moderation_constants

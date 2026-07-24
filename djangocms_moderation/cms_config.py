@@ -1,8 +1,7 @@
-from django.contrib import admin
-from django.core.exceptions import ImproperlyConfigured
-
 from cms.app_base import CMSAppConfig, CMSAppExtension
 from cms.models import PageContent
+from django.contrib import admin
+from django.core.exceptions import ImproperlyConfigured
 
 from .admin_actions import add_items_to_collection
 

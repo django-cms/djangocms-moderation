@@ -1,5 +1,7 @@
 import json
 
+from cms.models.fields import PlaceholderRelationField
+from cms.utils.placeholder import get_placeholder_from_slot
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -7,18 +9,14 @@ from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.urls import reverse
 from django.utils.functional import cached_property
-from django.utils.translation import gettext, gettext_lazy as _
-
-from cms.models.fields import PlaceholderRelationField
-from cms.utils.placeholder import get_placeholder_from_slot
-
+from django.utils.translation import gettext
+from django.utils.translation import gettext_lazy as _
 from djangocms_versioning.models import Version
 from treebeard.mp_tree import MP_Node
 
 from .emails import notify_collection_moderators
 from .managers import CollectionManager
 from .utils import generate_compliance_number
-
 
 from . import conf, constants, signals  # isort:skip
 
