@@ -90,6 +90,11 @@ exclude = [
     "node_modules",
 ]
 
+extend-ignore = [
+    "C408",     # Unnecessary `dict()` call (rewrite as a literal)
+    "RUF012",   # Mutable default value for class attribute
+]
+
 [tool.isort]
 profile = "black"
 line_length = 119

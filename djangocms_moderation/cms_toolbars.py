@@ -103,9 +103,9 @@ class ModerationToolbar(VersioningToolbar):
         # if the current user is a moderator or reviewer, then create a link
         # which will filter to show only collections for that user's attention
         if helpers.get_all_moderators().filter(pk=self.request.user.id).exists():
-            url += "?moderator=%s" % self.request.user.id
+            url += f"?moderator={self.request.user.id}"
         elif helpers.get_all_reviewers().filter(pk=self.request.user.id).exists():
-            url += "?reviewer=%s" % self.request.user.id
+            url += f"?reviewer={self.request.user.id}"
         admin_menu.add_sideframe_item(_("Moderation collections"), url=url, position=3)
 
     def post_template_populate(self):

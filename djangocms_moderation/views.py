@@ -59,7 +59,7 @@ class CollectionItemsView(FormView):
                 isinstance(version.content, PageContent)
                 and version.created_by == self.request.user
             )
-            moderation_request, added_items = collection.add_version(
+            _, added_items = collection.add_version(
                 version, include_children=include_children
             )
             total_added += added_items
@@ -203,10 +203,7 @@ class SubmitCollectionForModeration(FormView):
         )
         # Redirect back to the collection filtered moderation request change list
         redirect_url = reverse('admin:djangocms_moderation_moderationrequest_changelist')
-        redirect_url = "{}?moderation_request__collection__id={}".format(
-            redirect_url,
-            self.collection.id
-        )
+        redirect_url = f"{redirect_url}?moderation_request__collection__id={self.collection.id}"
         return HttpResponseRedirect(redirect_url)
 
     def get_context_data(self, **kwargs):

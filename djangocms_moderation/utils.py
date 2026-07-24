@@ -1,4 +1,4 @@
-from functools import lru_cache
+from functools import cache
 from urllib.parse import parse_qs, urljoin
 
 from django.conf import settings
@@ -26,7 +26,7 @@ def get_admin_url(name, language, args):
         return admin_reverse(name, args=args)
 
 
-@lru_cache(maxsize=None)
+@cache
 def load_backend(path):
     return import_string(path)
 
