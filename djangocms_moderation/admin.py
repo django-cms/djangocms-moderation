@@ -656,10 +656,10 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             # The review workflow is identical for both kinds of collection;
             # only the terminal transition and the eligibility check differ.
             if collection.is_unpublishing:
-                can_finalise = lambda mr: mr.version_can_be_unpublished()  # noqa: E731
+                can_finalise = lambda mr: mr.version_can_be_unpublished()
                 finalise = unpublish_version
             else:
-                can_finalise = lambda mr: mr.version_can_be_published()  # noqa: E731
+                can_finalise = lambda mr: mr.version_can_be_published()
                 finalise = publish_version
 
             finalised_moderation_requests = []
