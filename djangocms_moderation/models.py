@@ -13,10 +13,10 @@ from cms.models.fields import PlaceholderRelationField
 from cms.utils.placeholder import get_placeholder_from_slot
 
 from djangocms_versioning.models import Version
-from treebeard.mp_tree import MP_Node
 
 from .emails import notify_collection_moderators
 from .managers import CollectionManager
+from .tree import BASE_MAINTAINS_PARENT, TreeNodeBase
 from .utils import generate_compliance_number
 
 
@@ -432,10 +432,18 @@ class ModerationCollection(models.Model):
         return added_items
 
 
-class ModerationRequestTreeNode(MP_Node):
+class ModerationRequestTreeNode(TreeNodeBase):
     moderation_request = models.ForeignKey(
         to='ModerationRequest',
         verbose_name=_('moderation_request'),
+        on_delete=models.CASCADE,
+    )
+    parent = models.ForeignKey(
+        to='self',
+        verbose_name=_('parent'),
+        blank=True,
+        null=True,
+        related_name='children',
         on_delete=models.CASCADE,
     )
 
@@ -444,6 +452,77 @@ class ModerationRequestTreeNode(MP_Node):
 
     def __str__(self):
         return str(self.id)
+
+    # ``get_depth`` and ``get_children_count`` are part of treebeard's node API
+    # which the CMS core implementation does not provide, but treebeard's admin
+    # templatetags (still used to render the changelist) rely on.
+    def get_depth(self):
+        return self.depth
+
+    def get_children_count(self):
+        return self.numchild
+
+    def add_child(self, **kwargs):
+        node = super().add_child(**kwargs)
+        if not BASE_MAINTAINS_PARENT:
+            node._store_parent(self)
+        return node
+
+    def add_sibling(self, *args, **kwargs):
+        node = super().add_sibling(*args, **kwargs)
+        if not BASE_MAINTAINS_PARENT:
+            node._store_parent(self.parent)
+        return node
+
+    def move(self, target, *args, **kwargs):
+        super().move(target, *args, **kwargs)
+        if not BASE_MAINTAINS_PARENT:
+            # A treebeard move rewrites paths in the database and leaves this
+            # instance stale, so the new parent has to be read back.
+            moved = self._meta.model.objects.get(pk=self.pk)
+            moved._store_parent(moved.get_parent(update=True))
+            self.refresh_from_db()
+
+    def _store_parent(self, parent):
+        """
+        Persist the ``parent`` foreign key treebeard does not know about. Written
+        with an ``UPDATE`` so no other (possibly stale) field of this instance is
+        written back along with it.
+        """
+        parent_id = parent.pk if parent else None
+        if self.parent_id != parent_id:
+            self.parent_id = parent_id
+            self._meta.model.objects.filter(pk=self.pk).update(parent=parent_id)
+
+    @classmethod
+    def fix_tree(cls, *args, **kwargs):
+        result = super().fix_tree(*args, **kwargs)
+        if not BASE_MAINTAINS_PARENT:
+            cls.rebuild_parents()
+        return result
+
+    @classmethod
+    def rebuild_parents(cls):
+        """
+        Re-derive every ``parent`` from the materialized path, which treebeard
+        keeps authoritative. The repair path for rows written by code that
+        bypasses the tree API (a raw ``create()``, ``load_bulk()``), and how
+        ``fix_tree`` extends to the foreign key treebeard does not know about.
+        """
+        cls.objects.filter(depth=1).exclude(parent=None).update(parent=None)
+
+        pk_by_path = dict(cls.objects.values_list('path', 'pk'))
+        changed = []
+        for node in cls.objects.exclude(depth=1).only('pk', 'path', 'depth', 'parent'):
+            # Path segments are fixed width, one per level, so cutting the last
+            # segment off yields the parent's path, whatever ``steplen`` is.
+            steplen = len(node.path) // node.depth
+            parent_id = pk_by_path.get(node.path[:-steplen])
+            if node.parent_id != parent_id:
+                node.parent_id = parent_id
+                changed.append(node)
+        cls.objects.bulk_update(changed, ['parent'], batch_size=500)
+        return len(changed)
 
 
 class ModerationRequest(models.Model):

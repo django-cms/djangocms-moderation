@@ -2,6 +2,20 @@
 Changelog
 =========
 
+unreleased
+==========
+* feat: The moderation request tree now follows the ``CMS_TREE_BACKEND``
+  setting. django CMS 5.0.10 and 5.1.1 introduced ``cms.utils.mptree``, a
+  dependency free implementation of the ``MP_Node`` API; setting
+  ``CMS_TREE_BACKEND = "mptree"`` makes ``ModerationRequestTreeNode`` use it
+  instead of ``django-treebeard``, just like the page tree. Older django CMS
+  versions keep using treebeard.
+* feat: ``ModerationRequestTreeNode`` gained a ``parent`` foreign key, which the
+  CMS core tree backend treats as the source of truth. Migration ``0020``
+  backfills it from the existing materialized paths, so switching backends needs
+  no further data migration. Under treebeard the model keeps the field in step
+  itself, and ``ModerationRequestTreeNode.fix_tree()`` re-derives it.
+
 2.4.0 (2026-07-06)
 ==================
 * feat: When approving moderation requests in bulk, the user now gets clear
