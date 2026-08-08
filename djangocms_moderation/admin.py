@@ -16,7 +16,6 @@ from cms.toolbar.utils import get_object_preview_url
 from cms.utils.helpers import is_editable_model
 
 from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
-from treebeard.admin import TreeAdmin
 
 from . import constants, signals
 from .admin_actions import (
@@ -109,11 +108,14 @@ class ModerationRequestActionInline(admin.TabularInline):
 
 
 @admin.register(ModerationRequestTreeNode)
-class ModerationRequestTreeAdmin(TreeAdmin):
+class ModerationRequestTreeAdmin(admin.ModelAdmin):
     """
-    This admin is purely for the change list of Moderation Requests using the treebeard nodes to
+    This admin is purely for the change list of Moderation Requests using the tree nodes to
     organise the requests into a nested structure which also allows moderation requests to be displayed
     more than once, i.e. they are present in more than one parent.
+
+    The nesting is read-only: rows are listed in depth-first order and indented
+    by their depth, so no client side tree handling is involved.
     """
     class Media:
         js = (
@@ -122,7 +124,11 @@ class ModerationRequestTreeAdmin(TreeAdmin):
             "djangocms_moderation/js/burger.js",
         )
         css = {
-            "all": ("djangocms_moderation/css/actions.css", "djangocms_moderation/css/burger.css")
+            "all": (
+                "djangocms_moderation/css/actions.css",
+                "djangocms_moderation/css/burger.css",
+                "djangocms_moderation/css/tree.css",
+            )
         }
 
     actions = [  # filtered out in `self.get_actions`
@@ -134,6 +140,9 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     ]
     change_list_template = 'djangocms_moderation/moderation_request_change_list.html'
     list_display_links = []
+    # The materialized path sorts a tree depth first, so every node is listed
+    # directly below the one it hangs off and the indentation reads as nesting.
+    ordering = ('path',)
 
     def has_add_permission(self, request):
         """
@@ -218,12 +227,26 @@ class ModerationRequestTreeAdmin(TreeAdmin):
     )
     def get_id(self, obj):
         return format_html(
-            '<a href="{url}">{id}</a>',
+            '{indent}<a href="{url}">{id}</a>',
+            indent=self.get_tree_indent(obj),
             url=reverse(
                 'admin:djangocms_moderation_moderationrequest_change',
                 args=(obj.moderation_request_id,),
             ),
             id=obj.moderation_request_id,
+        )
+
+    def get_tree_indent(self, obj):
+        """
+        Indent a nested request by its depth in the collection's tree. Rendered
+        here rather than by client side tree code, because the change list only
+        ever displays the tree, it does not edit it.
+        """
+        if obj.depth < 2:
+            return ''
+        return format_html(
+            '<span class="cms-moderation-tree-indent" style="width: {}em"></span>',
+            (obj.depth - 1) * 2,
         )
 
     @admin.display(

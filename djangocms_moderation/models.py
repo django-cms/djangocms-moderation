@@ -453,9 +453,10 @@ class ModerationRequestTreeNode(TreeNodeBase):
     def __str__(self):
         return str(self.id)
 
-    # ``get_depth`` and ``get_children_count`` are part of treebeard's node API
-    # which the CMS core implementation does not provide, but treebeard's admin
-    # templatetags (still used to render the changelist) rely on.
+    # Part of treebeard's node API which the CMS core implementation does not
+    # provide. Kept so that code written against the node -- e.g. a project's
+    # own ``moderation_request_changelist_fields`` -- reads the same under
+    # either backend.
     def get_depth(self):
         return self.depth
 

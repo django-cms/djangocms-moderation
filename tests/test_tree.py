@@ -1,5 +1,10 @@
+from django.contrib import admin
 from django.test import TestCase
+from django.urls import reverse
 
+from cms.test_utils.testcases import CMSTestCase
+
+from djangocms_moderation.admin import ModerationRequestTreeAdmin
 from djangocms_moderation.models import ModerationRequestTreeNode
 from djangocms_moderation.tree import BASE_MAINTAINS_PARENT, TreeNodeBase, get_tree_backend
 
@@ -120,3 +125,65 @@ class TreeNodeParentTestCase(TestCase):
 
         child.refresh_from_db()
         self.assertEqual(child.parent_id, root.pk)
+
+
+class TreeChangelistTestCase(CMSTestCase):
+    """
+    The changelist renders the nesting itself, rather than leaving it to the
+    client side tree of whichever tree library is installed.
+    """
+
+    def setUp(self):
+        self.user = self.get_superuser()
+        self.collection = factories.ModerationCollectionFactory(author=self.user)
+        self.tree_admin = ModerationRequestTreeAdmin(
+            ModerationRequestTreeNode, admin.AdminSite()
+        )
+        changelist_url = reverse(
+            'admin:djangocms_moderation_moderationrequesttreenode_changelist'
+        )
+        self.url = (
+            f"{changelist_url}?moderation_request__collection__id={self.collection.pk}"
+        )
+
+    def _node(self, parent=None):
+        kwargs = {'moderation_request__collection': self.collection}
+        if parent is None:
+            return factories.RootModerationRequestTreeNodeFactory(**kwargs)
+        return factories.ChildModerationRequestTreeNodeFactory(parent=parent, **kwargs)
+
+    def test_root_row_is_not_indented(self):
+        self.assertEqual(self.tree_admin.get_tree_indent(self._node()), '')
+
+    def test_nested_rows_are_indented_by_their_depth(self):
+        root = self._node()
+        child = self._node(parent=root)
+        grandchild = self._node(parent=child)
+
+        self.assertIn('width: 2em', self.tree_admin.get_tree_indent(child))
+        self.assertIn('width: 4em', self.tree_admin.get_tree_indent(grandchild))
+
+    def test_changelist_lists_the_tree_depth_first(self):
+        first_root = self._node()
+        second_root = self._node()
+        # Added last, so creation order alone would list it below ``second_root``
+        # and the indentation would read as nesting under the wrong request.
+        child = self._node(parent=first_root)
+
+        with self.login_user_context(self.user):
+            response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [node.pk for node in response.context['cl'].result_list],
+            [first_root.pk, child.pk, second_root.pk],
+        )
+
+    def test_changelist_renders_the_indentation(self):
+        child = self._node(parent=self._node())
+
+        with self.login_user_context(self.user):
+            response = self.client.get(self.url)
+
+        self.assertContains(response, 'cms-moderation-tree-indent')
+        self.assertContains(response, f'>{child.moderation_request_id}</a>')

@@ -15,6 +15,12 @@ unreleased
   backfills it from the existing materialized paths, so switching backends needs
   no further data migration. Under treebeard the model keeps the field in step
   itself, and ``ModerationRequestTreeNode.fix_tree()`` re-derives it.
+* feat: The moderation requests changelist no longer builds on treebeard's
+  ``TreeAdmin``. It is a plain ``ModelAdmin`` ordered by ``path``, indenting
+  each row by its depth, which renders the same nesting without treebeard's
+  admin templates, templatetags and JavaScript. The tree is presentational
+  there, so the drag & drop reordering the JavaScript offered -- inert on this
+  changelist, which is always filtered by collection -- is gone with it.
 
 2.4.0 (2026-07-06)
 ==================
