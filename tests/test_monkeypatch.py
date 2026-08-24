@@ -2,6 +2,7 @@ from unittest import mock
 
 from django.contrib import admin
 from django.urls import reverse
+from django.utils import translation
 
 from cms.models import PageContent
 from cms.models.fields import PlaceholderRelationField
@@ -131,6 +132,17 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         # Now the version lock is lifted, so we should be able to add to moderation
         link = self.version_admin._get_moderation_link(draft_version, self.mock_request)
         self.assertIn("Submit for moderation", link)
+
+    def test_get_moderation_link_with_correct_language(self):
+        draft_version = PageVersionFactory(created_by=self.mock_request.user)
+
+        def _test_for_language(language):
+            with self.subTest(f"with language '{language}'"), translation.override(language):
+                link = self.version_admin._get_moderation_link(draft_version, self.mock_request)
+                self.assertIn(f'href="/{language}/admin/djangocms_moderation/', link)
+
+        _test_for_language("de-de")
+        _test_for_language("de")
 
     @mock.patch("djangocms_moderation.monkeypatch.is_registered_for_moderation")
     def test_get_moderation_link_when_not_registered(
