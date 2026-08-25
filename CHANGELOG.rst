@@ -13,7 +13,7 @@ unreleased
   versions keep using treebeard.
 * feat: ``ModerationRequestTreeNode`` gained a ``parent`` foreign key, which the
   CMS core tree backend treats as the source of truth. Migration ``0020``
-  backfills it from the existing materialized paths, so switching backends needs
+  backfills it from the existing materialised paths, so switching backends needs
   no further data migration. Under treebeard the model keeps the field in step
   itself, and ``ModerationRequestTreeNode.fix_tree()`` re-derives it.
 * feat: The moderation requests changelist no longer builds on treebeard's
