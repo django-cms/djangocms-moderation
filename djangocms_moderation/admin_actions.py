@@ -11,10 +11,12 @@ from django.utils.translation import gettext_lazy as _
 from cms.utils.urlutils import add_url_parameters
 
 from django_fsm import TransitionNotAllowed
+from djangocms_versioning.exceptions import ConditionFailed
 from djangocms_versioning.models import Version
 
 from djangocms_moderation import conf, constants
 
+from .operations import moderated_unpublish
 from .utils import get_admin_url
 
 
@@ -222,7 +224,11 @@ def publish_version(version, user):
 
 def unpublish_version(version, user):
     try:
-        version.unpublish(user)
-    except TransitionNotAllowed:
+        with moderated_unpublish():
+            # Preserve djangocms-versioning's permission and lock checks. The
+            # moderation-routing check alone is bypassed by the scoped context.
+            version.check_unpublish(user)
+            version.unpublish(user)
+    except (ConditionFailed, TransitionNotAllowed):
         return False
     return True

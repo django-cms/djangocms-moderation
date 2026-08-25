@@ -438,6 +438,20 @@ class UnpublishSelectedViewTest(CMSTestCase):
             self.assertEqual(kwargs["collection"], self.collection)
             self.assertIn(self.mr, kwargs["moderation_requests"])
 
+    def test_cannot_unpublish_while_draft_is_locked_by_another_user(self):
+        editor = factories.UserFactory(is_staff=True, is_superuser=True)
+        draft = self.mr.version.copy(editor)
+        self.assertEqual(draft.locked_by, editor)
+
+        data = self._action_data("unpublish_selected")
+        response = self.client.post(self.url, data)
+        self.client.post(response.url)
+
+        version = Version.objects.get(pk=self.mr.version.pk)
+        self.mr.refresh_from_db()
+        self.assertEqual(version.state, PUBLISHED)
+        self.assertTrue(self.mr.is_active)
+
     def test_cannot_unpublish_request_from_another_collection(self):
         other_collection = factories.ModerationCollectionFactory(
             author=factories.UserFactory(is_staff=True, is_superuser=True),

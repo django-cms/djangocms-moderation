@@ -18,6 +18,7 @@ from djangocms_moderation.helpers import (
     is_obj_version_unlocked,
     is_registered_for_moderation,
 )
+from djangocms_moderation.operations import is_moderated_unpublish
 from djangocms_moderation.utils import get_admin_url
 
 
@@ -163,7 +164,11 @@ def _check_registered_for_unpublish_moderation(message):
     unpublish flow is enabled).
     """
     def inner(version, user):
-        if conf.ENABLE_UNPUBLISHING and is_registered_for_moderation(version.content):
+        if (
+            conf.ENABLE_UNPUBLISHING
+            and not is_moderated_unpublish()
+            and is_registered_for_moderation(version.content)
+        ):
             raise ConditionFailed(message)
 
     return inner
