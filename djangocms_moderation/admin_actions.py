@@ -243,3 +243,4 @@ def unpublish_version(version, user):
         return str(error)
     except TransitionNotAllowed:
         return _("Version is not in published state")
+    return None
