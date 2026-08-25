@@ -46,9 +46,7 @@ def _get_moderation_link(self, version, request):
         return format_html('<a href="{}">{}</a>', url, title)
     elif is_obj_version_unlocked(content_object, request.user):
         url = add_url_parameters(
-            get_admin_url(
-                name="cms_moderation_items_to_collection", language="en", args=()
-            ),
+            get_admin_url(name="cms_moderation_items_to_collection"),
             version_ids=version.pk,
             return_to_url=version_list_url(version.content),
         )

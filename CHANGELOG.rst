@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Unreleased
+==========
+
+* fix: removed the hardcoded "en" language when generating the moderation link
+  and pass the admins language
+
 2.4.0 (2026-07-06)
 ==================
 * feat: When approving moderation requests in bulk, the user now gets clear
