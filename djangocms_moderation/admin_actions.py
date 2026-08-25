@@ -142,11 +142,7 @@ def add_items_to_collection(modeladmin, request, queryset):
     version_ids = [str(x) for x in version_ids]
     if version_ids:
         admin_url = add_url_parameters(
-            get_admin_url(
-                name="cms_moderation_items_to_collection",
-                language=request.GET.get("language"),
-                args=(),
-            ),
+            get_admin_url(name="cms_moderation_items_to_collection"),
             version_ids=",".join(version_ids),
             return_to_url=request.headers.get("referer", ""),
         )

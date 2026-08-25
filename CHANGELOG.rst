@@ -4,6 +4,7 @@ Changelog
 
 unreleased
 ==========
+
 * feat: The moderation request tree now follows the ``CMS_TREE_BACKEND``
   setting. django CMS 5.0.10 and 5.1.1 introduced ``cms.utils.mptree``, a
   dependency free implementation of the ``MP_Node`` API; setting
@@ -21,6 +22,8 @@ unreleased
   admin templates, templatetags and JavaScript. The tree is presentational
   there, so the drag & drop reordering the JavaScript offered -- inert on this
   changelist, which is always filtered by collection -- is gone with it.
+* fix: removed the hardcoded "en" language when generating the moderation link
+  and pass the admins language
 
 2.4.0 (2026-07-06)
 ==================

@@ -21,7 +21,9 @@ def get_absolute_url(location, site=None):
     return urljoin(domain, location)
 
 
-def get_admin_url(name, language, args):
+def get_admin_url(name, language=None, args=()):
+    if not language:
+        return admin_reverse(name, args=args)
     with force_language(language):
         return admin_reverse(name, args=args)
 
