@@ -3,12 +3,15 @@ Changelog
 =========
 
 unreleased
+==========
 
 * feat: Add an opt-in moderated **unpublish** flow. With
   ``CMS_MODERATION_ENABLE_UNPUBLISHING = True``, published content can be
   routed through the same review workflow to be unpublished, and the direct
   unpublish link is removed from moderated content (#165). Disabled by default
   (#161)
+* fix: removed the hardcoded "en" language when generating the moderation link
+  and pass the admins language
 
 2.4.0 (2026-07-06)
 ==================
