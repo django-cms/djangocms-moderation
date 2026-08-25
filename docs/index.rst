@@ -49,6 +49,7 @@ reviewer.
    explanation/workflows
    explanation/roles
    explanation/lock
+   explanation/unpublishing
    explanation/comments
    explanation/references
    explanation/internals

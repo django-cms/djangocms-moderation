@@ -9,6 +9,7 @@ from cms.test_utils.testcases import CMSTestCase
 from cms.toolbar.toolbar import CMSToolbar
 
 from djangocms_versioning import __version__ as versioning_version
+from djangocms_versioning.constants import PUBLISHED
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
@@ -99,6 +100,48 @@ class CMSToolbarsTestCase(CMSTestCase):
         toolbar.post_template_populate()
 
         self.assertTrue(self._button_exists("Submit for moderation", toolbar.toolbar))
+
+    def test_submit_for_moderation_carries_publish_action(self):
+        user = self.get_superuser()
+        version = PageVersionFactory(created_by=user)
+        toolbar = self._get_toolbar(version.content, user=user, edit_mode=True)
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        buttons = self._find_buttons("Submit for moderation", toolbar.toolbar)
+
+        self.assertEqual(len(buttons), 1)
+        self.assertIn(f"action={constants.COLLECTION_PUBLISH}", buttons[0].url)
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
+    def test_submit_for_unpublishing_of_published_version(self):
+        user = self.get_superuser()
+        version = PageVersionFactory(created_by=user, state=PUBLISHED)
+        toolbar = self._get_toolbar(version.content, user=user, preview_mode=True)
+        toolbar.toolbar.preview_mode_active = True
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        buttons = self._find_buttons("Submit for unpublishing", toolbar.toolbar)
+
+        self.assertEqual(len(buttons), 1)
+        self.assertIn(f"action={constants.COLLECTION_UNPUBLISH}", buttons[0].url)
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", False)
+    def test_no_moderation_button_for_published_version_when_disabled(self):
+        user = self.get_superuser()
+        version = PageVersionFactory(created_by=user, state=PUBLISHED)
+        toolbar = self._get_toolbar(version.content, user=user, preview_mode=True)
+        toolbar.toolbar.preview_mode_active = True
+        toolbar.populate()
+        toolbar.post_template_populate()
+
+        self.assertFalse(
+            self._button_exists("Submit for unpublishing", toolbar.toolbar)
+        )
+        self.assertFalse(
+            self._button_exists("Submit for moderation", toolbar.toolbar)
+        )
 
     def test_submit_for_moderation_no_permission(self):
         user = self.get_standard_user()

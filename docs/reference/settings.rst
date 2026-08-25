@@ -74,6 +74,26 @@ Default: only the default template above
 A tuple of ``(template_path, label)`` pairs available in the confirmation
 page admin.
 
+``CMS_MODERATION_ENABLE_UNPUBLISHING``
+--------------------------------------
+
+Default: ``False``
+
+Opt-in flag for the moderated **unpublish** flow. When enabled, collection
+authors can create *unpublish* collections: published content is added to a
+collection and, once it has passed the *same* review workflow used for
+publishing, it is unpublished instead of published. Enabling the flag also:
+
+* adds a **Submit for unpublishing** link to published, moderated versions in
+  the versioning admin, and
+* removes the direct *unpublish* link from moderated content, so unpublishing
+  always goes through moderation.
+
+While disabled (the default), collections can only publish content and no
+unpublish entry points are shown — behaviour is unchanged from before the
+feature existed. Collections always default to publishing; unpublishing must be
+chosen deliberately per collection.
+
 ``CMS_MODERATION_ENABLE_WORKFLOW_OVERRIDE``
 -------------------------------------------
 

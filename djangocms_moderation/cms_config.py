@@ -4,7 +4,8 @@ from django.core.exceptions import ImproperlyConfigured
 from cms.app_base import CMSAppConfig, CMSAppExtension
 from cms.models import PageContent
 
-from .admin_actions import add_items_to_collection
+from . import conf
+from .admin_actions import add_item_to_unpublish_collection, add_items_to_collection
 
 
 class ModerationExtension(CMSAppExtension):
@@ -26,8 +27,15 @@ class ModerationExtension(CMSAppExtension):
         for model in moderated_models:
             if admin.site.is_registered(model):
                 admin_instance = admin.site._registry[model]
-                admin_instance.actions = admin_instance.actions or []
-                admin_instance.actions.append(add_items_to_collection)
+                actions = list(admin_instance.actions or [])
+                if add_items_to_collection not in actions:
+                    actions.append(add_items_to_collection)
+                if (
+                    conf.ENABLE_UNPUBLISHING
+                    and add_item_to_unpublish_collection not in actions
+                ):
+                    actions.append(add_item_to_unpublish_collection)
+                admin_instance.actions = actions
 
     def configure_app(self, cms_config):
         versioning_enabled = getattr(cms_config, "djangocms_versioning_enabled", False)

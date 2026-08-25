@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 00:54+0200\n"
+"POT-Creation-Date: 2026-08-25 17:48+0000\n"
 "PO-Revision-Date: 2026-06-29 00:00+0000\n"
 "Last-Translator: Fabian Braun <fsbraun@gmx.de>, 2026\n"
 "Language-Team: Hindi (https://app.transifex.com/divio/teams/58664/hi/)\n"
@@ -21,16 +21,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:66 models.py:699
+#: admin.py:68 models.py:735
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
 msgstr "कार्रवाई"
 
-#: admin.py:67 models.py:700
+#: admin.py:69 models.py:736
 msgid "Actions"
 msgstr "कार्रवाइयाँ"
 
-#: admin.py:76
+#: admin.py:78
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:25
@@ -41,32 +41,32 @@ msgstr "कार्रवाइयाँ"
 msgid "Status"
 msgstr "स्थिति"
 
-#: admin.py:80
+#: admin.py:82
 #, python-brace-format
 msgid "By {user}"
 msgstr "{user} द्वारा"
 
-#: admin.py:83
+#: admin.py:85
 msgid "Form Submission"
 msgstr "फ़ॉर्म सबमिशन"
 
-#: admin.py:183 admin.py:1131
+#: admin.py:186 admin.py:1217
 msgid "actions"
 msgstr "कार्रवाइयाँ"
 
-#: admin.py:217
+#: admin.py:220
 msgid "ID"
 msgstr "ID"
 
-#: admin.py:230
+#: admin.py:233
 msgid "Content type"
 msgstr "सामग्री प्रकार"
 
-#: admin.py:238
+#: admin.py:241
 msgid "Title"
 msgstr "शीर्षक"
 
-#: admin.py:244
+#: admin.py:247
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:22
@@ -77,72 +77,97 @@ msgstr "शीर्षक"
 msgid "Author"
 msgstr "लेखक"
 
-#: admin.py:250
+#: admin.py:253
 msgid "Preview"
 msgstr "पूर्वावलोकन"
 
-#: admin.py:272
+#: admin.py:273
 msgid "Reviewer"
 msgstr "समीक्षक"
 
-#: admin.py:290
+#: admin.py:294
+msgid "Ready for unpublishing"
+msgstr "अप्रकाशित करने के लिए तैयार"
+
+#: admin.py:296
 msgid "Ready for publishing"
 msgstr "प्रकाशन के लिए तैयार"
 
-#: admin.py:292
+#: admin.py:298
 msgid "Pending author rework"
 msgstr "लेखक द्वारा पुनः कार्य लंबित"
 
-#: admin.py:296
+#: admin.py:302
 #, python-format
 msgid "Pending %(role)s approval"
 msgstr "%(role)s की स्वीकृति लंबित"
 
-#: admin.py:305
+#: admin.py:311
 #, python-format
 msgid "%(action)s by %(name)s"
 msgstr "%(name)s द्वारा %(action)s"
 
-#: admin.py:307
+#: admin.py:313
 msgid "Ready for submission"
 msgstr "सबमिशन के लिए तैयार"
 
-#: admin.py:471
+#: admin.py:482
 #, python-format
 msgid "%(count)d request successfully deleted"
 msgid_plural "%(count)d requests successfully deleted"
 msgstr[0] "%(count)d अनुरोध सफलतापूर्वक हटाया गया"
 msgstr[1] "%(count)d अनुरोध सफलतापूर्वक हटाए गए"
 
-#: admin.py:614
+#: admin.py:645
 #, python-format
 msgid "%(count)d request successfully resubmitted for review"
 msgid_plural "%(count)d requests successfully resubmitted for review"
 msgstr[0] "%(count)d अनुरोध सफलतापूर्वक समीक्षा के लिए पुनः सबमिट किया गया"
 msgstr[1] "%(count)d अनुरोध सफलतापूर्वक समीक्षा के लिए पुनः सबमिट किए गए"
 
-#: admin.py:661
+#: admin.py:705
+#, python-format
+msgid "%(count)d request successfully unpublished"
+msgid_plural "%(count)d requests successfully unpublished"
+msgstr[0] "%(count)d अनुरोध सफलतापूर्वक अप्रकाशित किया गया"
+msgstr[1] "%(count)d अनुरोध सफलतापूर्वक अप्रकाशित किए गए"
+
+#: admin.py:710
+#, python-format
+msgid "%(count)d request could not be unpublished: %(reasons)s"
+msgid_plural "%(count)d requests could not be unpublished: %(reasons)s"
+msgstr[0] "%(count)d अनुरोध अप्रकाशित नहीं किया जा सका: %(reasons)s"
+msgstr[1] "%(count)d अनुरोध अप्रकाशित नहीं किए जा सके: %(reasons)s"
+
+#: admin.py:716
 #, python-format
 msgid "%(count)d request successfully published"
 msgid_plural "%(count)d requests successfully published"
 msgstr[0] "%(count)d अनुरोध सफलतापूर्वक प्रकाशित किया गया"
 msgstr[1] "%(count)d अनुरोध सफलतापूर्वक प्रकाशित किए गए"
 
-#: admin.py:720
+#: admin.py:721
+#, python-format
+msgid "%(count)d request could not be published: %(reasons)s"
+msgid_plural "%(count)d requests could not be published: %(reasons)s"
+msgstr[0] "%(count)d अनुरोध प्रकाशित नहीं किया जा सका: %(reasons)s"
+msgstr[1] "%(count)d अनुरोध प्रकाशित नहीं किए जा सके: %(reasons)s"
+
+#: admin.py:796
 #, python-format
 msgid "%(count)d request successfully submitted for rework"
 msgid_plural "%(count)d requests successfully submitted for rework"
 msgstr[0] "%(count)d अनुरोध सफलतापूर्वक पुनः कार्य के लिए सबमिट किया गया"
 msgstr[1] "%(count)d अनुरोध सफलतापूर्वक पुनः कार्य के लिए सबमिट किए गए"
 
-#: admin.py:827
+#: admin.py:903
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
 msgstr[0] "%(count)d अनुरोध सफलतापूर्वक स्वीकृत किया गया"
 msgstr[1] "%(count)d अनुरोध सफलतापूर्वक स्वीकृत किए गए"
 
-#: admin.py:838
+#: admin.py:914
 #, python-format
 msgid ""
 "%(count)d request was not approved because you do not have permission to "
@@ -155,14 +180,14 @@ msgstr[0] ""
 msgstr[1] ""
 "%(count)d अनुरोध स्वीकृत नहीं किए गए क्योंकि आपके पास इन्हें स्वीकृत करने की अनुमति नहीं है"
 
-#: admin.py:851
+#: admin.py:927
 #, python-format
 msgid "%(count)d request was already approved"
 msgid_plural "%(count)d requests were already approved"
 msgstr[0] "%(count)d अनुरोध पहले ही स्वीकृत किया जा चुका था"
 msgstr[1] "%(count)d अनुरोध पहले ही स्वीकृत किए जा चुके थे"
 
-#: admin.py:862
+#: admin.py:938
 #, python-format
 msgid ""
 "%(count)d request was already approved by you or your team and is awaiting "
@@ -171,11 +196,13 @@ msgid_plural ""
 "%(count)d requests were already approved by you or your team and are "
 "awaiting other reviewers"
 msgstr[0] ""
-"%(count)d अनुरोध आपके या आपकी टीम द्वारा पहले ही स्वीकृत किया जा चुका है और अन्य समीक्षकों की प्रतीक्षा में है"
+"%(count)d अनुरोध आपके या आपकी टीम द्वारा पहले ही स्वीकृत किया जा चुका है और अन्य "
+"समीक्षकों की प्रतीक्षा में है"
 msgstr[1] ""
-"%(count)d अनुरोध आपके या आपकी टीम द्वारा पहले ही स्वीकृत किए जा चुके हैं और अन्य समीक्षकों की प्रतीक्षा में हैं"
+"%(count)d अनुरोध आपके या आपकी टीम द्वारा पहले ही स्वीकृत किए जा चुके हैं और अन्य "
+"समीक्षकों की प्रतीक्षा में हैं"
 
-#: admin.py:875
+#: admin.py:951
 #, python-format
 msgid ""
 "%(count)d request could not be approved because it has been rejected and "
@@ -184,92 +211,114 @@ msgid_plural ""
 "%(count)d requests could not be approved because they have been rejected and "
 "must be resubmitted by their authors"
 msgstr[0] ""
-"%(count)d अनुरोध स्वीकृत नहीं किया जा सका क्योंकि इसे अस्वीकृत कर दिया गया है और इसके लेखक द्वारा पुनः सबमिट किया जाना चाहिए"
+"%(count)d अनुरोध स्वीकृत नहीं किया जा सका क्योंकि इसे अस्वीकृत कर दिया गया है और इसके "
+"लेखक द्वारा पुनः सबमिट किया जाना चाहिए"
 msgstr[1] ""
-"%(count)d अनुरोध स्वीकृत नहीं किए जा सके क्योंकि इन्हें अस्वीकृत कर दिया गया है और इनके लेखकों द्वारा पुनः सबमिट किए जाने चाहिए"
+"%(count)d अनुरोध स्वीकृत नहीं किए जा सके क्योंकि इन्हें अस्वीकृत कर दिया गया है और इनके "
+"लेखकों द्वारा पुनः सबमिट किए जाने चाहिए"
 
-#: admin.py:946
+#: admin.py:1024
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
 msgstr "संग्रह टिप्पणियाँ"
 
-#: admin.py:995
+#: admin.py:1075
 msgid "User"
 msgstr "उपयोगकर्ता"
 
-#: admin.py:1032
+#: admin.py:1114
 msgid "Request comments"
 msgstr "अनुरोध टिप्पणियाँ"
 
-#: admin.py:1124
+#: admin.py:1210
 msgid "reviewers"
 msgstr "समीक्षक"
 
-#: admin.py:1147
+#: admin.py:1233
 msgid "Modify collection"
 msgstr "संग्रह संशोधित करें"
 
-#: admin.py:1274 models.py:468
+#: admin.py:1382 models.py:501
 msgid "Request"
 msgstr "अनुरोध"
 
-#: admin.py:1280
+#: admin.py:1388
 msgid "By User"
 msgstr "उपयोगकर्ता द्वारा"
 
-#: admin.py:1286
+#: admin.py:1394
 msgid "Form Data"
 msgstr "फ़ॉर्म डेटा"
 
-#: admin.py:1294
+#: admin.py:1402
 msgid "Question"
 msgstr "प्रश्न"
 
-#: admin.py:1294
+#: admin.py:1402
 msgid "Answer"
 msgstr "उत्तर"
 
-#: admin_actions.py:36
+#: admin_actions.py:37
 msgid "Resubmit changes for review"
 msgstr "समीक्षा के लिए परिवर्तन पुनः सबमिट करें"
 
-#: admin_actions.py:53
+#: admin_actions.py:54
 msgid "Submit for rework"
 msgstr "पुनः कार्य के लिए सबमिट करें"
 
-#: admin_actions.py:66
+#: admin_actions.py:67
 msgid "Approve"
 msgstr "स्वीकृत करें"
 
-#: admin_actions.py:82
+#: admin_actions.py:83
 msgid "Remove selected"
 msgstr "चयनित हटाएँ"
 
-#: admin_actions.py:99
+#: admin_actions.py:108
 msgid "Publish selected requests"
 msgstr "चयनित अनुरोध प्रकाशित करें"
 
-#: admin_actions.py:156
+#: admin_actions.py:115
+msgid "Unpublish selected requests"
+msgstr "चयनित अनुरोध अप्रकाशित करें"
+
+#: admin_actions.py:172
 msgid "No suitable items found to add to moderation collection"
 msgstr "मॉडरेशन संग्रह में जोड़ने के लिए कोई उपयुक्त आइटम नहीं मिला"
 
-#: admin_actions.py:161
+#: admin_actions.py:184
 msgid "Add to moderation collection"
 msgstr "मॉडरेशन संग्रह में जोड़ें"
 
-#: admin_actions.py:165
+#: admin_actions.py:191
+msgid "Unpublishing through moderation is not enabled"
+msgstr "मॉडरेशन के माध्यम से अप्रकाशन सक्षम नहीं है"
+
+#: admin_actions.py:207
 msgid "Add items to a collection to unpublish"
 msgstr "अप्रकाशित करने के लिए संग्रह में आइटम जोड़ें"
+
+#: admin_actions.py:228
+msgid "Version is not in draft state"
+msgstr "संस्करण ड्राफ़्ट स्थिति में नहीं है"
+
+#: admin_actions.py:245
+msgid "Version is not in published state"
+msgstr "संस्करण प्रकाशित स्थिति में नहीं है"
 
 #: apps.py:7
 msgid "django CMS Moderation"
 msgstr "django CMS मॉडरेशन"
 
-#: cms_toolbars.py:84 monkeypatch.py:56
+#: cms_toolbars.py:80 monkeypatch.py:46
 msgid "Submit for moderation"
 msgstr "मॉडरेशन के लिए सबमिट करें"
 
-#: cms_toolbars.py:109
+#: cms_toolbars.py:83 monkeypatch.py:49
+msgid "Submit for unpublishing"
+msgstr "अप्रकाशन के लिए सबमिट करें"
+
+#: cms_toolbars.py:121
 #: templates/djangocms_moderation/moderation_request_change_list.html:44
 msgid "Moderation collections"
 msgstr "मॉडरेशन संग्रह"
@@ -326,7 +375,7 @@ msgstr "अस्वीकृत"
 msgid "Approved"
 msgstr "स्वीकृत"
 
-#: constants.py:37 constants.py:54
+#: constants.py:37 constants.py:65
 msgid "Cancelled"
 msgstr "रद्द किया गया"
 
@@ -335,14 +384,22 @@ msgid "Finished"
 msgstr "समाप्त"
 
 #: constants.py:51
+msgid "Publish"
+msgstr "प्रकाशित करें"
+
+#: constants.py:52
+msgid "Unpublish"
+msgstr "अप्रकाशित करें"
+
+#: constants.py:62
 msgid "Collecting"
 msgstr "एकत्रित किया जा रहा है"
 
-#: constants.py:52
+#: constants.py:63
 msgid "In Review"
 msgstr "समीक्षा में"
 
-#: constants.py:53
+#: constants.py:64
 msgid "Archived"
 msgstr "संग्रहीत"
 
@@ -364,7 +421,7 @@ msgstr "मॉडरेशन के लिए अनुरोध हटाय�
 msgid "Review requested"
 msgstr "समीक्षा का अनुरोध किया गया"
 
-#: filters.py:18 forms.py:64 models.py:240
+#: filters.py:18 forms.py:74 models.py:241
 msgid "moderator"
 msgstr "मॉडरेटर"
 
@@ -376,16 +433,24 @@ msgstr "समीक्षक"
 msgid "All"
 msgstr "सब"
 
-#: forms.py:67
+#: forms.py:77
 msgid "comment"
 msgstr "टिप्पणी"
 
-#: forms.py:100 forms.py:198
+#: forms.py:110 forms.py:244
 #, python-brace-format
 msgid "Any {role}"
 msgstr "कोई भी {role}"
 
-#: forms.py:172
+#: forms.py:170
+#, python-format
+msgid ""
+"Select one of your own collections that is still collecting items and is set "
+"to %(action)s."
+msgstr ""
+"अपना कोई ऐसा संग्रह चुनें जो अभी भी आइटम एकत्र कर रहा हो और %(action)s पर सेट हो।"
+
+#: forms.py:218
 msgid ""
 "Your item is either locked, not enabled for moderation,or is part of another "
 "active moderation request"
@@ -399,19 +464,19 @@ msgstr[1] ""
 "आपके आइटम या तो लॉक हैं, मॉडरेशन के लिए सक्षम नहीं हैं, या किसी अन्य सक्रिय मॉडरेशन "
 "अनुरोध का हिस्सा हैं"
 
-#: forms.py:184
+#: forms.py:230
 msgid "Select review group"
 msgstr "समीक्षा समूह चुनें"
 
-#: forms.py:205
+#: forms.py:251
 msgid "This collection can't be submitted for a review"
 msgstr "इस संग्रह को समीक्षा के लिए सबमिट नहीं किया जा सकता"
 
-#: forms.py:222
+#: forms.py:268
 msgid "This collection can't be cancelled"
 msgstr "इस संग्रह को रद्द नहीं किया जा सकता"
 
-#: forms.py:266
+#: forms.py:311
 msgid "You can only change your own comments"
 msgstr "आप केवल अपनी ही टिप्पणियाँ बदल सकते हैं"
 
@@ -425,19 +490,19 @@ msgstr "संग्रह \"%(collection_name)s (%(collection_id)s)\" में
 msgid "In moderation \"%(collection_name)s (%(collection_id)s)\""
 msgstr "मॉडरेशन \"%(collection_name)s (%(collection_id)s)\" में"
 
-#: models.py:38
+#: models.py:39
 msgid "Plain"
 msgstr "सादा"
 
-#: models.py:39
+#: models.py:40
 msgid "Form"
 msgstr "फ़ॉर्म"
 
-#: models.py:42 models.py:93 models.py:136
+#: models.py:43 models.py:94 models.py:137
 msgid "name"
 msgstr "नाम"
 
-#: models.py:45
+#: models.py:46
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:20
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:20
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:20
@@ -447,51 +512,51 @@ msgstr "नाम"
 msgid "Content Type"
 msgstr "सामग्री प्रकार"
 
-#: models.py:51
+#: models.py:52
 msgid "Template"
 msgstr "टेम्पलेट"
 
-#: models.py:56
+#: models.py:57
 msgid "Confirmation Page"
 msgstr "पुष्टिकरण पृष्ठ"
 
-#: models.py:57
+#: models.py:58
 msgid "Confirmation Pages"
 msgstr "पुष्टिकरण पृष्ठ"
 
-#: models.py:98
+#: models.py:99
 msgid "user"
 msgstr "उपयोगकर्ता"
 
-#: models.py:101
+#: models.py:102
 msgid "group"
 msgstr "समूह"
 
-#: models.py:105 models.py:789
+#: models.py:106 models.py:825
 msgid "confirmation page"
 msgstr "पुष्टिकरण पृष्ठ"
 
-#: models.py:113
+#: models.py:114
 msgid "Role"
 msgstr "भूमिका"
 
-#: models.py:114
+#: models.py:115
 msgid "Roles"
 msgstr "भूमिकाएँ"
 
-#: models.py:121
+#: models.py:122
 msgid "Can't pick both user and group. Only one."
 msgstr "उपयोगकर्ता और समूह दोनों नहीं चुन सकते। केवल एक।"
 
-#: models.py:137
+#: models.py:138
 msgid "is default"
 msgstr "डिफ़ॉल्ट है"
 
-#: models.py:139
+#: models.py:140
 msgid "identifier"
 msgstr "पहचानकर्ता"
 
-#: models.py:144
+#: models.py:145
 msgid ""
 "Identifier is a 'free' field you could use for internal purposes. For "
 "example, it could be used as a workflow specific prefix of a compliance "
@@ -500,11 +565,11 @@ msgstr ""
 "पहचानकर्ता एक 'मुक्त' फ़ील्ड है जिसका उपयोग आप आंतरिक उद्देश्यों के लिए कर सकते हैं। उदाहरण "
 "के लिए, इसका उपयोग अनुपालन संख्या के वर्कफ़्लो-विशिष्ट उपसर्ग के रूप में किया जा सकता है"
 
-#: models.py:150
+#: models.py:151
 msgid "requires compliance number?"
 msgstr "अनुपालन संख्या आवश्यक है?"
 
-#: models.py:153
+#: models.py:154
 msgid ""
 "Does the Compliance number need to be generated before the moderation "
 "request is approved? Please select the compliance number backend below"
@@ -512,92 +577,104 @@ msgstr ""
 "क्या मॉडरेशन अनुरोध स्वीकृत होने से पहले अनुपालन संख्या उत्पन्न करने की आवश्यकता है? कृपया "
 "नीचे अनुपालन संख्या बैकएंड चुनें"
 
-#: models.py:159
+#: models.py:160
 msgid "compliance number backend"
 msgstr "अनुपालन संख्या बैकएंड"
 
-#: models.py:164
+#: models.py:165
 #: templates/djangocms_moderation/moderation_request_change_list.html:20
 msgid "Workflow"
 msgstr "वर्कफ़्लो"
 
-#: models.py:165
+#: models.py:166
 msgid "Workflows"
 msgstr "वर्कफ़्लो"
 
-#: models.py:188
+#: models.py:189
 msgid "Can't have two default workflows, only one is allowed."
 msgstr "दो डिफ़ॉल्ट वर्कफ़्लो नहीं हो सकते, केवल एक की अनुमति है।"
 
-#: models.py:198
+#: models.py:199
 msgid "role"
 msgstr "भूमिका"
 
-#: models.py:200
+#: models.py:201
 msgid "is mandatory"
 msgstr "अनिवार्य है"
 
-#: models.py:203 models.py:244
+#: models.py:204 models.py:245
 msgid "workflow"
 msgstr "वर्कफ़्लो"
 
-#: models.py:212
+#: models.py:213
 msgid "Step"
 msgstr "चरण"
 
-#: models.py:213
+#: models.py:214
 msgid "Steps"
 msgstr "चरण"
 
-#: models.py:237
+#: models.py:238
 msgid "collection name"
 msgstr "संग्रह नाम"
 
-#: models.py:259
+#: models.py:255
+msgid "action"
+msgstr "कार्रवाई"
+
+#: models.py:261
+msgid ""
+"Whether approving this collection publishes its content or unpublishes it. "
+"The review workflow is the same for both."
+msgstr ""
+"क्या इस संग्रह को स्वीकृत करने पर इसकी सामग्री प्रकाशित होती है या अप्रकाशित। समीक्षा "
+"कार्यप्रवाह दोनों के लिए समान है।"
+
+#: models.py:271
 msgid "collection"
 msgstr "संग्रह"
 
-#: models.py:261
+#: models.py:273
 msgid "Can change collection author"
 msgstr "संग्रह लेखक बदल सकते हैं"
 
-#: models.py:262
+#: models.py:274
 msgid "Can cancel collection"
 msgstr "संग्रह रद्द कर सकते हैं"
 
-#: models.py:345
+#: models.py:375
 msgid "Cancelled collection"
 msgstr "रद्द किया गया संग्रह"
 
-#: models.py:425 models.py:684
+#: models.py:458 models.py:720
 msgid "moderation_request"
 msgstr "moderation_request"
 
-#: models.py:443
+#: models.py:476
 msgid "version"
 msgstr "संस्करण"
 
-#: models.py:446
+#: models.py:479
 msgid "language"
 msgstr "भाषा"
 
-#: models.py:449
+#: models.py:482
 msgid "is active"
 msgstr "सक्रिय है"
 
-#: models.py:451
+#: models.py:484
 msgid "date sent"
 msgstr "भेजने की तिथि"
 
-#: models.py:453
+#: models.py:486
 msgid "compliance number"
 msgstr "अनुपालन संख्या"
 
-#: models.py:462 models.py:744
+#: models.py:495 models.py:780
 msgid "author"
 msgstr "लेखक"
 
-#: models.py:469
+#: models.py:502
 #: templates/admin/djangocms_moderation/moderationrequest/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_list.html:10
@@ -605,69 +682,73 @@ msgstr "लेखक"
 msgid "Requests"
 msgstr "अनुरोध"
 
-#: models.py:647
+#: models.py:683
 msgid "status"
 msgstr "स्थिति"
 
-#: models.py:652 models.py:781
+#: models.py:688 models.py:817
 msgid "by user"
 msgstr "उपयोगकर्ता द्वारा"
 
-#: models.py:658
+#: models.py:694
 msgid "to user"
 msgstr "उपयोगकर्ता को"
 
-#: models.py:666
+#: models.py:702
 msgid "to role"
 msgstr "भूमिका को"
 
-#: models.py:676
+#: models.py:712
 msgid "step approved"
 msgstr "चरण स्वीकृत"
 
-#: models.py:681 models.py:742
+#: models.py:717 models.py:778
 msgid "message"
 msgstr "संदेश"
 
-#: models.py:689
+#: models.py:725
 msgid "date taken"
 msgstr "कार्रवाई की तिथि"
 
-#: models.py:769
+#: models.py:805
 msgid "moderation request"
 msgstr "मॉडरेशन अनुरोध"
 
-#: models.py:775
+#: models.py:811
 msgid "for step"
 msgstr "चरण के लिए"
 
-#: models.py:798
+#: models.py:834
 msgid "Confirmation Form Submission"
 msgstr "पुष्टिकरण फ़ॉर्म सबमिशन"
 
-#: models.py:799
+#: models.py:835
 msgid "Confirmation Form Submissions"
 msgstr "पुष्टिकरण फ़ॉर्म सबमिशन"
 
-#: monkeypatch.py:145 monkeypatch.py:155
+#: monkeypatch.py:191 monkeypatch.py:201
 msgid "Cannot archive a version in an active moderation collection"
 msgstr "सक्रिय मॉडरेशन संग्रह में किसी संस्करण को संग्रहीत नहीं किया जा सकता"
 
-#: monkeypatch.py:150
+#: monkeypatch.py:196
 msgid "Cannot revert when draft version is in an active moderation collection"
 msgstr "जब ड्राफ़्ट संस्करण सक्रिय मॉडरेशन संग्रह में हो तो वापस नहीं किया जा सकता"
 
-#: monkeypatch.py:159
+#: monkeypatch.py:205
 msgid "Version is in an active moderation collection"
 msgstr "संस्करण एक सक्रिय मॉडरेशन संग्रह में है"
 
-#: monkeypatch.py:163
+#: monkeypatch.py:209
 msgid "Cannot edit a version in an active moderation collection"
 msgstr "सक्रिय मॉडरेशन संग्रह में किसी संस्करण को संपादित नहीं किया जा सकता"
 
-#: monkeypatch.py:167
+#: monkeypatch.py:213
 msgid "Content cannot be published directly. Use the moderation process."
 msgstr "सामग्री को सीधे प्रकाशित नहीं किया जा सकता। मॉडरेशन प्रक्रिया का उपयोग करें।"
+
+#: monkeypatch.py:216
+msgid "Content cannot be unpublished directly. Use the moderation process."
+msgstr "सामग्री को सीधे अप्रकाशित नहीं किया जा सकता। मॉडरेशन प्रक्रिया का उपयोग करें।"
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:7
 #: templates/admin/djangocms_moderation/collectioncomment/change_list.html:16
@@ -778,8 +859,16 @@ msgid "Are you sure you want to remove these items from this collection?"
 msgstr "क्या आप वाकई इन आइटम को इस संग्रह से हटाना चाहते हैं?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
+msgid "Unpublish Confirmation"
+msgstr "अप्रकाशन पुष्टिकरण"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
 msgid "Publish Confirmation"
 msgstr "प्रकाशन पुष्टिकरण"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
+msgid "Are you sure you want to unpublish these items?"
+msgstr "क्या आप वाकई इन आइटम को अप्रकाशित करना चाहते हैं?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
 msgid "Are you sure you want to publish these items?"
@@ -959,7 +1048,7 @@ msgid "Cancel this collection"
 msgstr "इस संग्रह को रद्द करें"
 
 #: templates/djangocms_moderation/moderation_request_change_list.html:35
-#: views.py:217
+#: views.py:226
 msgid "Submit collection for review"
 msgstr "संग्रह को समीक्षा के लिए सबमिट करें"
 
@@ -978,21 +1067,21 @@ msgstr "पूर्ण किए गए फ़ॉर्म"
 msgid "View Requests"
 msgstr "अनुरोध देखें"
 
-#: views.py:70
+#: views.py:82
 #, python-format
 msgid "%(count)d item successfully added to moderation collection"
 msgid_plural "%(count)d items successfully added to moderation collection"
 msgstr[0] "%(count)d आइटम सफलतापूर्वक मॉडरेशन संग्रह में जोड़ा गया"
 msgstr[1] "%(count)d आइटम सफलतापूर्वक मॉडरेशन संग्रह में जोड़े गए"
 
-#: views.py:202
+#: views.py:214
 msgid "Your collection has been submitted for review"
 msgstr "आपका संग्रह समीक्षा के लिए सबमिट कर दिया गया है"
 
-#: views.py:246
+#: views.py:255
 msgid "Your collection has been cancelled"
 msgstr "आपका संग्रह रद्द कर दिया गया है"
 
-#: views.py:255
+#: views.py:264
 msgid "Cancel collection"
 msgstr "संग्रह रद्द करें"

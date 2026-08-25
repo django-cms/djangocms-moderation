@@ -12,6 +12,7 @@ from django.utils.translation import gettext, gettext_lazy as _
 from cms.models.fields import PlaceholderRelationField
 from cms.utils.placeholder import get_placeholder_from_slot
 
+from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.models import Version
 from treebeard.mp_tree import MP_Node
 
@@ -250,6 +251,17 @@ class ModerationCollection(models.Model):
         default=constants.COLLECTING,
         db_index=True,
     )
+    action = models.CharField(
+        verbose_name=_("action"),
+        max_length=10,
+        choices=constants.COLLECTION_ACTION_CHOICES,
+        default=constants.COLLECTION_PUBLISH,
+        db_index=True,
+        help_text=_(
+            "Whether approving this collection publishes its content or "
+            "unpublishes it. The review workflow is the same for both."
+        ),
+    )
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 
@@ -264,6 +276,11 @@ class ModerationCollection(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def is_unpublishing(self):
+        """Does approving this collection unpublish (rather than publish) its content?"""
+        return self.action == constants.COLLECTION_UNPUBLISH
 
     @property
     def job_id(self):
@@ -414,12 +431,15 @@ class ModerationCollection(models.Model):
         from .helpers import get_moderated_children_from_placeholder
 
         parent = version.content
+        child_state = PUBLISHED if self.is_unpublishing else DRAFT
         added_items = 0
         if not getattr(parent, "get_placeholders", None):
             return added_items
         for placeholder in parent.get_placeholders():
             for child_version in get_moderated_children_from_placeholder(
-                placeholder, version.versionable.grouping_values(parent)
+                placeholder,
+                version.versionable.grouping_values(parent),
+                state=child_state,
             ):
                 # Don't add the version if it's already part of the collection or locked by another user
                 if version_is_unlocked_for_moderation(child_version, version.created_by):
@@ -505,6 +525,9 @@ class ModerationRequest(models.Model):
 
     def version_can_be_published(self):
         return self.is_approved() and self.version.can_be_published()
+
+    def version_can_be_unpublished(self):
+        return self.is_approved() and self.version.can_be_unpublished()
 
     def is_rejected(self):
         last_action = self.get_last_action()

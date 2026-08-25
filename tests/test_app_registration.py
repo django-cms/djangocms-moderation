@@ -7,6 +7,7 @@ from unittest import TestCase, skip
 from unittest.mock import patch
 
 from django.apps import apps
+from django.contrib import admin
 from django.core.exceptions import ImproperlyConfigured
 from django.test import ignore_warnings
 
@@ -15,6 +16,10 @@ from cms.models import PageContent
 from cms.test_utils.testcases import CMSTestCase
 from cms.utils.setup import setup_cms_apps
 
+from djangocms_moderation.admin_actions import (
+    add_item_to_unpublish_collection,
+    add_items_to_collection,
+)
 from djangocms_moderation.cms_config import ModerationExtension
 from djangocms_moderation.helpers import is_registered_for_moderation
 
@@ -44,6 +49,35 @@ class CMSConfigTest(CMSTestCase, TestCase):
         err_msg = "Versioning needs to be enabled for Moderation"
         with self.assertRaisesMessage(ImproperlyConfigured, err_msg):
             extension.configure_app(cms_config)
+
+    @patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", False)
+    @patch.object(admin.site, "is_registered", return_value=True)
+    def test_admin_actions_only_include_publish_when_unpublishing_disabled(
+        self, is_registered
+    ):
+        model = Mock()
+        model_admin = Mock(actions=None)
+        extension = ModerationExtension()
+
+        with patch.dict(admin.site._registry, {model: model_admin}):
+            extension.handle_admin_actions([model])
+
+        self.assertEqual(model_admin.actions, [add_items_to_collection])
+
+    @patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
+    @patch.object(admin.site, "is_registered", return_value=True)
+    def test_admin_actions_include_unpublish_when_enabled(self, is_registered):
+        model = Mock()
+        model_admin = Mock(actions=None)
+        extension = ModerationExtension()
+
+        with patch.dict(admin.site._registry, {model: model_admin}):
+            extension.handle_admin_actions([model])
+
+        self.assertEqual(
+            model_admin.actions,
+            [add_items_to_collection, add_item_to_unpublish_collection],
+        )
 
     @patch("django.apps.apps.get_app_config")
     @skip("Disabled functionality")
