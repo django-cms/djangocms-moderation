@@ -148,7 +148,7 @@ def _get_moderatable_version(
     """
     # If the content model is not registered with moderation nothing should be returned
     if not is_registered_for_moderation(versionable.content_model()):
-        return
+        return None
 
     filters = {versionable.grouper_field_name: grouper}
     if (
@@ -161,7 +161,7 @@ def _get_moderatable_version(
             state=state
         )
     except Version.DoesNotExist:
-        return
+        return None
 
 
 def _get_nested_moderated_children_from_placeholder_plugin(
