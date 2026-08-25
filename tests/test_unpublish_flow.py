@@ -14,17 +14,25 @@ from djangocms_versioning.models import Version
 from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import conf, constants
-from djangocms_moderation.admin import ModerationRequestTreeAdmin
+from djangocms_moderation.admin import (
+    ModerationCollectionAdmin,
+    ModerationRequestTreeAdmin,
+)
 from djangocms_moderation.admin_actions import (
     add_item_to_unpublish_collection,
     unpublish_selected,
 )
 from djangocms_moderation.forms import CollectionItemsForm
-from djangocms_moderation.models import ModerationRequestTreeNode, Role
+from djangocms_moderation.models import (
+    ModerationCollection,
+    ModerationRequestTreeNode,
+    Role,
+)
 from djangocms_moderation.signals import unpublished
 from djangocms_moderation.views import CollectionItemsView
 
 from .utils import factories
+from .utils.factories import PlaceholderFactory, PollPluginFactory, PollVersionFactory
 
 
 class CollectionActionModelTest(CMSTestCase):
@@ -165,6 +173,66 @@ class CollectionItemsUnpublishFormTest(CMSTestCase):
         )
         self.assertFalse(form.is_valid())
 
+    def test_unpublished_version_not_eligible_for_publish(self):
+        unpublished = PageVersionFactory(state=UNPUBLISHED, created_by=self.user)
+        form = CollectionItemsForm(
+            user=self.user,
+            action=constants.COLLECTION_PUBLISH,
+            data={
+                "collection": self.publish_collection.pk,
+                "versions": [unpublished.pk],
+                "action": constants.COLLECTION_PUBLISH,
+            },
+        )
+        self.assertFalse(form.is_valid())
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
+    def test_collection_action_is_readonly_after_items_are_added(self):
+        request = RequestFactory().get("/")
+        request.user = self.user
+        model_admin = ModerationCollectionAdmin(
+            ModerationCollection, AdminSite()
+        )
+        self.assertNotIn(
+            "action",
+            model_admin.get_readonly_fields(request, self.unpublish_collection),
+        )
+
+        version = PageVersionFactory(state=PUBLISHED, created_by=self.user)
+        self.unpublish_collection.add_version(version)
+
+        readonly_fields = model_admin.get_readonly_fields(
+            request, self.unpublish_collection
+        )
+
+        self.assertIn("action", readonly_fields)
+
+    def test_unpublish_collection_adds_published_nested_versions(self):
+        page_version = PageVersionFactory(
+            state=PUBLISHED, created_by=self.user
+        )
+        language = page_version.content.language
+        placeholder = PlaceholderFactory(source=page_version.content)
+        poll_version = PollVersionFactory(
+            state=PUBLISHED,
+            created_by=self.user,
+            content__language=language,
+        )
+        PollPluginFactory(
+            placeholder=placeholder, poll=poll_version.content.poll
+        )
+
+        self.unpublish_collection.add_version(
+            page_version, include_children=True
+        )
+
+        version_ids = set(
+            self.unpublish_collection.moderation_requests.values_list(
+                "version_id", flat=True
+            )
+        )
+        self.assertEqual(version_ids, {page_version.pk, poll_version.pk})
+
 
 class UnpublishAdminActionTest(CMSTestCase):
     def setUp(self):
@@ -297,3 +365,40 @@ class UnpublishSelectedViewTest(CMSTestCase):
             _, kwargs = signal.calls[0]
             self.assertEqual(kwargs["collection"], self.collection)
             self.assertIn(self.mr, kwargs["moderation_requests"])
+
+    def test_cannot_unpublish_request_from_another_collection(self):
+        other_collection = factories.ModerationCollectionFactory(
+            author=factories.UserFactory(is_staff=True, is_superuser=True),
+            workflow=self.collection.workflow,
+            action=constants.COLLECTION_UNPUBLISH,
+            status=constants.IN_REVIEW,
+        )
+        other_version = PageVersionFactory(
+            state=PUBLISHED, created_by=other_collection.author
+        )
+        other_mr = factories.ModerationRequestFactory(
+            collection=other_collection, version=other_version
+        )
+        other_node = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=other_mr
+        )
+        other_mr.actions.create(
+            by_user=other_collection.author, action=constants.ACTION_STARTED
+        )
+        other_mr.update_status(constants.ACTION_APPROVED, self.role1.user)
+        other_mr.update_status(constants.ACTION_APPROVED, self.role2.user)
+        self.assertTrue(other_mr.version_can_be_unpublished())
+
+        url = reverse(
+            "admin:djangocms_moderation_moderationrequest_publish"
+        )
+        url += (
+            f"?ids={other_node.pk}&collection_id={self.collection.pk}"
+        )
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 302)
+        other_version = Version.objects.get(pk=other_version.pk)
+        other_mr.refresh_from_db()
+        self.assertEqual(other_version.state, PUBLISHED)
+        self.assertTrue(other_mr.is_active)

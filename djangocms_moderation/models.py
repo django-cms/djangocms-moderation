@@ -12,6 +12,7 @@ from django.utils.translation import gettext, gettext_lazy as _
 from cms.models.fields import PlaceholderRelationField
 from cms.utils.placeholder import get_placeholder_from_slot
 
+from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.models import Version
 from treebeard.mp_tree import MP_Node
 
@@ -430,12 +431,15 @@ class ModerationCollection(models.Model):
         from .helpers import get_moderated_children_from_placeholder
 
         parent = version.content
+        child_state = PUBLISHED if self.is_unpublishing else DRAFT
         added_items = 0
         if not getattr(parent, "get_placeholders", None):
             return added_items
         for placeholder in parent.get_placeholders():
             for child_version in get_moderated_children_from_placeholder(
-                placeholder, version.versionable.grouping_values(parent)
+                placeholder,
+                version.versionable.grouping_values(parent),
+                state=child_state,
             ):
                 # Don't add the version if it's already part of the collection or locked by another user
                 if version_is_unlocked_for_moderation(child_version, version.created_by):

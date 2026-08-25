@@ -6,7 +6,7 @@ from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import gettext, gettext_lazy as _, ngettext
 
 from adminsortable2.admin import CustomInlineFormSet
-from djangocms_versioning.constants import PUBLISHED
+from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.models import Version
 
 from .constants import (
@@ -172,9 +172,7 @@ class CollectionItemsForm(forms.Form):
 
         eligible_versions = []
         for version in versions:
-            state_ok = (
-                version.state == PUBLISHED if unpublishing else version.state != PUBLISHED
-            )
+            state_ok = version.state == (PUBLISHED if unpublishing else DRAFT)
             if all(
                 [
                     state_ok,

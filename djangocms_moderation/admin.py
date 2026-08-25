@@ -552,17 +552,25 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             ),
         ] + super().get_urls()
 
-    def _get_selected_tree_nodes(self, request):
+    def _get_selected_tree_nodes(self, request, collection=None):
         treenodes = ModerationRequestTreeNode.objects.filter(
             pk__in=request.GET.get('ids', '').split(',')
         ).select_related('moderation_request')
-        return treenodes
+        collection_id = (
+            collection.pk if collection is not None else request.GET.get('collection_id')
+        )
+        try:
+            collection_id = int(collection_id)
+        except (TypeError, ValueError):
+            return treenodes.none()
+        return treenodes.filter(moderation_request__collection_id=collection_id)
 
-    def _custom_view_context(self, request):
-        treenodes = self._get_selected_tree_nodes(request)
+    def _custom_view_context(self, request, collection=None):
         collection_id = request.GET.get('collection_id')
         redirect_url = self._redirect_to_changeview_url(collection_id)
-        collection = ModerationCollection.objects.filter(id=collection_id).first()
+        if collection is None:
+            collection = ModerationCollection.objects.filter(id=collection_id).first()
+        treenodes = self._get_selected_tree_nodes(request, collection=collection)
         return dict(
             ids=request.GET.getlist("ids"),
             back_url=redirect_url,
@@ -585,7 +593,7 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         if request.method != 'POST':
-            context = self._custom_view_context(request)
+            context = self._custom_view_context(request, collection=collection)
             return render(
                 request,
                 'admin/djangocms_moderation/moderationrequest/resubmit_confirmation.html',
@@ -644,14 +652,14 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             raise PermissionDenied
 
         if request.method != 'POST':
-            context = self._custom_view_context(request)
+            context = self._custom_view_context(request, collection=collection)
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/publish_confirmation.html",
                 context,
             )
         else:
-            treenodes = self._get_selected_tree_nodes(request)
+            treenodes = self._get_selected_tree_nodes(request, collection=collection)
 
             # The review workflow is identical for both kinds of collection;
             # only the terminal transition and the eligibility check differ.
@@ -1257,12 +1265,18 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         if obj:
             if not request.user.has_perm("djangocms_moderation.can_change_author"):
                 readonly_fields.append("author")
-            # Author of the collection can change the workflow and action if the
-            # collection is still in the `collecting` state
+            # Author of the collection can change the workflow if the collection
+            # is still in the `collecting` state.
             if obj.status != constants.COLLECTING or obj.author != request.user:
                 readonly_fields.append("workflow")
-                if conf.ENABLE_UNPUBLISHING:
-                    readonly_fields.append("action")
+            # Changing the terminal action after requests have been added would
+            # leave their versions incompatible with the collection.
+            if conf.ENABLE_UNPUBLISHING and (
+                obj.status != constants.COLLECTING
+                or obj.author != request.user
+                or obj.moderation_requests.exists()
+            ):
+                readonly_fields.append("action")
         return readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):
