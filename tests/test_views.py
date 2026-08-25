@@ -787,8 +787,8 @@ class CollectionItemsViewTest(AssertQueryMixin, CMSTestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.context["form"].fields["collection"].widget.__class__,
+        self.assertIsInstance(
+            response.context["form"].fields["collection"].widget,
             RelatedFieldWidgetWrapper,
         )
 

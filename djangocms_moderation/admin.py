@@ -565,11 +565,23 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             return treenodes.none()
         return treenodes.filter(moderation_request__collection_id=collection_id)
 
+    @staticmethod
+    def _get_collection(collection_id):
+        """
+        Look up a collection by an id taken straight from the query string,
+        which may be missing or not a number at all.
+        """
+        try:
+            collection_id = int(collection_id)
+        except (TypeError, ValueError):
+            return None
+        return ModerationCollection.objects.filter(id=collection_id).first()
+
     def _custom_view_context(self, request, collection=None):
         collection_id = request.GET.get('collection_id')
         redirect_url = self._redirect_to_changeview_url(collection_id)
         if collection is None:
-            collection = ModerationCollection.objects.filter(id=collection_id).first()
+            collection = self._get_collection(collection_id)
         treenodes = self._get_selected_tree_nodes(request, collection=collection)
         return dict(
             ids=request.GET.getlist("ids"),
@@ -1250,7 +1262,13 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
         return url_patterns + super().get_urls()
 
     def get_changeform_initial_data(self, request):
-        return {"author": request.user}
+        initial = {"author": request.user}
+        # The collection picker in the "add items to collection" view opens this
+        # form in a popup, passing the action its collections have to have.
+        action = request.GET.get("action")
+        if conf.ENABLE_UNPUBLISHING and action in dict(constants.COLLECTION_ACTION_CHOICES):
+            initial["action"] = action
+        return initial
 
     def get_exclude(self, request, obj=None):
         exclude = list(super().get_exclude(request, obj) or [])

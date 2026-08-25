@@ -134,6 +134,56 @@ class CollectionItemsUnpublishFormTest(CMSTestCase):
         self.assertIn(self.unpublish_collection, qs)
         self.assertNotIn(self.publish_collection, qs)
 
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
+    def test_collection_widget_passes_action_to_add_popup(self):
+        """
+        The "+" popup would otherwise add a publish collection, which the
+        picker then refuses because it is filtered by action.
+        """
+        request = RequestFactory().get("/")
+        request.user = self.user
+        form = CollectionItemsForm(
+            user=self.user, action=constants.COLLECTION_UNPUBLISH
+        )
+        form.set_collection_widget(request)
+
+        context = form.fields["collection"].widget.get_context(
+            "collection", None, {}
+        )
+
+        self.assertIn(
+            f"action={constants.COLLECTION_UNPUBLISH}", context["url_params"]
+        )
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", False)
+    def test_collection_widget_omits_action_when_unpublishing_disabled(self):
+        request = RequestFactory().get("/")
+        request.user = self.user
+        form = CollectionItemsForm(user=self.user)
+        form.set_collection_widget(request)
+
+        context = form.fields["collection"].widget.get_context(
+            "collection", None, {}
+        )
+
+        self.assertNotIn("action=", context["url_params"])
+
+    def test_collection_error_message_names_the_required_action(self):
+        published = PageVersionFactory(state=PUBLISHED, created_by=self.user)
+        form = CollectionItemsForm(
+            user=self.user,
+            action=constants.COLLECTION_UNPUBLISH,
+            data={
+                # A publish collection is not in the picker's queryset
+                "collection": self.publish_collection.pk,
+                "versions": [published.pk],
+                "action": constants.COLLECTION_UNPUBLISH,
+            },
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("Unpublish", str(form.errors["collection"]))
+
     def test_published_version_eligible_for_unpublish(self):
         published = PageVersionFactory(state=PUBLISHED, created_by=self.user)
         form = CollectionItemsForm(
@@ -185,6 +235,28 @@ class CollectionItemsUnpublishFormTest(CMSTestCase):
             },
         )
         self.assertFalse(form.is_valid())
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
+    def test_add_collection_popup_defaults_to_requested_action(self):
+        model_admin = ModerationCollectionAdmin(ModerationCollection, AdminSite())
+        request = RequestFactory().get(
+            "/", {"action": constants.COLLECTION_UNPUBLISH}
+        )
+        request.user = self.user
+
+        initial = model_admin.get_changeform_initial_data(request)
+
+        self.assertEqual(initial["action"], constants.COLLECTION_UNPUBLISH)
+
+    @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
+    def test_add_collection_popup_ignores_unknown_action(self):
+        model_admin = ModerationCollectionAdmin(ModerationCollection, AdminSite())
+        request = RequestFactory().get("/", {"action": "sideways"})
+        request.user = self.user
+
+        initial = model_admin.get_changeform_initial_data(request)
+
+        self.assertNotIn("action", initial)
 
     @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
     def test_collection_action_is_readonly_after_items_are_added(self):
