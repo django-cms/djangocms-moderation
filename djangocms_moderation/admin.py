@@ -683,17 +683,22 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                 finalise = publish_version
 
             finalised_moderation_requests = []
+            failures = []
             for node in treenodes.all():
                 mr = node.moderation_request
-                if can_finalise(mr):
-                    if finalise(mr.version, request.user):
-                        finalised_moderation_requests.append(mr)
-                        mr.update_status(
-                            action=constants.ACTION_FINISHED, by_user=request.user
-                        )
-                    else:
-                        # TODO provide some feedback back to the user?
-                        pass
+                if not can_finalise(mr):
+                    continue
+                error = finalise(mr.version, request.user)
+                if error:
+                    # The version passed moderation but djangocms-versioning
+                    # refused the transition, e.g. for a missing permission or
+                    # a locked draft. Reported below rather than swallowed.
+                    failures.append(str(error))
+                    continue
+                finalised_moderation_requests.append(mr)
+                mr.update_status(
+                    action=constants.ACTION_FINISHED, by_user=request.user
+                )
 
             if collection.is_unpublishing:
                 message = ngettext(
@@ -701,15 +706,37 @@ class ModerationRequestAdmin(admin.ModelAdmin):
                     "%(count)d requests successfully unpublished",
                     len(finalised_moderation_requests),
                 )
+                failure_message = ngettext(
+                    "%(count)d request could not be unpublished: %(reasons)s",
+                    "%(count)d requests could not be unpublished: %(reasons)s",
+                    len(failures),
+                )
             else:
                 message = ngettext(
                     "%(count)d request successfully published",
                     "%(count)d requests successfully published",
                     len(finalised_moderation_requests),
                 )
-            messages.success(
-                request, message % {"count": len(finalised_moderation_requests)}
-            )
+                failure_message = ngettext(
+                    "%(count)d request could not be published: %(reasons)s",
+                    "%(count)d requests could not be published: %(reasons)s",
+                    len(failures),
+                )
+            # Nothing finalised and something went wrong: an empty success
+            # message would be the only feedback, and a misleading one.
+            if finalised_moderation_requests or not failures:
+                messages.success(
+                    request, message % {"count": len(finalised_moderation_requests)}
+                )
+            if failures:
+                messages.error(
+                    request,
+                    failure_message
+                    % {
+                        "count": len(failures),
+                        "reasons": "; ".join(sorted(set(failures))),
+                    },
+                )
 
             post_bulk_actions(collection)
             signal = (

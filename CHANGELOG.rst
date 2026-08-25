@@ -10,6 +10,14 @@ unreleased
   routed through the same review workflow to be unpublished, and the direct
   unpublish link is removed from moderated content (#165). Disabled by default
   (#161)
+* feat: Finalising an unpublish collection additionally enforces
+  djangocms-versioning's own unpublish checks: the collection author needs the
+  versioning permission to unpublish the content model, and, with
+  ``DJANGOCMS_VERSIONING_LOCK_VERSIONS`` enabled, a draft locked by someone
+  else blocks it. Moderation approval alone is not sufficient. Requests that
+  fail these checks are now reported with the reason instead of being counted
+  as successfully unpublished. Note that publishing a collection does not apply
+  the equivalent versioning permission check
 * fix: removed the hardcoded "en" language when generating the moderation link
   and pass the admins language
 

@@ -59,6 +59,13 @@ The lifecycle is the same as for publishing (see :ref:`overview`):
    collection and the content is unpublished. An ``unpublished`` signal is
    sent so your code can react (see :ref:`signals`).
 
+Approval by the workflow is necessary but not sufficient for the final step:
+versioning's own unpublish checks still apply. The author finalising the
+collection needs the versioning permission to unpublish that content model,
+and, with ``DJANGOCMS_VERSIONING_LOCK_VERSIONS`` enabled, a draft locked by
+another user blocks it. Requests that fail such a check are left in the
+collection and reported with the reason, rather than counted as unpublished.
+
 While the feature is enabled, the **direct** unpublish link is removed from
 moderated content, so unpublishing always goes through moderation rather than
 bypassing it (this closes the gap described in issue #165). The direct link is

@@ -215,20 +215,31 @@ def post_bulk_actions(collection):
 
 
 def publish_version(version, user):
+    """
+    Publish a version as the last step of moderation. Returns ``None`` when the
+    version was published, otherwise a message saying why it was not, so the
+    caller can report the failure instead of silently skipping the request.
+    """
     try:
         version.publish(user)
+    except ConditionFailed as error:
+        return str(error)
     except TransitionNotAllowed:
-        return False
-    return True
+        return _("Version is not in draft state")
 
 
 def unpublish_version(version, user):
+    """
+    Unpublish a version as the last step of moderation. Returns ``None`` when
+    the version was unpublished, otherwise a message saying why it was not.
+    """
     try:
         with moderated_unpublish():
             # Preserve djangocms-versioning's permission and lock checks. The
             # moderation-routing check alone is bypassed by the scoped context.
             version.check_unpublish(user)
             version.unpublish(user)
-    except (ConditionFailed, TransitionNotAllowed):
-        return False
-    return True
+    except ConditionFailed as error:
+        return str(error)
+    except TransitionNotAllowed:
+        return _("Version is not in published state")

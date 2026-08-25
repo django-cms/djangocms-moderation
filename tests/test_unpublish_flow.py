@@ -452,6 +452,25 @@ class UnpublishSelectedViewTest(CMSTestCase):
         self.assertEqual(version.state, PUBLISHED)
         self.assertTrue(self.mr.is_active)
 
+    @mock.patch("django.contrib.messages.error")
+    @mock.patch("django.contrib.messages.success")
+    def test_failure_to_unpublish_is_reported_to_the_user(
+        self, success_mock, error_mock
+    ):
+        """
+        A version that passed moderation but that djangocms-versioning refuses
+        to unpublish must not be reported as a success.
+        """
+        editor = factories.UserFactory(is_staff=True, is_superuser=True)
+        self.mr.version.copy(editor)
+
+        data = self._action_data("unpublish_selected")
+        response = self.client.post(self.url, data)
+        self.client.post(response.url)
+
+        self.assertFalse(success_mock.called)
+        self.assertIn("could not be unpublished", error_mock.call_args[0][1])
+
     def test_cannot_unpublish_request_from_another_collection(self):
         other_collection = factories.ModerationCollectionFactory(
             author=factories.UserFactory(is_staff=True, is_superuser=True),
