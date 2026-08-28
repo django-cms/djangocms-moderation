@@ -1,4 +1,9 @@
+from importlib import import_module
+from types import SimpleNamespace
+
+from django.apps import apps
 from django.contrib import admin
+from django.db import connection
 from django.test import TestCase
 from django.urls import reverse
 
@@ -187,3 +192,211 @@ class TreeChangelistTestCase(CMSTestCase):
 
         self.assertContains(response, 'cms-moderation-tree-indent')
         self.assertContains(response, f'>{child.moderation_request_id}</a>')
+
+
+class TreeNodeApiTestCase(TestCase):
+    """
+    The bits of treebeard's node API the CMS core implementation does not
+    provide, which the model fills in so a project's own changelist fields read
+    the same under either backend.
+    """
+
+    def test_get_depth_reports_the_stored_depth(self):
+        root = factories.RootModerationRequestTreeNodeFactory()
+        child = factories.ChildModerationRequestTreeNodeFactory(parent=root)
+
+        self.assertEqual(root.get_depth(), 1)
+        self.assertEqual(child.get_depth(), 2)
+
+    def test_get_children_count_reports_the_stored_numchild(self):
+        root = factories.RootModerationRequestTreeNodeFactory()
+        child = factories.ChildModerationRequestTreeNodeFactory(parent=root)
+
+        root.refresh_from_db()
+        self.assertEqual(root.get_children_count(), 1)
+        self.assertEqual(child.get_children_count(), 0)
+
+
+class TreeConsistencyTestCase(TestCase):
+    """
+    ``path`` and ``parent`` are two descriptions of one tree -- treebeard reads
+    the first, the CMS core implementation the second -- so a database written
+    by either backend has to describe the same nesting both ways.
+    """
+
+    def assertTreeIsConsistent(self):
+        nodes = list(ModerationRequestTreeNode.objects.all())
+        children_by_path = {node.pk: set() for node in nodes}
+        children_by_parent = {node.pk: set() for node in nodes}
+        pk_by_path = {node.path: node.pk for node in nodes}
+
+        for node in nodes:
+            if node.depth == 1:
+                self.assertIsNone(
+                    node.parent_id, f"root {node.pk} carries a parent"
+                )
+            else:
+                steplen = len(node.path) // node.depth
+                children_by_path[pk_by_path[node.path[:-steplen]]].add(node.pk)
+            if node.parent_id is not None:
+                children_by_parent[node.parent_id].add(node.pk)
+
+        self.assertEqual(children_by_path, children_by_parent)
+        for node in nodes:
+            self.assertEqual(
+                node.numchild,
+                len(children_by_parent[node.pk]),
+                f"numchild of {node.pk} does not match its children",
+            )
+
+    def _tree(self):
+        root = factories.RootModerationRequestTreeNodeFactory()
+        child = factories.ChildModerationRequestTreeNodeFactory(parent=root)
+        factories.ChildModerationRequestTreeNodeFactory(parent=child)
+        factories.ChildModerationRequestTreeNodeFactory(parent=root)
+        return root, child
+
+    def test_a_tree_built_through_the_node_api_reads_the_same_both_ways(self):
+        self._tree()
+
+        self.assertTreeIsConsistent()
+
+    def test_a_tree_reshaped_through_the_node_api_reads_the_same_both_ways(self):
+        _root, child = self._tree()
+        other_root = factories.RootModerationRequestTreeNodeFactory()
+
+        child.move(other_root, "last-child")
+
+        self.assertTreeIsConsistent()
+
+    def test_fix_tree_restores_consistency_after_a_stale_parent(self):
+        _root, child = self._tree()
+        # As a raw ``create()`` or a treebeard ``load_bulk()`` would leave it:
+        # written without the tree API knowing, so one of the two descriptions
+        # is now stale.
+        ModerationRequestTreeNode.objects.filter(pk=child.pk).update(parent=None)
+
+        ModerationRequestTreeNode.fix_tree()
+
+        self.assertTreeIsConsistent()
+
+    def test_fix_tree_re_derives_the_parent_under_treebeard(self):
+        if BASE_MAINTAINS_PARENT:
+            self.skipTest("the CMS core backend maintains ``parent`` itself")
+        root, child = self._tree()
+        ModerationRequestTreeNode.objects.filter(pk=child.pk).update(parent=None)
+
+        ModerationRequestTreeNode.fix_tree()
+
+        child.refresh_from_db()
+        self.assertEqual(child.parent_id, root.pk)
+
+
+class MigrationBackfillTestCase(TestCase):
+    """
+    Migration ``0021`` derives ``parent`` from the materialized path, the only
+    description of the tree rows written before it have. Tests run with
+    ``--nomigrations``, so the backfill is exercised as the function it is,
+    against rows put into the state the migration would find them in.
+    """
+
+    def setUp(self):
+        migration = import_module(
+            "djangocms_moderation.migrations.0021_moderationrequesttreenode_parent"
+        )
+        self.populate_parent = migration.populate_parent
+        self.schema_editor = SimpleNamespace(connection=connection)
+
+    def _run(self):
+        self.populate_parent(apps, self.schema_editor)
+
+    def _forget_parents(self):
+        """Put the rows back into the pre-migration state: ``path`` only."""
+        ModerationRequestTreeNode.objects.update(parent=None)
+
+    def test_backfills_the_parent_of_every_node(self):
+        root = factories.RootModerationRequestTreeNodeFactory()
+        child = factories.ChildModerationRequestTreeNodeFactory(parent=root)
+        grandchild = factories.ChildModerationRequestTreeNodeFactory(parent=child)
+        sibling = factories.ChildModerationRequestTreeNodeFactory(parent=root)
+        self._forget_parents()
+
+        self._run()
+
+        for node, expected in (
+            (root, None),
+            (child, root.pk),
+            (grandchild, child.pk),
+            (sibling, root.pk),
+        ):
+            node.refresh_from_db()
+            self.assertEqual(node.parent_id, expected)
+
+    def test_leaves_roots_without_a_parent(self):
+        root = factories.RootModerationRequestTreeNodeFactory()
+        factories.RootModerationRequestTreeNodeFactory()
+        self._forget_parents()
+
+        self._run()
+
+        self.assertEqual(
+            list(
+                ModerationRequestTreeNode.objects.filter(depth=1).values_list(
+                    "parent", flat=True
+                )
+            ),
+            [None, None],
+        )
+        root.refresh_from_db()
+        self.assertIsNone(root.parent_id)
+
+    def test_turns_a_node_with_a_missing_ancestor_into_a_root(self):
+        root = factories.RootModerationRequestTreeNodeFactory()
+        child = factories.ChildModerationRequestTreeNodeFactory(parent=root)
+        self._forget_parents()
+        # A tree left dangling by an earlier treebeard-unaware cascade delete.
+        # Deleted behind the tree API, so no descendant is taken with it.
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"DELETE FROM {ModerationRequestTreeNode._meta.db_table} WHERE id = %s",
+                [root.pk],
+            )
+
+        self._run()
+
+        child.refresh_from_db()
+        self.assertIsNone(child.parent_id)
+
+    def _raw_node(self, path, depth):
+        """A row as some other tree writer would have left it: ``path`` only."""
+        return ModerationRequestTreeNode.objects.create(
+            moderation_request=factories.ModerationRequestFactory(),
+            path=path,
+            depth=depth,
+        )
+
+    def test_derives_the_parent_whatever_the_step_width(self):
+        # Path segments are fixed width, one per level, but the width itself is
+        # the tree's ``steplen`` -- which the backfill has to read off the row
+        # rather than assume, or a project that widened it gets a broken tree.
+        root = self._raw_node(path="00000A", depth=1)
+        child = self._raw_node(path="00000A00000B", depth=2)
+        grandchild = self._raw_node(path="00000A00000B00000C", depth=3)
+
+        self._run()
+
+        child.refresh_from_db()
+        grandchild.refresh_from_db()
+        self.assertEqual(child.parent_id, root.pk)
+        self.assertEqual(grandchild.parent_id, child.pk)
+
+    def test_is_idempotent(self):
+        root = factories.RootModerationRequestTreeNodeFactory()
+        child = factories.ChildModerationRequestTreeNodeFactory(parent=root)
+        self._forget_parents()
+
+        self._run()
+        self._run()
+
+        child.refresh_from_db()
+        self.assertEqual(child.parent_id, root.pk)
