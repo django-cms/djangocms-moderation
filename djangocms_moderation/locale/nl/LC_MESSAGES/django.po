@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 00:54+0200\n"
+"POT-Creation-Date: 2026-08-25 17:48+0000\n"
 "PO-Revision-Date: 2026-06-13 00:00+0200\n"
 "Last-Translator: Fabian Braun <fsbraun@gmx.de>\n"
 "Language-Team: Dutch\n"
@@ -19,16 +19,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: admin.py:66 models.py:699
+#: admin.py:68 models.py:735
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
 msgstr "Actie"
 
-#: admin.py:67 models.py:700
+#: admin.py:69 models.py:736
 msgid "Actions"
 msgstr "Acties"
 
-#: admin.py:76
+#: admin.py:78
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:25
@@ -39,32 +39,32 @@ msgstr "Acties"
 msgid "Status"
 msgstr "Status"
 
-#: admin.py:80
+#: admin.py:82
 #, python-brace-format
 msgid "By {user}"
 msgstr "Door {user}"
 
-#: admin.py:83
+#: admin.py:85
 msgid "Form Submission"
 msgstr "Formulierinzending"
 
-#: admin.py:183 admin.py:1131
+#: admin.py:186 admin.py:1217
 msgid "actions"
 msgstr "acties"
 
-#: admin.py:217
+#: admin.py:220
 msgid "ID"
 msgstr "ID"
 
-#: admin.py:230
+#: admin.py:233
 msgid "Content type"
 msgstr "Inhoudstype"
 
-#: admin.py:238
+#: admin.py:241
 msgid "Title"
 msgstr "Titel"
 
-#: admin.py:244
+#: admin.py:247
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:22
@@ -75,72 +75,97 @@ msgstr "Titel"
 msgid "Author"
 msgstr "Auteur"
 
-#: admin.py:250
+#: admin.py:253
 msgid "Preview"
 msgstr "Voorbeeld"
 
-#: admin.py:272
+#: admin.py:273
 msgid "Reviewer"
 msgstr "Beoordelaar"
 
-#: admin.py:290
+#: admin.py:294
+msgid "Ready for unpublishing"
+msgstr "Klaar voor depublicatie"
+
+#: admin.py:296
 msgid "Ready for publishing"
 msgstr "Klaar voor publicatie"
 
-#: admin.py:292
+#: admin.py:298
 msgid "Pending author rework"
 msgstr "Wacht op herziening door auteur"
 
-#: admin.py:296
+#: admin.py:302
 #, python-format
 msgid "Pending %(role)s approval"
 msgstr "Wacht op goedkeuring van %(role)s"
 
-#: admin.py:305
+#: admin.py:311
 #, python-format
 msgid "%(action)s by %(name)s"
 msgstr "%(action)s door %(name)s"
 
-#: admin.py:307
+#: admin.py:313
 msgid "Ready for submission"
 msgstr "Klaar voor indiening"
 
-#: admin.py:471
+#: admin.py:482
 #, python-format
 msgid "%(count)d request successfully deleted"
 msgid_plural "%(count)d requests successfully deleted"
 msgstr[0] "%(count)d verzoek succesvol verwijderd"
 msgstr[1] "%(count)d verzoeken succesvol verwijderd"
 
-#: admin.py:614
+#: admin.py:645
 #, python-format
 msgid "%(count)d request successfully resubmitted for review"
 msgid_plural "%(count)d requests successfully resubmitted for review"
 msgstr[0] "%(count)d verzoek succesvol opnieuw ingediend ter beoordeling"
 msgstr[1] "%(count)d verzoeken succesvol opnieuw ingediend ter beoordeling"
 
-#: admin.py:661
+#: admin.py:705
+#, python-format
+msgid "%(count)d request successfully unpublished"
+msgid_plural "%(count)d requests successfully unpublished"
+msgstr[0] "%(count)d verzoek succesvol gedepubliceerd"
+msgstr[1] "%(count)d verzoeken succesvol gedepubliceerd"
+
+#: admin.py:710
+#, python-format
+msgid "%(count)d request could not be unpublished: %(reasons)s"
+msgid_plural "%(count)d requests could not be unpublished: %(reasons)s"
+msgstr[0] "%(count)d verzoek kon niet worden gedepubliceerd: %(reasons)s"
+msgstr[1] "%(count)d verzoeken konden niet worden gedepubliceerd: %(reasons)s"
+
+#: admin.py:716
 #, python-format
 msgid "%(count)d request successfully published"
 msgid_plural "%(count)d requests successfully published"
 msgstr[0] "%(count)d verzoek succesvol gepubliceerd"
 msgstr[1] "%(count)d verzoeken succesvol gepubliceerd"
 
-#: admin.py:720
+#: admin.py:721
+#, python-format
+msgid "%(count)d request could not be published: %(reasons)s"
+msgid_plural "%(count)d requests could not be published: %(reasons)s"
+msgstr[0] "%(count)d verzoek kon niet worden gepubliceerd: %(reasons)s"
+msgstr[1] "%(count)d verzoeken konden niet worden gepubliceerd: %(reasons)s"
+
+#: admin.py:796
 #, python-format
 msgid "%(count)d request successfully submitted for rework"
 msgid_plural "%(count)d requests successfully submitted for rework"
 msgstr[0] "%(count)d verzoek succesvol ingediend voor herziening"
 msgstr[1] "%(count)d verzoeken succesvol ingediend voor herziening"
 
-#: admin.py:827
+#: admin.py:903
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
 msgstr[0] "%(count)d verzoek succesvol goedgekeurd"
 msgstr[1] "%(count)d verzoeken succesvol goedgekeurd"
 
-#: admin.py:838
+#: admin.py:914
 #, python-format
 msgid ""
 "%(count)d request was not approved because you do not have permission to "
@@ -149,20 +174,20 @@ msgid_plural ""
 "%(count)d requests were not approved because you do not have permission to "
 "approve them"
 msgstr[0] ""
-"%(count)d verzoek werd niet goedgekeurd omdat u geen toestemming heeft om het "
-"goed te keuren"
+"%(count)d verzoek werd niet goedgekeurd omdat u geen toestemming heeft om "
+"het goed te keuren"
 msgstr[1] ""
-"%(count)d verzoeken werden niet goedgekeurd omdat u geen toestemming heeft om "
-"ze goed te keuren"
+"%(count)d verzoeken werden niet goedgekeurd omdat u geen toestemming heeft "
+"om ze goed te keuren"
 
-#: admin.py:851
+#: admin.py:927
 #, python-format
 msgid "%(count)d request was already approved"
 msgid_plural "%(count)d requests were already approved"
 msgstr[0] "%(count)d verzoek was al goedgekeurd"
 msgstr[1] "%(count)d verzoeken waren al goedgekeurd"
 
-#: admin.py:862
+#: admin.py:938
 #, python-format
 msgid ""
 "%(count)d request was already approved by you or your team and is awaiting "
@@ -177,7 +202,7 @@ msgstr[1] ""
 "%(count)d verzoeken waren al goedgekeurd door u of uw team en wachten op "
 "andere beoordelaars"
 
-#: admin.py:875
+#: admin.py:951
 #, python-format
 msgid ""
 "%(count)d request could not be approved because it has been rejected and "
@@ -189,92 +214,112 @@ msgstr[0] ""
 "%(count)d verzoek kon niet worden goedgekeurd omdat het is afgewezen en "
 "opnieuw moet worden ingediend door de auteur"
 msgstr[1] ""
-"%(count)d verzoeken konden niet worden goedgekeurd omdat ze zijn afgewezen en "
-"opnieuw moeten worden ingediend door hun auteurs"
+"%(count)d verzoeken konden niet worden goedgekeurd omdat ze zijn afgewezen "
+"en opnieuw moeten worden ingediend door hun auteurs"
 
-#: admin.py:946
+#: admin.py:1024
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
 msgstr "Opmerkingen bij collectie"
 
-#: admin.py:995
+#: admin.py:1075
 msgid "User"
 msgstr "Gebruiker"
 
-#: admin.py:1032
+#: admin.py:1114
 msgid "Request comments"
 msgstr "Opmerkingen bij verzoek"
 
-#: admin.py:1124
+#: admin.py:1210
 msgid "reviewers"
 msgstr "beoordelaars"
 
-#: admin.py:1147
+#: admin.py:1233
 msgid "Modify collection"
 msgstr "Collectie aanpassen"
 
-#: admin.py:1274 models.py:468
+#: admin.py:1382 models.py:501
 msgid "Request"
 msgstr "Verzoek"
 
-#: admin.py:1280
+#: admin.py:1388
 msgid "By User"
 msgstr "Door gebruiker"
 
-#: admin.py:1286
+#: admin.py:1394
 msgid "Form Data"
 msgstr "Formuliergegevens"
 
-#: admin.py:1294
+#: admin.py:1402
 msgid "Question"
 msgstr "Vraag"
 
-#: admin.py:1294
+#: admin.py:1402
 msgid "Answer"
 msgstr "Antwoord"
 
-#: admin_actions.py:36
+#: admin_actions.py:37
 msgid "Resubmit changes for review"
 msgstr "Wijzigingen opnieuw indienen ter beoordeling"
 
-#: admin_actions.py:53
+#: admin_actions.py:54
 msgid "Submit for rework"
 msgstr "Indienen voor herziening"
 
-#: admin_actions.py:66
+#: admin_actions.py:67
 msgid "Approve"
 msgstr "Goedkeuren"
 
-#: admin_actions.py:82
+#: admin_actions.py:83
 msgid "Remove selected"
 msgstr "Verwijder geselecteerde"
 
-#: admin_actions.py:99
+#: admin_actions.py:108
 msgid "Publish selected requests"
 msgstr "Publiceer geselecteerde verzoeken"
 
-#: admin_actions.py:156
+#: admin_actions.py:115
+msgid "Unpublish selected requests"
+msgstr "Depubliceer geselecteerde verzoeken"
+
+#: admin_actions.py:172
 msgid "No suitable items found to add to moderation collection"
 msgstr ""
 "Geen geschikte items gevonden om aan de moderatiecollectie toe te voegen"
 
-#: admin_actions.py:161
+#: admin_actions.py:184
 msgid "Add to moderation collection"
 msgstr "Voeg toe aan moderatiecollectie"
 
-#: admin_actions.py:165
+#: admin_actions.py:191
+msgid "Unpublishing through moderation is not enabled"
+msgstr "Depubliceren via moderatie is niet ingeschakeld"
+
+#: admin_actions.py:207
 msgid "Add items to a collection to unpublish"
 msgstr "Voeg items toe aan een collectie om de publicatie ongedaan te maken"
+
+#: admin_actions.py:228
+msgid "Version is not in draft state"
+msgstr "Versie heeft niet de status concept"
+
+#: admin_actions.py:245
+msgid "Version is not in published state"
+msgstr "Versie heeft niet de status gepubliceerd"
 
 #: apps.py:7
 msgid "django CMS Moderation"
 msgstr "django CMS Moderatie"
 
-#: cms_toolbars.py:84 monkeypatch.py:56
+#: cms_toolbars.py:80 monkeypatch.py:46
 msgid "Submit for moderation"
 msgstr "Indienen voor moderatie"
 
-#: cms_toolbars.py:109
+#: cms_toolbars.py:83 monkeypatch.py:49
+msgid "Submit for unpublishing"
+msgstr "Indienen voor depublicatie"
+
+#: cms_toolbars.py:121
 #: templates/djangocms_moderation/moderation_request_change_list.html:44
 msgid "Moderation collections"
 msgstr "Moderatiecollecties"
@@ -331,7 +376,7 @@ msgstr "Afgewezen"
 msgid "Approved"
 msgstr "Goedgekeurd"
 
-#: constants.py:37 constants.py:54
+#: constants.py:37 constants.py:65
 msgid "Cancelled"
 msgstr "Geannuleerd"
 
@@ -340,14 +385,22 @@ msgid "Finished"
 msgstr "Voltooid"
 
 #: constants.py:51
+msgid "Publish"
+msgstr "Publiceren"
+
+#: constants.py:52
+msgid "Unpublish"
+msgstr "Depubliceren"
+
+#: constants.py:62
 msgid "Collecting"
 msgstr "Verzamelen"
 
-#: constants.py:52
+#: constants.py:63
 msgid "In Review"
 msgstr "In beoordeling"
 
-#: constants.py:53
+#: constants.py:64
 msgid "Archived"
 msgstr "Gearchiveerd"
 
@@ -369,7 +422,7 @@ msgstr "Moderatieverzoek verwijderd"
 msgid "Review requested"
 msgstr "Beoordeling aangevraagd"
 
-#: filters.py:18 forms.py:64 models.py:240
+#: filters.py:18 forms.py:74 models.py:241
 msgid "moderator"
 msgstr "moderator"
 
@@ -381,16 +434,25 @@ msgstr "beoordelaar"
 msgid "All"
 msgstr "Alle"
 
-#: forms.py:67
+#: forms.py:77
 msgid "comment"
 msgstr "opmerking"
 
-#: forms.py:100 forms.py:198
+#: forms.py:110 forms.py:244
 #, python-brace-format
 msgid "Any {role}"
 msgstr "Elke {role}"
 
-#: forms.py:172
+#: forms.py:170
+#, python-format
+msgid ""
+"Select one of your own collections that is still collecting items and is set "
+"to %(action)s."
+msgstr ""
+"Selecteer een van uw eigen collecties die nog items verzamelt en is "
+"ingesteld op %(action)s."
+
+#: forms.py:218
 msgid ""
 "Your item is either locked, not enabled for moderation,or is part of another "
 "active moderation request"
@@ -404,19 +466,19 @@ msgstr[1] ""
 "Je items zijn vergrendeld, niet ingeschakeld voor moderatie of maken deel "
 "uit van een ander actief moderatieverzoek"
 
-#: forms.py:184
+#: forms.py:230
 msgid "Select review group"
 msgstr "Selecteer beoordelingsgroep"
 
-#: forms.py:205
+#: forms.py:251
 msgid "This collection can't be submitted for a review"
 msgstr "Deze collectie kan niet ter beoordeling worden ingediend"
 
-#: forms.py:222
+#: forms.py:268
 msgid "This collection can't be cancelled"
 msgstr "Deze collectie kan niet worden geannuleerd"
 
-#: forms.py:266
+#: forms.py:311
 msgid "You can only change your own comments"
 msgstr "Je kunt alleen je eigen opmerkingen wijzigen"
 
@@ -430,19 +492,19 @@ msgstr "In collectie \"%(collection_name)s (%(collection_id)s)\""
 msgid "In moderation \"%(collection_name)s (%(collection_id)s)\""
 msgstr "In moderatie \"%(collection_name)s (%(collection_id)s)\""
 
-#: models.py:38
+#: models.py:39
 msgid "Plain"
 msgstr "Eenvoudig"
 
-#: models.py:39
+#: models.py:40
 msgid "Form"
 msgstr "Formulier"
 
-#: models.py:42 models.py:93 models.py:136
+#: models.py:43 models.py:94 models.py:137
 msgid "name"
 msgstr "naam"
 
-#: models.py:45
+#: models.py:46
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:20
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:20
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:20
@@ -452,51 +514,51 @@ msgstr "naam"
 msgid "Content Type"
 msgstr "Inhoudstype"
 
-#: models.py:51
+#: models.py:52
 msgid "Template"
 msgstr "Sjabloon"
 
-#: models.py:56
+#: models.py:57
 msgid "Confirmation Page"
 msgstr "Bevestigingspagina"
 
-#: models.py:57
+#: models.py:58
 msgid "Confirmation Pages"
 msgstr "Bevestigingspagina's"
 
-#: models.py:98
+#: models.py:99
 msgid "user"
 msgstr "gebruiker"
 
-#: models.py:101
+#: models.py:102
 msgid "group"
 msgstr "groep"
 
-#: models.py:105 models.py:789
+#: models.py:106 models.py:825
 msgid "confirmation page"
 msgstr "bevestigingspagina"
 
-#: models.py:113
+#: models.py:114
 msgid "Role"
 msgstr "Rol"
 
-#: models.py:114
+#: models.py:115
 msgid "Roles"
 msgstr "Rollen"
 
-#: models.py:121
+#: models.py:122
 msgid "Can't pick both user and group. Only one."
 msgstr "Je kunt niet zowel gebruiker als groep kiezen. Slechts één."
 
-#: models.py:137
+#: models.py:138
 msgid "is default"
 msgstr "is standaard"
 
-#: models.py:139
+#: models.py:140
 msgid "identifier"
 msgstr "identifier"
 
-#: models.py:144
+#: models.py:145
 msgid ""
 "Identifier is a 'free' field you could use for internal purposes. For "
 "example, it could be used as a workflow specific prefix of a compliance "
@@ -506,11 +568,11 @@ msgstr ""
 "gebruiken. Het kan bijvoorbeeld dienen als workflowspecifiek voorvoegsel van "
 "een compliance-nummer"
 
-#: models.py:150
+#: models.py:151
 msgid "requires compliance number?"
 msgstr "compliance-nummer vereist?"
 
-#: models.py:153
+#: models.py:154
 msgid ""
 "Does the Compliance number need to be generated before the moderation "
 "request is approved? Please select the compliance number backend below"
@@ -518,93 +580,105 @@ msgstr ""
 "Moet het compliance-nummer worden gegenereerd voordat het moderatieverzoek "
 "wordt goedgekeurd? Selecteer hieronder de backend voor het compliance-nummer"
 
-#: models.py:159
+#: models.py:160
 msgid "compliance number backend"
 msgstr "backend voor compliance-nummers"
 
-#: models.py:164
+#: models.py:165
 #: templates/djangocms_moderation/moderation_request_change_list.html:20
 msgid "Workflow"
 msgstr "Workflow"
 
-#: models.py:165
+#: models.py:166
 msgid "Workflows"
 msgstr "Workflows"
 
-#: models.py:188
+#: models.py:189
 msgid "Can't have two default workflows, only one is allowed."
 msgstr ""
 "Er kunnen geen twee standaardworkflows zijn, slechts één is toegestaan."
 
-#: models.py:198
+#: models.py:199
 msgid "role"
 msgstr "rol"
 
-#: models.py:200
+#: models.py:201
 msgid "is mandatory"
 msgstr "is verplicht"
 
-#: models.py:203 models.py:244
+#: models.py:204 models.py:245
 msgid "workflow"
 msgstr "workflow"
 
-#: models.py:212
+#: models.py:213
 msgid "Step"
 msgstr "Stap"
 
-#: models.py:213
+#: models.py:214
 msgid "Steps"
 msgstr "Stappen"
 
-#: models.py:237
+#: models.py:238
 msgid "collection name"
 msgstr "collectienaam"
 
-#: models.py:259
+#: models.py:255
+msgid "action"
+msgstr "actie"
+
+#: models.py:261
+msgid ""
+"Whether approving this collection publishes its content or unpublishes it. "
+"The review workflow is the same for both."
+msgstr ""
+"Of het goedkeuren van deze collectie de inhoud publiceert of depubliceert. "
+"De beoordelingsworkflow is voor beide hetzelfde."
+
+#: models.py:271
 msgid "collection"
 msgstr "collectie"
 
-#: models.py:261
+#: models.py:273
 msgid "Can change collection author"
 msgstr "Kan auteur van collectie wijzigen"
 
-#: models.py:262
+#: models.py:274
 msgid "Can cancel collection"
 msgstr "Kan collectie annuleren"
 
-#: models.py:345
+#: models.py:375
 msgid "Cancelled collection"
 msgstr "Geannuleerde collectie"
 
-#: models.py:425 models.py:684
+#: models.py:458 models.py:720
 msgid "moderation_request"
 msgstr "moderatieverzoek"
 
-#: models.py:443
+#: models.py:476
 msgid "version"
 msgstr "versie"
 
-#: models.py:446
+#: models.py:479
 msgid "language"
 msgstr "taal"
 
-#: models.py:449
+#: models.py:482
 msgid "is active"
 msgstr "is actief"
 
-#: models.py:451
+#: models.py:484
 msgid "date sent"
 msgstr "datum verzonden"
 
-#: models.py:453
+#: models.py:486
 msgid "compliance number"
 msgstr "compliance-nummer"
 
-#: models.py:462 models.py:744
+#: models.py:495 models.py:780
 msgid "author"
 msgstr "auteur"
 
-#: models.py:469
+#: models.py:502
 #: templates/admin/djangocms_moderation/moderationrequest/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_list.html:10
@@ -612,74 +686,79 @@ msgstr "auteur"
 msgid "Requests"
 msgstr "Verzoeken"
 
-#: models.py:647
+#: models.py:683
 msgid "status"
 msgstr "status"
 
-#: models.py:652 models.py:781
+#: models.py:688 models.py:817
 msgid "by user"
 msgstr "door gebruiker"
 
-#: models.py:658
+#: models.py:694
 msgid "to user"
 msgstr "aan gebruiker"
 
-#: models.py:666
+#: models.py:702
 msgid "to role"
 msgstr "aan rol"
 
-#: models.py:676
+#: models.py:712
 msgid "step approved"
 msgstr "stap goedgekeurd"
 
-#: models.py:681 models.py:742
+#: models.py:717 models.py:778
 msgid "message"
 msgstr "bericht"
 
-#: models.py:689
+#: models.py:725
 msgid "date taken"
 msgstr "datum uitgevoerd"
 
-#: models.py:769
+#: models.py:805
 msgid "moderation request"
 msgstr "moderatieverzoek"
 
-#: models.py:775
+#: models.py:811
 msgid "for step"
 msgstr "voor stap"
 
-#: models.py:798
+#: models.py:834
 msgid "Confirmation Form Submission"
 msgstr "Inzending bevestigingsformulier"
 
-#: models.py:799
+#: models.py:835
 msgid "Confirmation Form Submissions"
 msgstr "Inzendingen bevestigingsformulier"
 
-#: monkeypatch.py:145 monkeypatch.py:155
+#: monkeypatch.py:191 monkeypatch.py:201
 msgid "Cannot archive a version in an active moderation collection"
 msgstr ""
 "Kan geen versie archiveren die zich in een actieve moderatiecollectie bevindt"
 
-#: monkeypatch.py:150
+#: monkeypatch.py:196
 msgid "Cannot revert when draft version is in an active moderation collection"
 msgstr ""
 "Kan niet terugdraaien wanneer de conceptversie zich in een actieve "
 "moderatiecollectie bevindt"
 
-#: monkeypatch.py:159
+#: monkeypatch.py:205
 msgid "Version is in an active moderation collection"
 msgstr "Versie bevindt zich in een actieve moderatiecollectie"
 
-#: monkeypatch.py:163
+#: monkeypatch.py:209
 msgid "Cannot edit a version in an active moderation collection"
 msgstr ""
 "Kan geen versie bewerken die zich in een actieve moderatiecollectie bevindt"
 
-#: monkeypatch.py:167
+#: monkeypatch.py:213
 msgid "Content cannot be published directly. Use the moderation process."
 msgstr ""
 "Content kan niet direct worden gepubliceerd. Gebruik het moderatieproces."
+
+#: monkeypatch.py:216
+msgid "Content cannot be unpublished directly. Use the moderation process."
+msgstr ""
+"Content kan niet direct worden gedepubliceerd. Gebruik het moderatieproces."
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:7
 #: templates/admin/djangocms_moderation/collectioncomment/change_list.html:16
@@ -790,8 +869,16 @@ msgid "Are you sure you want to remove these items from this collection?"
 msgstr "Weet je zeker dat je deze items uit deze collectie wilt verwijderen?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
+msgid "Unpublish Confirmation"
+msgstr "Depublicatiebevestiging"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
 msgid "Publish Confirmation"
 msgstr "Publicatiebevestiging"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
+msgid "Are you sure you want to unpublish these items?"
+msgstr "Weet je zeker dat je deze items wilt depubliceren?"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
 msgid "Are you sure you want to publish these items?"
@@ -971,7 +1058,7 @@ msgid "Cancel this collection"
 msgstr "Annuleer deze collectie"
 
 #: templates/djangocms_moderation/moderation_request_change_list.html:35
-#: views.py:217
+#: views.py:226
 msgid "Submit collection for review"
 msgstr "Dien collectie in ter beoordeling"
 
@@ -990,21 +1077,21 @@ msgstr "Ingevulde formulieren"
 msgid "View Requests"
 msgstr "Bekijk verzoeken"
 
-#: views.py:70
+#: views.py:82
 #, python-format
 msgid "%(count)d item successfully added to moderation collection"
 msgid_plural "%(count)d items successfully added to moderation collection"
 msgstr[0] "%(count)d item succesvol toegevoegd aan moderatiecollectie"
 msgstr[1] "%(count)d items succesvol toegevoegd aan moderatiecollectie"
 
-#: views.py:202
+#: views.py:214
 msgid "Your collection has been submitted for review"
 msgstr "Je collectie is ingediend ter beoordeling"
 
-#: views.py:246
+#: views.py:255
 msgid "Your collection has been cancelled"
 msgstr "Je collectie is geannuleerd"
 
-#: views.py:255
+#: views.py:264
 msgid "Cancel collection"
 msgstr "Annuleer collectie"

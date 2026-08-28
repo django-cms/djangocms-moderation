@@ -5,9 +5,10 @@ from cms.cms_toolbars import ADMIN_MENU_IDENTIFIER
 from cms.utils.urlutils import add_url_parameters
 
 from djangocms_versioning.cms_toolbars import VersioningToolbar, replace_toolbar
+from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.models import Version
 
-from . import helpers
+from . import conf, constants, helpers
 from .models import ModerationCollection, ModerationRequest
 from .utils import get_admin_url
 
@@ -72,6 +73,16 @@ class ModerationToolbar(VersioningToolbar):
                 ):
                     return
                 version = Version.objects.get_for_content(self.toolbar.obj)
+                # Drafts are submitted to be published, published versions to be
+                # unpublished. Mirrors ``monkeypatch._get_moderation_link``.
+                if version.state == DRAFT:
+                    action = constants.COLLECTION_PUBLISH
+                    button_name = _("Submit for moderation")
+                elif version.state == PUBLISHED and conf.ENABLE_UNPUBLISHING:
+                    action = constants.COLLECTION_UNPUBLISH
+                    button_name = _("Submit for unpublishing")
+                else:
+                    return
                 url = add_url_parameters(
                     get_admin_url(
                         name="cms_moderation_items_to_collection",
@@ -79,9 +90,10 @@ class ModerationToolbar(VersioningToolbar):
                         args=(),
                     ),
                     version_ids=version.pk,
+                    action=action,
                 )
                 self.toolbar.add_modal_button(
-                    name=_("Submit for moderation"), url=url, side=self.toolbar.RIGHT
+                    name=button_name, url=url, side=self.toolbar.RIGHT
                 )
 
     def _add_moderation_menu(self):

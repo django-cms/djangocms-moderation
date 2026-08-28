@@ -62,3 +62,11 @@ COLLECTION_NAME_LENGTH_LIMIT = getattr(
 EMAIL_NOTIFICATIONS_FAIL_SILENTLY = getattr(
     settings, "EMAIL_NOTIFICATIONS_FAIL_SILENTLY", False
 )
+
+# Opt-in flag for the moderated unpublish flow. When disabled (the default),
+# collections can only publish content and no unpublish entry points are shown.
+# Set to ``True`` to let authors create unpublish collections that route
+# unpublishing through the same moderation workflow.
+ENABLE_UNPUBLISHING = getattr(
+    settings, "CMS_MODERATION_ENABLE_UNPUBLISHING", False
+)

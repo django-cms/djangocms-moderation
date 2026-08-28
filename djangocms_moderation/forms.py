@@ -6,9 +6,19 @@ from django.forms.forms import NON_FIELD_ERRORS
 from django.utils.translation import gettext, gettext_lazy as _, ngettext
 
 from adminsortable2.admin import CustomInlineFormSet
+from djangocms_versioning.constants import DRAFT, PUBLISHED
 from djangocms_versioning.models import Version
 
-from .constants import ACTION_CANCELLED, ACTION_REJECTED, ACTION_RESUBMITTED, COLLECTING
+from . import conf
+from .constants import (
+    ACTION_CANCELLED,
+    ACTION_REJECTED,
+    ACTION_RESUBMITTED,
+    COLLECTING,
+    COLLECTION_ACTION_CHOICES,
+    COLLECTION_PUBLISH,
+    COLLECTION_UNPUBLISH,
+)
 from .helpers import (
     get_active_moderation_request,
     is_obj_version_unlocked,
@@ -114,6 +124,26 @@ class UpdateModerationRequestForm(forms.Form):
         )
 
 
+class ActionRelatedFieldWidgetWrapper(RelatedFieldWidgetWrapper):
+    """
+    Passes the collection action on to the "+" popup. Without it a collection
+    added from the unpublish flow would default to a publish collection, and
+    the option the popup injects into the picker would fail validation.
+    """
+
+    def __init__(self, *args, action=None, **kwargs):
+        self.action = action
+        super().__init__(*args, **kwargs)
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        if self.action:
+            context["url_params"] = "{}&action={}".format(
+                context["url_params"], self.action
+            )
+        return context
+
+
 class CollectionItemsForm(forms.Form):
     collection = forms.ModelChoiceField(
         queryset=None, required=True  # Populated in __init__
@@ -123,13 +153,23 @@ class CollectionItemsForm(forms.Form):
         required=True,
         widget=forms.MultipleHiddenInput(),
     )
+    action = forms.CharField(required=False, widget=forms.HiddenInput())
 
     def __init__(self, user, *args, **kwargs):
+        self.action = kwargs.pop("action", COLLECTION_PUBLISH)
         super().__init__(*args, **kwargs)
         self.user = user
+        # Only offer collections matching the requested action, so publish items
+        # can't be dropped into an unpublish collection (and vice versa).
         self.fields["collection"].queryset = ModerationCollection.objects.filter(
-            status=COLLECTING, author=user
+            status=COLLECTING, author=user, action=self.action
         )
+        # The default "not one of the available choices" gives no clue which of
+        # the three conditions above the chosen collection failed.
+        self.fields["collection"].error_messages["invalid_choice"] = gettext(
+            "Select one of your own collections that is still collecting items "
+            "and is set to %(action)s."
+        ) % {"action": dict(COLLECTION_ACTION_CHOICES)[self.action]}
 
     def set_collection_widget(self, request):
         related_modeladmin = admin.site._registry.get(ModerationCollection)
@@ -139,10 +179,11 @@ class CollectionItemsForm(forms.Form):
         remote_field = dbfield.rel if hasattr(dbfield, 'rel') else dbfield.remote_field
 
         formfield = self.fields["collection"]
-        formfield.widget = RelatedFieldWidgetWrapper(
+        formfield.widget = ActionRelatedFieldWidgetWrapper(
             formfield.widget,
             remote_field,
             admin_site=admin.site,
+            action=self.action if conf.ENABLE_UNPUBLISHING else None,
             can_add_related=related_modeladmin.has_add_permission(request),
             can_change_related=related_modeladmin.has_change_permission(request),
             can_delete_related=related_modeladmin.has_delete_permission(request),
@@ -155,10 +196,15 @@ class CollectionItemsForm(forms.Form):
         """
         versions = self.cleaned_data["versions"]
 
+        # Publishing moderates drafts; unpublishing moderates published versions.
+        unpublishing = self.action == COLLECTION_UNPUBLISH
+
         eligible_versions = []
         for version in versions:
+            state_ok = version.state == (PUBLISHED if unpublishing else DRAFT)
             if all(
                 [
+                    state_ok,
                     is_registered_for_moderation(version.content),
                     not get_active_moderation_request(version.content),
                     is_obj_version_unlocked(version.content, self.user),

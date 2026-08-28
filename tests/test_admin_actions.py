@@ -568,6 +568,18 @@ class RejectSelectedTest(CMSTestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_confirmation_page_with_invalid_collection_id(self):
+        # The confirmation page looks the collection up itself, so a
+        # non-numeric id must not reach the database as a filter value
+        url = reverse("admin:djangocms_moderation_moderationrequest_rework")
+        url += "?ids=1,2&collection_id=aaa"
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.context["collection"])
+        self.assertEqual(response.context["queryset"], [])
+
     # TODO: This needs to be verified because unlike with other views
     # no code throws a 403 on non-author but the list of actions does
     # appear to filter the action dropdown for this user. Hard to say

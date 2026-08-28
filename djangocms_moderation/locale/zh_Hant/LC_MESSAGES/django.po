@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-30 00:54+0200\n"
+"POT-Creation-Date: 2026-08-25 17:48+0000\n"
 "PO-Revision-Date: 2026-06-29 00:00+0000\n"
 "Last-Translator: Fabian Braun <fsbraun@gmx.de>, 2026\n"
 "Language-Team: Chinese (Taiwan) (https://app.transifex.com/divio/teams/58664/"
@@ -22,16 +22,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: admin.py:66 models.py:699
+#: admin.py:68 models.py:735
 #: templates/djangocms_moderation/comment_list.html:10
 msgid "Action"
 msgstr "操作"
 
-#: admin.py:67 models.py:700
+#: admin.py:69 models.py:736
 msgid "Actions"
 msgstr "操作"
 
-#: admin.py:76
+#: admin.py:78
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:25
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:25
@@ -42,32 +42,32 @@ msgstr "操作"
 msgid "Status"
 msgstr "狀態"
 
-#: admin.py:80
+#: admin.py:82
 #, python-brace-format
 msgid "By {user}"
 msgstr "由 {user}"
 
-#: admin.py:83
+#: admin.py:85
 msgid "Form Submission"
 msgstr "表單提交"
 
-#: admin.py:183 admin.py:1131
+#: admin.py:186 admin.py:1217
 msgid "actions"
 msgstr "操作"
 
-#: admin.py:217
+#: admin.py:220
 msgid "ID"
 msgstr "ID"
 
-#: admin.py:230
+#: admin.py:233
 msgid "Content type"
 msgstr "內容類型"
 
-#: admin.py:238
+#: admin.py:241
 msgid "Title"
 msgstr "標題"
 
-#: admin.py:244
+#: admin.py:247
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:22
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:22
@@ -78,67 +78,89 @@ msgstr "標題"
 msgid "Author"
 msgstr "作者"
 
-#: admin.py:250
+#: admin.py:253
 msgid "Preview"
 msgstr "預覽"
 
-#: admin.py:272
+#: admin.py:273
 msgid "Reviewer"
 msgstr "審核員"
 
-#: admin.py:290
+#: admin.py:294
+msgid "Ready for unpublishing"
+msgstr "準備取消發佈"
+
+#: admin.py:296
 msgid "Ready for publishing"
 msgstr "準備發佈"
 
-#: admin.py:292
+#: admin.py:298
 msgid "Pending author rework"
 msgstr "等待作者修改"
 
-#: admin.py:296
+#: admin.py:302
 #, python-format
 msgid "Pending %(role)s approval"
 msgstr "等待%(role)s核准"
 
-#: admin.py:305
+#: admin.py:311
 #, python-format
 msgid "%(action)s by %(name)s"
 msgstr "由%(name)s%(action)s"
 
-#: admin.py:307
+#: admin.py:313
 msgid "Ready for submission"
 msgstr "準備提交"
 
-#: admin.py:471
+#: admin.py:482
 #, python-format
 msgid "%(count)d request successfully deleted"
 msgid_plural "%(count)d requests successfully deleted"
 msgstr[0] "已成功刪除 %(count)d 個請求"
 
-#: admin.py:614
+#: admin.py:645
 #, python-format
 msgid "%(count)d request successfully resubmitted for review"
 msgid_plural "%(count)d requests successfully resubmitted for review"
 msgstr[0] "已成功將 %(count)d 個請求重新提交審核"
 
-#: admin.py:661
+#: admin.py:705
+#, python-format
+msgid "%(count)d request successfully unpublished"
+msgid_plural "%(count)d requests successfully unpublished"
+msgstr[0] "已成功取消發佈 %(count)d 個請求"
+
+#: admin.py:710
+#, python-format
+msgid "%(count)d request could not be unpublished: %(reasons)s"
+msgid_plural "%(count)d requests could not be unpublished: %(reasons)s"
+msgstr[0] "有 %(count)d 個請求無法取消發佈：%(reasons)s"
+
+#: admin.py:716
 #, python-format
 msgid "%(count)d request successfully published"
 msgid_plural "%(count)d requests successfully published"
 msgstr[0] "已成功發佈 %(count)d 個請求"
 
-#: admin.py:720
+#: admin.py:721
+#, python-format
+msgid "%(count)d request could not be published: %(reasons)s"
+msgid_plural "%(count)d requests could not be published: %(reasons)s"
+msgstr[0] "有 %(count)d 個請求無法發佈：%(reasons)s"
+
+#: admin.py:796
 #, python-format
 msgid "%(count)d request successfully submitted for rework"
 msgid_plural "%(count)d requests successfully submitted for rework"
 msgstr[0] "已成功將 %(count)d 個請求退回修改"
 
-#: admin.py:827
+#: admin.py:903
 #, python-format
 msgid "%(count)d request successfully approved"
 msgid_plural "%(count)d requests successfully approved"
 msgstr[0] "已成功核准 %(count)d 個請求"
 
-#: admin.py:838
+#: admin.py:914
 #, python-format
 msgid ""
 "%(count)d request was not approved because you do not have permission to "
@@ -148,13 +170,13 @@ msgid_plural ""
 "approve them"
 msgstr[0] "由於您沒有核准權限，%(count)d 個請求未被核准"
 
-#: admin.py:851
+#: admin.py:927
 #, python-format
 msgid "%(count)d request was already approved"
 msgid_plural "%(count)d requests were already approved"
 msgstr[0] "%(count)d 個請求先前已核准"
 
-#: admin.py:862
+#: admin.py:938
 #, python-format
 msgid ""
 "%(count)d request was already approved by you or your team and is awaiting "
@@ -164,7 +186,7 @@ msgid_plural ""
 "awaiting other reviewers"
 msgstr[0] "%(count)d 個請求已由您或您的團隊核准，正在等待其他審核員"
 
-#: admin.py:875
+#: admin.py:951
 #, python-format
 msgid ""
 "%(count)d request could not be approved because it has been rejected and "
@@ -174,88 +196,108 @@ msgid_plural ""
 "must be resubmitted by their authors"
 msgstr[0] "%(count)d 個請求無法核准，因為它已被拒絕，必須由其作者重新提交"
 
-#: admin.py:946
+#: admin.py:1024
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:10
 msgid "Collection comments"
 msgstr "集合評論"
 
-#: admin.py:995
+#: admin.py:1075
 msgid "User"
 msgstr "用戶"
 
-#: admin.py:1032
+#: admin.py:1114
 msgid "Request comments"
 msgstr "請求評論"
 
-#: admin.py:1124
+#: admin.py:1210
 msgid "reviewers"
 msgstr "審核員"
 
-#: admin.py:1147
+#: admin.py:1233
 msgid "Modify collection"
 msgstr "修改集合"
 
-#: admin.py:1274 models.py:468
+#: admin.py:1382 models.py:501
 msgid "Request"
 msgstr "請求"
 
-#: admin.py:1280
+#: admin.py:1388
 msgid "By User"
 msgstr "由用戶"
 
-#: admin.py:1286
+#: admin.py:1394
 msgid "Form Data"
 msgstr "表單資料"
 
-#: admin.py:1294
+#: admin.py:1402
 msgid "Question"
 msgstr "問題"
 
-#: admin.py:1294
+#: admin.py:1402
 msgid "Answer"
 msgstr "答案"
 
-#: admin_actions.py:36
+#: admin_actions.py:37
 msgid "Resubmit changes for review"
 msgstr "重新提交變更以供審核"
 
-#: admin_actions.py:53
+#: admin_actions.py:54
 msgid "Submit for rework"
 msgstr "退回修改"
 
-#: admin_actions.py:66
+#: admin_actions.py:67
 msgid "Approve"
 msgstr "核准"
 
-#: admin_actions.py:82
+#: admin_actions.py:83
 msgid "Remove selected"
 msgstr "移除所選"
 
-#: admin_actions.py:99
+#: admin_actions.py:108
 msgid "Publish selected requests"
 msgstr "發佈所選請求"
 
-#: admin_actions.py:156
+#: admin_actions.py:115
+msgid "Unpublish selected requests"
+msgstr "取消發佈所選請求"
+
+#: admin_actions.py:172
 msgid "No suitable items found to add to moderation collection"
 msgstr "未找到可新增至審核集合的合適項目"
 
-#: admin_actions.py:161
+#: admin_actions.py:184
 msgid "Add to moderation collection"
 msgstr "新增至審核集合"
 
-#: admin_actions.py:165
+#: admin_actions.py:191
+msgid "Unpublishing through moderation is not enabled"
+msgstr "未啟用透過審核取消發佈"
+
+#: admin_actions.py:207
 msgid "Add items to a collection to unpublish"
 msgstr "將項目新增至集合以取消發佈"
+
+#: admin_actions.py:228
+msgid "Version is not in draft state"
+msgstr "版本不處於草稿狀態"
+
+#: admin_actions.py:245
+msgid "Version is not in published state"
+msgstr "版本不處於已發佈狀態"
 
 #: apps.py:7
 msgid "django CMS Moderation"
 msgstr "django CMS 審核"
 
-#: cms_toolbars.py:84 monkeypatch.py:56
+#: cms_toolbars.py:80 monkeypatch.py:46
 msgid "Submit for moderation"
 msgstr "提交審核"
 
-#: cms_toolbars.py:109
+#: cms_toolbars.py:83 monkeypatch.py:49
+msgid "Submit for unpublishing"
+msgstr "提交取消發佈"
+
+#: cms_toolbars.py:121
 #: templates/djangocms_moderation/moderation_request_change_list.html:44
 msgid "Moderation collections"
 msgstr "審核集合"
@@ -312,7 +354,7 @@ msgstr "已拒絕"
 msgid "Approved"
 msgstr "已核准"
 
-#: constants.py:37 constants.py:54
+#: constants.py:37 constants.py:65
 msgid "Cancelled"
 msgstr "已取消"
 
@@ -321,14 +363,22 @@ msgid "Finished"
 msgstr "已完成"
 
 #: constants.py:51
+msgid "Publish"
+msgstr "發佈"
+
+#: constants.py:52
+msgid "Unpublish"
+msgstr "取消發佈"
+
+#: constants.py:62
 msgid "Collecting"
 msgstr "收集中"
 
-#: constants.py:52
+#: constants.py:63
 msgid "In Review"
 msgstr "審核中"
 
-#: constants.py:53
+#: constants.py:64
 msgid "Archived"
 msgstr "已歸檔"
 
@@ -350,7 +400,7 @@ msgstr "審核請求已刪除"
 msgid "Review requested"
 msgstr "已請求審核"
 
-#: filters.py:18 forms.py:64 models.py:240
+#: filters.py:18 forms.py:74 models.py:241
 msgid "moderator"
 msgstr "審核負責人"
 
@@ -362,16 +412,23 @@ msgstr "審核員"
 msgid "All"
 msgstr "全部"
 
-#: forms.py:67
+#: forms.py:77
 msgid "comment"
 msgstr "評論"
 
-#: forms.py:100 forms.py:198
+#: forms.py:110 forms.py:244
 #, python-brace-format
 msgid "Any {role}"
 msgstr "任何 {role}"
 
-#: forms.py:172
+#: forms.py:170
+#, python-format
+msgid ""
+"Select one of your own collections that is still collecting items and is set "
+"to %(action)s."
+msgstr "請選擇一個仍在收集項目且操作設定為「%(action)s」的您自己的集合。"
+
+#: forms.py:218
 msgid ""
 "Your item is either locked, not enabled for moderation,or is part of another "
 "active moderation request"
@@ -380,19 +437,19 @@ msgid_plural ""
 "another active moderation request"
 msgstr[0] "您的項目已被鎖定、未啟用審核，或屬於另一個進行中的審核請求"
 
-#: forms.py:184
+#: forms.py:230
 msgid "Select review group"
 msgstr "選擇審核群組"
 
-#: forms.py:205
+#: forms.py:251
 msgid "This collection can't be submitted for a review"
 msgstr "此集合無法提交審核"
 
-#: forms.py:222
+#: forms.py:268
 msgid "This collection can't be cancelled"
 msgstr "此集合無法取消"
 
-#: forms.py:266
+#: forms.py:311
 msgid "You can only change your own comments"
 msgstr "您只能修改自己的評論"
 
@@ -406,19 +463,19 @@ msgstr "在集合「%(collection_name)s (%(collection_id)s)」中"
 msgid "In moderation \"%(collection_name)s (%(collection_id)s)\""
 msgstr "在審核「%(collection_name)s (%(collection_id)s)」中"
 
-#: models.py:38
+#: models.py:39
 msgid "Plain"
 msgstr "純文字"
 
-#: models.py:39
+#: models.py:40
 msgid "Form"
 msgstr "表單"
 
-#: models.py:42 models.py:93 models.py:136
+#: models.py:43 models.py:94 models.py:137
 msgid "name"
 msgstr "名稱"
 
-#: models.py:45
+#: models.py:46
 #: templates/admin/djangocms_moderation/moderationrequest/approve_confirmation.html:20
 #: templates/admin/djangocms_moderation/moderationrequest/delete_confirmation.html:20
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:20
@@ -428,51 +485,51 @@ msgstr "名稱"
 msgid "Content Type"
 msgstr "內容類型"
 
-#: models.py:51
+#: models.py:52
 msgid "Template"
 msgstr "範本"
 
-#: models.py:56
+#: models.py:57
 msgid "Confirmation Page"
 msgstr "確認頁面"
 
-#: models.py:57
+#: models.py:58
 msgid "Confirmation Pages"
 msgstr "確認頁面"
 
-#: models.py:98
+#: models.py:99
 msgid "user"
 msgstr "用戶"
 
-#: models.py:101
+#: models.py:102
 msgid "group"
 msgstr "組群"
 
-#: models.py:105 models.py:789
+#: models.py:106 models.py:825
 msgid "confirmation page"
 msgstr "確認頁面"
 
-#: models.py:113
+#: models.py:114
 msgid "Role"
 msgstr "角色"
 
-#: models.py:114
+#: models.py:115
 msgid "Roles"
 msgstr "角色"
 
-#: models.py:121
+#: models.py:122
 msgid "Can't pick both user and group. Only one."
 msgstr "不能同時選擇用戶和群組，只能選擇其一。"
 
-#: models.py:137
+#: models.py:138
 msgid "is default"
 msgstr "為預設"
 
-#: models.py:139
+#: models.py:140
 msgid "identifier"
 msgstr "識別碼"
 
-#: models.py:144
+#: models.py:145
 msgid ""
 "Identifier is a 'free' field you could use for internal purposes. For "
 "example, it could be used as a workflow specific prefix of a compliance "
@@ -481,102 +538,112 @@ msgstr ""
 "識別碼是一個「自由」欄位，可用於內部用途。例如，可將其用作合規編號的工作流程"
 "專用前綴"
 
-#: models.py:150
+#: models.py:151
 msgid "requires compliance number?"
 msgstr "需要合規編號？"
 
-#: models.py:153
+#: models.py:154
 msgid ""
 "Does the Compliance number need to be generated before the moderation "
 "request is approved? Please select the compliance number backend below"
 msgstr "是否需要在審核請求核准前產生合規編號？請在下方選擇合規編號後端"
 
-#: models.py:159
+#: models.py:160
 msgid "compliance number backend"
 msgstr "合規編號後端"
 
-#: models.py:164
+#: models.py:165
 #: templates/djangocms_moderation/moderation_request_change_list.html:20
 msgid "Workflow"
 msgstr "工作流程"
 
-#: models.py:165
+#: models.py:166
 msgid "Workflows"
 msgstr "工作流程"
 
-#: models.py:188
+#: models.py:189
 msgid "Can't have two default workflows, only one is allowed."
 msgstr "不能有兩個預設工作流程，只允許一個。"
 
-#: models.py:198
+#: models.py:199
 msgid "role"
 msgstr "角色"
 
-#: models.py:200
+#: models.py:201
 msgid "is mandatory"
 msgstr "為必填"
 
-#: models.py:203 models.py:244
+#: models.py:204 models.py:245
 msgid "workflow"
 msgstr "工作流程"
 
-#: models.py:212
+#: models.py:213
 msgid "Step"
 msgstr "步驟"
 
-#: models.py:213
+#: models.py:214
 msgid "Steps"
 msgstr "步驟"
 
-#: models.py:237
+#: models.py:238
 msgid "collection name"
 msgstr "集合名稱"
 
-#: models.py:259
+#: models.py:255
+msgid "action"
+msgstr "操作"
+
+#: models.py:261
+msgid ""
+"Whether approving this collection publishes its content or unpublishes it. "
+"The review workflow is the same for both."
+msgstr "核准此集合時是發佈其內容還是取消發佈。兩者的審核工作流程相同。"
+
+#: models.py:271
 msgid "collection"
 msgstr "集合"
 
-#: models.py:261
+#: models.py:273
 msgid "Can change collection author"
 msgstr "可變更集合作者"
 
-#: models.py:262
+#: models.py:274
 msgid "Can cancel collection"
 msgstr "可取消集合"
 
-#: models.py:345
+#: models.py:375
 msgid "Cancelled collection"
 msgstr "已取消集合"
 
-#: models.py:425 models.py:684
+#: models.py:458 models.py:720
 msgid "moderation_request"
 msgstr "審核請求"
 
-#: models.py:443
+#: models.py:476
 msgid "version"
 msgstr "版本"
 
-#: models.py:446
+#: models.py:479
 msgid "language"
 msgstr "語言"
 
-#: models.py:449
+#: models.py:482
 msgid "is active"
 msgstr "使用中"
 
-#: models.py:451
+#: models.py:484
 msgid "date sent"
 msgstr "傳送日期"
 
-#: models.py:453
+#: models.py:486
 msgid "compliance number"
 msgstr "合規編號"
 
-#: models.py:462 models.py:744
+#: models.py:495 models.py:780
 msgid "author"
 msgstr "作者"
 
-#: models.py:469
+#: models.py:502
 #: templates/admin/djangocms_moderation/moderationrequest/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_form.html:10
 #: templates/admin/djangocms_moderation/requestcomment/change_list.html:10
@@ -584,69 +651,73 @@ msgstr "作者"
 msgid "Requests"
 msgstr "請求"
 
-#: models.py:647
+#: models.py:683
 msgid "status"
 msgstr "狀態"
 
-#: models.py:652 models.py:781
+#: models.py:688 models.py:817
 msgid "by user"
 msgstr "由用戶"
 
-#: models.py:658
+#: models.py:694
 msgid "to user"
 msgstr "給用戶"
 
-#: models.py:666
+#: models.py:702
 msgid "to role"
 msgstr "給角色"
 
-#: models.py:676
+#: models.py:712
 msgid "step approved"
 msgstr "步驟已核准"
 
-#: models.py:681 models.py:742
+#: models.py:717 models.py:778
 msgid "message"
 msgstr "訊息"
 
-#: models.py:689
+#: models.py:725
 msgid "date taken"
 msgstr "操作日期"
 
-#: models.py:769
+#: models.py:805
 msgid "moderation request"
 msgstr "審核請求"
 
-#: models.py:775
+#: models.py:811
 msgid "for step"
 msgstr "用於步驟"
 
-#: models.py:798
+#: models.py:834
 msgid "Confirmation Form Submission"
 msgstr "確認表單提交"
 
-#: models.py:799
+#: models.py:835
 msgid "Confirmation Form Submissions"
 msgstr "確認表單提交"
 
-#: monkeypatch.py:145 monkeypatch.py:155
+#: monkeypatch.py:191 monkeypatch.py:201
 msgid "Cannot archive a version in an active moderation collection"
 msgstr "無法歸檔處於進行中審核集合中的版本"
 
-#: monkeypatch.py:150
+#: monkeypatch.py:196
 msgid "Cannot revert when draft version is in an active moderation collection"
 msgstr "當草稿版本處於進行中審核集合中時無法還原"
 
-#: monkeypatch.py:159
+#: monkeypatch.py:205
 msgid "Version is in an active moderation collection"
 msgstr "版本處於進行中審核集合中"
 
-#: monkeypatch.py:163
+#: monkeypatch.py:209
 msgid "Cannot edit a version in an active moderation collection"
 msgstr "無法編輯處於進行中審核集合中的版本"
 
-#: monkeypatch.py:167
+#: monkeypatch.py:213
 msgid "Content cannot be published directly. Use the moderation process."
 msgstr "內容無法直接發佈。請使用審核流程。"
+
+#: monkeypatch.py:216
+msgid "Content cannot be unpublished directly. Use the moderation process."
+msgstr "內容無法直接取消發佈。請使用審核流程。"
 
 #: templates/admin/djangocms_moderation/collectioncomment/change_form.html:7
 #: templates/admin/djangocms_moderation/collectioncomment/change_list.html:16
@@ -757,8 +828,16 @@ msgid "Are you sure you want to remove these items from this collection?"
 msgstr "您確定要從此集合中移除這些項目嗎？"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
+msgid "Unpublish Confirmation"
+msgstr "取消發佈確認"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:3
 msgid "Publish Confirmation"
 msgstr "發佈確認"
+
+#: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
+msgid "Are you sure you want to unpublish these items?"
+msgstr "您確定要取消發佈這些項目嗎？"
 
 #: templates/admin/djangocms_moderation/moderationrequest/publish_confirmation.html:14
 msgid "Are you sure you want to publish these items?"
@@ -935,7 +1014,7 @@ msgid "Cancel this collection"
 msgstr "取消此集合"
 
 #: templates/djangocms_moderation/moderation_request_change_list.html:35
-#: views.py:217
+#: views.py:226
 msgid "Submit collection for review"
 msgstr "提交集合以供審核"
 
@@ -953,20 +1032,20 @@ msgstr "已完成的表單"
 msgid "View Requests"
 msgstr "檢視請求"
 
-#: views.py:70
+#: views.py:82
 #, python-format
 msgid "%(count)d item successfully added to moderation collection"
 msgid_plural "%(count)d items successfully added to moderation collection"
 msgstr[0] "已成功將 %(count)d 個項目新增至審核集合"
 
-#: views.py:202
+#: views.py:214
 msgid "Your collection has been submitted for review"
 msgstr "您的集合已提交審核"
 
-#: views.py:246
+#: views.py:255
 msgid "Your collection has been cancelled"
 msgstr "您的集合已被取消"
 
-#: views.py:255
+#: views.py:264
 msgid "Cancel collection"
 msgstr "取消集合"

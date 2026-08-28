@@ -41,6 +41,17 @@ ACTION_CHOICES = (
 CONTENT_TYPE_PLAIN = "plain"
 CONTENT_TYPE_FORM = "form"
 
+# What a collection does to its content once every request is approved.
+# The moderation *workflow* (steps/roles/approvals) is identical for both;
+# only the terminal action and the eligible versions differ.
+COLLECTION_PUBLISH = "publish"
+COLLECTION_UNPUBLISH = "unpublish"
+
+COLLECTION_ACTION_CHOICES = (
+    (COLLECTION_PUBLISH, _("Publish")),
+    (COLLECTION_UNPUBLISH, _("Unpublish")),
+)
+
 # masks for Collection STATUS
 COLLECTING = "COLLECTING"
 IN_REVIEW = "IN_REVIEW"

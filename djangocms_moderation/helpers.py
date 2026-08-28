@@ -140,13 +140,15 @@ def get_all_moderators():
     return User.objects.filter(moderationcollection__author__isnull=False).distinct()
 
 
-def _get_moderatable_version(versionable, grouper, parent_version_filters):
+def _get_moderatable_version(
+    versionable, grouper, parent_version_filters, state=DRAFT
+):
     """
     Private helper to get a specific version from a field instance
     """
     # If the content model is not registered with moderation nothing should be returned
     if not is_registered_for_moderation(versionable.content_model()):
-        return
+        return None
 
     filters = {versionable.grouper_field_name: grouper}
     if (
@@ -156,13 +158,15 @@ def _get_moderatable_version(versionable, grouper, parent_version_filters):
         filters["language"] = parent_version_filters["language"]
     try:
         return Version.objects.filter_by_grouping_values(versionable, **filters).get(
-            state=DRAFT
+            state=state
         )
     except Version.DoesNotExist:
-        return
+        return None
 
 
-def _get_nested_moderated_children_from_placeholder_plugin(instance, placeholder, parent_version_filters):
+def _get_nested_moderated_children_from_placeholder_plugin(
+    instance, placeholder, parent_version_filters, state=DRAFT
+):
     """
     Find all nested versionable objects, traverses through all attached models until it finds
     any models that are versioned.
@@ -187,20 +191,24 @@ def _get_nested_moderated_children_from_placeholder_plugin(instance, placeholder
             versionable = versionables.for_grouper(candidate)
         except KeyError:
             yield from _get_nested_moderated_children_from_placeholder_plugin(
-                candidate, placeholder, parent_version_filters
+                candidate, placeholder, parent_version_filters, state=state
             )
             continue
 
         version = _get_moderatable_version(
-            versionable, candidate, parent_version_filters
+            versionable, candidate, parent_version_filters, state=state
         )
         if version:
             yield version
 
 
-def get_moderated_children_from_placeholder(placeholder, parent_version_filters):
+def get_moderated_children_from_placeholder(
+    placeholder, parent_version_filters, state=DRAFT
+):
     """
     Get all moderated children version objects from a placeholder
     """
     for plugin in downcast_plugins(placeholder.get_plugins()):
-        yield from _get_nested_moderated_children_from_placeholder_plugin(plugin, placeholder, parent_version_filters)
+        yield from _get_nested_moderated_children_from_placeholder_plugin(
+            plugin, placeholder, parent_version_filters, state=state
+        )
