@@ -34,7 +34,7 @@ def populate_parent(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('djangocms_moderation', '0019_remove_confirmationpage_content'),
+        ('djangocms_moderation', '0020_moderationcollection_action'),
     ]
 
     operations = [

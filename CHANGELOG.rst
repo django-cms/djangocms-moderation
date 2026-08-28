@@ -12,7 +12,7 @@ unreleased
   instead of ``django-treebeard``, just like the page tree. Older django CMS
   versions keep using treebeard.
 * feat: ``ModerationRequestTreeNode`` gained a ``parent`` foreign key, which the
-  CMS core tree backend treats as the source of truth. Migration ``0020``
+  CMS core tree backend treats as the source of truth. Migration ``0021``
   backfills it from the existing materialised paths, so switching backends needs
   no further data migration. Under treebeard the model keeps the field in step
   itself, and ``ModerationRequestTreeNode.fix_tree()`` re-derives it.
