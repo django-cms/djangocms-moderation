@@ -78,8 +78,8 @@
      *    null otherwise
      */
     function isStartOfAtomicTag(word) {
-        var result = /^(<(iframe|object|math|svg|script|video)|^<[\s\S]*?data-cms-diff-ignore[\s\S]*>$)/.exec(word);
-        return result && result[1];
+        var result = /^<(iframe|object|math|svg|script|video)|^<([^\s/>]+)[\s\S]*?data-cms-diff-ignore[\s\S]*>$/i.exec(word);
+        return result && (result[1] || result[2]).toLowerCase();
     }
 
     /**
@@ -93,7 +93,7 @@
      *    false otherwise.
      */
     function isEndOfAtomicTag(word, tag) {
-        return word.substring(word.length - tag.length - 2) === '</' + tag;
+        return word.substring(word.length - tag.length - 2).toLowerCase() === '</' + tag;
     }
 
     /**
