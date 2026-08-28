@@ -84,8 +84,8 @@ authors can create *unpublish* collections: published content is added to a
 collection and, once it has passed the *same* review workflow used for
 publishing, it is unpublished instead of published. Enabling the flag also:
 
-* adds a **Submit for unpublishing** link to published, moderated versions in
-  the versioning admin, and
+* adds a **Submit for unpublishing** icon button to published, moderated
+  versions in the versioning admin, and
 * removes the direct *unpublish* link from moderated content, so unpublishing
   always goes through moderation.
 

@@ -37,6 +37,10 @@ unreleased
   the equivalent versioning permission check
 * fix: removed the hardcoded "en" language when generating the moderation link
   and pass the admins language
+* feat: The "Submit for moderation" / "Submit for unpublishing" links in the
+  version changelist are now rendered as icon buttons (Bootstrap Icons
+  ``send-check`` and ``send-dash``, bundled as inline SVG), matching the other
+  admin actions. The wording is kept as the button's tooltip (#242)
 
 2.4.0 (2026-07-06)
 ==================

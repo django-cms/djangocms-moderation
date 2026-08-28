@@ -63,6 +63,11 @@ Where moderation hooks into the CMS
 * On draft versions of registered content types, versioning's **Publish**
   toolbar button is replaced with **Submit for moderation** — direct
   publishing is disabled for moderated models.
+* The same entry point appears in versioning's version table, as an icon
+  button in the actions column — a paper plane with a tick. Actions there are
+  icon-only; hover one to see its label. With :ref:`unpublishing
+  <unpublishing>` enabled, published versions get a **Submit for
+  unpublishing** button (paper plane with a dash) alongside it.
 * The collection and its requests are managed in the Django admin, under
   **django CMS Moderation**.
 * Notifications go out by email at each hand-over point (submission,
