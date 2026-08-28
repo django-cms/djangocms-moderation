@@ -2,8 +2,8 @@
 Changelog
 =========
 
-unreleased
-==========
+2.5.0 (2026-08-28)
+==================
 
 * feat: The moderation request tree now follows the ``CMS_TREE_BACKEND``
   setting. django CMS 5.0.10 and 5.1.1 introduced ``cms.utils.mptree``, a
