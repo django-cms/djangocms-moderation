@@ -133,7 +133,10 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
         draft_version = PageVersionFactory(created_by=self.mock_request.user)
         # Now the version lock is lifted, so we should be able to add to moderation
         link = self.version_admin._get_moderation_link(draft_version, self.mock_request)
-        self.assertIn("Submit for moderation", link)
+        # The action is rendered as an icon button, the label is its tooltip
+        self.assertIn('title="Submit for moderation"', link)
+        self.assertIn("cms-moderation-action-submit-for-moderation", link)
+        self.assertIn("<svg", link)
 
     @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
     def test_get_moderation_link_offers_unpublish_when_enabled(self):
@@ -143,7 +146,9 @@ class VersionAdminMonkeypatchTestCase(BaseTestCase):
             state=PUBLISHED, created_by=self.mock_request.user
         )
         link = self.version_admin._get_moderation_link(version, self.mock_request)
-        self.assertIn("Submit for unpublishing", link)
+        self.assertIn('title="Submit for unpublishing"', link)
+        self.assertIn("cms-moderation-action-submit-for-unpublishing", link)
+        self.assertIn("<svg", link)
 
     @mock.patch("djangocms_moderation.conf.ENABLE_UNPUBLISHING", True)
     def test_get_unpublish_link_blanked_when_registered_and_enabled(self):

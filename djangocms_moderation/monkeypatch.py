@@ -1,3 +1,4 @@
+from django.template.loader import render_to_string
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
@@ -43,10 +44,10 @@ def _get_moderation_link(self, version, request):
     # entry point is only shown when the feature is deliberately enabled.
     if version.state == DRAFT:
         action = constants.COLLECTION_PUBLISH
-        submit_label = _("Submit for moderation")
+        icon_template = "djangocms_moderation/icons/submit_for_moderation.html"
     elif version.state == PUBLISHED and conf.ENABLE_UNPUBLISHING:
         action = constants.COLLECTION_UNPUBLISH
-        submit_label = _("Submit for unpublishing")
+        icon_template = "djangocms_moderation/icons/submit_for_unpublishing.html"
     else:
         return ""
 
@@ -62,8 +63,7 @@ def _get_moderation_link(self, version, request):
             return_to_url=version_list_url(version.content),
             action=action,
         )
-        # TODO use a fancy icon as for the rest of the actions?
-        return format_html('<a href="{}">{}</a>', url, submit_label)
+        return render_to_string(icon_template, {"url": url})
     return ""
 
 
