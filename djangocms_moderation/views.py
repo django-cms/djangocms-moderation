@@ -1,4 +1,4 @@
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 from django.contrib import admin, messages
 from django.db import transaction
@@ -25,6 +25,23 @@ from .utils import get_admin_url
 
 
 from . import conf, constants  # isort:skip
+
+
+def _as_site_relative_url(url):
+    """
+    Reduce ``url`` to a site-relative path, dropping any scheme and host.
+
+    Stripping the leading slashes before prepending a single literal "/" means
+    the result can never be an absolute or a protocol-relative
+    ("//evil.example.com") URL, whatever was passed in. Quoting the remainder
+    protects against reflected XSS in the redirect target, while keeping the
+    characters that legitimately separate a path and its query string.
+    """
+    parts = urlsplit(url)
+    relative_url = "/" + quote(parts.path.lstrip("/"), safe="/")
+    if parts.query:
+        relative_url += "?" + quote(parts.query, safe="/=&")
+    return relative_url
 
 
 @method_decorator(transaction.atomic, name="post")
@@ -100,10 +117,8 @@ class CollectionItemsView(FormView):
                 allowed_hosts=self.request.get_host(),
                 require_https=self.request.is_secure(),
             ):
-                return HttpResponseRedirect(self.request.path)
-            # Protect against reflected XSS attacks
-            # Allow : in http://, ?=& for GET parameters
-            return HttpResponseRedirect(quote(return_to_url, safe="/:?=&"))
+                return_to_url = self.request.path
+            return HttpResponseRedirect(_as_site_relative_url(return_to_url))
 
         success_template = "djangocms_moderation/request_finalized.html"
         return render(self.request, success_template, {})
