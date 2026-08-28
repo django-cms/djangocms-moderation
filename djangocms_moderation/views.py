@@ -95,17 +95,15 @@ class CollectionItemsView(FormView):
         """
         return_to_url = self.request.GET.get("return_to_url")
         if return_to_url:
-            url_is_safe = url_has_allowed_host_and_scheme(
+            if not url_has_allowed_host_and_scheme(
                 url=return_to_url,
                 allowed_hosts=self.request.get_host(),
                 require_https=self.request.is_secure(),
-            )
-            # Protect against refracted XSS attacks
+            ):
+                return HttpResponseRedirect(self.request.path)
+            # Protect against reflected XSS attacks
             # Allow : in http://, ?=& for GET parameters
-            return_to_url = quote(return_to_url, safe='/:?=&')
-            if not url_is_safe:
-                return_to_url = self.request.path
-            return HttpResponseRedirect(return_to_url)
+            return HttpResponseRedirect(quote(return_to_url, safe="/:?=&"))
 
         success_template = "djangocms_moderation/request_finalized.html"
         return render(self.request, success_template, {})

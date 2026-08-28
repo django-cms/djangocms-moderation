@@ -1,0 +1,12 @@
+name: "djangocms-moderation CodeQL config"
+
+# Vendored, unmodified third-party libraries. They generate hundreds of
+# "quality" findings that we cannot act on without diverging from upstream,
+# which drowns out the real security alerts.
+# htmldiff.js is deliberately NOT excluded: it is a django-cms fork that we
+# maintain ourselves.
+paths-ignore:
+  - djangocms_moderation/static/djangocms_moderation/js/libs/tidy.js
+  - djangocms_moderation/static/djangocms_moderation/js/libs/difflib.js
+  - djangocms_moderation/static/djangocms_moderation/js/libs/diffview.js
+  - djangocms_moderation/static/**/*.min.js
