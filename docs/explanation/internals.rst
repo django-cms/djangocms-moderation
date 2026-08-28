@@ -95,10 +95,25 @@ The tree changelist
 When a page is added to a collection, moderated draft content used by
 plugins on that page (for example aliased content) is added along with it.
 Presenting those additions as a flat list would hide why they are in the
-collection, so the requests changelist is rendered as a tree
-(django-treebeard's materialised path trees, via the
-``ModerationRequestTreeNode`` model): nested entries belong to the page
-they were collected with.
+collection, so the requests changelist is rendered as a tree (materialised
+path trees, via the ``ModerationRequestTreeNode`` model): nested entries
+belong to the page they were collected with.
+
+The changelist is read-only as a tree: ``ModerationRequestTreeAdmin`` is a
+plain ``ModelAdmin`` ordered by ``path``, which lists the nodes depth first,
+and each row is indented by its ``depth`` in the ``ID`` column. Requests are
+nested when they are collected, never by rearranging them here, so no client
+side tree code is involved.
+
+Which materialised path implementation backs the model follows the page
+tree's ``CMS_TREE_BACKEND`` setting: ``django-treebeard`` by default, or the
+dependency free implementation django CMS 5.0.10 and 5.1.1 added in
+``cms.utils.mptree`` when it is set to ``"mptree"``. Both write the same
+columns, so switching is a restart rather than a migration. The core
+implementation reads the tree from a ``parent`` foreign key where treebeard
+reads it from ``path``; ``ModerationRequestTreeNode`` maintains ``parent``
+under either backend, and ``fix_tree()`` re-derives it from the paths if rows
+were ever written behind the tree API's back.
 
 A consequence of modelling the *relationship* rather than the request is
 that the same content object may appear several times in the tree — once

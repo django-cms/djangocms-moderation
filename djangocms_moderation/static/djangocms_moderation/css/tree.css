@@ -1,0 +1,6 @@
+/* Nesting of the moderation request change list. The width is rendered by the
+   admin, one step per level of depth. */
+.cms-moderation-tree-indent {
+    display: inline-block;
+    vertical-align: middle;
+}
