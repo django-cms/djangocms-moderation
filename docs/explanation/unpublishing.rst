@@ -51,8 +51,8 @@ The lifecycle is the same as for publishing (see :ref:`overview`):
 
 #. The author adds published content to an *unpublish* collection. In the
    versioning admin, published moderated versions gain a **Submit for
-   unpublishing** link (the counterpart of **Submit for moderation** on
-   drafts).
+   unpublishing** icon button (the counterpart of **Submit for moderation**
+   on drafts; see :ref:`internals`).
 #. The author submits the collection for review; reviewers approve or send it
    back for rework, step by step.
 #. Once every required step has been approved, the author finalises the
