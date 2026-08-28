@@ -81,7 +81,7 @@ your project and override just the ``icon`` block:
     {% load i18n %}
     {% block title %}{% translate "Send to review" %}{% endblock %}
     {% block name %}submit-for-moderation{% endblock %}
-    {% block icon %}<span class="cms-icon cms-icon-forward"></span>{% endblock %}
+    {% block icon %}<span class="cms-icon cms-icon-moderate"></span>{% endblock %}
 
 The buttons are sized and coloured by django CMS's ``cms.admin.css``, which
 the version table already loads through versioning's admin; moderation's own
