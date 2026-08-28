@@ -5,6 +5,23 @@ Changelog
 unreleased
 ==========
 
+* feat: The moderation request tree now follows the ``CMS_TREE_BACKEND``
+  setting. django CMS 5.0.10 and 5.1.1 introduced ``cms.utils.mptree``, a
+  dependency free implementation of the ``MP_Node`` API; setting
+  ``CMS_TREE_BACKEND = "mptree"`` makes ``ModerationRequestTreeNode`` use it
+  instead of ``django-treebeard``, just like the page tree. Older django CMS
+  versions keep using treebeard.
+* feat: ``ModerationRequestTreeNode`` gained a ``parent`` foreign key, which the
+  CMS core tree backend treats as the source of truth. Migration ``0021``
+  backfills it from the existing materialised paths, so switching backends needs
+  no further data migration. Under treebeard the model keeps the field in step
+  itself, and ``ModerationRequestTreeNode.fix_tree()`` re-derives it.
+* feat: The moderation requests changelist no longer builds on treebeard's
+  ``TreeAdmin``. It is a plain ``ModelAdmin`` ordered by ``path``, indenting
+  each row by its depth, which renders the same nesting without treebeard's
+  admin templates, templatetags and JavaScript. The tree is presentational
+  there, so the drag & drop reordering the JavaScript offered -- inert on this
+  changelist, which is always filtered by collection -- is gone with it.
 * feat: Add an opt-in moderated **unpublish** flow. With
   ``CMS_MODERATION_ENABLE_UNPUBLISHING = True``, published content can be
   routed through the same review workflow to be unpublished, and the direct

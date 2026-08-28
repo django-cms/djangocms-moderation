@@ -1,3 +1,4 @@
+import os
 from tempfile import mkdtemp
 
 
@@ -48,6 +49,13 @@ INSTALLED_APPS = [
     "tests.utils.moderated_polls",
     "tests.utils.versioned_none_moderated_app",
 ]
+
+# The dependency free tree backend django CMS 5.0.10/5.1.1 introduced needs
+# neither the treebeard app nor its models, and nor does the moderation request
+# tree -- read from the environment, as ``cms.utils.mptree`` does, because the
+# setting itself is not defined here.
+if os.environ.get("CMS_TREE_BACKEND", "treebeard") != "treebeard":
+    INSTALLED_APPS.remove("treebeard")
 
 MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
