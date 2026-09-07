@@ -622,6 +622,49 @@ class CollectionItemsViewAddingRequestsTestCase(CMSTestCase):
             messages,
         )
 
+    def test_collection_redirect_url_cannot_leave_the_site(self):
+        """
+        Open redirect protection: whatever ``return_to_url`` contains, the
+        Location header must stay a site-relative path. In particular a
+        protocol-relative URL ("//evil.example.com") must not survive.
+        """
+        user = self.get_superuser()
+
+        for return_to_url in (
+            "//evil.example.com/pwn",
+            "///evil.example.com/pwn",
+            "https://evil.example.com/pwn",
+            "http://evil.example.com/pwn?next=1",
+            "/\\evil.example.com",
+        ):
+            with self.subTest(return_to_url=return_to_url):
+                collection = ModerationCollectionFactory(author=user)
+                page_version = PageVersionFactory(created_by=user)
+                url = add_url_parameters(
+                    get_admin_url(
+                        name="cms_moderation_items_to_collection",
+                        language="en",
+                        args=(),
+                    ),
+                    return_to_url=return_to_url,
+                    version_ids=page_version.pk,
+                    collection_id=collection.pk,
+                )
+                with self.login_user_context(user):
+                    response = self.client.post(
+                        path=url,
+                        data={
+                            "collection": collection.pk,
+                            "versions": page_version.pk,
+                        },
+                        follow=False,
+                    )
+
+                self.assertEqual(response.status_code, 302)
+                self.assertTrue(response.url.startswith("/"))
+                self.assertFalse(response.url.startswith("//"))
+                self.assertNotIn("evil.example.com", response.url)
+
 
 class ModerationCollectionTestCase(CMSTestCase):
     def setUp(self):
