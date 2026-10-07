@@ -22,7 +22,7 @@ email_subjects = {
 def _send_email(
     collection, moderation_requests, recipients, subject, template, by_user
 ):
-    admin_url = "{}?collection__id__exact={}".format(
+    admin_url = "{}?moderation_request__collection__id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_changelist"),
         collection.id,
     )
