@@ -269,7 +269,7 @@ class ModerationCollection(models.Model):
 
     class Meta:
         verbose_name = _("collection")
-        verbose_name_plural = _("collections")
+        verbose_name_plural = _("Collections")
         permissions = (
             ("can_change_author", _("Can change collection author")),
             ("cancel_moderationcollection", _("Can cancel collection")),
