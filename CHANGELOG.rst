@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Unreleased
+==========
+
+* fix: use the correct plural translation for "collection"
+
 2.5.0 (2026-08-28)
 ==================
 
