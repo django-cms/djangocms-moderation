@@ -1,5 +1,7 @@
+import enum
+
 from django.conf import settings
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import force_str
@@ -12,6 +14,20 @@ from .utils import get_absolute_url
 from . import constants  # isort:skip
 
 
+@enum.unique
+class EmailNotificationType(enum.StrEnum):
+    APPROVED = constants.ACTION_APPROVED
+    CANCELLED = constants.ACTION_CANCELLED
+    REJECTED = constants.ACTION_REJECTED
+    REQUEST = "request"
+
+
+@enum.unique
+class EmailNotificationFormat(enum.StrEnum):
+    PLAIN = "txt"
+    HTML = "html"
+
+
 email_subjects = {
     constants.ACTION_APPROVED: _("Approved moderation requests"),
     constants.ACTION_REJECTED: _("Rejected moderation requests"),
@@ -19,40 +35,75 @@ email_subjects = {
 }
 
 
-def _send_email(
-    collection, moderation_requests, recipients, subject, template, by_user
-):
+def _format_admin_url(collection) -> str:
     admin_url = "{}?moderation_request__collection__id={}".format(
         reverse("admin:djangocms_moderation_moderationrequest_changelist"),
         collection.id,
     )
+    return get_absolute_url(admin_url)
 
-    context = {
-        "collection": collection,
-        "moderation_requests": moderation_requests,
-        "author_name": collection.author_name,
-        "admin_url": get_absolute_url(admin_url),
-        "job_id": collection.job_id,
-        "by_user": by_user,
-    }
-    template = f"djangocms_moderation/emails/moderation-request/{template}"
 
-    # TODO What language should the email be sent in? e.g. `with force_language(lang):`
-    subject = force_str(subject)
-    content = render_to_string(template, context)
+def _render_email(
+    collection,
+    moderation_requests,
+    notification_type: EmailNotificationType,
+    by_user,
+    notification_format: EmailNotificationFormat,
+) -> str:
+    base_dir = "djangocms_moderation/emails/moderation-request/"
+    filename = f"{notification_type.value}.{notification_format.value}"
 
-    message = EmailMessage(
-        subject=subject,
-        body=content,
+    return render_to_string(
+        f"{base_dir}/{filename}",
+        context={
+            "collection": collection,
+            "moderation_requests": moderation_requests,
+            "author_name": collection.author_name,
+            "admin_url": _format_admin_url(collection),
+            "job_id": collection.job_id,
+            "by_user": by_user,
+        }
+    )
+
+
+def _send_email(
+    collection,
+    moderation_requests,
+    recipients,
+    subject,
+    notification_type: EmailNotificationType,
+    by_user,
+):
+    text_content = _render_email(
+        collection,
+        moderation_requests,
+        notification_type,
+        by_user,
+        EmailNotificationFormat.PLAIN,
+    )
+    html_content = _render_email(
+        collection,
+        moderation_requests,
+        notification_type,
+        by_user,
+        EmailNotificationFormat.HTML,
+    )
+
+    message = EmailMultiAlternatives(
+        subject=force_str(subject),
+        body=text_content,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=recipients,
     )
+    message.attach_alternative(html_content, "text/html")
     return message.send(
         fail_silently=EMAIL_NOTIFICATIONS_FAIL_SILENTLY
     )
 
 
-def notify_collection_author(collection, moderation_requests, action, by_user):
+def notify_collection_author(
+    collection, moderation_requests, action: str, by_user
+):
     if action not in email_subjects or not collection.author.email:
         return
 
@@ -61,7 +112,7 @@ def notify_collection_author(collection, moderation_requests, action, by_user):
         moderation_requests=moderation_requests,
         recipients=[collection.author.email],
         subject=email_subjects[action],
-        template=f"{action}.txt",
+        notification_type=EmailNotificationType(action),
         by_user=by_user,
     )
     return status
@@ -84,7 +135,7 @@ def notify_collection_moderators(collection, moderation_requests, action_obj):
         moderation_requests=moderation_requests,
         recipients=recipients,
         subject=_("Review requested"),
-        template="request.txt",
+        notification_type=EmailNotificationType.REQUEST,
         by_user=action_obj.by_user,
     )
     return status

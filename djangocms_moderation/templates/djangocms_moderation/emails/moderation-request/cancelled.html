@@ -4,19 +4,27 @@ Hello {{ collection_author }}, the following moderation requests in the collecti
 {{ collection_name }} have been cancelled
 {% endblocktrans %}
 
+<p>
 {% trans 'Cancelled moderation requests' %}:
+</p>
+
+<ul>
 {% for mr in moderation_requests %}
-* {{ mr.pk }} - {{ mr.version.content }} ({{ mr.version.content_type }})
+    <li>
+        {{ mr.pk }} - {{ mr.version.content }} ({{ mr.version.content_type }})
+    </li>
 {% endfor %}
+</ul>
 
 {% if comment %}
-{% trans 'Comment' %}: {{ comment }}
+{% trans 'Comment' %}: <br/>
+{{ comment }} <br/>
 {% endif %}
 
 {% if job_id %}
-{% trans 'Job ID' %}: {{ job_id }}
+{% trans 'Job ID' %}: {{ job_id }}<br/>
 {% endif %}
 
 {% if admin_url %}
-{% trans 'Admin Url' %}: {{ admin_url }}
+{% trans 'Admin Url' %}: <a href="{{ admin_url }}">{{ admin_url }} </a><br/>
 {% endif %}

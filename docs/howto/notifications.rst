@@ -17,8 +17,12 @@ Emails are sent with Django's standard email machinery, from
 Override the email templates
 ----------------------------
 
-The notification bodies are plain-text Django templates. Override them by
-placing files with the same path in your project's ``templates`` directory:
+The notification bodies are Django templates. Since the email notifications
+are sent as multipart emails, there are distinct template files for each
+notification type and file format (``.txt``, ``.html``).
+
+Override them by placing files with the same path in your project's
+``templates`` directory:
 
 .. code-block:: text
 
@@ -26,10 +30,14 @@ placing files with the same path in your project's ``templates`` directory:
         djangocms_moderation/
             emails/
                 moderation-request/
-                    request.txt    # to reviewers: action required
-                    approved.txt   # to the author: content was approved
-                    rejected.txt   # to the author: content needs rework
-                    cancelled.txt  # to the author: collection was cancelled
+                    request.html    # to reviewers: action required
+                    approved.html   # to the author: content was approved
+                    rejected.html   # to the author: content needs rework
+                    cancelled.html  # to the author: collection was cancelled
+                    request.txt
+                    approved.txt
+                    rejected.txt
+                    cancelled.txt
 
 The template context provides:
 
