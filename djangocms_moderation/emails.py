@@ -15,7 +15,7 @@ from . import constants  # isort:skip
 
 
 @enum.unique
-class EmailNotificationType(enum.StrEnum):
+class EmailNotificationType(enum.Enum):
     APPROVED = constants.ACTION_APPROVED
     CANCELLED = constants.ACTION_CANCELLED
     REJECTED = constants.ACTION_REJECTED
@@ -23,7 +23,7 @@ class EmailNotificationType(enum.StrEnum):
 
 
 @enum.unique
-class EmailNotificationFormat(enum.StrEnum):
+class EmailNotificationFormat(enum.Enum):
     PLAIN = "txt"
     HTML = "html"
 
