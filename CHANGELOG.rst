@@ -2,10 +2,16 @@
 Changelog
 =========
 
-Unreleased
-==========
+2.5.1 (2026-10-10)
+==================
 
-* fix: use the correct plural translation for "collection"
+* fix: use the correct plural translation for "collection" by @fholfelder in https://github.com/django-cms/djangocms-moderation/pull/408
+* fix: Apply security hardening fixes by @fsbraun in https://github.com/django-cms/djangocms-moderation/pull/395
+* fix: email admin url contained wrong param by @fsbraun in https://github.com/django-cms/djangocms-moderation/pull/410
+* fix: Send multipart email notifications (#412) by @florianschieder in https://github.com/django-cms/djangocms-moderation/pull/413
+
+**New Contributors**
+* @florianschieder made their first contribution in https://github.com/django-cms/djangocms-moderation/pull/413
 
 2.5.0 (2026-08-28)
 ==================
