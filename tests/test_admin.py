@@ -82,7 +82,7 @@ class ModerationCollectionDefaultWorkflowTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["adminform"].form["workflow"].value(), self.wf1.pk)
 
-        
+
 class WorkflowAdminTestCase(BaseTestCase):
     def workflow_data(self, workflow, total_forms=0, initial_forms=0):
         return {
