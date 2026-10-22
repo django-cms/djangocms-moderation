@@ -615,6 +615,25 @@ class ModerationCollectionTest(BaseTestCase):
         self.collection1.save()
         self.assertFalse(self.collection1.allow_submit_for_review(user=self.user))
 
+    def test_submit_for_review_without_workflow_steps(self):
+        self.collection1.workflow.steps.all().delete()
+        self.collection1.status = constants.COLLECTING
+        self.collection1.save()
+        moderation_request = ModerationRequest.objects.create(
+            version=self.pg1_version,
+            language="en",
+            collection=self.collection1,
+            author=self.user,
+        )
+
+        self.assertFalse(self.collection1.allow_submit_for_review(user=self.user))
+        with self.assertRaisesMessage(ValidationError, "The workflow must contain at least one step"):
+            self.collection1.submit_for_review(self.user)
+
+        self.collection1.refresh_from_db()
+        self.assertEqual(self.collection1.status, constants.COLLECTING)
+        self.assertFalse(moderation_request.actions.exists())
+
     @patch("djangocms_moderation.models.notify_collection_moderators")
     def test_submit_for_review(self, mock_ncm):
         ModerationRequest.objects.create(

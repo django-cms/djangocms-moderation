@@ -34,6 +34,16 @@ from .models import (
 
 
 class WorkflowStepInlineFormSet(CustomInlineFormSet):
+    def clean(self):
+        super().clean()
+        if any(self.errors):
+            return
+        if not any(
+            form.cleaned_data.get("role") and not form.cleaned_data.get("DELETE")
+            for form in self.forms
+        ):
+            raise forms.ValidationError(_("A workflow must contain at least one step."))
+
     def validate_unique(self):
         super().validate_unique()
         # The following fixes a bug in Django where it doesn't validate unique constraint
@@ -239,7 +249,11 @@ class SubmitCollectionForModerationForm(forms.Form):
         self.configure_moderator_field()
 
     def configure_moderator_field(self):
-        next_role = self.collection.workflow.first_step.role
+        first_step = self.collection.workflow.first_step
+        if first_step is None:
+            self.fields["moderator"].widget = forms.HiddenInput()
+            return
+        next_role = first_step.role
         users = next_role.get_users_queryset().exclude(pk=self.user.pk)
         self.fields["moderator"].empty_label = gettext("Any {role}").format(
             role=next_role.name
@@ -247,7 +261,11 @@ class SubmitCollectionForModerationForm(forms.Form):
         self.fields["moderator"].queryset = users
 
     def clean(self):
-        if not self.collection.allow_submit_for_review(user=self.user):
+        if not self.collection.workflow.steps.exists():
+            self.add_error(None, _(
+                "The workflow must contain at least one step before this collection can be submitted for review."
+            ))
+        elif not self.collection.allow_submit_for_review(user=self.user):
             self.add_error(None, _("This collection can't be submitted for a review"))
         return super().clean()
 
