@@ -165,6 +165,13 @@ class Workflow(models.Model):
         verbose_name = _("Workflow")
         verbose_name_plural = _("Workflows")
         ordering = ("name",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["is_default"],
+                condition=models.Q(is_default=True),
+                name="djangocms_moderation_one_default_workflow",
+            ),
+        ]
 
     def __str__(self):
         return self.name

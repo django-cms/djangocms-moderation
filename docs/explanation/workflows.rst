@@ -16,6 +16,13 @@ them; each collection picks one when it is created. The workflow marked
 **is default** is preselected for new collections (only one workflow can
 be the default).
 
+On databases that support partial unique indexes (including PostgreSQL
+and SQLite), a database constraint also prevents concurrent saves from
+creating multiple defaults. On upgrade, if multiple defaults already
+exist, the migration retains the first workflow in name order as the
+default and clears the other default flags. Existing collections keep
+their assigned workflows.
+
 .. _workflow_step:
 
 Steps
