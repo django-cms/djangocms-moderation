@@ -54,6 +54,21 @@ class WorkflowAdminTestCase(BaseTestCase):
                     self.assertContains(response, "A workflow must contain at least one step.")
                     self.assertFalse(Workflow.objects.filter(name=workflow.name).exists())
 
+    def test_invalid_workflow_step_preserves_field_errors(self):
+        workflow = Workflow(name="Invalid step workflow")
+        url = reverse("admin:djangocms_moderation_workflow_add")
+        data = self.workflow_data(workflow, total_forms=1)
+        data.update({"steps-0-role": "invalid", "steps-0-order": 1})
+
+        with self.login_user_context(self.user):
+            response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 200)
+        formset = response.context["inline_admin_formsets"][0].formset
+        self.assertEqual(formset.forms[0].errors.as_data()["role"][0].code, "invalid_choice")
+        self.assertFalse(formset.non_form_errors())
+        self.assertFalse(Workflow.objects.filter(name=workflow.name).exists())
+
     def test_cannot_delete_last_workflow_step(self):
         url = reverse("admin:djangocms_moderation_workflow_change", args=(self.wf4.pk,))
         data = self.workflow_data(self.wf4, total_forms=1, initial_forms=1)
