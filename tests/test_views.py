@@ -14,6 +14,7 @@ from djangocms_moderation import constants
 from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
+    ModerationRequestAction,
     ModerationRequestTreeNode,
 )
 from djangocms_moderation.utils import get_admin_url
@@ -944,6 +945,28 @@ class SubmitCollectionForModerationViewTest(BaseViewTestCase):
             "admin:djangocms_moderation_moderationrequest_changelist"
         )
         self.request_change_list_url = f"{request_change_list_url}?moderation_request__collection__id={self.collection2.pk}"
+
+    def test_submit_collection_without_workflow_steps(self):
+        self.collection2.workflow.steps.all().delete()
+        self.collection2.status = constants.COLLECTING
+        self.collection2.save()
+        action_count = ModerationRequestAction.objects.filter(
+            moderation_request__collection=self.collection2
+        ).count()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(self.url)
+        self.assertContains(
+            response,
+            "The workflow must contain at least one step before this collection can be submitted for review.",
+        )
+        self.collection2.refresh_from_db()
+        self.assertEqual(self.collection2.status, constants.COLLECTING)
+        self.assertEqual(
+            ModerationRequestAction.objects.filter(moderation_request__collection=self.collection2).count(),
+            action_count,
+        )
 
     @mock.patch.object(ModerationCollection, "submit_for_review")
     def test_submit_collection_for_moderation(self, submit_mock):
