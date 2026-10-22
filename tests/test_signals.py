@@ -20,6 +20,9 @@ class SignalsTestCase(CMSTestCase):
         )
         user = factories.UserFactory()
         reviewer = factories.UserFactory()
+        moderation_request.collection.workflow.steps.create(
+            role=Role.objects.create(name="Role 1", user=reviewer), order=1
+        )
 
         with signal_tester(submitted_for_review) as env:
             moderation_request.collection.submit_for_review(user, reviewer)

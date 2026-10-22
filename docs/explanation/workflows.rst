@@ -22,7 +22,11 @@ Steps
 -----
 
 Each workflow has at least one step, edited inline on the workflow admin
-page. A step consists of:
+page. The admin prevents saving an empty workflow or deleting its last
+step. Collections using an existing empty workflow cannot be submitted
+for review until a step is added.
+
+A step consists of:
 
 * a **role** — the user or group expected to review at this step (the same
   role can only appear once per workflow);
