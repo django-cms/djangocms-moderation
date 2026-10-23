@@ -1313,6 +1313,9 @@ class ModerationCollectionAdmin(admin.ModelAdmin):
 
     def get_changeform_initial_data(self, request):
         initial = {"author": request.user}
+        default_workflow = Workflow.objects.filter(is_default=True).first()
+        if default_workflow is not None:
+            initial["workflow"] = default_workflow.pk
         # The collection picker in the "add items to collection" view opens this
         # form in a popup, passing the action its collections have to have.
         action = request.GET.get("action")

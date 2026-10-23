@@ -32,6 +32,57 @@ from .utils.factories import (
 )
 
 
+class ModerationCollectionDefaultWorkflowTestCase(BaseTestCase):
+    def setUp(self):
+        self.client.force_login(self.user)
+        self.url = reverse("admin:djangocms_moderation_moderationcollection_add")
+        # The default need not be the first workflow in the choices.
+        self.wf1.is_default = False
+        self.wf1.save()
+        self.wf2.is_default = True
+        self.wf2.save()
+
+    def test_add_collection_preselects_default_workflow(self):
+        for params in ({}, {"_popup": "1"}):
+            with self.subTest(params=params):
+                response = self.client.get(self.url, params)
+                self.assertEqual(response.status_code, 200)
+                form = response.context["adminform"].form
+                self.assertEqual(form["workflow"].value(), self.wf2.pk)
+                self.assertFalse(form.fields["workflow"].disabled)
+
+    def test_add_collection_without_default_leaves_workflow_empty(self):
+        self.wf2.is_default = False
+        self.wf2.save()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.context["adminform"].form["workflow"].value())
+
+    def test_add_collection_can_use_another_workflow(self):
+        response = self.client.post(self.url, {
+            "name": "Collection with chosen workflow",
+            "author": self.user.pk,
+            "workflow": self.wf3.pk,
+        })
+
+        self.assertEqual(response.status_code, 302)
+        collection = ModerationCollection.objects.get(name="Collection with chosen workflow")
+        self.assertEqual(collection.workflow, self.wf3)
+
+    def test_change_collection_keeps_existing_workflow(self):
+        url = reverse(
+            "admin:djangocms_moderation_moderationcollection_change",
+            args=(self.collection1.pk,),
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["adminform"].form["workflow"].value(), self.wf1.pk)
+
+
 class WorkflowAdminTestCase(BaseTestCase):
     def workflow_data(self, workflow, total_forms=0, initial_forms=0):
         return {
