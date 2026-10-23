@@ -165,6 +165,13 @@ class Workflow(models.Model):
         verbose_name = _("Workflow")
         verbose_name_plural = _("Workflows")
         ordering = ("name",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["is_default"],
+                condition=models.Q(is_default=True),
+                name="djangocms_moderation_one_default_workflow",
+            ),
+        ]
 
     def __str__(self):
         return self.name
@@ -313,6 +320,7 @@ class ModerationCollection(models.Model):
                 self.author == user,
                 self.status == constants.COLLECTING,
                 self.moderation_requests.exists(),
+                self.workflow.steps.exists(),
             ]
         )
 
@@ -321,6 +329,10 @@ class ModerationCollection(models.Model):
         Submit all the moderation requests belonging to this collection for
         review and mark the collection as locked
         """
+        if not self.workflow.steps.exists():
+            raise ValidationError(_(
+                "The workflow must contain at least one step before this collection can be submitted for review."
+            ))
         for moderation_request in self.moderation_requests.all():
             action = moderation_request.actions.create(
                 by_user=by_user, to_user=to_user, action=constants.ACTION_STARTED

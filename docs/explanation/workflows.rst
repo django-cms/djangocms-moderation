@@ -16,13 +16,24 @@ them; each collection picks one when it is created. The workflow marked
 **is default** is preselected for new collections (only one workflow can
 be the default).
 
+On databases that support partial unique indexes (including PostgreSQL
+and SQLite), a database constraint also prevents concurrent saves from
+creating multiple defaults. On upgrade, if multiple defaults already
+exist, the migration retains the first workflow in name order as the
+default and clears the other default flags. Existing collections keep
+their assigned workflows.
+
 .. _workflow_step:
 
 Steps
 -----
 
 Each workflow has at least one step, edited inline on the workflow admin
-page. A step consists of:
+page. The admin prevents saving an empty workflow or deleting its last
+step. Collections using an existing empty workflow cannot be submitted
+for review until a step is added.
+
+A step consists of:
 
 * a **role** — the user or group expected to review at this step (the same
   role can only appear once per workflow);

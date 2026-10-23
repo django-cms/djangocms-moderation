@@ -3,7 +3,8 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.db import IntegrityError, transaction
+from django.test import TestCase, skipUnlessDBFeature
 from django.urls import reverse
 
 from djangocms_moderation import constants
@@ -63,7 +64,7 @@ class WorkflowTest(BaseTestCase):
     def test_multiple_defaults_validation_error(self):
         workflow = Workflow.objects.create(name="New Workflow 3", is_default=False)
         workflow.clean()
-        workflow = Workflow.objects.create(
+        workflow = Workflow(
             name="New Workflow 4", is_default=True
         )  # self.wf1 is default
         self.assertRaisesMessage(
@@ -71,6 +72,27 @@ class WorkflowTest(BaseTestCase):
             "Can't have two default workflows, only one is allowed.",
             workflow.clean,
         )
+
+    @skipUnlessDBFeature("supports_partial_indexes")
+    def test_database_rejects_second_default(self):
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Workflow.objects.create(name="Another default", is_default=True)
+        self.assertEqual(Workflow.objects.filter(is_default=True).get(), self.wf1)
+
+    @skipUnlessDBFeature("supports_partial_indexes")
+    def test_database_rejects_update_to_second_default(self):
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Workflow.objects.filter(pk=self.wf2.pk).update(is_default=True)
+        self.wf2.refresh_from_db()
+        self.assertFalse(self.wf2.is_default)
+
+    def test_default_can_be_reassigned(self):
+        self.wf1.is_default = False
+        self.wf1.save()
+        self.wf2.is_default = True
+        self.wf2.save()
+        self.assertEqual(Workflow.objects.filter(is_default=True).get(), self.wf2)
+        self.assertEqual(Workflow.objects.filter(is_default=False).count(), 3)
 
     def test_first_step(self):
         self.assertEqual(self.wf1.first_step, self.wf1st1)
@@ -614,6 +636,25 @@ class ModerationCollectionTest(BaseTestCase):
         self.collection1.status = constants.IN_REVIEW
         self.collection1.save()
         self.assertFalse(self.collection1.allow_submit_for_review(user=self.user))
+
+    def test_submit_for_review_without_workflow_steps(self):
+        self.collection1.workflow.steps.all().delete()
+        self.collection1.status = constants.COLLECTING
+        self.collection1.save()
+        moderation_request = ModerationRequest.objects.create(
+            version=self.pg1_version,
+            language="en",
+            collection=self.collection1,
+            author=self.user,
+        )
+
+        self.assertFalse(self.collection1.allow_submit_for_review(user=self.user))
+        with self.assertRaisesMessage(ValidationError, "The workflow must contain at least one step"):
+            self.collection1.submit_for_review(self.user)
+
+        self.collection1.refresh_from_db()
+        self.assertEqual(self.collection1.status, constants.COLLECTING)
+        self.assertFalse(moderation_request.actions.exists())
 
     @patch("djangocms_moderation.models.notify_collection_moderators")
     def test_submit_for_review(self, mock_ncm):

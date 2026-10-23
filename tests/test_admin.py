@@ -20,6 +20,7 @@ from djangocms_moderation.models import (
     ModerationCollection,
     ModerationRequest,
     RequestComment,
+    Workflow,
 )
 
 from .utils.base import BaseTestCase, MockRequest
@@ -29,6 +30,119 @@ from .utils.factories import (
     RootModerationRequestTreeNodeFactory,
     WorkflowFactory,
 )
+
+
+class ModerationCollectionDefaultWorkflowTestCase(BaseTestCase):
+    def setUp(self):
+        self.client.force_login(self.user)
+        self.url = reverse("admin:djangocms_moderation_moderationcollection_add")
+        # The default need not be the first workflow in the choices.
+        self.wf1.is_default = False
+        self.wf1.save()
+        self.wf2.is_default = True
+        self.wf2.save()
+
+    def test_add_collection_preselects_default_workflow(self):
+        for params in ({}, {"_popup": "1"}):
+            with self.subTest(params=params):
+                response = self.client.get(self.url, params)
+                self.assertEqual(response.status_code, 200)
+                form = response.context["adminform"].form
+                self.assertEqual(form["workflow"].value(), self.wf2.pk)
+                self.assertFalse(form.fields["workflow"].disabled)
+
+    def test_add_collection_without_default_leaves_workflow_empty(self):
+        self.wf2.is_default = False
+        self.wf2.save()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.context["adminform"].form["workflow"].value())
+
+    def test_add_collection_can_use_another_workflow(self):
+        response = self.client.post(self.url, {
+            "name": "Collection with chosen workflow",
+            "author": self.user.pk,
+            "workflow": self.wf3.pk,
+        })
+
+        self.assertEqual(response.status_code, 302)
+        collection = ModerationCollection.objects.get(name="Collection with chosen workflow")
+        self.assertEqual(collection.workflow, self.wf3)
+
+    def test_change_collection_keeps_existing_workflow(self):
+        url = reverse(
+            "admin:djangocms_moderation_moderationcollection_change",
+            args=(self.collection1.pk,),
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["adminform"].form["workflow"].value(), self.wf1.pk)
+
+
+class WorkflowAdminTestCase(BaseTestCase):
+    def workflow_data(self, workflow, total_forms=0, initial_forms=0):
+        return {
+            "name": workflow.name,
+            "compliance_number_backend": workflow.compliance_number_backend,
+            "steps-TOTAL_FORMS": total_forms,
+            "steps-INITIAL_FORMS": initial_forms,
+        }
+
+    def test_cannot_create_workflow_without_steps(self):
+        workflow = Workflow(name="Empty workflow")
+        url = reverse("admin:djangocms_moderation_workflow_add")
+        with self.login_user_context(self.user):
+            for total_forms in (0, 1):
+                with self.subTest(total_forms=total_forms):
+                    data = self.workflow_data(workflow, total_forms)
+                    if total_forms:
+                        data["steps-0-is_required"] = "on"
+                    response = self.client.post(url, data)
+                    self.assertContains(response, "A workflow must contain at least one step.")
+                    self.assertFalse(Workflow.objects.filter(name=workflow.name).exists())
+
+    def test_invalid_workflow_step_preserves_field_errors(self):
+        workflow = Workflow(name="Invalid step workflow")
+        url = reverse("admin:djangocms_moderation_workflow_add")
+        data = self.workflow_data(workflow, total_forms=1)
+        data.update({"steps-0-role": "invalid", "steps-0-order": 1})
+
+        with self.login_user_context(self.user):
+            response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 200)
+        formset = response.context["inline_admin_formsets"][0].formset
+        self.assertEqual(formset.forms[0].errors.as_data()["role"][0].code, "invalid_choice")
+        self.assertFalse(formset.non_form_errors())
+        self.assertFalse(Workflow.objects.filter(name=workflow.name).exists())
+
+    def test_cannot_delete_last_workflow_step(self):
+        url = reverse("admin:djangocms_moderation_workflow_change", args=(self.wf4.pk,))
+        data = self.workflow_data(self.wf4, total_forms=1, initial_forms=1)
+        data.update({
+            "steps-0-id": self.wf4st4.pk,
+            "steps-0-role": self.role1.pk,
+            "steps-0-order": 1,
+            "steps-0-DELETE": "on",
+        })
+        with self.login_user_context(self.user):
+            response = self.client.post(url, data)
+        self.assertContains(response, "A workflow must contain at least one step.")
+        self.assertTrue(self.wf4.steps.filter(pk=self.wf4st4.pk).exists())
+
+    def test_create_workflow_with_one_step(self):
+        workflow = Workflow(name="One step workflow")
+        url = reverse("admin:djangocms_moderation_workflow_add")
+        data = self.workflow_data(workflow, total_forms=1)
+        data.update({"steps-0-role": self.role1.pk, "steps-0-order": 1})
+        with self.login_user_context(self.user):
+            response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Workflow.objects.get(name=workflow.name).steps.count(), 1)
 
 
 class ModerationAdminTestCase(BaseTestCase):

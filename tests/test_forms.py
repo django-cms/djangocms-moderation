@@ -87,6 +87,18 @@ class UpdateModerationRequestFormTest(AssertQueryMixin, BaseTestCase):
 
 
 class SubmitCollectionForModerationFormTest(BaseTestCase):
+    def test_workflow_without_steps(self):
+        self.collection1.workflow.steps.all().delete()
+        form = SubmitCollectionForModerationForm(
+            data={}, collection=self.collection1, user=self.user
+        )
+        self.assertIsInstance(form.fields["moderator"].widget, HiddenInput)
+        self.assertFalse(form.is_valid())
+        self.assertIn(
+            "The workflow must contain at least one step before this collection can be submitted for review.",
+            form.non_field_errors(),
+        )
+
     @mock.patch.object(ModerationCollection, "allow_submit_for_review")
     def test_form_is_invalid_if_collection_cant_be_submitted_for_review(
         self, allow_submit_mock
