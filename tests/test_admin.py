@@ -664,9 +664,20 @@ class VersionDeletionTestCase(BaseTestCase):
 
     @patch("djangocms_versioning.conf.ALLOW_DELETING_VERSIONS", False)
     def test_page_delete_remains_blocked_by_default(self):
-        page_admin = admin.site._registry[type(self.page)]
-        _, _, perms_needed, _ = page_admin.get_deleted_objects([self.page], self.request)
-        self.assertTrue(perms_needed)
+        self.client.force_login(self.user)
+        url = admin_reverse("cms_page_delete", args=(self.page.pk,))
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["perms_lacking"])
+
+        response = self.client.post(url, {"post": "yes"})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(type(self.page).objects.filter(pk=self.page.pk).exists())
+        self.assertTrue(type(self.version).objects.filter(pk=self.version.pk).exists())
+        self.assertTrue(ModerationRequest.objects.filter(pk=self.moderation_request.pk).exists())
 
     @patch("djangocms_versioning.conf.ALLOW_DELETING_VERSIONS", True)
     def test_archived_version_delete_cascades_to_moderation_objects(self):
