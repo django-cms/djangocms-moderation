@@ -2,6 +2,15 @@
 Changelog
 =========
 
+unreleased
+==========
+
+* fix: Allow deleting versions and their related moderation requests, form
+  submissions and comments when ``DJANGOCMS_VERSIONING_ALLOW_DELETING_VERSIONS``
+  is enabled and the user has the corresponding delete permissions (#423).
+  Fix rendering form submissions on the deletion confirmation page.
+
+
 2.5.1 (2026-10-10)
 ==================
 

@@ -921,7 +921,7 @@ class ConfirmationFormSubmission(models.Model):
     )
 
     def __str__(self):
-        return f"{self.request_id} - {self.for_step}"
+        return f"{self.moderation_request_id} - {self.for_step}"
 
     class Meta:
         verbose_name = _("Confirmation Form Submission")

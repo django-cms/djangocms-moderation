@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib import admin
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
@@ -6,6 +8,8 @@ from django.urls import reverse
 
 from cms.utils.urlutils import admin_reverse
 
+from djangocms_versioning import versionables
+from djangocms_versioning.constants import ARCHIVED
 from djangocms_versioning.test_utils import factories
 
 from djangocms_moderation import conf, constants
@@ -17,8 +21,11 @@ from djangocms_moderation.admin import (
 from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     CollectionComment,
+    ConfirmationFormSubmission,
+    ConfirmationPage,
     ModerationCollection,
     ModerationRequest,
+    ModerationRequestAction,
     RequestComment,
     Workflow,
 )
@@ -613,6 +620,96 @@ class ModerationAdminChangelistConfigurationTestCase(BaseTestCase):
 
         with self.assertRaises(ConditionFailed):
             version.check_publish(self.get_superuser())
+
+
+class VersionDeletionTestCase(BaseTestCase):
+    def setUp(self):
+        self.moderation_request = self.moderation_request3
+        self.version = self.moderation_request.version
+        self.page = self.version.content.page
+        self.tree_node = RootModerationRequestTreeNodeFactory(moderation_request=self.moderation_request)
+        self.confirmation_page = ConfirmationPage.objects.create(name="Checklist")
+        self.submission = ConfirmationFormSubmission.objects.create(
+            moderation_request=self.moderation_request,
+            for_step=self.wf3st1,
+            by_user=self.user2,
+            confirmation_page=self.confirmation_page,
+            data="[]",
+        )
+        self.comment = RequestComment.objects.create(
+            moderation_request=self.moderation_request, author=self.user2, message="Approved",
+        )
+        self.request = RequestFactory().get("/")
+        self.request.user = self.user
+
+    @patch("djangocms_versioning.conf.ALLOW_DELETING_VERSIONS", True)
+    def test_page_delete_cascades_to_moderation_objects(self):
+        self.client.force_login(self.user)
+        url = admin_reverse("cms_page_delete", args=(self.page.pk,))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["perms_lacking"])
+        self.assertFalse(response.context["protected"])
+
+        response = self.client.post(url, {"post": "yes"})
+
+        self.assertEqual(response.status_code, 302)
+        for obj in (self.page, self.version, self.moderation_request, self.tree_node, self.submission, self.comment):
+            with self.subTest(model=type(obj)):
+                self.assertFalse(type(obj).objects.filter(pk=obj.pk).exists())
+        self.assertFalse(ModerationRequestAction.objects.filter(moderation_request=self.moderation_request).exists())
+        # Collections and workflow configuration can be shared by other versions.
+        self.assertTrue(ModerationCollection.objects.filter(pk=self.moderation_request.collection_id).exists())
+        self.assertTrue(ConfirmationPage.objects.filter(pk=self.confirmation_page.pk).exists())
+
+    @patch("djangocms_versioning.conf.ALLOW_DELETING_VERSIONS", False)
+    def test_page_delete_remains_blocked_by_default(self):
+        page_admin = admin.site._registry[type(self.page)]
+        _, _, perms_needed, _ = page_admin.get_deleted_objects([self.page], self.request)
+        self.assertTrue(perms_needed)
+
+    @patch("djangocms_versioning.conf.ALLOW_DELETING_VERSIONS", True)
+    def test_archived_version_delete_cascades_to_moderation_objects(self):
+        type(self.version).objects.filter(pk=self.version.pk).update(state=ARCHIVED)
+        proxy = versionables.for_content(type(self.version.content)).version_model_proxy
+        url = admin_reverse(f"{proxy._meta.app_label}_{proxy._meta.model_name}_changelist")
+        url += f"?page={self.page.pk}&language={self.version.content.language}"
+        data = {"action": "delete_selected", "_selected_action": [self.version.pk]}
+        self.client.force_login(self.user)
+
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["perms_lacking"])
+        self.assertFalse(response.context["protected"])
+
+        response = self.client.post(url, {**data, "post": "yes"})
+
+        self.assertEqual(response.status_code, 302)
+        for obj in (self.version.content, self.version, self.moderation_request, self.submission, self.comment):
+            with self.subTest(model=type(obj)):
+                self.assertFalse(type(obj).objects.filter(pk=obj.pk).exists())
+        self.assertTrue(type(self.page).objects.filter(pk=self.page.pk).exists())
+
+    def test_related_objects_require_opt_in_and_delete_permission(self):
+        staff = User.objects.create_user(username="deletion_staff", is_staff=True)
+        for obj in (self.moderation_request, self.submission, self.comment):
+            model_admin = admin.site._registry[type(obj)]
+            for allow in (False, True):
+                with self.subTest(model=type(obj), allow=allow), patch(
+                    "djangocms_versioning.conf.ALLOW_DELETING_VERSIONS", allow
+                ):
+                    self.request.user = self.user
+                    self.assertEqual(model_admin.has_delete_permission(self.request, obj), allow)
+                    self.request.user = staff
+                    self.assertFalse(model_admin.has_delete_permission(self.request, obj))
+                    perm = Permission.objects.get(
+                        content_type=ContentType.objects.get_for_model(obj),
+                        codename=f"delete_{obj._meta.model_name}",
+                    )
+                    staff.user_permissions.add(perm)
+                    self.request.user = User.objects.get(pk=staff.pk)
+                    self.assertEqual(model_admin.has_delete_permission(self.request, obj), allow)
+                    staff.user_permissions.remove(perm)
 
 
 class CommentAdminPermissionTestCase(BaseTestCase):
