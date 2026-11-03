@@ -16,6 +16,7 @@ from cms.toolbar.utils import get_object_preview_url
 from cms.utils.helpers import is_editable_model
 
 from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
+from djangocms_versioning import conf as versioning_conf
 
 from . import constants, signals
 from .admin_actions import (
@@ -545,9 +546,9 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         """
-        Hide the delete button from the detail page and prevent a MR from being deleted in the admin.
+        Allow deletion, including cascades from versions, only when opted in.
         """
-        return False
+        return versioning_conf.ALLOW_DELETING_VERSIONS and super().has_delete_permission(request, obj)
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name
@@ -1165,7 +1166,10 @@ class RequestCommentAdmin(admin.ModelAdmin):
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_delete_permission(self, request, obj=None):
-        return request.user == getattr(obj, "author", None)
+        # A version's deletion must also be able to remove other users' comments.
+        return request.user == getattr(obj, "author", None) or (
+            versioning_conf.ALLOW_DELETING_VERSIONS and super().has_delete_permission(request, obj)
+        )
 
     def get_readonly_fields(self, request, obj=None):
         if obj and request.user != obj.author:
@@ -1394,7 +1398,7 @@ class ConfirmationFormSubmissionAdmin(admin.ModelAdmin):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return versioning_conf.ALLOW_DELETING_VERSIONS and super().has_delete_permission(request, obj)
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
