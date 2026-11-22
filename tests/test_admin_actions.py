@@ -576,9 +576,7 @@ class RejectSelectedTest(CMSTestCase):
 
         response = self.client.get(url)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIsNone(response.context["collection"])
-        self.assertEqual(response.context["queryset"], [])
+        self.assertEqual(response.status_code, 404)
 
     # TODO: This needs to be verified because unlike with other views
     # no code throws a 403 on non-author but the list of actions does

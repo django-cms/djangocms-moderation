@@ -218,6 +218,10 @@ class CollectionItemsForm(forms.Form):
                     is_registered_for_moderation(version.content),
                     not get_active_moderation_request(version.content),
                     is_obj_version_unlocked(version.content, self.user),
+                    # Being in a collection blocks everybody else from working
+                    # on the content, so only those allowed to change it may
+                    # put it there.
+                    version.has_change_permission(self.user),
                 ]
             ):
                 eligible_versions.append(version.pk)
@@ -225,10 +229,12 @@ class CollectionItemsForm(forms.Form):
         if not eligible_versions:
             raise forms.ValidationError(
                 ngettext(
-                    "Your item is either locked, not enabled for moderation,"
-                    "or is part of another active moderation request",
-                    "Your items are either locked, not enabled for moderation,"
-                    "or are part of another active moderation request",
+                    "Your item is either locked, not enabled for moderation, "
+                    "is part of another active moderation request, or you "
+                    "do not have permission to change it",
+                    "Your items are either locked, not enabled for moderation, "
+                    "are part of another active moderation request, or you "
+                    "do not have permission to change them",
                     len(versions),
                 )
             )

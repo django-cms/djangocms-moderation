@@ -494,7 +494,7 @@ class ModerationRequestTreeAdmin(admin.ModelAdmin):
             if num_deleted_requests:
                 notify_collection_author(
                     collection=collection,
-                    moderation_requests=[mr for mr in queryset],
+                    moderation_requests=[*queryset],
                     action=constants.ACTION_CANCELLED,
                     by_user=request.user,
                 )
@@ -600,6 +600,19 @@ class ModerationRequestAdmin(admin.ModelAdmin):
         except (TypeError, ValueError):
             return None
         return ModerationCollection.objects.filter(id=collection_id).first()
+
+    def _get_collection_for_participant(self, request):
+        """
+        Return the collection named in the query string, provided the user
+        takes part in its moderation (as its author or as one of its
+        reviewers). Anybody else must not learn what the collection contains.
+        """
+        collection = self._get_collection(request.GET.get('collection_id'))
+        if collection is None:
+            raise Http404
+        if not collection.user_can_view_comments(request.user):
+            raise PermissionDenied
+        return collection
 
     def _custom_view_context(self, request, collection=None):
         collection_id = request.GET.get('collection_id')
@@ -778,22 +791,18 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def rework_view(self, request):
         collection_id = request.GET.get('collection_id')
-        treenodes = self._get_selected_tree_nodes(request)
+        collection = self._get_collection_for_participant(request)
+        treenodes = self._get_selected_tree_nodes(request, collection=collection)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
-            context = self._custom_view_context(request)
+            context = self._custom_view_context(request, collection=collection)
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/rework_confirmation.html",
                 context,
             )
         else:
-            try:
-                collection = ModerationCollection.objects.get(id=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
-                raise Http404
-
             rejected_requests = []
 
             for node in treenodes.all():
@@ -827,11 +836,12 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
     def approved_view(self, request):
         collection_id = request.GET.get('collection_id')
-        treenodes = self._get_selected_tree_nodes(request)
+        collection = self._get_collection_for_participant(request)
+        treenodes = self._get_selected_tree_nodes(request, collection=collection)
         redirect_url = self._redirect_to_changeview_url(collection_id)
 
         if request.method != 'POST':
-            context = self._custom_view_context(request)
+            context = self._custom_view_context(request, collection=collection)
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/approve_confirmation.html",
@@ -852,11 +862,6 @@ class ModerationRequestAdmin(admin.ModelAdmin):
             and some in the second, then the reviewers we need to notify are
             different per request, depending on which stage the request is in
             """
-            try:
-                collection = ModerationCollection.objects.get(id=int(collection_id))
-            except (ValueError, ModerationCollection.DoesNotExist):
-                raise Http404
-
             approved_requests = []
             # Requests the user could not approve, grouped by reason so we can
             # give clear feedback instead of a silent "0 requests approved"
@@ -1025,6 +1030,32 @@ class CollectionCommentAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         return CollectionCommentForm
 
+    @staticmethod
+    def _get_filtered_collection(request):
+        """
+        The collection a new comment belongs to, taken from the changelist
+        filters the add view was opened with.
+        """
+        collection_id = utils.extract_filter_param_from_changelist_url(
+            request, "_changelist_filters", "collection__id__exact"
+        )
+        try:
+            return ModerationCollection.objects.get(pk=int(collection_id))
+        except (TypeError, ValueError, ModerationCollection.DoesNotExist):
+            raise Http404
+
+    def save_model(self, request, obj, form, change):
+        # The author and the collection are hidden form fields, so whatever
+        # the browser posts for them must not be trusted.
+        if change:
+            original = CollectionComment.objects.get(pk=obj.pk)
+            obj.author_id = original.author_id
+            obj.collection_id = original.collection_id
+        else:
+            obj.author = request.user
+            obj.collection = self._get_filtered_collection(request)
+        super().save_model(request, obj, form, change)
+
     def has_module_permission(self, request):
         """
         Hide the model from admin index as it depends on foreighKey
@@ -1070,7 +1101,12 @@ class CollectionCommentAdmin(admin.ModelAdmin):
             if not collection_comment.collection.user_can_view_comments(request.user):
                 raise PermissionDenied
             if request.user != collection_comment.author:
+                if request.method == "POST":
+                    raise PermissionDenied
                 extra_context["readonly"] = True
+        elif not self._get_filtered_collection(request).user_can_view_comments(request.user):
+            # Only those taking part in the moderation may comment on it
+            raise PermissionDenied
 
         if collection_id:
             extra_context["collection_id"] = collection_id
@@ -1113,6 +1149,32 @@ class RequestCommentAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         return RequestCommentForm
 
+    @staticmethod
+    def _get_filtered_moderation_request(request):
+        """
+        The moderation request a new comment belongs to, taken from the
+        changelist filters the add view was opened with.
+        """
+        moderation_request_id = utils.extract_filter_param_from_changelist_url(
+            request, "_changelist_filters", "moderation_request__id__exact"
+        )
+        try:
+            return ModerationRequest.objects.get(pk=int(moderation_request_id))
+        except (TypeError, ValueError, ModerationRequest.DoesNotExist):
+            raise Http404
+
+    def save_model(self, request, obj, form, change):
+        # The author and the moderation request are hidden form fields, so
+        # whatever the browser posts for them must not be trusted.
+        if change:
+            original = RequestComment.objects.get(pk=obj.pk)
+            obj.author_id = original.author_id
+            obj.moderation_request_id = original.moderation_request_id
+        else:
+            obj.author = request.user
+            obj.moderation_request = self._get_filtered_moderation_request(request)
+        super().save_model(request, obj, form, change)
+
     def has_module_permission(self, request):
         """
         Hide the model from admin index as it depends on foreighKey
@@ -1154,15 +1216,20 @@ class RequestCommentAdmin(admin.ModelAdmin):
             if not request_comment.moderation_request.user_can_view_comments(request.user):
                 raise PermissionDenied
             if request.user != request_comment.author:
+                if request.method == "POST":
+                    raise PermissionDenied
                 extra_context["readonly"] = True
+        elif not self._get_filtered_moderation_request(request).user_can_view_comments(request.user):
+            # Only those taking part in the moderation may comment on it
+            raise PermissionDenied
         # for breadcrumb trail
         moderation_request_id = utils.extract_filter_param_from_changelist_url(
             request, "_changelist_filters", "moderation_request__id__exact"
         )
         if moderation_request_id:
-            extra_context["moderation_request_id"] = moderation_request_id
-            mr = ModerationRequest.objects.get(pk=int(moderation_request_id))
-            extra_context["collection_id"] = mr.collection.id
+            mr = self._get_filtered_moderation_request(request)
+            extra_context["moderation_request_id"] = mr.pk
+            extra_context["collection_id"] = mr.collection_id
         return super().changeform_view(request, object_id, form_url, extra_context)
 
     def has_delete_permission(self, request, obj=None):

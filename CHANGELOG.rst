@@ -9,6 +9,14 @@ unreleased
   submissions and comments when ``DJANGOCMS_VERSIONING_ALLOW_DELETING_VERSIONS``
   is enabled and the user has the corresponding delete permissions (#423).
   Fix rendering form submissions on the deletion confirmation page.
+* fix: Only participants of a moderation (the collection author and its
+  reviewers) can add comments, and only under their own name. Comments can
+  only be changed by their author.
+* fix: The approve and rework confirmation pages are only shown to participants
+  of the moderation.
+* fix: Adding content to a moderation collection requires change permission
+  for that content. The contents of other users' collections are no longer
+  listed when adding items.
 
 
 2.5.1 (2026-10-10)

@@ -139,7 +139,12 @@ class CollectionItemsView(FormView):
             except (ValueError, ModerationCollection.DoesNotExist, TypeError):
                 raise Http404
             else:
-                moderation_requests = collection.moderation_requests.all()
+                # Items can only be added to one's own collection, so there
+                # is no reason to show the contents of anybody else's.
+                if collection.author == self.request.user:
+                    moderation_requests = collection.moderation_requests.all()
+                else:
+                    moderation_requests = []
         else:
             moderation_requests = []
 
