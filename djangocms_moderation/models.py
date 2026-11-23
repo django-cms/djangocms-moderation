@@ -324,6 +324,19 @@ class ModerationCollection(models.Model):
             ]
         )
 
+    def get_requests_author_cannot_finalise(self):
+        """
+        Moderation requests in this collection which its author lacks the
+        permission to publish (or unpublish) once they are approved.
+        """
+        return [
+            moderation_request
+            for moderation_request in self.moderation_requests.filter(
+                is_active=True
+            ).select_related("version")
+            if not moderation_request.author_can_finalise()
+        ]
+
     def submit_for_review(self, by_user, to_user=None):
         """
         Submit all the moderation requests belonging to this collection for
@@ -615,6 +628,15 @@ class ModerationRequest(models.Model):
 
     def is_approved(self):
         return self.is_active and not self.has_required_pending_steps()
+
+    def author_can_finalise(self):
+        """
+        Does the collection author, the only user who may finalise the
+        collection, have djangocms-versioning's permission to publish (or
+        unpublish) this request's version? If not, the request can be approved
+        but never finalised.
+        """
+        return self.version.has_publish_permission(self.collection.author)
 
     def version_can_be_published(self):
         return self.is_approved() and self.version.can_be_published()

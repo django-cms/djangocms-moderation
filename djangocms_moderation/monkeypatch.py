@@ -19,7 +19,10 @@ from djangocms_moderation.helpers import (
     is_obj_version_unlocked,
     is_registered_for_moderation,
 )
-from djangocms_moderation.operations import is_moderated_unpublish
+from djangocms_moderation.operations import (
+    is_moderated_publish,
+    is_moderated_unpublish,
+)
 from djangocms_moderation.utils import get_admin_url
 
 
@@ -148,10 +151,11 @@ def _get_unpublish_link(func):
 
 def _check_registered_for_moderation(message):
     """
-    Fail check if object is registered for moderation
+    Fail the publish check when moderated content should be published through
+    the moderation process instead of directly.
     """
     def inner(version, user):
-        if is_registered_for_moderation(version.content):
+        if not is_moderated_publish() and is_registered_for_moderation(version.content):
             raise ConditionFailed(message)
 
     return inner

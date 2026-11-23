@@ -16,7 +16,7 @@ from djangocms_versioning.models import Version
 
 from djangocms_moderation import conf, constants
 
-from .operations import moderated_unpublish
+from .operations import moderated_publish, moderated_unpublish
 from .utils import get_admin_url
 
 
@@ -221,11 +221,17 @@ def publish_version(version, user):
     caller can report the failure instead of silently skipping the request.
     """
     try:
-        version.publish(user)
+        with moderated_publish():
+            # Being the collection author does not imply the right to publish:
+            # preserve djangocms-versioning's permission and state checks. The
+            # moderation-routing check alone is bypassed by the scoped context.
+            version.check_publish(user)
+            version.publish(user)
     except ConditionFailed as error:
         return str(error)
     except TransitionNotAllowed:
         return _("Version is not in draft state")
+    return None
 
 
 def unpublish_version(version, user):

@@ -3,6 +3,18 @@
 
 {% block content %}
 <div id="content-main">
+    {% if requests_author_cannot_finalise %}
+        <ul class="messagelist">
+            <li class="warning">
+                {% if collection.is_unpublishing %}
+                    {% blocktrans with author=collection.author_name %}The collection author ({{ author }}) does not have permission to unpublish the following items and will not be able to unpublish them once they are approved:{% endblocktrans %}
+                {% else %}
+                    {% blocktrans with author=collection.author_name %}The collection author ({{ author }}) does not have permission to publish the following items and will not be able to publish them once they are approved:{% endblocktrans %}
+                {% endif %}
+                {% for mr in requests_author_cannot_finalise %}{{ mr.version.content }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </li>
+        </ul>
+    {% endif %}
     {% if errors or adminform.non_field_errors %}
         <p class="errornote">
             {% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}

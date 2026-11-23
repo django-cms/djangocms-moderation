@@ -210,8 +210,15 @@ class CollectionItemsForm(forms.Form):
         unpublishing = self.action == COLLECTION_UNPUBLISH
 
         eligible_versions = []
+        permission_denied = False
         for version in versions:
             state_ok = version.state == (PUBLISHED if unpublishing else DRAFT)
+            if not version.has_change_permission(self.user):
+                # The version ids are user input: without this check any staff
+                # user could pull content they may not change into their
+                # collection, review-locking it for everybody else.
+                permission_denied = True
+                continue
             if all(
                 [
                     state_ok,
@@ -222,6 +229,14 @@ class CollectionItemsForm(forms.Form):
             ):
                 eligible_versions.append(version.pk)
 
+        if not eligible_versions and permission_denied:
+            raise forms.ValidationError(
+                ngettext(
+                    "You do not have permission to change this item",
+                    "You do not have permission to change these items",
+                    len(versions),
+                )
+            )
         if not eligible_versions:
             raise forms.ValidationError(
                 ngettext(

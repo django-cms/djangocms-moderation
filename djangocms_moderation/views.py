@@ -238,6 +238,10 @@ class SubmitCollectionForModeration(FormView):
                 "opts": ModerationCollection._meta,
                 "title": _("Submit collection for review"),
                 "adminform": context["form"],
+                "collection": self.collection,
+                "requests_author_cannot_finalise": (
+                    self.collection.get_requests_author_cannot_finalise()
+                ),
             }
         )
         return context

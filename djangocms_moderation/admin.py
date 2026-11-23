@@ -494,7 +494,7 @@ class ModerationRequestTreeAdmin(admin.ModelAdmin):
             if num_deleted_requests:
                 notify_collection_author(
                     collection=collection,
-                    moderation_requests=[mr for mr in queryset],
+                    moderation_requests=[*queryset],
                     action=constants.ACTION_CANCELLED,
                     by_user=request.user,
                 )
@@ -832,6 +832,11 @@ class ModerationRequestAdmin(admin.ModelAdmin):
 
         if request.method != 'POST':
             context = self._custom_view_context(request)
+            # Approving these would strand them: only the collection author can
+            # finalise a collection, and they lack the permission to do so.
+            context["requests_author_cannot_finalise"] = [
+                mr for mr in context["queryset"] if not mr.author_can_finalise()
+            ]
             return render(
                 request,
                 "admin/djangocms_moderation/moderationrequest/approve_confirmation.html",

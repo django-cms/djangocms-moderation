@@ -2,7 +2,8 @@ import unittest
 from unittest import mock
 
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
+from django.contrib.messages import get_messages
 from django.test import TransactionTestCase
 from django.urls import reverse
 
@@ -10,10 +11,13 @@ from cms.test_utils.testcases import CMSTestCase
 from cms.test_utils.util.context_managers import signal_tester
 
 from djangocms_versioning.constants import DRAFT, PUBLISHED
+from djangocms_versioning.exceptions import ConditionFailed
 from djangocms_versioning.models import Version
+from djangocms_versioning.test_utils.factories import PageVersionFactory
 
 from djangocms_moderation import constants
 from djangocms_moderation.admin import ModerationRequestTreeAdmin
+from djangocms_moderation.admin_actions import publish_version
 from djangocms_moderation.constants import ACTION_REJECTED
 from djangocms_moderation.models import (
     ModerationRequest,
@@ -1250,3 +1254,221 @@ class DeletedSelectedTransactionTest(TransactionTestCase):
         # The db transaction should have rolled back.
         self.assertEqual(ModerationRequestTreeNode.objects.all().count(), 3)
         self.assertEqual(ModerationRequest.objects.all().count(), 2)
+
+
+class PublishPermissionTest(CMSTestCase):
+    """
+    Finalising a publish collection must honour djangocms-versioning's publish
+    permission: being the collection author is not enough.
+    """
+
+    def _approved_request(self, author):
+        reviewer = factories.UserFactory(is_staff=True, is_superuser=True)
+        collection = factories.ModerationCollectionFactory(
+            author=author, status=constants.IN_REVIEW
+        )
+        role = Role.objects.create(name="Reviewer", user=reviewer)
+        collection.workflow.steps.create(role=role, is_required=True, order=1)
+        version = PageVersionFactory(created_by=reviewer)
+        moderation_request = factories.ModerationRequestFactory(
+            collection=collection, version=version, author=author
+        )
+        node = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=moderation_request
+        )
+        moderation_request.actions.create(
+            by_user=author, action=constants.ACTION_STARTED
+        )
+        moderation_request.update_status(constants.ACTION_APPROVED, reviewer)
+        return collection, version, node
+
+    def _finalise(self, author, collection, node):
+        url = "{}?ids={}&collection_id={}".format(
+            reverse("admin:djangocms_moderation_moderationrequest_publish"),
+            node.pk,
+            collection.pk,
+        )
+        self.client.force_login(author)
+        return self.client.post(url)
+
+    def test_author_without_publish_permission_cannot_publish(self):
+        author = factories.UserFactory(is_staff=True, is_superuser=False)
+        collection, version, node = self._approved_request(author)
+        self.assertFalse(version.has_publish_permission(author))
+
+        response = self._finalise(author, collection, node)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Version.objects.get(pk=version.pk).state, DRAFT)
+        message_list = [str(m) for m in get_messages(response.wsgi_request)]
+        self.assertEqual(
+            message_list,
+            ["1 request could not be published: You do not have publish permissions"],
+        )
+        # The request stays open so a permitted user can take over
+        self.assertTrue(
+            ModerationRequest.objects.get(version=version).is_active
+        )
+
+    def test_author_with_publish_permission_can_publish(self):
+        author = factories.UserFactory(is_staff=True, is_superuser=False)
+        author.user_permissions.add(
+            *Permission.objects.filter(
+                content_type__app_label="cms",
+                codename__in=["change_page", "publish_page"],
+            )
+        )
+        collection, version, node = self._approved_request(author)
+        self.assertTrue(version.has_publish_permission(author))
+
+        self._finalise(author, collection, node)
+
+        self.assertEqual(Version.objects.get(pk=version.pk).state, PUBLISHED)
+
+    def test_publish_version_returns_permission_error(self):
+        author = factories.UserFactory(is_staff=True, is_superuser=False)
+        version = PageVersionFactory()
+
+        error = publish_version(version, author)
+
+        self.assertEqual(error, "You do not have publish permissions")
+        self.assertEqual(Version.objects.get(pk=version.pk).state, DRAFT)
+
+    def test_direct_publish_is_still_refused_after_moderated_publish(self):
+        user = factories.UserFactory(is_staff=True, is_superuser=True)
+        self.assertIsNone(publish_version(PageVersionFactory(), user))
+
+        with self.assertRaises(ConditionFailed):
+            PageVersionFactory().check_publish(user)
+
+
+class AddToCollectionPermissionTest(CMSTestCase):
+    """Versions can only be added to a collection by users who may change them."""
+
+    def _post(self, user, version):
+        collection = factories.ModerationCollectionFactory(author=user)
+        self.client.force_login(user)
+        response = self.client.post(
+            reverse("admin:cms_moderation_items_to_collection"),
+            {"collection": collection.pk, "versions": [version.pk]},
+        )
+        return collection, response
+
+    def test_user_without_change_permission_cannot_add_version(self):
+        user = factories.UserFactory(is_staff=True, is_superuser=False)
+        version = PageVersionFactory()
+        self.assertFalse(version.has_change_permission(user))
+
+        collection, response = self._post(user, version)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["form"].errors["versions"],
+            ["You do not have permission to change this item"],
+        )
+        self.assertFalse(collection.moderation_requests.exists())
+
+    def test_user_with_change_permission_can_add_version(self):
+        user = factories.UserFactory(is_staff=True, is_superuser=False)
+        user.user_permissions.add(
+            *Permission.objects.filter(
+                content_type__app_label="cms", codename="change_page"
+            )
+        )
+        version = PageVersionFactory(created_by=user)
+        self.assertTrue(version.has_change_permission(user))
+
+        collection, _ = self._post(user, version)
+
+        self.assertEqual(
+            list(collection.moderation_requests.values_list("version", flat=True)),
+            [version.pk],
+        )
+
+
+class StrandedCollectionWarningTest(CMSTestCase):
+    """
+    Authors and reviewers are warned when the collection author will not be
+    able to finalise approved requests.
+    """
+
+    warning = "does not have permission to publish the following items"
+
+    def _collection(self, author, status):
+        self.reviewer = factories.UserFactory(is_staff=True, is_superuser=True)
+        collection = factories.ModerationCollectionFactory(author=author, status=status)
+        role = Role.objects.create(name="Reviewer", user=self.reviewer)
+        collection.workflow.steps.create(role=role, is_required=True, order=1)
+        moderation_request = factories.ModerationRequestFactory(
+            collection=collection,
+            version=PageVersionFactory(created_by=self.reviewer),
+            author=author,
+        )
+        self.node = factories.RootModerationRequestTreeNodeFactory(
+            moderation_request=moderation_request
+        )
+        return collection, moderation_request
+
+    def _submit_page(self, collection):
+        self.client.force_login(collection.author)
+        return self.client.get(
+            reverse(
+                "admin:cms_moderation_submit_collection_for_moderation",
+                args=(collection.pk,),
+            )
+        )
+
+    def _approve_page(self, collection):
+        self.client.force_login(self.reviewer)
+        return self.client.get(
+            "{}?ids={}&collection_id={}".format(
+                reverse("admin:djangocms_moderation_moderationrequest_approve"),
+                self.node.pk,
+                collection.pk,
+            )
+        )
+
+    def test_model_helpers(self):
+        author = factories.UserFactory(is_staff=True, is_superuser=False)
+        collection, moderation_request = self._collection(author, constants.COLLECTING)
+
+        self.assertFalse(moderation_request.author_can_finalise())
+        self.assertEqual(
+            collection.get_requests_author_cannot_finalise(), [moderation_request]
+        )
+
+    def test_submit_page_warns_author_without_publish_permission(self):
+        author = factories.UserFactory(is_staff=True, is_superuser=False)
+        collection, _ = self._collection(author, constants.COLLECTING)
+
+        self.assertContains(self._submit_page(collection), self.warning)
+
+    def test_submit_page_does_not_warn_permitted_author(self):
+        author = factories.UserFactory(is_staff=True, is_superuser=True)
+        collection, _ = self._collection(author, constants.COLLECTING)
+
+        response = self._submit_page(collection)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, self.warning)
+
+    def test_approve_page_warns_reviewer(self):
+        author = factories.UserFactory(is_staff=True, is_superuser=False)
+        collection, moderation_request = self._collection(author, constants.IN_REVIEW)
+        moderation_request.actions.create(
+            by_user=author, action=constants.ACTION_STARTED
+        )
+
+        self.assertContains(self._approve_page(collection), self.warning)
+
+    def test_approve_page_does_not_warn_for_permitted_author(self):
+        author = factories.UserFactory(is_staff=True, is_superuser=True)
+        collection, moderation_request = self._collection(author, constants.IN_REVIEW)
+        moderation_request.actions.create(
+            by_user=author, action=constants.ACTION_STARTED
+        )
+
+        response = self._approve_page(collection)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, self.warning)

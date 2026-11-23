@@ -5,6 +5,16 @@ Changelog
 unreleased
 ==========
 
+* fix: Publishing an approved moderation request now requires the collection
+  author to have djangocms-versioning's publish permission for the content,
+  as unpublishing already did. Previously any collection author could publish
+  approved content regardless of their permissions (CWE-862). **Behaviour
+  change:** authors without publish permission can no longer finalise their
+  own approved collections. The submit-for-review page and the approve
+  confirmation page now warn when the collection author lacks that permission.
+* fix: Adding versions to a moderation collection now requires change
+  permission for their content. Previously any staff user owning a collection
+  could add, and thereby review-lock, arbitrary versions.
 * fix: Allow deleting versions and their related moderation requests, form
   submissions and comments when ``DJANGOCMS_VERSIONING_ALLOW_DELETING_VERSIONS``
   is enabled and the user has the corresponding delete permissions (#423).
